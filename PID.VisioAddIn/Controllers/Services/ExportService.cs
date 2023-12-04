@@ -1,0 +1,152 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using AE.PID.Models;
+using AE.PID.Models.Exceptions;
+using Microsoft.Office.Interop.Visio;
+using MiniExcelLibs;
+using NLog;
+using PID.VisioAddIn.Properties;
+using Configuration = AE.PID.Models.Configuration;
+
+namespace AE.PID.Controllers.Services;
+
+/// <summary>
+///     Dealing with extracting data from shape sheet and export that data into different format in excel.
+/// </summary>
+public class ExportService
+{
+    private readonly Configuration _config;
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
+    public ExportService(Configuration configuration)
+    {
+        _config = configuration;
+    }
+
+    /// <summary>
+    ///     extract data from shapes on layers defined in config and group them as BOM items.
+    /// </summary>
+    public void SaveAsBom()
+    {
+        var dialog = new SaveFileDialog
+        {
+            InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+            Filter = "Excel Files|*.xlsx|All Files|*.*\"",
+            Title = "保存文件"
+        };
+        if (dialog.ShowDialog() != DialogResult.OK) return;
+
+        try
+        {
+            if (_config.ExportSettings.BOMLayers is null)
+                throw new BOMLayersNullException();
+            
+            var selection = Globals.ThisAddIn.Application.ActivePage
+                .CreateSelection(VisSelectionTypes.visSelTypeByLayer, VisSelectMode.visSelModeSkipSuper,
+                    string.Join(";", _config.ExportSettings.BOMLayers));
+
+            var partItems = new List<PartItem>();
+            foreach (IVShape shape in selection)
+            {
+                var item = new PartItem
+                {
+                    ProcessZone = shape.Cells["Prop.ProcessZone"].ResultStr[VisUnitCodes.visUnitsString],
+                    FunctionalGroup = shape.Cells["Prop.FunctionalGroup"].ResultStr[VisUnitCodes.visUnitsString],
+                    FunctionalElement = TryGetFormatValue(shape, "Prop.FunctionalElement"),
+                    Name = shape.Cells["Prop.SubClass"].ResultStr[VisUnitCodes.visUnitsString],
+                    TechnicalData = GetTechnicalData(shape)
+                };
+
+                if (double.TryParse(shape.Cells["Prop.Subtotal"].ResultStr[VisUnitCodes.visUnitsString], out var count))
+                    item.Count = count;
+
+                partItems.Add(item);
+            }
+
+            var totalDic = partItems
+                .GroupBy(x => new { x.ProcessZone, x.Name, x.TechnicalData })
+                .Select(group => new { group.Key, Value = group.Sum(x => x.Count) })
+                .ToDictionary(x => x.Key, x => x.Value);
+            var inGroupDic = partItems
+                .GroupBy(x => new { x.FunctionalGroup, x.Name, x.TechnicalData })
+                .Select(group => new { group.Key, Value = group.Sum(x => x.Count) })
+                .ToDictionary(x => x.Key, x => x.Value);
+
+            var extendPartItems = partItems.Select(x => new
+            {
+                processarea = x.ProcessZone,
+                functionalgroup = x.FunctionalGroup,
+                functionalelement = x.FunctionalElement,
+                name = x.Name,
+                technicaldata = x.TechnicalData,
+                total = totalDic[new { x.ProcessZone, x.Name, x.TechnicalData }],
+                ingroup = inGroupDic[new { x.FunctionalGroup, x.Name, x.TechnicalData }]
+            });
+
+            // write to xlsx
+            MiniExcel.SaveAsByTemplate(dialog.FileName, Resources.BOM_template, new { parts = extendPartItems });
+
+            // 
+            MessageBox.Show("执行成功");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogUsefulException(ex);
+            MessageBox.Show($"执行失败:{ex.Message}");
+        }
+    }
+
+    private string GetTechnicalData(IVShape shape)
+    {
+        StringBuilder stringBuilder = new();
+
+        for (var i = 0; i < shape.RowCount[(short)VisSectionIndices.visSectionProp]; i++)
+        {
+            // skip common properties
+            var sort = shape
+                .CellsSRC[(short)VisSectionIndices.visSectionProp, (short)i, (short)VisCellIndices.visCustPropsSortKey]
+                .ResultStr[VisUnitCodes.visUnitsString];
+            if (!string.IsNullOrEmpty(sort)) continue;
+
+            // skip empty value
+            var value = GetFormatValue(shape.CellsSRC[(short)VisSectionIndices.visSectionProp, (short)i,
+                (short)VisCellIndices.visCustPropsSortKey].ContainingRow);
+            if (string.IsNullOrEmpty(value)) continue;
+
+            var label = shape
+                .CellsSRC[(short)VisSectionIndices.visSectionProp, (short)i, (short)VisCellIndices.visCustPropsLabel]
+                .ResultStr[VisUnitCodes.visUnitsString];
+
+            stringBuilder.Append($"{label}: {value}; ");
+        }
+
+        return stringBuilder.ToString();
+    }
+
+    private string TryGetFormatValue(IVShape shape, string propName)
+    {
+        var existsAnywhere = shape.CellExists[propName, (short)VisExistsFlags.visExistsAnywhere] ==
+                             (short)VBABool.True;
+        if (!existsAnywhere) return null;
+        var row = shape.Cells[propName].ContainingRow;
+        return GetFormatValue(row);
+    }
+
+    private static string GetFormatValue(Row row)
+    {
+        var value = row.CellU[VisCellIndices.visCustPropsValue].ResultStr[VisUnitCodes.visUnitsString];
+        if (string.IsNullOrEmpty(value)) return value;
+
+        var type = row.CellU[VisCellIndices.visCustPropsType].ResultStr[VisUnitCodes.visNoCast];
+
+        if (type != "0" && type != "2") return value;
+        var format = row.CellU[VisCellIndices.visCustPropsFormat].ResultStr[VisUnitCodes.visUnitsString];
+        if (!string.IsNullOrEmpty(format))
+            value = Globals.ThisAddIn.Application.FormatResult(value, "", "", format);
+
+        return value;
+    }
+}

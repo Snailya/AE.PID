@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PID.VisioAddIn", "PID.VisioAddIn\PID.VisioAddIn.csproj", "{5A986C6F-8D43-46A0-8B3A-50FB44234214}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "PID.Installer", "PID.Installer\PID.Installer.vdproj", "{C646C71C-0E45-454B-9C14-D927EA483BB8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PID.Core", "PID.Core\PID.Core.csproj", "{63D883E6-9FB9-4D7A-A57A-157173C0D998}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5A986C6F-8D43-46A0-8B3A-50FB44234214}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A986C6F-8D43-46A0-8B3A-50FB44234214}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A986C6F-8D43-46A0-8B3A-50FB44234214}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A986C6F-8D43-46A0-8B3A-50FB44234214}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C646C71C-0E45-454B-9C14-D927EA483BB8}.Debug|Any CPU.ActiveCfg = Debug
+		{C646C71C-0E45-454B-9C14-D927EA483BB8}.Release|Any CPU.ActiveCfg = Release
+		{63D883E6-9FB9-4D7A-A57A-157173C0D998}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63D883E6-9FB9-4D7A-A57A-157173C0D998}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63D883E6-9FB9-4D7A-A57A-157173C0D998}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63D883E6-9FB9-4D7A-A57A-157173C0D998}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BBC947AD-E39D-478D-AD7E-99086F6F7B52}
+	EndGlobalSection
+EndGlobal
