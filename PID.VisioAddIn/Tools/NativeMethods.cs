@@ -36,6 +36,9 @@ public class NativeMethods
     internal static extern int SetParent(int hWndChild,
         int hWndNewParent);
 
+    // internal static extern int SetParent(IntPtr hWndChild,
+    //     int hWndNewParent);
+
     /// <summary>Prototype of SetWindowLong() for PInvoke</summary>
     [DllImport("user32.dll", SetLastError = true)]
     internal static extern int SetWindowLongW(int hwnd,

@@ -1,68 +1,85 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using AE.PID.Models;
+using System.Reactive.Subjects;
+using System.Windows;
+using System.Windows.Interop;
+using AE.PID.ViewModels;
 using AE.PID.Views;
 using Microsoft.Office.Interop.Visio;
-using NLog;
 using Window = System.Windows.Window;
 
 namespace AE.PID.Controllers.Services;
 
-public class SelectService
+public static class Selector
 {
-    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+    private static Window _window;
 
-    private Window _shapeSelectPromptWindow;
+
+    static Selector()
+    {
+        _window = new Window
+        {
+            Width = 300,
+            Height = 300,
+            Content = new ShapeSelectionView(),
+            Title = "选择工具"
+        };
+        var unused = new WindowInteropHelper(_window)
+        {
+            Owner = new IntPtr(Globals.ThisAddIn.Application.WindowHandle32)
+        };
+        _window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+        _window.Closed += WindowClosed;
+    }
+
+    public static Subject<IVPage> ManuallyInvokeTrigger { get; } = new();
+
+    /// <summary>
+    ///     Emit a value manually
+    /// </summary>
+    /// <param name="page"></param>
+    public static void Invoke(IVPage page)
+    {
+        ManuallyInvokeTrigger.OnNext(page);
+    }
 
     /// <summary>
     ///     Get masters in document stencil.
     /// </summary>
     /// <returns></returns>
-    public static IEnumerable<VisMaster> GetMastersSource()
+    public static IEnumerable<MasterViewModel> GetMastersSource()
     {
-        return Globals.ThisAddIn.Application.ActiveDocument.Masters
-            .OfType<IVMaster>().Select(x => new VisMaster { BaseID = x.BaseID, Name = x.Name });
+        return Globals.ThisAddIn.Application.ActivePage.Document.Masters
+            .OfType<IVMaster>()
+            .Select(x => new MasterViewModel { BaseId = x.BaseID, Name = x.Name, IsChecked = false });
     }
 
     /// <summary>
     ///     Display a view to let user select select mode.
     /// </summary>
-    public void DisplayView()
+    public static void Display()
     {
-        if (_shapeSelectPromptWindow == null)
-        {
-            _shapeSelectPromptWindow = new Window
-            {
-                Title = "选择",
-                Height = 480,
-                Width = 320,
-                MinHeight = 480,
-                MinWidth = 320,
-                Content = new ShapeSelectionView()
-            };
-
-            _shapeSelectPromptWindow.Closed += ShapeSelectPromptWindow_Closed;
-            _shapeSelectPromptWindow.Show();
-        }
-
-        _shapeSelectPromptWindow.Activate();
+        if (_window.Visibility != Visibility.Visible)
+            _window.Show();
+        _window.Activate();
     }
 
-    private void ShapeSelectPromptWindow_Closed(object sender, EventArgs e)
+    private static void WindowClosed(object sender, EventArgs e)
     {
-        _shapeSelectPromptWindow = null;
+        _window = null;
     }
 
     /// <summary>
     ///     Close window called by command.
     /// </summary>
-    public void CloseShapeSelectPromptWindow()
+    public static void CloseShapeSelectPromptWindow()
     {
-        if (_shapeSelectPromptWindow == null) return;
+        if (_window == null) return;
 
-        _shapeSelectPromptWindow.Close();
-        _shapeSelectPromptWindow = null;
+        _window.Close();
+        _window = null;
     }
 
     /// <summary>

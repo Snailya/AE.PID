@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using AE.PID.Controllers;
+using AE.PID.Controllers.Services;
 using AE.PID.Models;
+using AE.PID.Models.Exceptions;
 using AE.PID.Tools;
 using AE.PID.Views;
 using Microsoft.Office.Interop.Visio;
 using Microsoft.Office.Tools.Ribbon;
 using NLog;
+using MessageBox = System.Windows.Forms.MessageBox;
 
 namespace AE.PID;
 
@@ -17,10 +20,11 @@ public partial class Ribbon
     private Configuration _config;
     private Logger _logger;
 
+
     private void Ribbon_Load(object sender, RibbonUIEventArgs e)
     {
         _logger = LogManager.GetCurrentClassLogger();
-        _config = Globals.ThisAddIn.GetCurrentConfiguration();
+        _config = Globals.ThisAddIn.Configuration;
     }
 
     private void Ribbon_Close(object sender, EventArgs e)
@@ -125,12 +129,12 @@ public partial class Ribbon
 
     private void btnExport_Click(object sender, RibbonControlEventArgs e)
     {
-        Globals.ThisAddIn.ExportService.SaveAsBom();
+        Exporter.Invoke(Globals.ThisAddIn.Application.ActivePage);
     }
 
     private void btnSelectTool_Click(object sender, RibbonControlEventArgs e)
     {
-        Globals.ThisAddIn.SelectService.DisplayView();
+        Selector.Invoke(Globals.ThisAddIn.Application.ActivePage);
     }
 
     private void btnToolbox_Click(object sender, RibbonControlEventArgs e)
@@ -156,12 +160,127 @@ public partial class Ribbon
 
     private void btnUpdateDocumentMasters_Click(object sender, RibbonControlEventArgs e)
     {
-        Globals.ThisAddIn.Service.InvokeUpdateDocumentMasters(Globals.ThisAddIn.Application.ActiveDocument);
+        DocumentUpdater.Invoke(Globals.ThisAddIn.Application.ActiveDocument);
+    }
+
+    private void ReplaceMaster(IVDocument document, string baseId, string targetFilePath)
+    {
+        // get the origin master from the document stencil
+        var source = document.Masters[$"B{baseId}"] ??
+                     throw new MasterNotFoundException(baseId);
+
+        if (source.Shapes[1].OneD == (int)VBABool.True)
+        {
+            _logger.Debug(
+                $"REPLACEMENT SKIPPED FOR 1D [DOCUMENT: {document.Name}] [LIRARYPATH: {targetFilePath}] [NAME: {source.Name}] [BASEID: {baseId}]");
+            return;
+        }
+
+        // open the targetFile if not opened
+        if (Globals.ThisAddIn.Application.Documents.OfType<IVDocument>().Any(x => x.Path != targetFilePath))
+            Globals.ThisAddIn.Application.Documents.OpenEx(targetFilePath, (short)VisOpenSaveArgs.visOpenDocked);
+
+        var target =
+            Globals.ThisAddIn.Application.Documents.OfType<IVDocument>().Single(x => x.FullName == targetFilePath)
+                .Masters[$"B{baseId}"] ?? throw new MasterNotFoundException(baseId, targetFilePath);
+
+        // get the instances in the active document, convert to list as the master will clear after the delete
+        var instances = document.Pages.OfType<IVPage>()
+            .SelectMany(x => x.Shapes.OfType<IVShape>()).Where(x => x.Master?.BaseID == baseId).ToList();
+        if (instances.Count == 0) return;
+
+        _logger.Debug(
+            $"REPLACEMENT [DOCUMENT: {document.Name}] [LIRARYPATH: {targetFilePath}] [NAME: {target.Name}] [BASEID: {baseId}] [UNIQUEID: {source.UniqueID} ===> {target.UniqueID}] [COUNT: {instances.Count}]");
+
+        // delete the origin master
+        source.Delete();
+
+        //replace with new target one
+        instances.ForEach(i => i.ReplaceShape(target));
+        _logger.Debug($"REPLACEMENT DONE [NAME: {target.Name}]");
     }
 
     private void btnTest(object sender, RibbonControlEventArgs e)
     {
-        UpdateShapesLegacy();
+    }
+
+    private void btnTest2(object sender, RibbonControlEventArgs e)
+    {
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
+
+        var mappings = new List<MasterDocumentLibraryMapping>();
+        var document = Globals.ThisAddIn.Application.ActiveDocument;
+
+        foreach (var source in document.Masters.OfType<IVMaster>().ToList())
+            if (_config.LibraryConfiguration.GetItems().SingleOrDefault(x => x.BaseId == source.BaseID) is
+                    { } item &&
+                item.UniqueId != source.UniqueID)
+                mappings.Add(new MasterDocumentLibraryMapping
+                {
+                    BaseId = source.BaseID,
+                    LibraryPath =
+                        _config.LibraryConfiguration.Libraries.SingleOrDefault(x =>
+                                x.Items.Any(i => i.BaseId == item.BaseId))!
+                            .Path
+                });
+
+        var undoScope = Globals.ThisAddIn.Application.BeginUndoScope(nameof(btnTest));
+
+        Globals.ThisAddIn.Application.ShowChanges = false;
+
+        mappings.ForEach(item => ReplaceMaster(document, item.BaseId, item.LibraryPath));
+        Globals.ThisAddIn.Application.ShowChanges = true;
+
+        Globals.ThisAddIn.Application.EndUndoScope(undoScope, true);
+
+        _logger.Trace("[UpdateMastersAsync] Finished ");
+
+
+        stopwatch.Stop();
+        MessageBox.Show(stopwatch.Elapsed + "单线程");
+    }
+
+
+    private void btnTest3(object sender, RibbonControlEventArgs e)
+    {
+        // get the origin master from the document stencil
+        var document = Globals.ThisAddIn.Application.ActiveDocument;
+        var baseId = "{DAA3F7AE-0468-4270-96D9-9A5ACD0CB612}";
+        var targetFilePath = "C:\\Users\\lijin\\AppData\\Roaming\\AE\\PID\\Libraries\\AE基础.vssx";
+
+
+        var source = document.Masters["B{DAA3F7AE-0468-4270-96D9-9A5ACD0CB612}"] ??
+                     throw new MasterNotFoundException(baseId);
+        // open the targetFile if not opened
+        if (Globals.ThisAddIn.Application.Documents.OfType<IVDocument>().Any(x => x.Path != targetFilePath))
+            Globals.ThisAddIn.Application.Documents.OpenEx(targetFilePath, (short)VisOpenSaveArgs.visOpenDocked);
+
+        var target =
+            Globals.ThisAddIn.Application.Documents.OfType<IVDocument>().Single(x => x.FullName == targetFilePath)
+                .Masters[$"B{baseId}"] ?? throw new MasterNotFoundException(baseId, targetFilePath);
+
+        if (source.Shapes[1].OneD == (int)VBABool.True) return;
+
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
+
+        var undoScope2 = Globals.ThisAddIn.Application.BeginUndoScope(nameof(btnTest));
+        Globals.ThisAddIn.Application.ShowChanges = false;
+
+        //// get the instances in the active document, convert to list as the master will clear after the delete
+        //var instances2 = document.Pages.OfType<IVPage>()
+        //    .SelectMany(x => x.Shapes.OfType<IVShape>()).Where(x => x.Master?.BaseID == baseId).ToList();
+        //if (instances2.Count == 0) return;
+
+        // delete the origin master
+
+
+        Globals.ThisAddIn.Application.ShowChanges = true;
+        Globals.ThisAddIn.Application.EndUndoScope(undoScope2, false);
+        var time2 = stopwatch.Elapsed;
+        stopwatch.Stop();
+        MessageBox.Show(stopwatch.Elapsed.ToString());
     }
 
     private void btnSettings_Click(object sender, RibbonControlEventArgs e)

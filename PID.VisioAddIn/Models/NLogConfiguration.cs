@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using System.Security;
 using System.Xml;
 using NLog;
 using NLog.Common;
@@ -81,7 +82,16 @@ public class NLogConfiguration
             if (File.Exists(NlogConfigFilepath))
                 return; // NLog.config exists, and has already been loaded
 
+            Directory.CreateDirectory(Path.GetDirectoryName(NlogConfigFilepath)!);
             File.WriteAllText(NlogConfigFilepath, Resources.NLog_config);
+        }
+        catch (PathTooLongException pathTooLongException)
+        {
+            throw;
+        }
+        catch (SecurityException securityException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

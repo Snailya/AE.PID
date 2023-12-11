@@ -44,11 +44,15 @@
             this.btnFlatten = this.Factory.CreateRibbonButton();
             this.grpAbout = this.Factory.CreateRibbonGroup();
             this.btnSettings = this.Factory.CreateRibbonButton();
+            this.grpDebug = this.Factory.CreateRibbonGroup();
+            this.button1 = this.Factory.CreateRibbonButton();
+            this.button3 = this.Factory.CreateRibbonButton();
             this.button2 = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.grpEdit.SuspendLayout();
             this.grpExport.SuspendLayout();
             this.grpAbout.SuspendLayout();
+            this.grpDebug.SuspendLayout();
             this.SuspendLayout();
             // 
             // tab1
@@ -57,6 +61,7 @@
             this.tab1.Groups.Add(this.grpEdit);
             this.tab1.Groups.Add(this.grpExport);
             this.tab1.Groups.Add(this.grpAbout);
+            this.tab1.Groups.Add(this.grpDebug);
             this.tab1.Label = "AE PID";
             this.tab1.Name = "tab1";
             // 
@@ -130,6 +135,25 @@
             this.btnSettings.ScreenTip = "打开配置文件";
             this.btnSettings.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnSettings_Click);
             // 
+            // grpDebug
+            // 
+            this.grpDebug.Items.Add(this.button1);
+            this.grpDebug.Items.Add(this.button3);
+            this.grpDebug.Label = "group1";
+            this.grpDebug.Name = "grpDebug";
+            // 
+            // button1
+            // 
+            this.button1.Label = "button1";
+            this.button1.Name = "button1";
+            this.button1.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnTest);
+            // 
+            // button3
+            // 
+            this.button3.Label = "button1";
+            this.button3.Name = "button3";
+            this.button3.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnTest2);
+            // 
             // button2
             // 
             this.button2.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
@@ -153,6 +177,8 @@
             this.grpExport.PerformLayout();
             this.grpAbout.ResumeLayout(false);
             this.grpAbout.PerformLayout();
+            this.grpDebug.ResumeLayout(false);
+            this.grpDebug.PerformLayout();
             this.ResumeLayout(false);
 
 		}
@@ -170,6 +196,9 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnLibrary;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnSettings;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnSynchronizeToLibrary;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup grpDebug;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton button1;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton button3;
     }
 
     partial class ThisRibbonCollection

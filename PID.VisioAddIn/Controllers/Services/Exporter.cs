@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Subjects;
 using System.Text;
 using System.Windows.Forms;
 using AE.PID.Models;
@@ -16,21 +17,27 @@ namespace AE.PID.Controllers.Services;
 /// <summary>
 ///     Dealing with extracting data from shape sheet and export that data into different format in excel.
 /// </summary>
-public class ExportService
+public class Exporter
 {
-    private readonly Configuration _config;
-    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+    public static Subject<IVPage> ManuallyInvokeTrigger { get; } = new();
 
-    public ExportService(Configuration configuration)
+    /// <summary>
+    ///     Emit a value manually
+    /// </summary>
+    /// <param name="page"></param>
+    public static void Invoke(IVPage page)
     {
-        _config = configuration;
+        ManuallyInvokeTrigger.OnNext(page);
     }
-
+    
     /// <summary>
     ///     extract data from shapes on layers defined in config and group them as BOM items.
     /// </summary>
-    public void SaveAsBom()
+    public static void SaveAsBom(IVPage page)
     {
+        var logger = LogManager.GetCurrentClassLogger();
+        var configuration = Globals.ThisAddIn.Configuration;
+        
         var dialog = new SaveFileDialog
         {
             InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
@@ -41,12 +48,12 @@ public class ExportService
 
         try
         {
-            if (_config.ExportSettings.BOMLayers is null)
+            if (configuration.ExportSettings.BOMLayers is null)
                 throw new BOMLayersNullException();
-            
-            var selection = Globals.ThisAddIn.Application.ActivePage
+
+            var selection = page
                 .CreateSelection(VisSelectionTypes.visSelTypeByLayer, VisSelectMode.visSelModeSkipSuper,
-                    string.Join(";", _config.ExportSettings.BOMLayers));
+                    string.Join(";", configuration.ExportSettings.BOMLayers));
 
             var partItems = new List<PartItem>();
             foreach (IVShape shape in selection)
@@ -89,17 +96,16 @@ public class ExportService
             // write to xlsx
             MiniExcel.SaveAsByTemplate(dialog.FileName, Resources.BOM_template, new { parts = extendPartItems });
 
-            // 
-            MessageBox.Show("执行成功");
+            MessageBox.Show("导出成功");
         }
         catch (Exception ex)
         {
-            _logger.LogUsefulException(ex);
-            MessageBox.Show($"执行失败:{ex.Message}");
+            logger.LogUsefulException(ex);
+            MessageBox.Show($"导出失败:{ex.Message}");
         }
     }
 
-    private string GetTechnicalData(IVShape shape)
+    private static string GetTechnicalData(IVShape shape)
     {
         StringBuilder stringBuilder = new();
 
@@ -126,7 +132,7 @@ public class ExportService
         return stringBuilder.ToString();
     }
 
-    private string TryGetFormatValue(IVShape shape, string propName)
+    private static string TryGetFormatValue(IVShape shape, string propName)
     {
         var existsAnywhere = shape.CellExists[propName, (short)VisExistsFlags.visExistsAnywhere] ==
                              (short)VBABool.True;

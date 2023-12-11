@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
@@ -19,18 +20,13 @@ public class ShapeSelectionViewModel : ReactiveObject
 
     public ShapeSelectionViewModel()
     {
-        var selectService = Globals.ThisAddIn.SelectService;
-
-        // todo: load source from service, better to refactor to observe on document stencil change.
-        Masters = new ObservableCollection<MasterViewModel>(SelectService.GetMastersSource()
-            .Select(x => new MasterViewModel { BaseId = x.BaseID, Name = x.Name }));
-
-        // create a select shape by id command executable only when id > 0 and selection mode is by id
+        Masters = new ObservableCollection<MasterViewModel>(Selector.GetMastersSource());
+        
         var canSelectShapeById = this.WhenAnyValue(
             x => x.IsByIdChecked,
             x => x.ShapeId,
             (isChecked, id) => isChecked && id > 0);
-        var selectShapeById = ReactiveCommand.Create(() => SelectService.SelectShapeById(_shapeId), canSelectShapeById);
+        var selectShapeById = ReactiveCommand.Create(() => Selector.SelectShapeById(_shapeId), canSelectShapeById);
         selectShapeById.ThrownExceptions.Subscribe(error => MessageBox.Show(error.Message));
 
         // create a by masters command executable only when masters in list selected and mode is by master
@@ -42,14 +38,14 @@ public class ShapeSelectionViewModel : ReactiveObject
                 (isChecked, hasSelection) => isChecked & hasSelection);
         var selectShapesByMasters =
             ReactiveCommand.Create(
-                () => SelectService.SelectShapesByMasters(Masters.Where(x => x.IsChecked).Select(x => x.BaseId)),
+                () => Selector.SelectShapesByMasters(Masters.Where(x => x.IsChecked).Select(x => x.BaseId)),
                 canSelectShapesByMaster);
         selectShapesByMasters.ThrownExceptions.Subscribe(error => MessageBox.Show(error.Message));
 
         // todo: don't know if this is the better way to execute a set of command if any of them can execute. or to say bind two command to a button.
         Select = ReactiveCommand.Create(() =>
             {
-                selectService.CloseShapeSelectPromptWindow();
+                Selector.CloseShapeSelectPromptWindow();
                 return Unit.Default;
             },
             canSelectShapeById.CombineLatest(canSelectShapesByMaster, (canById, canByMaster) => canById | canByMaster));
@@ -57,9 +53,9 @@ public class ShapeSelectionViewModel : ReactiveObject
         Select.InvokeCommand(selectShapesByMasters);
 
         // close window command
-        Cancel = ReactiveCommand.Create(selectService.CloseShapeSelectPromptWindow);
+        Cancel = ReactiveCommand.Create(Selector.CloseShapeSelectPromptWindow);
     }
-
+    
     /// <summary>
     ///     The master options for use to choose in by master mode.
     /// </summary>

@@ -1,4 +1,7 @@
-﻿using System.Reactive.Disposables;
+﻿using System;
+using System.Collections.Generic;
+using System.Reactive;
+using System.Reactive.Disposables;
 using AE.PID.ViewModels;
 using ReactiveUI;
 
@@ -12,10 +15,10 @@ public partial class ShapeSelectionView : ReactiveUserControl<ShapeSelectionView
     public ShapeSelectionView()
     {
         InitializeComponent();
-        ViewModel = new ShapeSelectionViewModel();
-
+        
         this.WhenActivated(disposableRegistration =>
         {
+            ViewModel = new ShapeSelectionViewModel();
             this.Bind(ViewModel, viewModel => viewModel.IsByIdChecked, view => view.ByIdButton.IsChecked)
                 .DisposeWith(disposableRegistration);
             this.Bind(ViewModel, viewModel => viewModel.IsByMastersChecked, view => view.ByMasterButton.IsChecked)
@@ -34,5 +37,13 @@ public partial class ShapeSelectionView : ReactiveUserControl<ShapeSelectionView
                     view => view.MastersListView.IsEnabled)
                 .DisposeWith(disposableRegistration);
         });
+
+        this.WhenAnyObservable(x => x.ViewModel.Cancel).Subscribe(x=> this.Close());
+
+    }
+
+    private void Close()
+    {
+        
     }
 }

@@ -16,11 +16,19 @@ public class Configuration
     [JsonIgnore] public NLogConfiguration NLogConfig;
 
     /// <summary>
+    /// The next time checking for app update.
+    /// </summary>
+    public DateTime NextCheck { get; set; }
+
+#if DEBUG
+    [JsonIgnore] public string Api { get; set; } = "http://localhost:32768";
+#else
+    /// <summary>
     ///     The base url for server.
     /// </summary>
     [JsonIgnore]
     public string Api { get; set; } = "http://172.18.128.104:32768";
-
+#endif
     /// <summary>
     ///     The version of the app which used to check for update of the app.
     /// </summary>
@@ -60,13 +68,15 @@ public class Configuration
             try
             {
                 var configContent = File.ReadAllText(GetConfigurationPath());
-                config = JsonSerializer.Deserialize<Configuration>(configContent, new JsonSerializerOptions
-                {
-                    Converters =
+
+                if (!string.IsNullOrEmpty(configContent))
+                    config = JsonSerializer.Deserialize<Configuration>(configContent, new JsonSerializerOptions
                     {
-                        new ConcurrentBagConverter()
-                    }
-                });
+                        Converters =
+                        {
+                            new ConcurrentBagConverter()
+                        }
+                    });
             }
             catch (Exception e)
             {
