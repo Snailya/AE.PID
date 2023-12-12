@@ -8,7 +8,7 @@ namespace AE.PID.ViewModels;
 public class TaskProgressViewModel : ReactiveObject
 {
     private readonly CancellationTokenSource _cts;
-    private double _current;
+    private int _current;
 
     public TaskProgressViewModel(CancellationTokenSource cts)
     {
@@ -21,7 +21,7 @@ public class TaskProgressViewModel : ReactiveObject
         );
     }
 
-    public double Current
+    public int Current
     {
         get => _current;
         set => this.RaiseAndSetIfChanged(ref _current, value);

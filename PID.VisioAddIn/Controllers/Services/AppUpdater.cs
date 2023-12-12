@@ -8,8 +8,15 @@ using NLog;
 
 namespace AE.PID.Controllers.Services;
 
+/// <summary>
+/// Check app version from server and get latest version installer.
+/// </summary>
 public abstract class AppUpdater
 {
+    /// <summary>
+    /// Request the server with current version of the app to check if there's a available update.
+    /// </summary>
+    /// <returns>The check result, if there's an available version, return with the lasted version download url, otherwise with message.</returns>
     public static async Task<AppCheckVersionResult> GetUpdateAsync()
     {
         var configuration = Globals.ThisAddIn.Configuration;
@@ -35,6 +42,11 @@ public abstract class AppUpdater
         return new AppCheckVersionResult { IsUpdateAvailable = false };
     }
 
+    /// <summary>
+    /// Download the installer zip and persist in a local path.
+    /// </summary>
+    /// <param name="downloadUrl"></param>
+    /// <returns>The path of the zip installer.</returns>
     public static async Task<string> CacheAsync(string downloadUrl)
     {
         var client = Globals.ThisAddIn.HttpClient;
@@ -69,6 +81,10 @@ public abstract class AppUpdater
             select part.Substring(part.IndexOf('=') + 1).Trim(' ', '"')).FirstOrDefault();
     }
 
+    /// <summary>
+    /// Open the explorer.exe and select the installer exe.
+    /// </summary>
+    /// <param name="installerPath"></param>
     public static void DoUpdate(string installerPath)
     {
         var logger = LogManager.GetCurrentClassLogger();

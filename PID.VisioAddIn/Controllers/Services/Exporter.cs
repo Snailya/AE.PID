@@ -10,15 +10,17 @@ using Microsoft.Office.Interop.Visio;
 using MiniExcelLibs;
 using NLog;
 using PID.VisioAddIn.Properties;
-using Configuration = AE.PID.Models.Configuration;
 
 namespace AE.PID.Controllers.Services;
 
 /// <summary>
 ///     Dealing with extracting data from shape sheet and export that data into different format in excel.
 /// </summary>
-public class Exporter
+public abstract class Exporter
 {
+    /// <summary>
+    /// Trigger used for ui Button to invoke the update event.
+    /// </summary>
     public static Subject<IVPage> ManuallyInvokeTrigger { get; } = new();
 
     /// <summary>
@@ -29,7 +31,7 @@ public class Exporter
     {
         ManuallyInvokeTrigger.OnNext(page);
     }
-    
+
     /// <summary>
     ///     extract data from shapes on layers defined in config and group them as BOM items.
     /// </summary>
@@ -37,7 +39,7 @@ public class Exporter
     {
         var logger = LogManager.GetCurrentClassLogger();
         var configuration = Globals.ThisAddIn.Configuration;
-        
+
         var dialog = new SaveFileDialog
         {
             InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),

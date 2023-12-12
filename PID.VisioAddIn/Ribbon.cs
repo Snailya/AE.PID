@@ -17,14 +17,12 @@ namespace AE.PID;
 
 public partial class Ribbon
 {
-    private Configuration _config;
     private Logger _logger;
 
 
     private void Ribbon_Load(object sender, RibbonUIEventArgs e)
     {
         _logger = LogManager.GetCurrentClassLogger();
-        _config = Globals.ThisAddIn.Configuration;
     }
 
     private void Ribbon_Close(object sender, EventArgs e)
@@ -146,11 +144,11 @@ public partial class Ribbon
     {
         try
         {
-            foreach (var path in _config.LibraryConfiguration.Libraries.Select(x => x.Path))
+            foreach (var path in Globals.ThisAddIn.Configuration.LibraryConfiguration.Libraries.Select(x => x.Path))
                 Globals.ThisAddIn.Application.Documents.OpenEx(path,
                     (short)VisOpenSaveArgs.visOpenDocked);
 
-            _logger.Info($"Opened {_config.LibraryConfiguration.Libraries.Count} libraries.");
+            _logger.Info($"Opened {Globals.ThisAddIn.Configuration.LibraryConfiguration.Libraries.Count} libraries.");
         }
         catch (Exception ex)
         {
@@ -206,39 +204,6 @@ public partial class Ribbon
 
     private void btnTest2(object sender, RibbonControlEventArgs e)
     {
-        var stopwatch = new Stopwatch();
-        stopwatch.Start();
-
-        var mappings = new List<MasterDocumentLibraryMapping>();
-        var document = Globals.ThisAddIn.Application.ActiveDocument;
-
-        foreach (var source in document.Masters.OfType<IVMaster>().ToList())
-            if (_config.LibraryConfiguration.GetItems().SingleOrDefault(x => x.BaseId == source.BaseID) is
-                    { } item &&
-                item.UniqueId != source.UniqueID)
-                mappings.Add(new MasterDocumentLibraryMapping
-                {
-                    BaseId = source.BaseID,
-                    LibraryPath =
-                        _config.LibraryConfiguration.Libraries.SingleOrDefault(x =>
-                                x.Items.Any(i => i.BaseId == item.BaseId))!
-                            .Path
-                });
-
-        var undoScope = Globals.ThisAddIn.Application.BeginUndoScope(nameof(btnTest));
-
-        Globals.ThisAddIn.Application.ShowChanges = false;
-
-        mappings.ForEach(item => ReplaceMaster(document, item.BaseId, item.LibraryPath));
-        Globals.ThisAddIn.Application.ShowChanges = true;
-
-        Globals.ThisAddIn.Application.EndUndoScope(undoScope, true);
-
-        _logger.Trace("[UpdateMastersAsync] Finished ");
-
-
-        stopwatch.Stop();
-        MessageBox.Show(stopwatch.Elapsed + "单线程");
     }
 
 

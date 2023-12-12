@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
@@ -21,7 +20,7 @@ public class ShapeSelectionViewModel : ReactiveObject
     public ShapeSelectionViewModel()
     {
         Masters = new ObservableCollection<MasterViewModel>(Selector.GetMastersSource());
-        
+
         var canSelectShapeById = this.WhenAnyValue(
             x => x.IsByIdChecked,
             x => x.ShapeId,
@@ -55,7 +54,7 @@ public class ShapeSelectionViewModel : ReactiveObject
         // close window command
         Cancel = ReactiveCommand.Create(Selector.CloseShapeSelectPromptWindow);
     }
-    
+
     /// <summary>
     ///     The master options for use to choose in by master mode.
     /// </summary>

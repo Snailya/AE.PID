@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using AE.PID.ViewModels;
+﻿using AE.PID.ViewModels;
 using ReactiveUI;
 
 namespace AE.PID.Views;
@@ -9,13 +8,14 @@ namespace AE.PID.Views;
 /// </summary>
 public partial class TaskProgressView : ReactiveUserControl<TaskProgressViewModel>
 {
-    public TaskProgressView(CancellationTokenSource cts)
+    public TaskProgressView(TaskProgressViewModel viewModel)
     {
         InitializeComponent();
-        ViewModel = new TaskProgressViewModel(cts);
+        ViewModel = viewModel;
 
         this.WhenActivated(disposableRegistration =>
         {
+            this.OneWayBind(ViewModel, vm => vm.Current, v => v.ProgressBar.Value);
             this.BindCommand(ViewModel, vm => vm.Cancel, v => v.CancelButton);
         });
     }

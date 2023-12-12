@@ -11,11 +11,12 @@ using Window = System.Windows.Window;
 
 namespace AE.PID.Controllers.Services;
 
+/// <summary>
+/// A selection service used for enhance user selection.
+/// </summary>
 public static class Selector
 {
     private static Window _window;
-
-
     static Selector()
     {
         _window = new Window
@@ -33,7 +34,10 @@ public static class Selector
 
         _window.Closed += WindowClosed;
     }
-
+    
+    /// <summary>
+    /// Trigger used for ui Button to invoke the update event.
+    /// </summary>
     public static Subject<IVPage> ManuallyInvokeTrigger { get; } = new();
 
     /// <summary>

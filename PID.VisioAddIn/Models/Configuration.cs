@@ -16,7 +16,7 @@ public class Configuration
     [JsonIgnore] public NLogConfiguration NLogConfig;
 
     /// <summary>
-    /// The next time checking for app update.
+    ///     The next time checking for app update.
     /// </summary>
     public DateTime NextCheck { get; set; }
 
@@ -33,7 +33,7 @@ public class Configuration
     ///     The version of the app which used to check for update of the app.
     /// </summary>
     [JsonIgnore]
-    public Version Version { get; set; } = new(0, 1, 0, 0);
+    public Version Version { get; set; } = new(0, 1, 0, 1);
 
     /// <summary>
     ///     The configuration for library version check.

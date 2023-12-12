@@ -8,6 +8,9 @@ using PID.Core.Dtos;
 
 namespace AE.PID.Controllers.Services;
 
+/// <summary>
+/// Compare local library configuration with the server, and download newest if exist.
+/// </summary>
 public abstract class LibraryUpdater
 {
     public static async Task<IEnumerable<Library>> UpdateLibrariesAsync()

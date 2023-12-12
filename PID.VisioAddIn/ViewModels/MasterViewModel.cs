@@ -12,12 +12,12 @@ public class MasterViewModel : ReactiveObject
     public string BaseId { get; set; }
 
     /// <summary>
-    /// The user friendly name for the master.
+    ///     The user friendly name for the master.
     /// </summary>
     public string Name { get; set; }
 
     /// <summary>
-    /// Indicates whether is selected by user.
+    ///     Indicates whether is selected by user.
     /// </summary>
     public bool IsChecked
     {

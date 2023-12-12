@@ -7,7 +7,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PID.VisioAddIn", "PID.Visio
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "PID.Installer", "PID.Installer\PID.Installer.vdproj", "{C646C71C-0E45-454B-9C14-D927EA483BB8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PID.Core", "PID.Core\PID.Core.csproj", "{63D883E6-9FB9-4D7A-A57A-157173C0D998}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PID.Core", "PID.Core\PID.Core.csproj", "{63D883E6-9FB9-4D7A-A57A-157173C0D998}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PID.Server", "PID.Server\PID.Server.csproj", "{FA179E85-C1AD-451C-85A1-D0F916C7347E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,6 +27,10 @@ Global
 		{63D883E6-9FB9-4D7A-A57A-157173C0D998}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{63D883E6-9FB9-4D7A-A57A-157173C0D998}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{63D883E6-9FB9-4D7A-A57A-157173C0D998}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA179E85-C1AD-451C-85A1-D0F916C7347E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA179E85-C1AD-451C-85A1-D0F916C7347E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA179E85-C1AD-451C-85A1-D0F916C7347E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA179E85-C1AD-451C-85A1-D0F916C7347E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

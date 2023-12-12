@@ -13,7 +13,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <ProgressBar x:Name="ProgressBar" Height="24" Margin="16 8" IsIndeterminate="True" />
+        <ProgressBar x:Name="ProgressBar" Height="24" Margin="16 8" />
         <Button Grid.Row="1" x:Name="CancelButton" Content="取消" Width="48" Margin="16 8 16 16" />
     </Grid>
 
