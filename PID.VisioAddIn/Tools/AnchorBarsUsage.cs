@@ -14,7 +14,7 @@ internal class AnchorBarsUsage
     ///     GUID that identifies the custom anchor window when it
     ///     is merged.
     /// </summary>
-    private const string customMergeId =
+    private const string CustomMergeId =
         "{6D5829C6-57E6-4BC7-8451-A27C936AEBC2}";
 
     /// <summary>This constructor is intentionally left blank.</summary>
@@ -30,30 +30,25 @@ internal class AnchorBarsUsage
         const string anchorBarTitle = "AE PID 工具箱";
         const string anchorBarMergeTitle = "PID";
 
-        var result = false;
-        Window anchorWindow;
-        object windowStates;
-        object windowTypes;
-
         try
         {
             // The anchor bar will be docked to the right of the app window if using visWSCockedRight.
-            // If visWSAnchorRight is used, it will apear at the right side inside the drawing window.
-            windowStates = VisWindowStates.visWSDockedRight | VisWindowStates.visWSVisible;
+            // If visWSAnchorRight is used, it will appear at the right side inside the drawing window.
+            object windowStates = VisWindowStates.visWSDockedRight | VisWindowStates.visWSVisible;
 
-            // The anchor bar is a window centerd by an add-on
-            windowTypes = VisWinTypes.visAnchorBarAddon;
+            // The anchor bar is a window centered by an add-on
+            object windowTypes = VisWinTypes.visAnchorBarAddon;
 
             // Add a custom anchor bar window
-            anchorWindow = AddAnchorWindow(visioApplication, anchorBarTitle, windowStates, windowTypes);
+            var anchorWindow = AddAnchorWindow(visioApplication, anchorBarTitle, windowStates, windowTypes);
 
             // set contents
-            var content = new PIDToolsHost();
+            var content = new HostForm();
 
             AddFormToAnchorWindow(anchorWindow, content);
 
             // Set MergeId allows the anchor bar window to be identified when it is merged with another window.
-            anchorWindow.MergeID = customMergeId;
+            anchorWindow.MergeID = CustomMergeId;
 
             // Allow the anchor window to be merged with other windows that have a zero-length MergeClass property value
             anchorWindow.MergeClass = "";
@@ -69,25 +64,23 @@ internal class AnchorBarsUsage
             throw;
         }
 
-        return result;
+        return false;
     }
 
     private static void AddFormToAnchorWindow(Window anchorWindow, Form content)
     {
-        int windowHandle;
-
         try
         {
             // Show the contents as a modeless dialog
             content.Show();
 
             // Get the window handle of the form
-            windowHandle = content.Handle.ToInt32();
+            var windowHandle = content.Handle.ToInt32();
 
             // Set the form as a visible child window
             if (NativeMethods.SetWindowLongW(windowHandle, NativeMethods.GWL_STYLE,
                     NativeMethods.WS_CHILD | NativeMethods.WS_VISIBLE) == 0 &&
-                Marshal.GetLastWin32Error() != 0) throw new Exception("Can not set windowslong");
+                Marshal.GetLastWin32Error() != 0) throw new Exception("Can not SetWindowLongW");
 
             // Set the anchor bar window as the parent of the form 
             if (NativeMethods.SetParent(windowHandle, anchorWindow.WindowHandle32) == 0)
@@ -110,7 +103,7 @@ internal class AnchorBarsUsage
     private static Window AddAnchorWindow(Application visioApplication, string caption, object windowStates,
         object windowTypes)
     {
-        Window anchorWindow = null;
+        Window anchorWindow;
 
         try
         {

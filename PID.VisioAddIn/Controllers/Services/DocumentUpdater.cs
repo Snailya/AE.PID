@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Packaging;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Xml.Linq;
@@ -10,6 +12,7 @@ using AE.PID.Models;
 using AE.PID.Models.Exceptions;
 using Microsoft.Office.Interop.Visio;
 using NLog;
+using Path = System.IO.Path;
 
 namespace AE.PID.Controllers.Services;
 
@@ -18,6 +21,8 @@ namespace AE.PID.Controllers.Services;
 /// </summary>
 public abstract class DocumentUpdater
 {
+    private static Logger _logger = LogManager.GetCurrentClassLogger();
+
     /// <summary>
     /// Trigger used for ui Button to invoke the update event.
     /// </summary>
@@ -58,7 +63,7 @@ public abstract class DocumentUpdater
 
         return mappings;
     }
-    
+
     /// <summary>
     ///     Update a document's document stencil by overwrite the masters.xml and related master{i}.xml file in background
     /// </summary>
@@ -92,7 +97,7 @@ public abstract class DocumentUpdater
                     var relId = relElement.Attribute(XmlHelper.RelNs + "id")!.Value;
                     var rel = mastersPartInTarget.GetRelationship(relId);
                     var masterPart = targetPackage.GetPart(PackUriHelper.ResolvePartUri(rel.SourceUri, rel.TargetUri));
-                    var mapping = new PackageMapping(baseId, masterElement, XmlHelper.GetXmlFromPart(masterPart));
+                    var mapping = new PackageMapping(masterElement, XmlHelper.GetXmlFromPart(masterPart));
                     packageMappings.Add(baseId, mapping);
                 }
             }
@@ -106,6 +111,8 @@ public abstract class DocumentUpdater
             var masterElements = XmlHelper.GetXElementsByName(mastersXmlInSource, "Master").ToList();
             for (var index = 0; index < masterElements.Count; index++)
             {
+                progress.Report(index * 100 / masterElements.Count);
+
                 var masterElement = masterElements[index];
                 if (token.IsCancellationRequested)
                 {
@@ -134,12 +141,52 @@ public abstract class DocumentUpdater
 
                 // overwrite the origin masterElement
                 masterElement.ReplaceWith(mapping.MasterElement);
-
-                progress.Report((index + 1) * 100 / masterElements.Count);
             }
+
+            progress.Report(100);
 
             XmlHelper.SaveXDocumentToPart(mastersPartInSource, mastersXmlInSource);
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="filePath"></param>
+    public static void PostProcess(string filePath)
+    {
+        // open all stencils 
+        foreach (var path in Globals.ThisAddIn.Configuration.LibraryConfiguration.Libraries
+                     .Select(x => x.Path))
+            Globals.ThisAddIn.Application.Documents.OpenEx(path,
+                (short)VisOpenSaveArgs.visOpenDocked);
+
+        _logger.Info(
+            $"Document masters updated successfully.");
+
+        ThisAddIn.Alert("更新成功，请在新文件打开后手动另存。");
+        Globals.ThisAddIn.Application.Documents.OpenEx(filePath,
+            (short)VisOpenSaveArgs.visOpenRW);
+    }
+
+    /// <summary>
+    /// Close all opened document in docked window to prevent document busy, copy the source file to a temporary path.
+    /// </summary>
+    /// <param name="document"></param>
+    /// <returns></returns>
+    public static string Preprocessing(IVDocument document)
+    {
+        foreach (var doc in
+                 Globals.ThisAddIn.Application.Documents.OfType<IVDocument>()
+                     .Where(doc => doc.Type == VisDocumentTypes.visTypeStencil).ToList())
+            doc.Close();
+
+        // create a copy of source file
+        var copied = Path.Combine(Globals.ThisAddIn.DataFolder, "Tmp",
+            Path.ChangeExtension(Path.GetRandomFileName(), "vsdx"));
+        File.Copy(document.FullName, copied);
+
+        return copied;
     }
 
     /// <summary>
@@ -179,7 +226,7 @@ public abstract class DocumentUpdater
 
             Globals.ThisAddIn.Application.EndUndoScope(undoScope, true);
         }
-        catch (Exception e)
+        catch (Exception)
         {
             Globals.ThisAddIn.Application.EndUndoScope(undoScope, false);
             throw;
@@ -216,7 +263,7 @@ public abstract class DocumentUpdater
 
         logger.Debug(
             $"REPLACEMENT [DOCUMENT: {document.Name}] [LIRARYPATH: {targetFilePath}] [NAME: {target.Name}] [BASEID: {baseId}] [UNIQUEID: {source.UniqueID} ===> {target.UniqueID}] [COUNT: {instances.Count}]");
-        
+
         // delete the origin master
         source.Delete();
 
@@ -225,10 +272,9 @@ public abstract class DocumentUpdater
 
         logger.Debug($"REPLACEMENT DONE [NAME: {target.Name}]");
     }
-    
-    private class PackageMapping(string baseId, XElement masterElement, XDocument masterXml)
+
+    private class PackageMapping(XElement masterElement, XDocument masterXml)
     {
-        public string BaseId { get; } = baseId;
         public XElement MasterElement { get; } = masterElement;
         public XDocument MasterXml { get; } = masterXml;
     }

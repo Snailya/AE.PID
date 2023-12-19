@@ -7,7 +7,8 @@
                           xmlns:viewModels="clr-namespace:AE.PID.ViewModels"
                           mc:Ignorable="d"
                           x:TypeArguments="viewModels:TaskProgressViewModel"
-                          d:DesignHeight="150" d:DesignWidth="300">
+                          MinHeight="120" MinWidth="320"
+                          d:DesignHeight="120" d:DesignWidth="320">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />

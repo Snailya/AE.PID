@@ -6,39 +6,26 @@ using ReactiveUI;
 
 namespace AE.PID.Views;
 
-public partial class UserSettingsView
+public partial class ExportView
 {
-    public UserSettingsView()
+    public ExportView()
     {
         InitializeComponent();
-        ViewModel = new UserSettingsViewModel();
+        ViewModel = new ExportViewModel();
 
         this.WhenActivated(disposableRegistration =>
         {
-            this.OneWayBind(ViewModel,
-                    vm => vm.CheckFrequencyOptions,
-                    v => v.AppCheckFrequencySelector.ItemsSource)
+            this.Bind(ViewModel, vm => vm.CustomerName,
+                    v => v.CustomerNameInput.Text)
                 .DisposeWith(disposableRegistration);
-            this.Bind(ViewModel,
-                    vm => vm.AppNextCheckFrequency,
-                    v => v.AppCheckFrequencySelector.SelectedItem)
+            this.Bind(ViewModel, vm => vm.DocumentNo,
+                    v => v.DocNoInput.Text)
                 .DisposeWith(disposableRegistration);
-            this.BindCommand(ViewModel,
-                    vm => vm.CheckForAppUpdate,
-                    v => v.AppCheckUpdateButton)
+            this.Bind(ViewModel, vm => vm.ProjectNo,
+                    v => v.ProjectNoInput.Text)
                 .DisposeWith(disposableRegistration);
-
-            this.OneWayBind(ViewModel,
-                    vm => vm.CheckFrequencyOptions,
-                    v => v.LibraryCheckFrequencySelector.ItemsSource)
-                .DisposeWith(disposableRegistration);
-            this.Bind(ViewModel,
-                    vm => vm.LibraryCheckFrequency,
-                    v => v.LibraryCheckFrequencySelector.SelectedItem)
-                .DisposeWith(disposableRegistration);
-            this.BindCommand(ViewModel,
-                    vm => vm.CheckForLibrariesUpdate,
-                    v => v.LibraryCheckUpdateButton)
+            this.Bind(ViewModel, vm => vm.VersionNo,
+                    v => v.VersionNoInput.Text)
                 .DisposeWith(disposableRegistration);
 
             this.BindCommand(ViewModel,

@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Subjects;
-using System.Windows;
-using System.Windows.Interop;
 using AE.PID.ViewModels;
-using AE.PID.Views;
 using Microsoft.Office.Interop.Visio;
-using Window = System.Windows.Window;
 
 namespace AE.PID.Controllers.Services;
 
@@ -16,25 +11,6 @@ namespace AE.PID.Controllers.Services;
 /// </summary>
 public static class Selector
 {
-    private static Window _window;
-    static Selector()
-    {
-        _window = new Window
-        {
-            Width = 300,
-            Height = 300,
-            Content = new ShapeSelectionView(),
-            Title = "选择工具"
-        };
-        var unused = new WindowInteropHelper(_window)
-        {
-            Owner = new IntPtr(Globals.ThisAddIn.Application.WindowHandle32)
-        };
-        _window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-
-        _window.Closed += WindowClosed;
-    }
-    
     /// <summary>
     /// Trigger used for ui Button to invoke the update event.
     /// </summary>
@@ -58,32 +34,6 @@ public static class Selector
         return Globals.ThisAddIn.Application.ActivePage.Document.Masters
             .OfType<IVMaster>()
             .Select(x => new MasterViewModel { BaseId = x.BaseID, Name = x.Name, IsChecked = false });
-    }
-
-    /// <summary>
-    ///     Display a view to let user select select mode.
-    /// </summary>
-    public static void Display()
-    {
-        if (_window.Visibility != Visibility.Visible)
-            _window.Show();
-        _window.Activate();
-    }
-
-    private static void WindowClosed(object sender, EventArgs e)
-    {
-        _window = null;
-    }
-
-    /// <summary>
-    ///     Close window called by command.
-    /// </summary>
-    public static void CloseShapeSelectPromptWindow()
-    {
-        if (_window == null) return;
-
-        _window.Close();
-        _window = null;
     }
 
     /// <summary>

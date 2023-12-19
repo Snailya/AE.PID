@@ -1,6 +1,6 @@
 ﻿using AE.PID.Interfaces;
 
-namespace PID.VisioAddIn.Props;
+namespace AE.PID.Models.VisProps;
 
 public class ActionData(string name, string action, string menu, string @checked = "", bool flyoutChild = false)
     : Prop(name,

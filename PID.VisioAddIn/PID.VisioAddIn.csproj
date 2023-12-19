@@ -364,6 +364,7 @@
         <Compile Include="Controllers\Services\Exporter.cs"/>
         <Compile Include="Controllers\Services\LibraryUpdater.cs"/>
         <Compile Include="Controllers\Services\Selector.cs"/>
+        <Compile Include="Controllers\Services\ConfigurationUpdater.cs"/>
         <Compile Include="Controllers\Services\XmlHelper.cs"/>
         <Compile Include="Converters\ConcurrentBagConverter.cs"/>
         <Compile Include="Interfaces\IActionData.cs"/>
@@ -374,6 +375,7 @@
         <Compile Include="Models\AppCheckVersionResult.cs"/>
         <Compile Include="Models\Exceptions\BOMLayersNullException.cs"/>
         <Compile Include="Models\Exceptions\MasterNotFoundException.cs"/>
+        <Compile Include="Models\UpdatableConfigurationBase.cs"/>
         <Compile Include="Models\LibraryConfiguration.cs"/>
         <Compile Include="Models\LibraryItem.cs"/>
         <Compile Include="Models\PartItem.cs"/>
@@ -391,12 +393,16 @@
             <DesignTime>True</DesignTime>
             <DependentUpon>Resources.resx</DependentUpon>
         </Compile>
+        <Compile Include="ViewModels\ExportViewModel.cs"/>
+        <Compile Include="ViewModels\FrequencyOptionViewModel.cs"/>
         <Compile Include="ViewModels\MasterViewModel.cs"/>
-        <Compile Include="ViewModels\SelectByMasterOptionViewModel.cs"/>
         <Compile Include="ViewModels\ShapeSelectionViewModel.cs"/>
         <Compile Include="ViewModels\TaskProgressViewModel.cs"/>
         <Compile Include="ViewModels\UpdateMasterOptionViewModel.cs"/>
         <Compile Include="ViewModels\UserSettingsViewModel.cs"/>
+        <Compile Include="Views\ExportView.xaml.cs">
+            <DependentUpon>ExportView.xaml</DependentUpon>
+        </Compile>
         <Compile Include="Views\ShapeSelectionView.xaml.cs">
             <DependentUpon>ShapeSelectionView.xaml</DependentUpon>
         </Compile>
@@ -412,26 +418,18 @@
         <Compile Include="Tools\AnchorBarsUsage.cs"/>
         <Compile Include="Tools\NativeMethods.cs"/>
         <Compile Include="Tools\UIHelper.cs"/>
-        <Compile Include="Views\PIDToolsHost.cs">
+        <Compile Include="Views\HostForm.cs">
             <SubType>Form</SubType>
         </Compile>
-        <Compile Include="Views\PIDToolsHost.Designer.cs">
-            <DependentUpon>PIDToolsHost.cs</DependentUpon>
-        </Compile>
-        <Compile Include="Views\ProgressBar.cs">
-            <SubType>Form</SubType>
-        </Compile>
-        <Compile Include="Views\ProgressBar.Designer.cs">
-            <DependentUpon>ProgressBar.cs</DependentUpon>
+        <Compile Include="Views\HostForm.Designer.cs">
+            <DependentUpon>HostForm.cs</DependentUpon>
         </Compile>
         <Compile Include="Properties\AssemblyInfo.cs">
             <SubType>Code</SubType>
         </Compile>
-        <EmbeddedResource Include="Views\PIDToolsHost.resx">
-            <DependentUpon>PIDToolsHost.cs</DependentUpon>
-        </EmbeddedResource>
-        <EmbeddedResource Include="Views\ProgressBar.resx">
-            <DependentUpon>ProgressBar.cs</DependentUpon>
+        <Compile Include="Views\Window.cs"/>
+        <EmbeddedResource Include="Views\HostForm.resx">
+            <DependentUpon>HostForm.cs</DependentUpon>
         </EmbeddedResource>
         <EmbeddedResource Include="Properties\Resources.resx">
             <Generator>ResXFileCodeGenerator</Generator>
@@ -475,6 +473,10 @@
         <AppDesigner Include="Properties\"/>
     </ItemGroup>
     <ItemGroup>
+        <Page Include="Views\ExportView.xaml">
+            <SubType>Designer</SubType>
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
         <Page Include="Views\ShapeSelectionView.xaml">
             <SubType>Designer</SubType>
             <Generator>MSBuild:Compile</Generator>

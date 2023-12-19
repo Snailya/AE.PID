@@ -7,6 +7,75 @@
                           xmlns:viewModels="clr-namespace:AE.PID.ViewModels"
                           mc:Ignorable="d"
                           x:TypeArguments="viewModels:UserSettingsViewModel"
-                          d:DesignHeight="450" d:DesignWidth="800">
-    <Grid />
+                          MinHeight="320" MinWidth="320"
+                          d:DesignHeight="320" d:DesignWidth="320">
+    <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock Margin="4 4 4 4" FontSize="28" Text="设置" />
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid Margin="0 4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Label Content="软件" />
+                    <Separator Grid.Column="1" />
+                </Grid>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Label Content="更新频率" />
+                    <ComboBox Grid.Column="1" x:Name="AppCheckFrequencySelector" DisplayMemberPath="Label" />
+                    <Button Grid.Column="2" x:Name="AppCheckUpdateButton" Margin="8 0" MinWidth="64" Content="检查更新" />
+                </Grid>
+            </Grid>
+            <Grid Grid.Row="1" Margin="0 4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Label Content="库" />
+                    <Separator Grid.Column="1" />
+                </Grid>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Label Content="更新频率" />
+                    <ComboBox Grid.Column="1" x:Name="LibraryCheckFrequencySelector" DisplayMemberPath="Label" />
+                    <Button Grid.Column="2" x:Name="LibraryCheckUpdateButton" Margin="8 0" MinWidth="64" Content="检查更新" />
+                </Grid>
+            </Grid>
+        </Grid>
+        <Separator Grid.Row="2" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="3">
+            <Button x:Name="SubmitButton" Margin="8 8 4 4" MinWidth="64" Content="确定" />
+            <Button x:Name="CancelButton" Margin="4 8 8 4" MinWidth="64" Content="取消" />
+        </StackPanel>
+    </Grid>
 </rxui:ReactiveUserControl>

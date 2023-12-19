@@ -2,9 +2,9 @@
 
 namespace AE.PID.Views;
 
-public partial class PIDToolsHost : Form
+public partial class HostForm : Form
 {
-    public PIDToolsHost()
+    public HostForm()
     {
         InitializeComponent();
     }

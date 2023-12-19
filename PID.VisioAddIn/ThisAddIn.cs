@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading;
@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
+using System.Windows.Shapes;
 using System.Windows.Threading;
 using AE.PID.Controllers;
 using AE.PID.Controllers.Services;
@@ -27,9 +28,11 @@ namespace AE.PID;
 
 public partial class ThisAddIn
 {
-    private readonly object _configurationLock = new();
     private Logger _logger;
     private SynchronizationContext _mainContext;
+    private readonly MainWindow _window = new();
+
+    private const long ManuallyInvokeMagicNumber = -255;
 
     /// <summary>
     ///     The data folder path in Application Data
@@ -49,6 +52,41 @@ public partial class ThisAddIn
     ///     recommended, as it can lead to problems such as socket exhaustion and DNS resolution issues.
     /// </summary>
     public HttpClient HttpClient { get; } = new();
+
+    private void ThisAddIn_Startup(object sender, EventArgs e)
+    {
+        // associate the main tread with a synchronization context so that the main thread would be achieved using SynchronizationContext.Current.
+        SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext());
+        _mainContext = SynchronizationContext.Current;
+
+        // title
+        _window.Title = Resources.Product_name;
+
+        // make the window auto size to it's content
+        _window.SizeToContent = SizeToContent.WidthAndHeight;
+
+        // overwrite the close event to prevent release of this window
+
+
+        // initialize a reusable window to hold WPF controls
+        _ = new WindowInteropHelper(_window)
+        {
+            Owner = new IntPtr(Globals.ThisAddIn.Application.WindowHandle32)
+        };
+        _window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+        // invoke the setup process immediately
+        var setupObservable = Observable.Start(Setup);
+
+        ListenToAppUpdate(setupObservable);
+        ListenToLibraryUpdate(setupObservable);
+        ListenToDocumentMasterUpdate(setupObservable);
+
+        ListenToAdvancedSelection(setupObservable);
+        ListenToExport(setupObservable);
+        ListenToUserSettings(setupObservable);
+    }
+
 
     /// <summary>
     ///     Initialize the configuration and environment setup.
@@ -73,11 +111,11 @@ public partial class ThisAddIn
         }
         catch (UnauthorizedAccessException)
         {
-            _logger.Error("没有权限");
+            _logger.Error("无法完成初始化，因为没有权限。");
         }
         catch (PathTooLongException)
         {
-            _logger.Error("路径名过长，请检查用户自定义安装路径层级结构是否过于复杂。");
+            _logger.Error("无法完成初始化，因为路径名过长，请检查用户自定义安装路径层级结构是否过于复杂。");
         }
         catch (Exception exception)
         {
@@ -85,230 +123,46 @@ public partial class ThisAddIn
         }
     }
 
-    private void ThisAddIn_Startup(object sender, EventArgs e)
+    /// <summary>
+    /// When user click the Settings button on Ribbon, display a UI window for user settings.
+    /// This observable only displays the view, not focus on any subsequent task.
+    /// </summary>
+    /// <param name="setupObservable"></param>
+    /// <returns></returns>
+    private IDisposable ListenToUserSettings(IObservable<Unit> setupObservable)
     {
-        // associate the main tread with a synchronization context so that the main thread would be achieved using SynchronizationContext.Current.
-        SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext());
-        _mainContext = SynchronizationContext.Current;
-
-        // invoke the setup process immediately
-        var setupObservable = Observable.Start(Setup);
-
-        // When setup finished, that means configuration is prepared, request the server to check if there is a valid update.
-        // If so, prompt a MessageBox to let user decide whether to update right now.
-        // As automatic update not implemented, only open the explorer window to let user know there's a update installer.
-        setupObservable
-            .Subscribe(_ =>
+        return setupObservable.Subscribe(
+            _ =>
             {
-                _logger.Info($"App update listener is running.");
+                ConfigurationUpdater.ManuallyInvokeTrigger.Throttle(TimeSpan.FromMilliseconds(300))
+                    .ObserveOn(_mainContext)
+                    .Select(_ =>
+                    {
+                        _window.Content = new UserSettingsView();
+                        _window.Show();
 
-                Observable
-                    .Interval(TimeSpan.FromDays(1))
-                    .Merge(Observable.Return<long>(-1))
-                    .Select(_ => DateTime.Now)
-                    .Where(now => Configuration.NextCheck == null || now > Configuration.NextCheck)
-                    .Select(
-                        _ => Observable
-                            .FromAsync(AppUpdater.GetUpdateAsync)
-                    )
-                    .Concat() // concat to prevent emitting when previous is not handled by user
-                    .Where(result => result.IsUpdateAvailable)
-                    .ObserveOn(Scheduler.CurrentThread)
-                    .Select(result => new
-                        { Info = result, DialogResult = AskForUpdate(result.ReleaseNotes) })
-                    .ObserveOn(TaskPoolScheduler.Default)
-                    .Do(_ => UpdateAppNextCheckTime())
-                    .Where(x => x.DialogResult == DialogResult.Yes)
-                    .Select(x => x.Info)
-                    .SelectMany(result => AppUpdater.CacheAsync(result.DownloadUrl))
-                    .Do(AppUpdater.DoUpdate)
-                    .Subscribe(
-                        value => { _logger.Info($"New version of app cached at {value}"); },
-                        ex =>
-                        {
-                            Alert(ex.Message);
-                            _logger.Error($"App update listener ternimated accidently. [ERROR MESSAGE] {ex.Message} ");
-                        },
-                        () => { _logger.Error("App update listener should never complete."); });
-            });
-
-        // Also, check for libraries in another background thread.
-        // Library updates are in silent as if the update fails, it may update in next round.
-        setupObservable
-            .Subscribe(_ =>
-            {
-                _logger.Info($"Library update listener is running.");
-
-                Observable
-                    .Interval(Configuration.LibraryConfiguration.CheckInterval)
-                    .Merge(Observable.Return<long>(-1))
-                    .Select(_ => DateTime.Now)
-                    .Where(now =>
-                        Configuration.LibraryConfiguration.NextTime == null ||
-                        now > Configuration.LibraryConfiguration.NextTime)
-                    .SelectMany(
-                        _ => Observable
-                            .FromAsync(LibraryUpdater.UpdateLibrariesAsync)
-                    )
-                    .Do(UpdateLibrariesConfiguration)
+                        return Unit.Default;
+                    })
                     .Subscribe(
                         _ => { },
                         ex =>
                         {
                             Alert(ex.Message);
                             _logger.Error(
-                                $"Library update listener ternimated accidently. [ERROR MESSAGE] {ex.Message} ");
+                                $"Configuration updating listener ternimated accidently. [ERROR MESSAGE] {ex.Message} ");
                         },
-                        () => { _logger.Error("Library update listener should never complete."); });
-            });
+                        () => { _logger.Error("Configuration updating listener should never complete."); });
+            }
+        );
+    }
 
-        // initialize the document masters update observable after configuration loaded
-        setupObservable
-            .Subscribe(_ =>
-            {
-                _logger.Info($"Document master update listener is running.");
-
-                Observable
-                    .FromEvent<EApplication_DocumentOpenedEventHandler, Document>(
-                        handler => Globals.ThisAddIn.Application.DocumentOpened += handler,
-                        handler => Globals.ThisAddIn.Application.DocumentOpened -= handler)
-                    .Where(document => document.Type == VisDocumentTypes.visTypeDrawing)
-                    .Merge(DocumentUpdater.ManuallyInvokeTrigger.Throttle(TimeSpan.FromMilliseconds(300)))
-                    .ObserveOn(TaskPoolScheduler.Default)
-                    .SelectMany(document => Task.Run(() => DocumentUpdater.GetUpdatesAsync(document)),
-                        (document, mappings) => new { Document = document, Mappings = mappings })
-                    .Where(data => data.Mappings is not null && data.Mappings.Any())
-                    .Select(result => new
-                        { Info = result, DialogResult = AskForUpdate("检测到文档模具与库中模具不一致，是否立即更新文档模具？") })
-                    .Where(x => x.DialogResult == DialogResult.Yes)
-                    .ObserveOn(_mainContext)
-                    .Select(x =>
-                    {
-                        // close all document 
-                        foreach (var document in 
-                        Globals.ThisAddIn.Application.Documents.OfType<IVDocument>().Where(x=>x.Type == VisDocumentTypes.visTypeStencil).ToList())
-                            document.Close();
-   
-                        return x.Info;
-                    })
-                    .Subscribe(
-                        next =>
-                        {
-                            _logger.Info(
-                                $"Try updating {next.Document.FullName}, {next.Mappings.Count()} masters need updates.");
-
-                            // initialize a cts as it's a long time consumed task that user might not want to wait until it finished.
-                            var cts = new CancellationTokenSource();
-                            var vm = new TaskProgressViewModel(cts);
-
-                            // create a window center Visio App
-                            var taskProgressWindow = new Window
-                            {
-                                Width = 300,
-                                Height = 150,
-                                Content = new TaskProgressView(vm),
-                                Title = "更新文档模具"
-                            };
-
-                            var unused = new WindowInteropHelper(taskProgressWindow)
-                            {
-                                Owner = new IntPtr(Globals.ThisAddIn.Application.WindowHandle32)
-                            };
-                            taskProgressWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-
-                            // create a copy of source file
-                            var copied = Path.Combine(Globals.ThisAddIn.DataFolder, "Tmp",
-                                Path.ChangeExtension(Path.GetRandomFileName(), "vsdx"));
-                            File.Copy(next.Document.FullName, copied);
-
-                            // do updates in a background thread thought VISIO is STA, but still could do in a single thread without concurrent
-                            var updateObservable = Observable.Create<int>(async observer =>
-                            {
-                                try
-                                {
-                                    var progress = new Progress<int>(observer.OnNext);
-
-                                    await Task.Run(
-                                        () => DocumentUpdater.DoUpdatesByOpenXml(copied, next.Mappings, progress,
-                                            cts.Token),
-                                        cts.Token);
-                                    observer.OnCompleted();
-                                }
-                                catch (Exception exception)
-                                {
-                                    observer.OnError(exception);
-                                }
-
-                                // if the subscription to this observable is disposed, the task should also be canceled as it is not monitor by anyone
-                                return () => cts.Cancel();
-                            });
-
-                            var subscription = updateObservable.ObserveOn(_mainContext).Subscribe(
-                                value => { vm.Current = value; },
-                                ex =>
-                                {
-                                    taskProgressWindow.Close();
-
-                                    // if it is a OperationCanceledException it should be treat as normal
-                                    if (ex is OperationCanceledException) return;
-
-                                    Alert(ex.Message);
-                                    _logger.Error(
-                                        $"Update document masters failed. [ERROR MESSAGE] {ex.Message} ");
-                                },
-                                () =>
-                                {
-                                    taskProgressWindow.Close();
-
-                                    // open all stencils 
-                                    foreach (var path in Globals.ThisAddIn.Configuration.LibraryConfiguration.Libraries.Select(x => x.Path))
-                                        Globals.ThisAddIn.Application.Documents.OpenEx(path,
-                                            (short)VisOpenSaveArgs.visOpenDocked);
-
-                                    _logger.Info(
-                                        $"Document masters updated successfully.");
-                                    
-                                    Alert("更新成功，请在新文件打开后手动另存。");
-                                    Globals.ThisAddIn.Application.Documents.OpenEx(copied,
-                                        (short)VisOpenSaveArgs.visOpenRW);
-                                });
-
-                            // Optionally handle subscription disposal, e.g., when the window is closed
-                            taskProgressWindow.Closed += (_, _) => subscription.Dispose();
-
-                            // show a progress bar while executing this long running task
-                            taskProgressWindow.Show();
-                        },
-                        ex =>
-                        {
-                            Alert(ex.Message);
-                            _logger.Error(
-                                $"Document master update listener ternimated accidently. [ERROR MESSAGE] {ex.Message} ");
-                        },
-                        () => { _logger.Error("Document master update listener should never complete."); });
-            });
-
-        setupObservable
-            .Subscribe(
-                _ =>
-                {
-                    _logger.Info($"Export listener is running.");
-
-                    Exporter.ManuallyInvokeTrigger.Throttle(TimeSpan.FromMilliseconds(300))
-                        .Subscribe(
-                            _ => { Exporter.SaveAsBom(Globals.ThisAddIn.Application.ActivePage); },
-                            ex =>
-                            {
-                                Alert(ex.Message);
-                                _logger.Error(
-                                    $"Export listener ternimated accidently. [ERROR MESSAGE] {ex.Message} ");
-                            },
-                            () => { _logger.Error("Export listener should never complete."); }
-                        );
-                }
-            );
-
-        // todo: do not initialize selector in ui thread, as it will block thread, consider to remove the window in it outside, thus need to know how to control window close from viewmodel
+    /// <summary>
+    /// When user click the Selection tool button on Ribbon, display a UI window to give user advanced selection.
+    /// This observable only displays the view, not focus on any subsequent task.
+    /// </summary>
+    /// <param name="setupObservable"></param>
+    private void ListenToAdvancedSelection(IObservable<Unit> setupObservable)
+    {
         setupObservable
             .ObserveOn(_mainContext)
             .Subscribe(
@@ -318,8 +172,15 @@ public partial class ThisAddIn
 
                     Selector.ManuallyInvokeTrigger.Throttle(TimeSpan.FromMilliseconds(300))
                         .ObserveOn(_mainContext)
+                        .Select(_ =>
+                        {
+                            _window.Content = new ShapeSelectionView();
+                            _window.Show();
+
+                            return Unit.Default;
+                        })
                         .Subscribe(
-                            _ => { Selector.Display(); },
+                            _ => { },
                             ex =>
                             {
                                 Alert(ex.Message);
@@ -332,6 +193,226 @@ public partial class ThisAddIn
             );
     }
 
+    /// <summary>
+    /// When user click on Export button on Ribbon, display a export view to let user supply extra info.
+    /// All subsequent procedures are invoked by ViewModel.
+    /// </summary>
+    /// <param name="setupObservable"></param>
+    private IDisposable ListenToExport(IObservable<Unit> setupObservable)
+    {
+        return setupObservable
+            .Subscribe(
+                _ =>
+                {
+                    _logger.Info($"Export listener is running.");
+
+                    Exporter.ManuallyInvokeTrigger.Throttle(TimeSpan.FromMilliseconds(300))
+                        .ObserveOn(_mainContext)
+                        .Select(_ =>
+                        {
+                            _window.Content = new ExportView();
+                            _window.Show(); // this observable only display the view, not focus on any task
+
+                            return Unit.Default;
+                        })
+                        .Subscribe(
+                            _ => { },
+                            ex =>
+                            {
+                                Alert(ex.Message);
+                                _logger.Error(
+                                    $"Export listener ternimated accidently. [ERROR MESSAGE] {ex.Message} ");
+                            },
+                            () => { _logger.Error("Export listener should never complete."); }
+                        );
+                }
+            );
+    }
+
+    /// <summary>
+    /// Listen to both document open event and user click event to monitor if a document master update is needed.
+    /// The update process is done on a background thread using OpenXML, so it is extremely fast.
+    /// However, a progress bar still provided in case a long time run needed in the future.
+    /// </summary>
+    /// <param name="setupObservable"></param>
+    private IDisposable ListenToDocumentMasterUpdate(IObservable<Unit> setupObservable)
+    {
+        return setupObservable
+            .Subscribe(_ =>
+            {
+                _logger.Info($"Document master update listener is running.");
+
+                // document open event
+                Observable
+                    .FromEvent<EApplication_DocumentOpenedEventHandler, Document>(
+                        handler => Globals.ThisAddIn.Application.DocumentOpened += handler,
+                        handler => Globals.ThisAddIn.Application.DocumentOpened -= handler)
+                    .Where(document => document.Type == VisDocumentTypes.visTypeDrawing)
+                    // manually invoke from ribbon
+                    .Merge(DocumentUpdater.ManuallyInvokeTrigger.Throttle(TimeSpan.FromMilliseconds(300)))
+                    .ObserveOn(TaskPoolScheduler.Default)
+                    // compare with library
+                    .SelectMany(document => Task.Run(() => DocumentUpdater.GetUpdatesAsync(document)),
+                        (document, mappings) => new { Document = document, Mappings = mappings })
+                    .Where(data => data.Mappings is not null && data.Mappings.Any())
+                    // prompt user decision
+                    .Select(result => new
+                        { Info = result, DialogResult = AskForUpdate("检测到文档模具与库中模具不一致，是否立即更新文档模具？") })
+                    .Where(x => x.DialogResult == DialogResult.Yes)
+                    .ObserveOn(_mainContext)
+                    // close all document stencils to avoid occupied
+                    .Select(x => new { FilePath = DocumentUpdater.Preprocessing(x.Info.Document), x.Info.Mappings })
+                    // display a progress bar to do time-consuming operation
+                    .Select(data =>
+                    {
+                        ShowProgressWhileActing(_window,
+                            (progress, token) =>
+                            {
+                                DocumentUpdater.DoUpdatesByOpenXml(data.FilePath, data.Mappings, progress, token);
+                                DocumentUpdater.PostProcess(data.FilePath);
+                            });
+                        return Unit.Default;
+                    })
+                    .Subscribe(
+                        _ => { },
+                        ex =>
+                        {
+                            Alert(ex.Message);
+                            _logger.Error(
+                                $"Document master update listener ternimated accidently. [ERROR MESSAGE] {ex.Message} ");
+                        },
+                        () => { _logger.Error("Document master update listener should never complete."); });
+            });
+    }
+
+    /// <summary>
+    /// Automatically check the server for library updates and done in slient.
+    /// The check interval is control by configuration.
+    /// </summary>
+    /// <param name="setupObservable"></param>
+    /// <returns></returns>
+    private IDisposable ListenToLibraryUpdate(IObservable<Unit> setupObservable)
+    {
+        return setupObservable
+            .Subscribe(_ =>
+            {
+                _logger.Info($"Library update listener is running.");
+
+                // auto check observable
+                Configuration.LibraryConfiguration.CheckIntervalSubject
+                    .Select(Observable.Interval)
+                    .Switch()
+                    .Merge(Observable.Return<long>(-1))
+                    .Where(_ =>
+                        Configuration.LibraryConfiguration.NextTime == null ||
+                        DateTime.Now > Configuration.LibraryConfiguration.NextTime)
+                    // merge with user manually invoke observable
+                    .Merge(
+                        LibraryUpdater.ManuallyInvokeTrigger.Throttle(TimeSpan.FromMilliseconds(300))
+                            .Select(_ => ManuallyInvokeMagicNumber)
+                    )
+                    // perform check
+                    .SelectMany(
+                        _ => Observable
+                            .FromAsync(LibraryUpdater.UpdateLibrariesAsync),
+                        (value, result) => new { InvokeType = value, Result = result }
+                    )
+                    // notify user if need
+                    .Select(data =>
+                    {
+                        // prompt an alert to let user know update completed if it's invoked by user.
+                        if (data.InvokeType == ManuallyInvokeMagicNumber)
+                            Alert("更新完毕");
+
+                        _logger.Info($"Updated {data.Result.Count} libraries.");
+                        return data.Result;
+                    })
+                    // as http request may have error, retry for next emit
+                    .Retry(3)
+                    // for error handling only
+                    .Subscribe(
+                        _ => { },
+                        ex =>
+                        {
+                            Alert(ex.Message);
+                            _logger.Error(
+                                $"Library update listener ternimated accidently. [ERROR MESSAGE] {ex.Message} ");
+                        },
+                        () => { _logger.Error("Library update listener should never complete."); });
+            });
+    }
+
+    /// <summary>
+    /// When setup finished, that means configuration is prepared, request the server to check if there is a valid update.
+    /// If so, prompt a MessageBox to let user decide whether to update right now.
+    /// As automatic update not implemented, only open the explorer window to let user know there's a update installer.
+    /// </summary>
+    /// <param name="setupObservable"></param>
+    private IDisposable ListenToAppUpdate(IObservable<Unit> setupObservable)
+    {
+        return setupObservable
+            .Subscribe(_ =>
+            {
+                _logger.Info($"App update listener is running.");
+
+                // auto check
+                Configuration.CheckIntervalSubject
+                    .Select(Observable.Interval)
+                    .Switch()
+                    .Merge(Observable
+                        .Return<
+                            long>(-1)) // add a immediately value as the interval method emits only after the interval collapse.
+                    .Where(_ =>
+                        Configuration.NextTime == null ||
+                        DateTime.Now > Configuration.NextTime) // ignore if it not till the next check time
+                    // merge with user invoke
+                    .Merge(
+                        AppUpdater.ManuallyInvokeTrigger.Throttle(TimeSpan.FromMilliseconds(300))
+                            .Select(_ => ManuallyInvokeMagicNumber)
+                    )
+                    // check for update
+                    .SelectMany(value => Observable.FromAsync(AppUpdater.GetUpdateAsync),
+                        (value, result) => new { InvokeType = value, Result = result })
+                    // notify user for no update
+                    .ObserveOn(_mainContext)
+                    .Select(data =>
+                    {
+                        // prompt an alert to let user know no update needed if it is manually triggered
+                        if (data.InvokeType == ManuallyInvokeMagicNumber && !data.Result.IsUpdateAvailable)
+                            Alert("这就是最新版本。");
+
+                        return data.Result;
+                    })
+                    // notify user to decide when to update
+                    .Where(data => data.IsUpdateAvailable) // filter only valid update
+                    .Select(data => new
+                    {
+                        Info = data,
+                        DialogResult = AskForUpdate("发现新版本。" +
+                                                    Environment.NewLine +
+                                                    data.ReleaseNotes +
+                                                    Environment.NewLine + Environment.NewLine +
+                                                    "请在控制面板中卸载旧程序后重新安装。")
+                    })
+                    .ObserveOn(TaskPoolScheduler.Default)
+                    .Where(x => x.DialogResult == DialogResult.Yes)
+                    // perform update
+                    .SelectMany(result => AppUpdater.CacheAsync(result.Info.DownloadUrl))
+                    .Do(path => _logger.Info($"New version of app cached at {path}"))
+                    .Do(AppUpdater.PromptManuallyUpdate)
+                    // as http request may have error, retry for next emit
+                    .Retry(3)
+                    .Subscribe(
+                        _ => { },
+                        ex =>
+                        {
+                            Alert(ex.Message);
+                            _logger.Error($"App update listener ternimated accidently. [ERROR MESSAGE] {ex.Message} ");
+                        },
+                        () => { _logger.Error("App update listener should never complete."); });
+            });
+    }
+
     private static DialogResult AskForUpdate(string description, string caption = "")
     {
         if (string.IsNullOrEmpty(caption))
@@ -339,55 +420,67 @@ public partial class ThisAddIn
 
         return System.Windows.Forms.MessageBox.Show(description, caption, MessageBoxButtons.YesNo);
     }
-    
-    private static DialogResult Alert(string description, string caption = "")
+
+    public static void Alert(string description, string caption = "")
     {
         if (string.IsNullOrEmpty(caption))
             caption = Resources.Product_name;
 
-        return System.Windows.Forms.MessageBox.Show(description, caption);
+        System.Windows.Forms.MessageBox.Show(description, caption);
     }
 
-    private void UpdateLibrariesConfiguration(IEnumerable<Library> libraries)
+    private void ShowProgressWhileActing(Window window, Action<IProgress<int>, CancellationToken> action)
     {
-        lock (_configurationLock)
-        {
-            TimeSpan checkInterval;
-#if DEBUG
-            checkInterval = TimeSpan.FromMinutes(1);
-#else
-            checkInterval = Configuration.LibraryConfiguration.CheckInterval;
-#endif
-            Configuration.LibraryConfiguration.NextTime = DateTime.Now + checkInterval;
-            Configuration.LibraryConfiguration.Libraries = new ConcurrentBag<Library>(libraries);
-            Configuration.Save(Configuration);
+        // initialize a cts as it's a long time consumed task that user might not want to wait until it finished.
+        var cts = new CancellationTokenSource();
+        var vm = new TaskProgressViewModel(cts);
 
-            _logger.Info($"Configuration updated");
-        }
-    }
+        // create a window center Visio App
+        window.Content = new TaskProgressView(vm);
 
-    private void UpdateAppNextCheckTime()
-    {
-        lock (_configurationLock)
-        {
-            TimeSpan checkInterval;
-#if DEBUG
-            checkInterval = TimeSpan.FromMinutes(1);
-#else
-            checkInterval = TimeSpan.FromDays(1);
-#endif
-            Configuration.NextCheck = DateTime.Now + checkInterval;
-            Configuration.Save(Configuration);
+        // do updates in a background thread thought VISIO is STA, but still could do in a single thread without concurrent
+        Observable.Create<int>(async observer =>
+            {
+                try
+                {
+                    var progress = new Progress<int>(observer.OnNext);
+                    await Task.Run(() => action(progress, cts.Token), cts.Token);
+                    observer.OnCompleted();
+                }
+                catch (OperationCanceledException)
+                {
+                    _logger.Info("Process cancelled by user.");
+                }
+                catch (Exception ex)
+                {
+                    observer.OnError(ex);
+                }
 
-            _logger.Info($"Configuration updated");
-        }
+                // if the subscription to this observable is disposed, the task should also be canceled as it is not monitor by anyone
+                return () => cts.Cancel();
+            })
+            .ObserveOn(window.Dispatcher)
+            .Subscribe(
+                value => { vm.Current = value; },
+                ex =>
+                {
+                    _window.Visibility = Visibility.Collapsed;
+
+                    _logger.Error(
+                        $"Process failed. [ERROR MESSAGE] {ex.Message} ");
+                    Alert(ex.Message);
+                },
+                () => { });
+
+        // show a progress bar while executing this long running task
+        window.Show();
     }
 
     private void ThisAddIn_Shutdown(object sender, EventArgs e)
     {
         Configuration.Save(Configuration);
 
-        _logger.Info($"Configuration saved on close");
+        _logger.Info($"Configuration saved on shut down.");
     }
 
     #region VSTO generated code

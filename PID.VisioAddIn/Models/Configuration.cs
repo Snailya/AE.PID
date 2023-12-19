@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -11,29 +13,17 @@ using NLog;
 namespace AE.PID.Models;
 
 [Serializable]
-public class Configuration
+public class Configuration : UpdatableConfigurationBase
 {
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+    private static readonly string ConfigFileName = "ae-pid.json";
+    private static readonly NLogConfiguration.LogLevel VerboseLogLevel = NLogConfiguration.LogLevel.Trace;
+
+    private readonly object _configurationLock = new();
+
     [JsonIgnore] public NLogConfiguration NLogConfig;
-
-    /// <summary>
-    ///     The next time checking for app update.
-    /// </summary>
-    public DateTime NextCheck { get; set; }
-
-#if DEBUG
-    [JsonIgnore] public string Api { get; set; } = "http://localhost:32768";
-#else
-    /// <summary>
-    ///     The base url for server.
-    /// </summary>
-    [JsonIgnore]
-    public string Api { get; set; } = "http://172.18.128.104:32768";
-#endif
-    /// <summary>
-    ///     The version of the app which used to check for update of the app.
-    /// </summary>
-    [JsonIgnore]
-    public Version Version { get; set; } = new(0, 1, 0, 1);
+    [JsonIgnore] public string Api { get; set; } = "http://172.18.128.104:32768";
+    [JsonIgnore] public Version Version { get; set; } = new(0, 1, 0, 1);
 
     /// <summary>
     ///     The configuration for library version check.
@@ -45,29 +35,18 @@ public class Configuration
     /// </summary>
     public ExportSettings ExportSettings { get; set; } = new();
 
-
-    [JsonIgnore] private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
-    private static readonly string ConfigFileName = "ae-pid.json";
-
-#if DEBUG
-    private static readonly NLogConfiguration.LogLevel VerboseLogLevel = NLogConfiguration.LogLevel.Trace;
-#else
-        private static readonly NLogConfiguration.LogLevel verboseLogLevel = NLogConfiguration.LogLevel.Info;
-#endif
-
     /// <summary>
-    ///     Loads the configuration from file.
+    ///     Loads the configuration from file or create a new configuration if not exist.
     /// </summary>
     /// <returns>An Configuration object.</returns>
     public static Configuration Load()
     {
         var config = new Configuration();
 
-        if (File.Exists(GetConfigurationPath()))
+        if (File.Exists(GetPath()))
             try
             {
-                var configContent = File.ReadAllText(GetConfigurationPath());
+                var configContent = File.ReadAllText(GetPath());
 
                 if (!string.IsNullOrEmpty(configContent))
                     config = JsonSerializer.Deserialize<Configuration>(configContent, new JsonSerializerOptions
@@ -101,7 +80,7 @@ public class Configuration
         try
         {
             // app config
-            using var configFileStream = File.Open(GetConfigurationPath(), FileMode.Create);
+            using var configFileStream = File.Open(GetPath(), FileMode.Create);
             using var configStreamWriter = new StreamWriter(configFileStream, Encoding.UTF8);
             var jsonString = JsonSerializer.Serialize(config, new JsonSerializerOptions
             {
@@ -114,7 +93,7 @@ public class Configuration
             // nlog config
             NLogConfiguration.SaveXml(config.NLogConfig);
 
-            Logger.Info($"Configuration saved successfully at path: '{GetConfigurationPath()}'");
+            Logger.Info($"Configuration saved successfully at path: '{GetPath()}'");
         }
         catch (Exception ex)
         {
@@ -127,7 +106,7 @@ public class Configuration
     ///     Get the absolute path of the configuration file.
     /// </summary>
     /// <returns></returns>
-    public static string GetConfigurationPath()
+    public static string GetPath()
     {
         return Path.Combine(Globals.ThisAddIn.DataFolder, ConfigFileName);
     }

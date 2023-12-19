@@ -12,7 +12,8 @@
 &lt;/SessionState&gt;</s:String>
 	<s:Boolean x:Key="/Default/ResxEditorPersonal/CheckedGroups/=PID_002EVisioAddIn_002FProperties_002FResources/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/ResxEditorPersonal/CheckedGroups/=PID_002EVisioAddIn_002FRibbon/@EntryIndexedValue">True</s:Boolean>
-	<s:Boolean x:Key="/Default/ResxEditorPersonal/CheckedGroups/=PID_002EVisioAddIn_002FViews_002FPIDToolsHost/@EntryIndexedValue">False</s:Boolean>
+	<s:Boolean x:Key="/Default/ResxEditorPersonal/CheckedGroups/=PID_002EVisioAddIn_002FViews_002FHostForm/@EntryIndexedValue">True</s:Boolean>
+	
 	<s:Boolean x:Key="/Default/ResxEditorPersonal/CheckedGroups/=PID_002EVisioAddIn_002FViews_002FProgressBar/@EntryIndexedValue">False</s:Boolean>
 	
 	<s:Boolean x:Key="/Default/ResxEditorPersonal/CheckedGroups/=PID_002EVisio_002FAddInRibbon/@EntryIndexedValue">True</s:Boolean>

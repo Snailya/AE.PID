@@ -1,6 +1,6 @@
 ﻿using AE.PID.Interfaces;
 
-namespace PID.VisioAddIn.Props;
+namespace AE.PID.Models.VisProps;
 
 public class ShapeData(
     string name,

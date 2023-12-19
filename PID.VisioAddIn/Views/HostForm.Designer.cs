@@ -1,6 +1,6 @@
 ﻿namespace AE.PID.Views
 {
-    partial class PIDToolsHost
+    partial class HostForm
     {
         /// <summary> 
         /// 必需的设计器变量。
@@ -46,7 +46,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(641, 410);
             this.Controls.Add(this.elementHost1);
-            this.Name = "PIDToolsHost";
+            this.Name = "HostForm";
             this.ResumeLayout(false);
 
         }

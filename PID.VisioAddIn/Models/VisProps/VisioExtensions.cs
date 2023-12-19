@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Windows.Forms;
 using AE.PID.Interfaces;
-using AE.PID.Models;
 using Microsoft.Office.Interop.Visio;
 using PID.VisioAddIn.Properties;
 
-namespace PID.VisioAddIn.Models.VisProps;
+namespace AE.PID.Models.VisProps;
 
 public static class VisioExtensions
 {

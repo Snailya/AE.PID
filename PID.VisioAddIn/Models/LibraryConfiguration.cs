@@ -9,18 +9,8 @@ namespace AE.PID.Models;
 ///     Defines the library info and update check time and update check interval.
 /// </summary>
 [Serializable]
-public class LibraryConfiguration
+public class LibraryConfiguration : UpdatableConfigurationBase
 {
-    /// <summary>
-    ///     The next time that a version check will execute.
-    /// </summary>
-    public DateTime NextTime { get; set; }
-
-    /// <summary>
-    ///     The time interval that used to compute the next check time.
-    /// </summary>
-    public TimeSpan CheckInterval { get; set; } = TimeSpan.FromDays(1);
-
     /// <summary>
     ///     The config for libraries that defines the library name, version, hash and local path.
     /// </summary>

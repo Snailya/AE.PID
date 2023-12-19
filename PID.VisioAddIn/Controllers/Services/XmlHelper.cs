@@ -11,20 +11,20 @@ namespace AE.PID.Controllers.Services;
 
 public abstract class XmlHelper
 {
-    private const string DocumentRel = @"http://schemas.microsoft.com/visio/2010/relationships/document";
-    private const string MastersRel = @"http://schemas.microsoft.com/visio/2010/relationships/masters";
-    public const string MasterRelationship = @"http://schemas.microsoft.com/visio/2010/relationships/master";
     public static readonly Uri MastersPartUri = new("/visio/masters/masters.xml", UriKind.Relative);
     public static readonly XNamespace MainNs = @"http://schemas.microsoft.com/office/visio/2012/main";
     public static readonly XNamespace RelNs = @"http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 
+    private const string DocumentRel = @"http://schemas.microsoft.com/visio/2010/relationships/document";
+    private const string MastersRel = @"http://schemas.microsoft.com/visio/2010/relationships/masters";
+    public const string MasterRel = @"http://schemas.microsoft.com/visio/2010/relationships/master";
+
     public static XDocument GetXmlFromPart(PackagePart packagePart)
     {
-        XDocument partXml = null;
         // Open the packagePart as a stream and then 
         // open the stream in an XDocument object.
         using var partStream = packagePart.GetStream();
-        partXml = XDocument.Load(partStream);
+        var partXml = XDocument.Load(partStream);
         return partXml;
     }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Disposables;
+using System.Windows;
 using AE.PID.ViewModels;
 using ReactiveUI;
 
@@ -8,7 +9,7 @@ namespace AE.PID.Views;
 /// <summary>
 ///     ModelSelectPromptView.xaml 的交互逻辑
 /// </summary>
-public partial class ShapeSelectionView : ReactiveUserControl<ShapeSelectionViewModel>
+public partial class ShapeSelectionView
 {
     public ShapeSelectionView()
     {
@@ -25,21 +26,27 @@ public partial class ShapeSelectionView : ReactiveUserControl<ShapeSelectionView
                 .DisposeWith(disposableRegistration);
             this.Bind(ViewModel, viewModel => viewModel.ShapeId, view => view.IdTextBox.Text)
                 .DisposeWith(disposableRegistration);
-            this.BindCommand(ViewModel, viewModel => viewModel.Select, view => view.SelectButton)
+            this.BindCommand(ViewModel, viewModel => viewModel.Select, view => view.OkButton)
                 .DisposeWith(disposableRegistration);
             this.BindCommand(ViewModel, viewModel => viewModel.Cancel, view => view.CancelButton)
                 .DisposeWith(disposableRegistration);
-            this.OneWayBind(ViewModel, viewModel => viewModel.Masters, view => view.MastersListView.ItemsSource)
+            this.OneWayBind(ViewModel, viewModel => viewModel.Masters, view => view.MastersCheckBox.ItemsSource)
                 .DisposeWith(disposableRegistration);
             this.OneWayBind(ViewModel, viewModel => viewModel.IsByMastersChecked,
-                    view => view.MastersListView.IsEnabled)
+                    view => view.MastersCheckBox.IsEnabled)
                 .DisposeWith(disposableRegistration);
         });
 
-        this.WhenAnyObservable(x => x.ViewModel.Cancel).Subscribe(x => Close());
+        this.WhenAnyObservable(
+                x => x.ViewModel.Cancel,
+                x => x.ViewModel.Select
+            )
+            .Subscribe(_ => Close());
     }
 
     private void Close()
     {
+        var window = Window.GetWindow(this);
+        if (window != null) window.Visibility = Visibility.Collapsed;
     }
 }

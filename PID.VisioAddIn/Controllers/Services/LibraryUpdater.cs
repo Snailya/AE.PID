@@ -1,7 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http.Json;
+using System.Reactive;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using AE.PID.Models;
 using PID.Core.Dtos;
@@ -13,7 +17,23 @@ namespace AE.PID.Controllers.Services;
 /// </summary>
 public abstract class LibraryUpdater
 {
-    public static async Task<IEnumerable<Library>> UpdateLibrariesAsync()
+    /// <summary>
+    /// Trigger used for ui Button to invoke the update event.
+    /// </summary>
+    public static Subject<Unit> ManuallyInvokeTrigger { get; } = new();
+
+    /// <summary>
+    ///     Emit a value manually
+    /// </summary>
+    public static void Invoke()
+    {
+        ManuallyInvokeTrigger.OnNext(Unit.Default);
+    }
+
+    /// <summary>
+    /// Update local library file and configuration.
+    /// </summary>
+    public static async Task<List<Library>> UpdateLibrariesAsync()
     {
         var client = Globals.ThisAddIn.HttpClient;
         var configuration = Globals.ThisAddIn.Configuration;
@@ -62,6 +82,10 @@ public abstract class LibraryUpdater
 
             updatedLibraries.Add(local);
         }
+
+        configuration.LibraryConfiguration.NextTime = DateTime.Now + configuration.LibraryConfiguration.CheckInterval;
+        configuration.LibraryConfiguration.Libraries = new ConcurrentBag<Library>(updatedLibraries);
+        Configuration.Save(configuration);
 
         return updatedLibraries;
     }

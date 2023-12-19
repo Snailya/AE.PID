@@ -2,7 +2,7 @@
 using AE.PID.Interfaces;
 using Microsoft.Office.Interop.Visio;
 
-namespace PID.VisioAddIn.Props;
+namespace AE.PID.Models.VisProps;
 
 public abstract class Prop(string name, string prefix) : IProp
 {

@@ -35,7 +35,8 @@ public abstract class Exporter
     /// <summary>
     ///     extract data from shapes on layers defined in config and group them as BOM items.
     /// </summary>
-    public static void SaveAsBom(IVPage page)
+    public static void SaveAsBom(IVPage page, string customerName, string documentNo, string projectNo,
+        string versionNo)
     {
         var logger = LogManager.GetCurrentClassLogger();
         var configuration = Globals.ThisAddIn.Configuration;
@@ -50,12 +51,12 @@ public abstract class Exporter
 
         try
         {
-            if (configuration.ExportSettings.BOMLayers is null)
+            if (configuration.ExportSettings.BomLayers is null)
                 throw new BOMLayersNullException();
 
             var selection = page
                 .CreateSelection(VisSelectionTypes.visSelTypeByLayer, VisSelectMode.visSelModeSkipSuper,
-                    string.Join(";", configuration.ExportSettings.BOMLayers));
+                    string.Join(";", configuration.ExportSettings.BomLayers));
 
             var partItems = new List<PartItem>();
             foreach (IVShape shape in selection)
@@ -96,14 +97,19 @@ public abstract class Exporter
             });
 
             // write to xlsx
-            MiniExcel.SaveAsByTemplate(dialog.FileName, Resources.BOM_template, new { parts = extendPartItems });
+            MiniExcel.SaveAsByTemplate(dialog.FileName, Resources.BOM_template,
+                new
+                {
+                    parts = extendPartItems,
+                    customer = customerName, document = documentNo, project = projectNo, version = versionNo
+                });
 
-            MessageBox.Show("导出成功");
+            ThisAddIn.Alert($"执行成功");
         }
         catch (Exception ex)
         {
             logger.LogUsefulException(ex);
-            MessageBox.Show($"导出失败:{ex.Message}");
+            ThisAddIn.Alert($"执行失败。{ex.Message}");
         }
     }
 
@@ -143,7 +149,7 @@ public abstract class Exporter
         return GetFormatValue(row);
     }
 
-    private static string GetFormatValue(Row row)
+    private static string GetFormatValue(IVRow row)
     {
         var value = row.CellU[VisCellIndices.visCustPropsValue].ResultStr[VisUnitCodes.visUnitsString];
         if (string.IsNullOrEmpty(value)) return value;

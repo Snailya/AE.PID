@@ -7,24 +7,17 @@
                           xmlns:viewModel="clr-namespace:AE.PID.ViewModels"
                           mc:Ignorable="d"
                           x:TypeArguments="viewModel:ShapeSelectionViewModel"
-                          d:DesignHeight="450" d:DesignWidth="800">
+                          MinHeight="320" MinWidth="320"
+                          d:DesignHeight="320" d:DesignWidth="320">
     <Grid Margin="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Label>选择</Label>
-            <Separator Grid.Column="1" />
-        </Grid>
-        <Grid Grid.Row="1">
+        <TextBlock Margin="4 4 4 4" FontSize="28" Text="选择工具" />
+        <Grid Grid.Row="1" Margin="0 4">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -34,30 +27,29 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <RadioButton x:Name="ByIdButton"
-                         GroupName="rbs" Margin="0,8,16,7" VerticalAlignment="Center">
+                         GroupName="rbs" Margin="4,8,16,7" VerticalAlignment="Center">
                 ID
             </RadioButton>
             <RadioButton x:Name="ByMasterButton" Grid.Row="1" Grid.Column="0"
-                         GroupName="rbs" Margin="0,8,16,7" VerticalAlignment="Top">
+                         GroupName="rbs" Margin="4,8,16,7" VerticalAlignment="Top">
                 类型
             </RadioButton>
             <TextBox x:Name="IdTextBox" Grid.Row="0" Grid.Column="1"
-                     Margin="16,8,0,8" VerticalAlignment="Top" />
-            <ListView x:Name="MastersListView" Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Masters}"
-                      Margin="16,8,0,8" VerticalAlignment="Stretch">
+                     Margin="16,8,4,8" VerticalAlignment="Top" />
+            <ListView x:Name="MastersCheckBox" Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Masters}"
+                      Margin="16,8,4,8" VerticalAlignment="Stretch">
                 <ListView.ItemTemplate>
-                    <DataTemplate DataType="{x:Type viewModel:SelectByMasterOptionViewModel}">
+                    <DataTemplate DataType="{x:Type viewModel:MasterViewModel}">
                         <StackPanel>
                             <CheckBox Content="{Binding Name}" IsChecked="{Binding IsChecked}" />
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-
         </Grid>
         <Separator Grid.Row="2" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="3">
-            <Button x:Name="SelectButton" Margin="8 8 4 4" MinWidth="64" Content="确定" />
+            <Button x:Name="OkButton" Margin="8 8 4 4" MinWidth="64" Content="确定" />
             <Button x:Name="CancelButton" Margin="4 8 8 4" MinWidth="64" Content="取消" />
         </StackPanel>
     </Grid>

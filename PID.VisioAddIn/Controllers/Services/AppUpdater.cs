@@ -1,6 +1,9 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Subjects;
 using System.Text.Json;
 using System.Threading.Tasks;
 using AE.PID.Models;
@@ -13,6 +16,19 @@ namespace AE.PID.Controllers.Services;
 /// </summary>
 public abstract class AppUpdater
 {
+    /// <summary>
+    /// Trigger used for ui Button to invoke the update event.
+    /// </summary>
+    public static Subject<Unit> ManuallyInvokeTrigger { get; } = new();
+
+    /// <summary>
+    ///     Emit a value manually
+    /// </summary>
+    public static void Invoke()
+    {
+        ManuallyInvokeTrigger.OnNext(Unit.Default);
+    }
+
     /// <summary>
     /// Request the server with current version of the app to check if there's a available update.
     /// </summary>
@@ -38,6 +54,9 @@ public abstract class AppUpdater
                 DownloadUrl = root.GetProperty("latestVersion").GetProperty("downloadUrl").GetString(),
                 ReleaseNotes = root.GetProperty("latestVersion").GetProperty("releaseNotes").GetString()
             };
+
+        configuration.NextTime = DateTime.Now + configuration.CheckInterval;
+        Configuration.Save(configuration);
 
         return new AppCheckVersionResult { IsUpdateAvailable = false };
     }
@@ -85,7 +104,7 @@ public abstract class AppUpdater
     /// Open the explorer.exe and select the installer exe.
     /// </summary>
     /// <param name="installerPath"></param>
-    public static void DoUpdate(string installerPath)
+    public static void PromptManuallyUpdate(string installerPath)
     {
         var logger = LogManager.GetCurrentClassLogger();
 

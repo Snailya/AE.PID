@@ -42,17 +42,13 @@ public class ShapeSelectionViewModel : ReactiveObject
         selectShapesByMasters.ThrownExceptions.Subscribe(error => MessageBox.Show(error.Message));
 
         // todo: don't know if this is the better way to execute a set of command if any of them can execute. or to say bind two command to a button.
-        Select = ReactiveCommand.Create(() =>
-            {
-                Selector.CloseShapeSelectPromptWindow();
-                return Unit.Default;
-            },
+        Select = ReactiveCommand.Create(() => { },
             canSelectShapeById.CombineLatest(canSelectShapesByMaster, (canById, canByMaster) => canById | canByMaster));
         Select.InvokeCommand(selectShapeById);
         Select.InvokeCommand(selectShapesByMasters);
 
         // close window command
-        Cancel = ReactiveCommand.Create(Selector.CloseShapeSelectPromptWindow);
+        Cancel = ReactiveCommand.Create(() => { });
     }
 
     /// <summary>
