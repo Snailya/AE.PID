@@ -108,7 +108,7 @@ public abstract class Exporter
         }
         catch (Exception ex)
         {
-            logger.LogUsefulException(ex);
+            logger.Error(ex, "Failed to export.");
             ThisAddIn.Alert($"执行失败。{ex.Message}");
         }
     }

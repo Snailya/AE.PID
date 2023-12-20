@@ -4,7 +4,10 @@ using System.Reactive.Subjects;
 
 namespace AE.PID.Controllers.Services;
 
-public class ConfigurationUpdater
+/// <summary>
+/// This class handles the invoking of showing a configuration setup view from ribbon.
+/// </summary>
+public abstract class ConfigurationUpdater
 {
     /// <summary>
     /// Trigger used for ui Button to invoke the update event.
@@ -12,7 +15,7 @@ public class ConfigurationUpdater
     public static Subject<Unit> ManuallyInvokeTrigger { get; } = new();
 
     /// <summary>
-    ///     Emit a value manually
+    ///     Trigger manually.
     /// </summary>
     public static void Invoke()
     {

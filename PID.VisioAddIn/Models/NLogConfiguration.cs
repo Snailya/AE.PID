@@ -73,11 +73,11 @@ public class NLogConfiguration
             Directory.CreateDirectory(Path.GetDirectoryName(NlogConfigFilepath)!);
             File.WriteAllText(NlogConfigFilepath, Resources.NLog_config);
         }
-        catch (PathTooLongException pathTooLongException)
+        catch (PathTooLongException)
         {
             throw;
         }
-        catch (SecurityException securityException)
+        catch (SecurityException)
         {
             throw;
         }

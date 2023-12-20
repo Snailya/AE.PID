@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 
 namespace AE.PID.Models;
 
@@ -19,6 +20,7 @@ public class UpdatableConfigurationBase : INotifyPropertyChanged
     /// <summary>
     /// Observers can subscribe to the subject to receive the last (or initial) value of <see cref="CheckInterval"/>.
     /// </summary>
+    [JsonIgnore]
     public BehaviorSubject<TimeSpan> CheckIntervalSubject { get; }
 
     /// <summary>

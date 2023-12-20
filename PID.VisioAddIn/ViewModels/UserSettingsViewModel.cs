@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reactive;
 using AE.PID.Controllers.Services;
@@ -12,6 +14,7 @@ public class UserSettingsViewModel : ReactiveObject
 {
     private FrequencyOptionViewModel _libraryCheckFrequency;
     private FrequencyOptionViewModel _appNextCheckFrequency;
+    private string _tmpPath = ThisAddIn.TmpFolder;
 
     public UserSettingsViewModel()
     {
@@ -20,6 +23,15 @@ public class UserSettingsViewModel : ReactiveObject
         CheckForAppUpdate = ReactiveCommand.Create(AppUpdater.Invoke);
         CheckForLibrariesUpdate = ReactiveCommand.Create(LibraryUpdater.Invoke);
 
+        OpenTmp = ReactiveCommand.Create(() => { Process.Start("explorer.exe", $"\"{_tmpPath}\""); });
+        ClearCache = ReactiveCommand.CreateRunInBackground(() =>
+        {
+            if (!Directory.Exists(ThisAddIn.TmpFolder)) return;
+
+            var files = Directory.GetFiles(ThisAddIn.TmpFolder);
+            foreach (var file in files)
+                File.Delete(file);
+        });
         Submit = ReactiveCommand.Create(() =>
         {
             if (Globals.ThisAddIn.Configuration.CheckInterval != _appNextCheckFrequency.TimeSpan)
@@ -31,9 +43,10 @@ public class UserSettingsViewModel : ReactiveObject
             if (Globals.ThisAddIn.Configuration.LibraryConfiguration.CheckInterval != _libraryCheckFrequency.TimeSpan)
             {
                 Globals.ThisAddIn.Configuration.LibraryConfiguration.CheckInterval = _libraryCheckFrequency.TimeSpan;
-                Globals.ThisAddIn.Configuration.LibraryConfiguration.NextTime = DateTime.Now + _libraryCheckFrequency.TimeSpan;
+                Globals.ThisAddIn.Configuration.LibraryConfiguration.NextTime =
+                    DateTime.Now + _libraryCheckFrequency.TimeSpan;
             }
-            
+
             Configuration.Save(Globals.ThisAddIn.Configuration);
         });
         Cancel = ReactiveCommand.Create(() => { });
@@ -58,16 +71,6 @@ public class UserSettingsViewModel : ReactiveObject
         }
     ];
 
-    public FrequencyOptionViewModel LibraryCheckFrequency
-    {
-        get => _libraryCheckFrequency;
-        set
-        {
-            if (value != _libraryCheckFrequency)
-                this.RaiseAndSetIfChanged(ref _libraryCheckFrequency, value);
-        }
-    }
-
     public FrequencyOptionViewModel AppNextCheckFrequency
     {
         get => _appNextCheckFrequency;
@@ -78,10 +81,33 @@ public class UserSettingsViewModel : ReactiveObject
         }
     }
 
+    public string TmpPath
+    {
+        get => _tmpPath;
+        set
+        {
+            if (value != _tmpPath)
+                this.RaiseAndSetIfChanged(ref _tmpPath, value);
+        }
+    }
+
+    public FrequencyOptionViewModel LibraryCheckFrequency
+    {
+        get => _libraryCheckFrequency;
+        set
+        {
+            if (value != _libraryCheckFrequency)
+                this.RaiseAndSetIfChanged(ref _libraryCheckFrequency, value);
+        }
+    }
+
     public ReactiveCommand<Unit, Unit> CheckForAppUpdate { get; set; }
     public ReactiveCommand<Unit, Unit> CheckForLibrariesUpdate { get; }
+    public ReactiveCommand<Unit, Unit> OpenTmp { get; set; }
+    public ReactiveCommand<Unit, Unit> ClearCache { get; set; }
     public ReactiveCommand<Unit, Unit> Submit { get; }
     public ReactiveCommand<Unit, Unit> Cancel { get; set; }
+
 
     private void GetCurrentInterval()
     {

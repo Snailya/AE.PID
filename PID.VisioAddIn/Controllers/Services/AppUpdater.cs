@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reactive;
 using System.Reactive.Subjects;
 using System.Text.Json;
@@ -12,10 +14,13 @@ using NLog;
 namespace AE.PID.Controllers.Services;
 
 /// <summary>
-/// Check app version from server and get latest version installer.
+/// This class handles app update related event, such as app version check and installer persist.
+/// Also, it provide a trigger to allow user to invoke update manually.
 /// </summary>
 public abstract class AppUpdater
 {
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     /// <summary>
     /// Trigger used for ui Button to invoke the update event.
     /// </summary>
@@ -38,27 +43,44 @@ public abstract class AppUpdater
         var configuration = Globals.ThisAddIn.Configuration;
         var client = Globals.ThisAddIn.HttpClient;
 
-        using var response =
-            await client.GetAsync(configuration.Api + $"/check-version?version={configuration.Version}");
-        response.EnsureSuccessStatusCode();
-        var responseBody = await response.Content.ReadAsStringAsync();
+        try
+        {
+            using var response =
+                await client.GetAsync(configuration.Api + $"/check-version?version={configuration.Version}");
+            response.EnsureSuccessStatusCode();
 
-        var jsonDocument = JsonDocument.Parse(responseBody);
-        var root = jsonDocument.RootElement;
+            // anytime there's a success response from check-version, the check time should update.
+            configuration.NextTime = DateTime.Now + configuration.CheckInterval;
+            Configuration.Save(configuration);
 
-        var isUpdate = root.GetProperty("isUpdateAvailable").GetBoolean();
-        if (isUpdate)
-            return new AppCheckVersionResult
-            {
-                IsUpdateAvailable = true,
-                DownloadUrl = root.GetProperty("latestVersion").GetProperty("downloadUrl").GetString(),
-                ReleaseNotes = root.GetProperty("latestVersion").GetProperty("releaseNotes").GetString()
-            };
+            var responseBody = await response.Content.ReadAsStringAsync();
 
-        configuration.NextTime = DateTime.Now + configuration.CheckInterval;
-        Configuration.Save(configuration);
+            var jsonDocument = JsonDocument.Parse(responseBody);
+            var root = jsonDocument.RootElement;
 
-        return new AppCheckVersionResult { IsUpdateAvailable = false };
+            var isUpdate = root.GetProperty("isUpdateAvailable").GetBoolean();
+            if (isUpdate)
+                return new AppCheckVersionResult
+                {
+                    IsUpdateAvailable = true,
+                    DownloadUrl = root.GetProperty("latestVersion").GetProperty("downloadUrl").GetString(),
+                    ReleaseNotes = root.GetProperty("latestVersion").GetProperty("releaseNotes").GetString()
+                };
+
+            return new AppCheckVersionResult { IsUpdateAvailable = false };
+        }
+        catch (HttpRequestException httpRequestException)
+        {
+            Logger.Error(httpRequestException,
+                $"Failed to check update from server. Firstly, check if you are able to ping to the api. If not, connect administrator.");
+            throw;
+        }
+        catch (KeyNotFoundException keyNotFoundException)
+        {
+            Logger.Error(keyNotFoundException,
+                $"Some of the keys [isUpdateAvailable, latestVersion, downloadUrl, releaseNotes] not found in the response. Please check if the api response body is out of time.");
+            throw;
+        }
     }
 
     /// <summary>
@@ -70,23 +92,39 @@ public abstract class AppUpdater
     {
         var client = Globals.ThisAddIn.HttpClient;
 
-        using var response = await client.GetAsync(downloadUrl);
-        response.EnsureSuccessStatusCode();
-
-        // Get the content as a stream
-        using var contentStream = await response.Content.ReadAsStreamAsync();
-
-        // Save the stream content to a file
-        var installerFolder = Path.Combine(Globals.ThisAddIn.DataFolder, "TEMP");
+        // initialize the folder if not exist
+        var installerFolder = Path.Combine(ThisAddIn.TmpFolder);
         if (!Directory.Exists(installerFolder)) Directory.CreateDirectory(installerFolder);
 
-        var filePath = Path.Combine(installerFolder,
-            Path.GetFileName(
-                GetFilenameFromContentDisposition(response.Content.Headers.ContentDisposition.ToString())));
-        using var fileStream = File.Create(filePath);
-        await contentStream.CopyToAsync(fileStream);
+        try
+        {
+            using var response = await client.GetAsync(downloadUrl);
+            response.EnsureSuccessStatusCode();
 
-        return Path.GetFullPath(filePath);
+            var filePath = Path.GetFullPath(Path.Combine(installerFolder,
+                Path.GetFileName(
+                    GetFilenameFromContentDisposition(response.Content.Headers.ContentDisposition.ToString()))));
+            if (File.Exists(filePath)) return filePath; // already exist
+
+            // Otherwise, get the content as a stream
+            using var contentStream = await response.Content.ReadAsStreamAsync();
+            using var fileStream = File.Create(filePath);
+            await contentStream.CopyToAsync(fileStream);
+
+            return filePath;
+        }
+        catch (HttpRequestException httpRequestException)
+        {
+            Logger.Error(httpRequestException,
+                $"Failed to get installer zip from server. Firstly, check if you are able to ping to the api. If not, connect administrator.");
+            throw;
+        }
+        catch (DirectoryNotFoundException directoryNotFoundException)
+        {
+            Logger.Error(directoryNotFoundException,
+                $"Failed to cache installer to local storage. Please check if the directory exist, if not create it manully, or it should be created next time app starts.");
+            throw;
+        }
     }
 
     private static string GetFilenameFromContentDisposition(string contentDisposition)
@@ -106,9 +144,7 @@ public abstract class AppUpdater
     /// <param name="installerPath"></param>
     public static void PromptManuallyUpdate(string installerPath)
     {
-        var logger = LogManager.GetCurrentClassLogger();
-
-        logger.Info($"Open the explorer and select {installerPath}");
+        Logger.Info($"Open the explorer and select {installerPath}");
         Process.Start("explorer.exe", $"/select, \"{installerPath}\"");
     }
 }

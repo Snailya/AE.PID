@@ -35,11 +35,21 @@ public partial class ThisAddIn
     private const long ManuallyInvokeMagicNumber = -255;
 
     /// <summary>
-    ///     The data folder path in Application Data
+    ///     The data folder path in Application Data.
     /// </summary>
-    public readonly string DataFolder = Path.Combine(
+    public static readonly string AppDataFolder = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "AE\\PID");
+
+    /// <summary>
+    ///     The tmp folder to store updated file.
+    /// </summary>
+    public static readonly string LibraryFolder = Path.Combine(AppDataFolder, "Libraries");
+
+    /// <summary>
+    ///     The tmp folder to store updated file.
+    /// </summary>
+    public static readonly string TmpFolder = Path.Combine(AppDataFolder, "Tmp");
 
     /// <summary>
     ///     Configuration has three part: app configuration, library configuration, export settings.
@@ -65,9 +75,6 @@ public partial class ThisAddIn
         // make the window auto size to it's content
         _window.SizeToContent = SizeToContent.WidthAndHeight;
 
-        // overwrite the close event to prevent release of this window
-
-
         // initialize a reusable window to hold WPF controls
         _ = new WindowInteropHelper(_window)
         {
@@ -87,7 +94,6 @@ public partial class ThisAddIn
         ListenToUserSettings(setupObservable);
     }
 
-
     /// <summary>
     ///     Initialize the configuration and environment setup.
     /// </summary>
@@ -96,8 +102,8 @@ public partial class ThisAddIn
         try
         {
             // initialize the data folder
-            Directory.CreateDirectory(Path.Combine(Globals.ThisAddIn.DataFolder, "Libraries"));
-            Directory.CreateDirectory(Path.Combine(Globals.ThisAddIn.DataFolder, "Tmp"));
+            Directory.CreateDirectory(LibraryFolder);
+            Directory.CreateDirectory(TmpFolder);
 
             // try to load nlog config from file, copy from resource if not exist
             NLogConfiguration.CreateIfNotExist();
@@ -109,17 +115,18 @@ public partial class ThisAddIn
             // initialize logger
             _logger = LogManager.GetCurrentClassLogger();
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException unauthorizedAccessException)
         {
-            _logger.Error("无法完成初始化，因为没有权限。");
+            _logger.Error(unauthorizedAccessException, "Failed to create directory due to authority issue on setup.");
         }
-        catch (PathTooLongException)
+        catch (PathTooLongException pathTooLongException)
         {
-            _logger.Error("无法完成初始化，因为路径名过长，请检查用户自定义安装路径层级结构是否过于复杂。");
+            _logger.Error(pathTooLongException,
+                "Failed to create directory on setup because the folder path is too long.");
         }
         catch (Exception exception)
         {
-            _logger.LogUsefulException(exception);
+            _logger.Error(exception, "Failed to setup.");
         }
     }
 
@@ -148,8 +155,8 @@ public partial class ThisAddIn
                         ex =>
                         {
                             Alert(ex.Message);
-                            _logger.Error(
-                                $"Configuration updating listener ternimated accidently. [ERROR MESSAGE] {ex.Message} ");
+                            _logger.Error(ex,
+                                $"Configuration updating listener ternimated accidently.");
                         },
                         () => { _logger.Error("Configuration updating listener should never complete."); });
             }
@@ -184,8 +191,8 @@ public partial class ThisAddIn
                             ex =>
                             {
                                 Alert(ex.Message);
-                                _logger.Error(
-                                    $"Select listener ternimated accidently. [ERROR MESSAGE] {ex.Message} ");
+                                _logger.Error(ex,
+                                    $"Select listener ternimated accidently.");
                             },
                             () => { _logger.Error("Select listener should never complete."); }
                         );
@@ -220,8 +227,8 @@ public partial class ThisAddIn
                             ex =>
                             {
                                 Alert(ex.Message);
-                                _logger.Error(
-                                    $"Export listener ternimated accidently. [ERROR MESSAGE] {ex.Message} ");
+                                _logger.Error(ex,
+                                    $"Export listener ternimated accidently.");
                             },
                             () => { _logger.Error("Export listener should never complete."); }
                         );
@@ -278,8 +285,8 @@ public partial class ThisAddIn
                         ex =>
                         {
                             Alert(ex.Message);
-                            _logger.Error(
-                                $"Document master update listener ternimated accidently. [ERROR MESSAGE] {ex.Message} ");
+                            _logger.Error(ex,
+                                $"Document master update listener ternimated accidently.");
                         },
                         () => { _logger.Error("Document master update listener should never complete."); });
             });
@@ -335,8 +342,8 @@ public partial class ThisAddIn
                         ex =>
                         {
                             Alert(ex.Message);
-                            _logger.Error(
-                                $"Library update listener ternimated accidently. [ERROR MESSAGE] {ex.Message} ");
+                            _logger.Error(ex,
+                                $"Library update listener ternimated accidently.");
                         },
                         () => { _logger.Error("Library update listener should never complete."); });
             });
@@ -407,7 +414,7 @@ public partial class ThisAddIn
                         ex =>
                         {
                             Alert(ex.Message);
-                            _logger.Error($"App update listener ternimated accidently. [ERROR MESSAGE] {ex.Message} ");
+                            _logger.Error(ex, $"App update listener ternimated accidently.");
                         },
                         () => { _logger.Error("App update listener should never complete."); });
             });
@@ -466,8 +473,8 @@ public partial class ThisAddIn
                 {
                     _window.Visibility = Visibility.Collapsed;
 
-                    _logger.Error(
-                        $"Process failed. [ERROR MESSAGE] {ex.Message} ");
+                    _logger.Error(ex,
+                        $"Process failed.");
                     Alert(ex.Message);
                 },
                 () => { });

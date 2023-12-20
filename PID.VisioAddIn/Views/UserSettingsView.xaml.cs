@@ -27,6 +27,18 @@ public partial class UserSettingsView
                     vm => vm.CheckForAppUpdate,
                     v => v.AppCheckUpdateButton)
                 .DisposeWith(disposableRegistration);
+            this.OneWayBind(ViewModel,
+                    vm => vm.TmpPath,
+                    v => v.TmpPathInput.Text)
+                .DisposeWith(disposableRegistration);
+            this.BindCommand(ViewModel,
+                    vm => vm.OpenTmp,
+                    v => v.OpenTmpButton)
+                .DisposeWith(disposableRegistration);
+            this.BindCommand(ViewModel,
+                    vm => vm.ClearCache,
+                    v => v.ClearCacheButton)
+                .DisposeWith(disposableRegistration);
 
             this.OneWayBind(ViewModel,
                     vm => vm.CheckFrequencyOptions,

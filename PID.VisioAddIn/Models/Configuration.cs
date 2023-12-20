@@ -23,7 +23,7 @@ public class Configuration : UpdatableConfigurationBase
 
     [JsonIgnore] public NLogConfiguration NLogConfig;
     [JsonIgnore] public string Api { get; set; } = "http://172.18.128.104:32768";
-    [JsonIgnore] public Version Version { get; set; } = new(0, 1, 0, 1);
+    [JsonIgnore] public Version Version { get; set; } = new(0, 1, 0, 2);
 
     /// <summary>
     ///     The configuration for library version check.
@@ -49,21 +49,19 @@ public class Configuration : UpdatableConfigurationBase
                 var configContent = File.ReadAllText(GetPath());
 
                 if (!string.IsNullOrEmpty(configContent))
-                    config = JsonSerializer.Deserialize<Configuration>(configContent, new JsonSerializerOptions
-                    {
-                        Converters =
+                    config = JsonSerializer.Deserialize<Configuration>(
+                        configContent,
+                        new JsonSerializerOptions
                         {
-                            new ConcurrentBagConverter()
-                        }
-                    });
+                            Converters = { new ConcurrentBagConverter() }
+                        });
             }
-            catch (Exception e)
+            catch (JsonException jsonException)
             {
-                if (e is not FileNotFoundException)
-                    Logger.LogUsefulException(e);
+                Logger.Error(jsonException,
+                    $"Failed to log config from {GetPath()}, a default configuration file is used instead.");
             }
 
-        // load nlogconfig, no need to call a process config
         config.NLogConfig = NLogConfiguration.LoadXml();
 
         LogManager.GetCurrentClassLogger().Info("Configuration loaded.");
@@ -97,8 +95,7 @@ public class Configuration : UpdatableConfigurationBase
         }
         catch (Exception ex)
         {
-            Logger.Error("Unable to save configuration.");
-            Logger.LogUsefulException(ex);
+            Logger.Error(ex, $"Failed to save configuration");
         }
     }
 
@@ -108,6 +105,6 @@ public class Configuration : UpdatableConfigurationBase
     /// <returns></returns>
     public static string GetPath()
     {
-        return Path.Combine(Globals.ThisAddIn.DataFolder, ConfigFileName);
+        return Path.Combine(ThisAddIn.AppDataFolder, ConfigFileName);
     }
 }

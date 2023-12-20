@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Packaging;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Xml.Linq;
@@ -21,7 +19,7 @@ namespace AE.PID.Controllers.Services;
 /// </summary>
 public abstract class DocumentUpdater
 {
-    private static Logger _logger = LogManager.GetCurrentClassLogger();
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     /// <summary>
     /// Trigger used for ui Button to invoke the update event.
@@ -49,16 +47,17 @@ public abstract class DocumentUpdater
         var mappings = new List<MasterDocumentLibraryMapping>();
 
         foreach (var source in document.Masters.OfType<IVMaster>().ToList())
-            if (configuration.LibraryConfiguration.GetItems().SingleOrDefault(x => x.BaseId == source.BaseID) is
-                    { } item &&
-                item.UniqueId != source.UniqueID)
+            if (configuration.LibraryConfiguration.GetItems()
+                    .SingleOrDefault(x => x.BaseId == source.BaseID) is { } item
+                && item.UniqueId != source.UniqueID)
                 mappings.Add(new MasterDocumentLibraryMapping
                 {
                     BaseId = source.BaseID,
                     LibraryPath =
-                        configuration.LibraryConfiguration.Libraries.SingleOrDefault(x =>
-                                x.Items.Any(i => i.BaseId == item.BaseId))!
-                            .Path
+                        configuration.LibraryConfiguration.Libraries
+                            .SingleOrDefault(x => x.Items.Any(i => i.BaseId == item.BaseId))!
+                            .Path,
+                    Name = source.Name // this property is not used, it only provide debug information
                 });
 
         return mappings;
@@ -75,31 +74,40 @@ public abstract class DocumentUpdater
     public static void DoUpdatesByOpenXml(string filePath, IEnumerable<MasterDocumentLibraryMapping> mappings,
         IProgress<int> progress, CancellationToken token)
     {
-        var logger = LogManager.GetCurrentClassLogger();
         var packageMappings = new Dictionary<string, PackageMapping>();
 
         // group the library path to reduce io
         foreach (var group in mappings.GroupBy(x => x.LibraryPath))
             // open the target package
-            using (var targetPackage = Package.Open(group.Key, FileMode.Open, FileAccess.Read))
+            try
             {
-                var mastersPartInTarget = targetPackage.GetPart(XmlHelper.MastersPartUri);
-                var mastersXmlInTarget = XmlHelper.GetXmlFromPart(mastersPartInTarget);
-
-                // loop the masters element to get the master element, the Rel element is used to get the relationship id from masters.xml to master{i}.xml
-                foreach (var masterElement in XmlHelper.GetXElementsByName(mastersXmlInTarget, "Master"))
+                using (var targetPackage = Package.Open(group.Key, FileMode.Open, FileAccess.Read))
                 {
-                    // get the baseID
-                    var baseId = masterElement.Attribute("BaseID")!.Value;
+                    var mastersPartInTarget = targetPackage.GetPart(XmlHelper.MastersPartUri);
+                    var mastersXmlInTarget = XmlHelper.GetXmlFromPart(mastersPartInTarget);
 
-                    // get the rel:id in order to get related MasterPart
-                    var relElement = masterElement.Descendants(XmlHelper.MainNs + "Rel").First();
-                    var relId = relElement.Attribute(XmlHelper.RelNs + "id")!.Value;
-                    var rel = mastersPartInTarget.GetRelationship(relId);
-                    var masterPart = targetPackage.GetPart(PackUriHelper.ResolvePartUri(rel.SourceUri, rel.TargetUri));
-                    var mapping = new PackageMapping(masterElement, XmlHelper.GetXmlFromPart(masterPart));
-                    packageMappings.Add(baseId, mapping);
+                    // loop the masters element to get the master element, the Rel element is used to get the relationship id from masters.xml to master{i}.xml
+                    foreach (var masterElement in XmlHelper.GetXElementsByName(mastersXmlInTarget, "Master"))
+                    {
+                        // get the baseID
+                        var baseId = masterElement.Attribute("BaseID")!.Value;
+
+                        // get the rel:id in order to get related MasterPart
+                        var relElement = masterElement.Descendants(XmlHelper.MainNs + "Rel").First();
+                        var relId = relElement.Attribute(XmlHelper.RelNs + "id")!.Value;
+                        var rel = mastersPartInTarget.GetRelationship(relId);
+                        var masterPart =
+                            targetPackage.GetPart(PackUriHelper.ResolvePartUri(rel.SourceUri, rel.TargetUri));
+                        var mapping = new PackageMapping(masterElement, XmlHelper.GetXmlFromPart(masterPart));
+                        packageMappings.Add(baseId, mapping);
+                    }
                 }
+            }
+            catch (IOException ioException)
+            {
+                Logger.Error(ioException,
+                    $"Unable to open the library as is currently used by another process. Please close the stencil document in source file and retry.");
+                throw;
             }
 
         using (var sourcePackage = Package.Open(filePath, FileMode.Open, FileAccess.ReadWrite))
@@ -116,7 +124,7 @@ public abstract class DocumentUpdater
                 var masterElement = masterElements[index];
                 if (token.IsCancellationRequested)
                 {
-                    logger.Info("User cancelled the update process.");
+                    Logger.Info("User cancelled the update process.");
                     throw new OperationCanceledException(token);
                 }
 
@@ -145,6 +153,7 @@ public abstract class DocumentUpdater
 
             progress.Report(100);
 
+            XmlHelper.RecalculateDocument(sourcePackage);
             XmlHelper.SaveXDocumentToPart(mastersPartInSource, mastersXmlInSource);
         }
     }
@@ -161,7 +170,7 @@ public abstract class DocumentUpdater
             Globals.ThisAddIn.Application.Documents.OpenEx(path,
                 (short)VisOpenSaveArgs.visOpenDocked);
 
-        _logger.Info(
+        Logger.Info(
             $"Document masters updated successfully.");
 
         ThisAddIn.Alert("更新成功，请在新文件打开后手动另存。");
@@ -182,8 +191,7 @@ public abstract class DocumentUpdater
             doc.Close();
 
         // create a copy of source file
-        var copied = Path.Combine(Globals.ThisAddIn.DataFolder, "Tmp",
-            Path.ChangeExtension(Path.GetRandomFileName(), "vsdx"));
+        var copied = Path.Combine(ThisAddIn.TmpFolder, Path.ChangeExtension(Path.GetRandomFileName(), "vsdx"));
         File.Copy(document.FullName, copied);
 
         return copied;
