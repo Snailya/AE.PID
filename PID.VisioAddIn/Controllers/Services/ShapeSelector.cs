@@ -1,20 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using AE.PID.ViewModels;
+using AE.PID.Views;
 using Microsoft.Office.Interop.Visio;
+using NLog;
 
 namespace AE.PID.Controllers.Services;
 
 /// <summary>
 /// A selection service used for enhance user selection.
 /// </summary>
-public static class Selector
+public static class ShapeSelector
 {
-    /// <summary>
-    /// Trigger used for ui Button to invoke the update event.
-    /// </summary>
-    public static Subject<IVPage> ManuallyInvokeTrigger { get; } = new();
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+    private static Subject<IVPage> ManuallyInvokeTrigger { get; } = new();
 
     /// <summary>
     ///     Emit a value manually
@@ -23,6 +26,37 @@ public static class Selector
     public static void Invoke(IVPage page)
     {
         ManuallyInvokeTrigger.OnNext(page);
+    }
+
+    /// <summary>
+    /// Start listening for select button click event and display a view to accept user operation.
+    /// The view prompt user to switch between select by id and by type, the subsequent is called in ViewModel.
+    /// </summary>
+    /// <returns></returns>
+    public static IDisposable Listen()
+    {
+        Logger.Info($"Select Service started.");
+
+        return ManuallyInvokeTrigger
+            .Throttle(TimeSpan.FromMilliseconds(300))
+            .ObserveOn(Globals.ThisAddIn.SynchronizationContext)
+            .Select(_ =>
+            {
+                Globals.ThisAddIn.MainWindow.Content = new ShapeSelectionView();
+                Globals.ThisAddIn.MainWindow.Show();
+
+                return Unit.Default;
+            })
+            .Subscribe(
+                _ => { },
+                ex =>
+                {
+                    ThisAddIn.Alert(ex.Message);
+                    Logger.Error(ex,
+                        $"Select Service ternimated accidently.");
+                },
+                () => { Logger.Error("Select Service should never complete."); }
+            );
     }
 
     /// <summary>

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Reactive;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using AE.PID.Models;
@@ -20,11 +21,7 @@ namespace AE.PID.Controllers.Services;
 public abstract class LibraryUpdater
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
-    /// <summary>
-    /// Trigger used for ui Button to invoke the update event.
-    /// </summary>
-    public static Subject<Unit> ManuallyInvokeTrigger { get; } = new();
+    private static Subject<Unit> ManuallyInvokeTrigger { get; } = new();
 
     /// <summary>
     ///     Emit a value manually
@@ -35,18 +32,74 @@ public abstract class LibraryUpdater
     }
 
     /// <summary>
+    ///  Automatically check the server for library updates and done in silent.
+    /// The check interval is control by configuration.
+    /// </summary>
+    /// <returns></returns>
+    public static IDisposable Listen()
+    {
+        Logger.Info($"Library Update Service started.");
+
+        return Globals.ThisAddIn.Configuration.LibraryConfiguration.CheckIntervalSubject // auto check observable
+            .Select(Observable.Interval)
+            .Switch()
+            .Merge(Observable.Return<long>(-1))
+            .Where(_ =>
+                Globals.ThisAddIn.Configuration.LibraryConfiguration.NextTime == null ||
+                DateTime.Now > Globals.ThisAddIn.Configuration.LibraryConfiguration.NextTime)
+            .Do(_ => Logger.Info($"Library Update started. {{Initiated by: Auto-Run}}"))
+            // merge with user manually invoke observable
+            .Merge(
+                ManuallyInvokeTrigger.Throttle(TimeSpan.FromMilliseconds(300))
+                    .Select(_ => Constants.ManuallyInvokeMagicNumber)
+                    .Do(_ => Logger.Info($"Library Update started. {{Initiated by: User}}"))
+            )
+            // perform check
+            .SelectMany(
+                _ => Observable
+                    .FromAsync(UpdateLibrariesAsync),
+                (value, result) => new { InvokeType = value, Result = result }
+            )
+            // notify user if need
+            .Select(data =>
+            {
+                // prompt an alert to let user know update completed if it's invoked by user.
+                if (data.InvokeType == Constants.ManuallyInvokeMagicNumber)
+                    ThisAddIn.Alert("更新完毕");
+
+                return data.Result;
+            })
+            // as http request may have error, retry for next emit
+            .Retry(3)
+            // for error handling only
+            .Subscribe(
+                _ => { Logger.Info($"Libraries are up to date."); },
+                ex =>
+                {
+                    ThisAddIn.Alert(ex.Message);
+                    Logger.Error(ex,
+                        $"Library Update Service ternimated accidently.");
+                },
+                () => { Logger.Error("Library Update Service should never completed."); });
+    }
+
+    /// <summary>
     /// Update local library file and configuration.
     /// </summary>
-    public static async Task<List<Library>> UpdateLibrariesAsync()
+    private static async Task<List<Library>> UpdateLibrariesAsync()
     {
         var client = Globals.ThisAddIn.HttpClient;
         var configuration = Globals.ThisAddIn.Configuration;
 
         try
         {
-            var servers = await client.GetFromJsonAsync<IEnumerable<LibraryDto>>(configuration.Api + "/libraries");
+            var servers = (await client.GetFromJsonAsync<IEnumerable<LibraryDto>>(configuration.Api + "/libraries"))
+                .ToList();
 
             var updatedLibraries = new List<Library>();
+
+            Logger.Info(
+                $"Libraries version:  {{{string.Join(",", servers.Select(x => $"{x.Name}: {x.Version}"))} }}");
 
             foreach (var server in servers)
             {

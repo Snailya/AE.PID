@@ -3,11 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Packaging;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Xml.Linq;
 using AE.PID.Models;
 using AE.PID.Models.Exceptions;
+using AE.PID.Tools;
 using Microsoft.Office.Interop.Visio;
 using NLog;
 using Path = System.IO.Path;
@@ -20,11 +26,7 @@ namespace AE.PID.Controllers.Services;
 public abstract class DocumentUpdater
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
-    /// <summary>
-    /// Trigger used for ui Button to invoke the update event.
-    /// </summary>
-    public static Subject<IVDocument> ManuallyInvokeTrigger { get; } = new();
+    private static Subject<IVDocument> ManuallyInvokeTrigger { get; } = new();
 
     /// <summary>
     ///     Emit a value manually
@@ -33,6 +35,61 @@ public abstract class DocumentUpdater
     public static void Invoke(IVDocument document)
     {
         ManuallyInvokeTrigger.OnNext(document);
+    }
+
+    /// <summary>
+    /// Listen to both document open event and user click event to monitor if a document master update is needed.
+    /// The update process is done on a background thread using OpenXML, so it is extremely fast.
+    /// However, a progress bar still provided in case a long time run needed in the future.
+    /// </summary>
+    public static IDisposable Listen()
+    {
+        Logger.Info($"Document Update Service started.");
+
+        return Observable
+            .FromEvent<EApplication_DocumentOpenedEventHandler, Document>(
+                handler => Globals.ThisAddIn.Application.DocumentOpened += handler,
+                handler => Globals.ThisAddIn.Application.DocumentOpened -= handler)
+            .Where(document => document.Type == VisDocumentTypes.visTypeDrawing)
+            .Do(_ => Logger.Info($"Document Update started. {{Initiated by: Document Open Event}}"))
+            // manually invoke from ribbon
+            .Merge(
+                ManuallyInvokeTrigger
+                    .Throttle(TimeSpan.FromMilliseconds(300))
+                    .Do(_ => Logger.Info($"Document Update started. {{Initiated by: User}}"))
+            )
+            .ObserveOn(TaskPoolScheduler.Default)
+            // compare with library
+            .SelectMany(document => Task.Run(() => GetUpdatesAsync(document)),
+                (document, mappings) => new { Document = document, Mappings = mappings })
+            .Where(data => data.Mappings is not null && data.Mappings.Any())
+            // prompt user decision
+            .Select(result => new
+                { Info = result, DialogResult = ThisAddIn.AskForUpdate("检测到文档模具与库中模具不一致，是否立即更新文档模具？") })
+            .Where(x => x.DialogResult == DialogResult.Yes)
+            .ObserveOn(Globals.ThisAddIn.SynchronizationContext)
+            // close all document stencils to avoid occupied
+            .Select(x => new { FilePath = Preprocessing(x.Info.Document), x.Info.Mappings })
+            // display a progress bar to do time-consuming operation
+            .Select(data =>
+            {
+                Globals.ThisAddIn.ShowProgressWhileActing(
+                    (progress, token) =>
+                    {
+                        DoUpdatesByOpenXml(data.FilePath, data.Mappings, progress, token);
+                        PostProcess(data.FilePath);
+                    });
+                return Unit.Default;
+            })
+            .Subscribe(
+                _ => { },
+                ex =>
+                {
+                    ThisAddIn.Alert(ex.Message);
+                    Logger.Error(ex,
+                        $"Document Update Service ternimated accidently.");
+                },
+                () => { Logger.Error("Document Update Service should never complete."); });
     }
 
     /// <summary>
@@ -211,8 +268,6 @@ public abstract class DocumentUpdater
         IProgress<int> progress,
         CancellationToken token)
     {
-        var logger = LogManager.GetCurrentClassLogger();
-
         Globals.ThisAddIn.Application.ShowChanges = false;
         var undoScope = Globals.ThisAddIn.Application.BeginUndoScope(nameof(DoUpdatesInSite));
         try
@@ -222,7 +277,7 @@ public abstract class DocumentUpdater
             {
                 if (token.IsCancellationRequested)
                 {
-                    logger.Info("User cancelled the update process.");
+                    Logger.Info("User cancelled the update process.");
                     throw new OperationCanceledException(token);
                 }
 

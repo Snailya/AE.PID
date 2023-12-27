@@ -19,13 +19,13 @@ public class ShapeSelectionViewModel : ReactiveObject
 
     public ShapeSelectionViewModel()
     {
-        Masters = new ObservableCollection<MasterViewModel>(Selector.GetMastersSource());
+        Masters = new ObservableCollection<MasterViewModel>(ShapeSelector.GetMastersSource());
 
         var canSelectShapeById = this.WhenAnyValue(
             x => x.IsByIdChecked,
             x => x.ShapeId,
             (isChecked, id) => isChecked && id > 0);
-        var selectShapeById = ReactiveCommand.Create(() => Selector.SelectShapeById(_shapeId), canSelectShapeById);
+        var selectShapeById = ReactiveCommand.Create(() => ShapeSelector.SelectShapeById(_shapeId), canSelectShapeById);
         selectShapeById.ThrownExceptions.Subscribe(error => MessageBox.Show(error.Message));
 
         // create a by masters command executable only when masters in list selected and mode is by master
@@ -37,7 +37,7 @@ public class ShapeSelectionViewModel : ReactiveObject
                 (isChecked, hasSelection) => isChecked & hasSelection);
         var selectShapesByMasters =
             ReactiveCommand.Create(
-                () => Selector.SelectShapesByMasters(Masters.Where(x => x.IsChecked).Select(x => x.BaseId)),
+                () => ShapeSelector.SelectShapesByMasters(Masters.Where(x => x.IsChecked).Select(x => x.BaseId)),
                 canSelectShapesByMaster);
         selectShapesByMasters.ThrownExceptions.Subscribe(error => MessageBox.Show(error.Message));
 

@@ -23,7 +23,7 @@ public class Configuration : UpdatableConfigurationBase
 
     [JsonIgnore] public NLogConfiguration NLogConfig;
     [JsonIgnore] public string Api { get; set; } = "http://172.18.128.104:32768";
-    [JsonIgnore] public Version Version { get; set; } = new(0, 1, 0, 2);
+    [JsonIgnore] public Version Version { get; set; } = new(0, 2, 0, 0);
 
     /// <summary>
     ///     The configuration for library version check.
@@ -64,7 +64,7 @@ public class Configuration : UpdatableConfigurationBase
 
         config.NLogConfig = NLogConfiguration.LoadXml();
 
-        LogManager.GetCurrentClassLogger().Info("Configuration loaded.");
+        LogManager.GetCurrentClassLogger().Debug("Configuration loaded.");
 
         return config;
     }

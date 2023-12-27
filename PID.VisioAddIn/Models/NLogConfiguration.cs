@@ -3,9 +3,9 @@ using System.IO;
 using System.Reflection;
 using System.Security;
 using System.Xml;
+using AE.PID.Properties;
 using NLog;
 using NLog.Common;
-using PID.VisioAddIn.Properties;
 
 namespace AE.PID.Models;
 

@@ -5,9 +5,12 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reactive;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using AE.PID.Models;
 using NLog;
 
@@ -20,14 +23,10 @@ namespace AE.PID.Controllers.Services;
 public abstract class AppUpdater
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+    private static Subject<Unit> ManuallyInvokeTrigger { get; } = new();
 
     /// <summary>
-    /// Trigger used for ui Button to invoke the update event.
-    /// </summary>
-    public static Subject<Unit> ManuallyInvokeTrigger { get; } = new();
-
-    /// <summary>
-    ///     Emit a value manually
+    ///     Emit a value manually.
     /// </summary>
     public static void Invoke()
     {
@@ -35,10 +34,83 @@ public abstract class AppUpdater
     }
 
     /// <summary>
+    /// Staring a background service to request the server on period to check if there is a valid update.
+    /// If so, prompt a MessageBox to let user decide whether to update right now.
+    /// As automatic update not implemented, only open the explorer window to let user know there's a update installer.
+    /// This should called after configuration loaded.
+    /// </summary>
+    public static IDisposable Listen()
+    {
+        Logger.Info($"App Update Service started. Current version: {Globals.ThisAddIn.Configuration.Version}");
+
+        return Globals.ThisAddIn.Configuration.CheckIntervalSubject // auto check
+            .Select(Observable.Interval)
+            .Switch()
+            .Merge(Observable
+                .Return<
+                    long>(-1)) // add a immediately value as the interval method emits only after the interval collapse.
+            .Where(_ =>
+                Globals.ThisAddIn.Configuration.NextTime == null ||
+                DateTime.Now > Globals.ThisAddIn.Configuration.NextTime) // ignore if it not till the next check time
+            .Do(_ => Logger.Info($"Library Update started. {{Initiated by: Auto-Run}}"))
+            // merge with user invoke
+            .Merge(
+                ManuallyInvokeTrigger
+                    .Throttle(TimeSpan.FromMilliseconds(300))
+                    .Select(_ => Constants.ManuallyInvokeMagicNumber)
+                    .Do(_ => Logger.Info($"App Update started. {{Initiated by: User}}"))
+            )
+            // check for update
+            .SelectMany(value => Observable.FromAsync(GetUpdateAsync),
+                (value, result) => new { InvokeType = value, Result = result })
+            .Do(v => Logger.Info(v.Result.IsUpdateAvailable
+                ? $"New version found at {v.Result.DownloadUrl}. "
+                : "Application is up to date."))
+            // notify user for no update
+            .ObserveOn(Globals.ThisAddIn.SynchronizationContext)
+            .Select(data =>
+            {
+                // prompt an alert to let user know no update needed if it is manually triggered
+                if (data.InvokeType == Constants.ManuallyInvokeMagicNumber && !data.Result.IsUpdateAvailable)
+                    ThisAddIn.Alert("这就是最新版本。");
+
+                return data.Result;
+            })
+            // notify user to decide when to update
+            .Where(data => data.IsUpdateAvailable) // filter only valid update
+            .Select(data => new
+            {
+                Info = data,
+                DialogResult = ThisAddIn.AskForUpdate("发现新版本。" +
+                                                      Environment.NewLine +
+                                                      data.ReleaseNotes +
+                                                      Environment.NewLine + Environment.NewLine +
+                                                      "请在控制面板中卸载旧程序后重新安装。")
+            })
+            .ObserveOn(TaskPoolScheduler.Default)
+            .Where(x => x.DialogResult == DialogResult.Yes)
+            // perform update
+            .SelectMany(result => CacheAsync(result.Info.DownloadUrl))
+            .Do(path => Logger.Info($"New version of app cached at {path}"))
+            .Do(PromptManuallyUpdate)
+            // as http request may have error, retry for next emit
+            .Retry(3)
+            .Subscribe(
+                _ => { },
+                ex =>
+                {
+                    ThisAddIn.Alert(ex.Message);
+                    Logger.Error(ex, $"App update listener ternimated accidently.");
+                },
+                () => { Logger.Error("App update listener should never complete."); });
+    }
+
+
+    /// <summary>
     /// Request the server with current version of the app to check if there's a available update.
     /// </summary>
     /// <returns>The check result, if there's an available version, return with the lasted version download url, otherwise with message.</returns>
-    public static async Task<AppCheckVersionResult> GetUpdateAsync()
+    private static async Task<AppCheckVersionResult> GetUpdateAsync()
     {
         var configuration = Globals.ThisAddIn.Configuration;
         var client = Globals.ThisAddIn.HttpClient;
@@ -88,7 +160,7 @@ public abstract class AppUpdater
     /// </summary>
     /// <param name="downloadUrl"></param>
     /// <returns>The path of the zip installer.</returns>
-    public static async Task<string> CacheAsync(string downloadUrl)
+    private static async Task<string> CacheAsync(string downloadUrl)
     {
         var client = Globals.ThisAddIn.HttpClient;
 
@@ -142,7 +214,7 @@ public abstract class AppUpdater
     /// Open the explorer.exe and select the installer exe.
     /// </summary>
     /// <param name="installerPath"></param>
-    public static void PromptManuallyUpdate(string installerPath)
+    private static void PromptManuallyUpdate(string installerPath)
     {
         Logger.Info($"Open the explorer and select {installerPath}");
         Process.Start("explorer.exe", $"/select, \"{installerPath}\"");

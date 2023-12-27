@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 using AE.PID.Interfaces;
+using AE.PID.Properties;
 using Microsoft.Office.Interop.Visio;
 using PID.VisioAddIn.Properties;
 

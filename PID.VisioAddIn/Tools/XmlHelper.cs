@@ -7,7 +7,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace AE.PID.Controllers.Services;
+namespace AE.PID.Tools;
 
 public abstract class XmlHelper
 {

@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using AE.PID.Models;
 using AE.PID.Models.Exceptions;
+using AE.PID.Properties;
+using AE.PID.Views;
 using Microsoft.Office.Interop.Visio;
 using MiniExcelLibs;
 using NLog;
@@ -16,12 +21,10 @@ namespace AE.PID.Controllers.Services;
 /// <summary>
 ///     Dealing with extracting data from shape sheet and export that data into different format in excel.
 /// </summary>
-public abstract class Exporter
+public abstract class DocumentExporter
 {
-    /// <summary>
-    /// Trigger used for ui Button to invoke the update event.
-    /// </summary>
-    public static Subject<IVPage> ManuallyInvokeTrigger { get; } = new();
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+    private static Subject<IVPage> ManuallyInvokeTrigger { get; } = new();
 
     /// <summary>
     ///     Emit a value manually
@@ -33,12 +36,42 @@ public abstract class Exporter
     }
 
     /// <summary>
+    /// Start listening for export button click event and display a view to accept user operation.
+    /// The view prompt user to input extra information for project and the subsequent is called in ViewModel. 
+    /// </summary>
+    /// <returns></returns>
+    public static IDisposable Listen()
+    {
+        Logger.Info($"Export Service started.");
+
+        return ManuallyInvokeTrigger
+            .Throttle(TimeSpan.FromMilliseconds(300))
+            .ObserveOn(Globals.ThisAddIn.SynchronizationContext)
+            .Select(_ =>
+            {
+                Globals.ThisAddIn.MainWindow.Content = new ExportView();
+                Globals.ThisAddIn.MainWindow.Show(); // this observable only display the view, not focus on any task
+
+                return Unit.Default;
+            })
+            .Subscribe(
+                _ => { },
+                ex =>
+                {
+                    ThisAddIn.Alert(ex.Message);
+                    Logger.Error(ex,
+                        $"Export Service ternimated accidently.");
+                },
+                () => { Logger.Error("Export Service should never complete."); }
+            );
+    }
+
+    /// <summary>
     ///     extract data from shapes on layers defined in config and group them as BOM items.
     /// </summary>
     public static void SaveAsBom(IVPage page, string customerName, string documentNo, string projectNo,
         string versionNo)
     {
-        var logger = LogManager.GetCurrentClassLogger();
         var configuration = Globals.ThisAddIn.Configuration;
 
         var dialog = new SaveFileDialog
@@ -108,7 +141,7 @@ public abstract class Exporter
         }
         catch (Exception ex)
         {
-            logger.Error(ex, "Failed to export.");
+            Logger.Error(ex, "Failed to export.");
             ThisAddIn.Alert($"执行失败。{ex.Message}");
         }
     }
@@ -146,21 +179,30 @@ public abstract class Exporter
                              (short)VBABool.True;
         if (!existsAnywhere) return null;
         var row = shape.Cells[propName].ContainingRow;
+
         return GetFormatValue(row);
     }
 
     private static string GetFormatValue(IVRow row)
     {
-        var value = row.CellU[VisCellIndices.visCustPropsValue].ResultStr[VisUnitCodes.visUnitsString];
-        if (string.IsNullOrEmpty(value)) return value;
+        try
+        {
+            var value = row.CellU[VisCellIndices.visCustPropsValue].ResultStr[VisUnitCodes.visUnitsString];
+            if (string.IsNullOrEmpty(value)) return value;
 
-        var type = row.CellU[VisCellIndices.visCustPropsType].ResultStr[VisUnitCodes.visNoCast];
+            var type = row.CellU[VisCellIndices.visCustPropsType].ResultStr[VisUnitCodes.visNoCast];
 
-        if (type != "0" && type != "2") return value;
-        var format = row.CellU[VisCellIndices.visCustPropsFormat].ResultStr[VisUnitCodes.visUnitsString];
-        if (!string.IsNullOrEmpty(format))
-            value = Globals.ThisAddIn.Application.FormatResult(value, "", "", format);
+            if (type != "0" && type != "2") return value;
+            var format = row.CellU[VisCellIndices.visCustPropsFormat].ResultStr[VisUnitCodes.visUnitsString];
+            if (!string.IsNullOrEmpty(format))
+                value = Globals.ThisAddIn.Application.FormatResult(value, "", "", format);
 
-        return value;
+            return value;
+        }
+        catch (COMException comException)
+        {
+            Logger.Error(comException, $"Failed to get value form {row.Shape.ID}!{row.Name}.");
+            throw new FormatValueInvalidException(row.Shape.ID, row.Name);
+        }
     }
 }
