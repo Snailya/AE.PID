@@ -6,12 +6,13 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using AE.PID.Core.Dtos;
 using AE.PID.Models;
 using NLog;
-using PID.Core.Dtos;
 
 namespace AE.PID.Controllers.Services;
 
@@ -53,106 +54,142 @@ public abstract class LibraryUpdater
                 ManuallyInvokeTrigger.Throttle(TimeSpan.FromMilliseconds(300))
                     .Select(_ => Constants.ManuallyInvokeMagicNumber)
                     .Do(_ => Logger.Info($"Library Update started. {{Initiated by: User}}"))
-            )
-            // perform check
-            .SelectMany(
-                _ => Observable
-                    .FromAsync(UpdateLibrariesAsync),
-                (value, result) => new { InvokeType = value, Result = result }
-            )
-            // notify user if need
-            .Select(data =>
-            {
-                // prompt an alert to let user know update completed if it's invoked by user.
-                if (data.InvokeType == Constants.ManuallyInvokeMagicNumber)
-                    ThisAddIn.Alert("更新完毕");
-
-                return data.Result;
-            })
-            // as http request may have error, retry for next emit
-            .Retry(3)
-            // for error handling only
-            .Subscribe(
-                _ => { Logger.Info($"Libraries are up to date."); },
-                ex =>
-                {
-                    ThisAddIn.Alert(ex.Message);
-                    Logger.Error(ex,
-                        $"Library Update Service ternimated accidently.");
-                },
+            ).Subscribe(
+                DoUpdate,
+                ex => { Logger.Error(ex, $"Library Update Service ternimated accidently."); },
                 () => { Logger.Error("Library Update Service should never completed."); });
     }
 
-    /// <summary>
-    /// Update local library file and configuration.
-    /// </summary>
+    public static async Task<List<LibraryDto>> GetLibraries()
+    {
+        var client = Globals.ThisAddIn.HttpClient;
+        var configuration = Globals.ThisAddIn.Configuration;
+
+        return (await client.GetFromJsonAsync<IEnumerable<LibraryDto>>(configuration.Api + "/libraries"))
+            .ToList();
+    }
+
+    private static void DoUpdate(long seed)
+    {
+        Observable.Return(seed)
+            // When updating, the new file stream will be write to the origin file if the file exist.
+            // However, this origin file might already opened in Visio which leads to busy situation.
+            // So, before do updates, first close all that stencils and restore after update.
+            // Notice that this close process should be called on main thread as if alters the UI
+            .ObserveOn(Globals.ThisAddIn.SynchronizationContext)
+            .Select(data =>
+            {
+                var dockedStencils = Globals.ThisAddIn.Application.Documents
+                    .OfType<Microsoft.Office.Interop.Visio.IVDocument>()
+                    .Where(x => x.Type == Microsoft.Office.Interop.Visio.VisDocumentTypes.visTypeStencil)
+                    .ToList();
+                var paths = dockedStencils.Select(x => x.FullName).ToList();
+
+                foreach (var item in dockedStencils)
+                    item.Close();
+
+                return new { InvokeType = data, StencilsToRestore = paths };
+            })
+            // After closed, perform the update process in a background thread.
+            .ObserveOn(ThreadPoolScheduler.Instance)
+            .SelectMany(
+                _ => Observable
+                    .FromAsync(UpdateLibrariesAsync),
+                (data, result) => new
+                {
+                    data.InvokeType,
+                    data.StencilsToRestore,
+                    Result = result
+                }
+            )
+            .Do(_ => { Logger.Info($"Libraries are up to date."); })
+            // notify user if need
+            .Where(x => x.InvokeType == Constants.ManuallyInvokeMagicNumber)
+            .ObserveOn(Globals.ThisAddIn.SynchronizationContext)
+            .Select(data =>
+            {
+                foreach (var item in data.StencilsToRestore)
+                    Globals.ThisAddIn.Application.Documents.OpenEx(item,
+                        (short)Microsoft.Office.Interop.Visio.VisOpenSaveArgs.visOpenDocked);
+
+                ThisAddIn.Alert("更新完毕");
+                return Unit.Default;
+            })
+            .Subscribe(
+                _ => { },
+                ex =>
+                {
+                    switch (ex)
+                    {
+                        case HttpRequestException httpRequestException:
+                            Logger.Error(httpRequestException,
+                                "Failed to donwload library from server. Firstly, check if you are able to ping to the api. If not, connect administrator.");
+                            ThisAddIn.Alert("无法连接至服务器，请检查网络。");
+                            break;
+                        case IOException ioException:
+                            Logger.Error(ioException,
+                                "Failed to overwrite library file. It might be used by other process, consider close it before retry.");
+                            ThisAddIn.Alert($"无法写入数据，文件被占用。{ioException.Message}");
+                            break;
+                    }
+                });
+    }
+
     private static async Task<List<Library>> UpdateLibrariesAsync()
     {
         var client = Globals.ThisAddIn.HttpClient;
         var configuration = Globals.ThisAddIn.Configuration;
 
-        try
+        var servers = await GetLibraries();
+        Logger.Info(
+            $"Libraries version:  {{{string.Join(",", servers.Select(x => $"{x.Name}: {x.Version}"))} }}");
+
+        var updatedLibraries = new List<Library>();
+        foreach (var server in servers)
         {
-            var servers = (await client.GetFromJsonAsync<IEnumerable<LibraryDto>>(configuration.Api + "/libraries"))
-                .ToList();
-
-            var updatedLibraries = new List<Library>();
-
-            Logger.Info(
-                $"Libraries version:  {{{string.Join(",", servers.Select(x => $"{x.Name}: {x.Version}"))} }}");
-
-            foreach (var server in servers)
+            var local = configuration.LibraryConfiguration.Libraries.SingleOrDefault(x => x.Id == server.Id);
+            if (local != null && local.Version == server.Version)
             {
-                var local = configuration.LibraryConfiguration.Libraries.SingleOrDefault(x => x.Id == server.Id);
-                if (local != null && local.Version == server.Version)
-                {
-                    updatedLibraries.Add(local);
-                    continue;
-                }
-
-                local ??= new Library
-                {
-                    Id = server.Id,
-                    Items = server.Items.Select(x => new LibraryItem
-                        { BaseId = x.BaseId, Name = x.Name, UniqueId = x.UniqueId }),
-                    Name = server.Name,
-                    Version = server.Version,
-                    Path = Path.GetFullPath(Path.ChangeExtension(Path.Combine(ThisAddIn.LibraryFolder, server.Name),
-                        "vssx"))
-                };
-
-                using var response = await client.GetAsync(server.DownloadUrl);
-                using var contentStream = await response.Content.ReadAsStreamAsync();
-                using var fileStream = File.Open(local.Path, FileMode.Create, FileAccess.Write);
-                await contentStream.CopyToAsync(fileStream);
-
-                if (configuration.LibraryConfiguration.Libraries.All(x => x.Id != local.Id))
-                {
-                    configuration.LibraryConfiguration.Libraries.Add(local);
-                }
-                else
-                {
-                    local.Name = server.Name;
-                    local.Version = server.Version;
-                    local.Items = server.Items.Select(x => new LibraryItem
-                        { BaseId = x.BaseId, Name = x.Name, UniqueId = x.UniqueId });
-                }
-
                 updatedLibraries.Add(local);
+                continue;
             }
 
-            configuration.LibraryConfiguration.NextTime =
-                DateTime.Now + configuration.LibraryConfiguration.CheckInterval;
-            configuration.LibraryConfiguration.Libraries = new ConcurrentBag<Library>(updatedLibraries);
-            Configuration.Save(configuration);
+            local ??= new Library
+            {
+                Id = server.Id,
+                Items = server.Items.Select(x => new LibraryItem
+                    { BaseId = x.BaseId, Name = x.Name, UniqueId = x.UniqueId }),
+                Name = server.Name,
+                Version = server.Version,
+                Path = Path.GetFullPath(Path.ChangeExtension(Path.Combine(ThisAddIn.LibraryFolder, server.Name),
+                    "vssx"))
+            };
 
-            return updatedLibraries;
+            using var response = await client.GetAsync(server.DownloadUrl);
+            using var contentStream = await response.Content.ReadAsStreamAsync();
+            using var fileStream = File.Open(local.Path, FileMode.Create, FileAccess.Write);
+            await contentStream.CopyToAsync(fileStream);
+
+            if (configuration.LibraryConfiguration.Libraries.All(x => x.Id != local.Id))
+            {
+                configuration.LibraryConfiguration.Libraries.Add(local);
+            }
+            else
+            {
+                local.Name = server.Name;
+                local.Version = server.Version;
+                local.Items = server.Items.Select(x => new LibraryItem
+                    { BaseId = x.BaseId, Name = x.Name, UniqueId = x.UniqueId });
+            }
+
+            updatedLibraries.Add(local);
         }
-        catch (HttpRequestException httpRequestException)
-        {
-            Logger.Error(httpRequestException,
-                "Failed to donwload library from server. Firstly, check if you are able to ping to the api. If not, connect administrator.");
-            throw;
-        }
+
+        configuration.LibraryConfiguration.NextTime =
+            DateTime.Now + configuration.LibraryConfiguration.CheckInterval;
+        configuration.LibraryConfiguration.Libraries = new ConcurrentBag<Library>(updatedLibraries);
+        Configuration.Save(configuration);
+
+        return updatedLibraries;
     }
 }

@@ -61,16 +61,6 @@ namespace AE.PID.Properties {
         }
         
         /// <summary>
-        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
-        /// </summary>
-        internal static System.Drawing.Bitmap bom_32x32 {
-            get {
-                object obj = ResourceManager.GetObject("bom_32x32", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
         ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
         internal static byte[] BOM_template {
@@ -83,9 +73,9 @@ namespace AE.PID.Properties {
         /// <summary>
         ///   查找 System.Drawing.Bitmap 类型的本地化资源。
         /// </summary>
-        internal static System.Drawing.Bitmap compress_16x16 {
+        internal static System.Drawing.Bitmap btnBOM {
             get {
-                object obj = ResourceManager.GetObject("compress_16x16", resourceCulture);
+                object obj = ResourceManager.GetObject("btnBOM", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -93,9 +83,9 @@ namespace AE.PID.Properties {
         /// <summary>
         ///   查找 System.Drawing.Bitmap 类型的本地化资源。
         /// </summary>
-        internal static System.Drawing.Bitmap format_16x16 {
+        internal static System.Drawing.Bitmap btnFlatten {
             get {
-                object obj = ResourceManager.GetObject("format_16x16", resourceCulture);
+                object obj = ResourceManager.GetObject("btnFlatten", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -103,9 +93,49 @@ namespace AE.PID.Properties {
         /// <summary>
         ///   查找 System.Drawing.Bitmap 类型的本地化资源。
         /// </summary>
-        internal static System.Drawing.Bitmap library_32x32 {
+        internal static System.Drawing.Bitmap btnInitialize {
             get {
-                object obj = ResourceManager.GetObject("library_32x32", resourceCulture);
+                object obj = ResourceManager.GetObject("btnInitialize", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        /// </summary>
+        internal static System.Drawing.Bitmap btnLibrary {
+            get {
+                object obj = ResourceManager.GetObject("btnLibrary", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        /// </summary>
+        internal static System.Drawing.Bitmap btnSelectTool {
+            get {
+                object obj = ResourceManager.GetObject("btnSelectTool", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        /// </summary>
+        internal static System.Drawing.Bitmap btnSettings {
+            get {
+                object obj = ResourceManager.GetObject("btnSettings", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        /// </summary>
+        internal static System.Drawing.Bitmap btnSynchronizeToLibrary {
+            get {
+                object obj = ResourceManager.GetObject("btnSynchronizeToLibrary", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -145,36 +175,6 @@ namespace AE.PID.Properties {
         internal static string Property_Value_Override_Confirmation {
             get {
                 return ResourceManager.GetString("Property_Value_Override_Confirmation", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
-        /// </summary>
-        internal static System.Drawing.Bitmap select_16x16 {
-            get {
-                object obj = ResourceManager.GetObject("select_16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
-        /// </summary>
-        internal static System.Drawing.Bitmap settings_32x32 {
-            get {
-                object obj = ResourceManager.GetObject("settings_32x32", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
-        /// </summary>
-        internal static System.Drawing.Bitmap synchronize_16x16 {
-            get {
-                object obj = ResourceManager.GetObject("synchronize_16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }

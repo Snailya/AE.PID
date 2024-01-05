@@ -42,7 +42,7 @@ public static class DocumentInitializer
     {
         var undoScope = document.Application.BeginUndoScope("Initialize Document");
 
-        // get font id
+        // verify font exist
         var font = document.Fonts.OfType<Font>().SingleOrDefault(x => x.Name == "思源黑体");
 
         if (font == null)
@@ -51,13 +51,20 @@ public static class DocumentInitializer
             return;
         }
 
-        var themeStyle = document.Styles.ItemU["Theme"];
-        themeStyle.CellsSRC[(short)VisSectionIndices.visSectionCharacter, (short)VisRowIndices.visRowCharacter,
+        // setup or initialize ae styles
+        const string normalStyleName = "AE Normal";
+        var normalStyle = document.Styles.OfType<IVStyle>().SingleOrDefault(x => x.Name == normalStyleName) ??
+                          document.Styles.Add(normalStyleName, "", 1, 1, 1);
+        normalStyle.CellsSRC[(short)VisSectionIndices.visSectionCharacter, (short)VisRowIndices.visRowCharacter,
             (short)VisCellIndices.visCharacterFont].FormulaU = font.ID.ToString();
-        themeStyle.CellsSRC[(short)VisSectionIndices.visSectionCharacter, (short)VisRowIndices.visRowCharacter,
+        normalStyle.CellsSRC[(short)VisSectionIndices.visSectionCharacter, (short)VisRowIndices.visRowCharacter,
             (short)VisCellIndices.visCharacterAsianFont].FormulaU = font.ID.ToString();
-        themeStyle.CellsSRC[(short)VisSectionIndices.visSectionCharacter, (short)VisRowIndices.visRowCharacter,
+        normalStyle.CellsSRC[(short)VisSectionIndices.visSectionCharacter, (short)VisRowIndices.visRowCharacter,
             (short)VisCellIndices.visCharacterSize].FormulaU = "3mm";
+
+        const string pipelineStyleName = "AE PipeLine";
+        var pipelineStyle = document.Styles.OfType<IVStyle>().SingleOrDefault(x => x.Name == pipelineStyleName) ??
+                            document.Styles.Add(pipelineStyleName, normalStyleName, 1, 1, 1);
 
         // setup grid and ruler
         foreach (var page in document.Pages.OfType<IVPage>())

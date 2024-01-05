@@ -1,4 +1,6 @@
-﻿namespace AE.PID.Models;
+﻿using System.Collections.Generic;
+
+namespace AE.PID.Models;
 
 public class PartItem
 {
@@ -35,5 +37,16 @@ public class PartItem
     /// <summary>
     /// The number of the same part used in the source.
     /// </summary>
+    public double Count { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public List<FunctionalElementItem> FunctionalElements { get; set; } = new();
+}
+
+public class FunctionalElementItem
+{
+    public string Name { get; set; }
     public double Count { get; set; }
 }

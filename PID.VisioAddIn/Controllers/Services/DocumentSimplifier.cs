@@ -1,8 +1,4 @@
 ﻿using System;
-using System.IO;
-using System.IO.Packaging;
-using System.Linq;
-using System.Reactive;
 using System.Reactive.Subjects;
 using Microsoft.Office.Interop.Visio;
 using NLog;
@@ -24,5 +20,6 @@ public class DocumentSimplifier
 
     public static void Simplify(string filePath)
     {
+        throw new NotImplementedException();
     }
 }

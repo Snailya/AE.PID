@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<customUI onLoad="Ribbon_Load" xmlns="http://schemas.microsoft.com/office/2009/07/customui">
+    <ribbon>
+        <tabs>
+            <tab idMso="TabAddIns" label="AE PID">
+                <group id="grpEdit" label="编辑">
+                    <button id="btnLibrary" onAction="btnOpenLibraries_Click"
+                            screentip="打开AE原理图库，请勿使用My Shapes中的模具库" label="库" size="large" getImage="GetButtonImage"/>
+                    <button id="btnInitialize" onAction="btnInitialize_Click" screentip="设置文档的字体和网格"
+                            label="初始化" getImage="GetButtonImage"/>
+                    <button id="btnSelectTool" onAction="btnSelectTool_Click" screentip="选择文档中的设备对象"
+                            supertip="支持ID选择与类型选择" label="选择" getImage="GetButtonImage"/>
+                    <button id="btnSynchronizeToLibrary" onAction="btnUpdateDocumentMasters_Click"
+                            screentip="更新图纸中的模具至最新版" label="更新" getImage="GetButtonImage"/>
+                </group>
+                <group id="grpExport" label="导出">
+                    <button id="btnBOM" onAction="btnExport_Click" screentip="导出完整BOM表" label="BOM"
+                            size="large" getImage="GetButtonImage"/>
+                    <button id="btnFlatten" onAction="btnFlatten_Click" screentip="删除设备对象携带的属性（不可逆）"
+                            label="简化" getImage="GetButtonImage"/>
+                </group>
+                <group id="grpAbout" label="关于">
+                    <button id="btnSettings" onAction="btnSettings_Click" screentip="打开配置文件" label="设置"
+                            size="large" getImage="GetButtonImage"/>
+                </group>
+            </tab>
+        </tabs>
+    </ribbon>
+
+    <!--This section defines custom context menu controls.-->
+    <contextMenus>
+        <contextMenu idMso="ContextMenuShape">
+            <button id="btnAddLinkedControl" label="添加关联元件"
+                    onAction="AddLinkedControl"
+                    getVisible="CanAddLinkedControl"/>
+            <button id="btnHighlight" label="高亮关联元件"
+                    onAction="Highlight"
+                    getVisible="CanHighlight"/>
+        </contextMenu>
+    </contextMenus>
+</customUI>

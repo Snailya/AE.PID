@@ -35,18 +35,23 @@ public abstract class ConfigurationUpdater
         return ManuallyInvokeTrigger
             .Throttle(TimeSpan.FromMilliseconds(300))
             .ObserveOn(Globals.ThisAddIn.SynchronizationContext)
-            .Select(_ =>
-            {
-                Globals.ThisAddIn.MainWindow.Content = new UserSettingsView();
-                Globals.ThisAddIn.MainWindow.Show();
-
-                return Unit.Default;
-            })
             .Subscribe(
-                _ => { },
+                _ =>
+                {
+                    try
+                    {
+                        Globals.ThisAddIn.MainWindow.Content = new UserSettingsView();
+                        Globals.ThisAddIn.MainWindow.Show();
+                    }
+                    catch (Exception ex)
+                    {
+                        ThisAddIn.Alert($"加载失败：{ex.Message}");
+                        Logger.Error(ex,
+                            $"Failed to display setting window.");
+                    }
+                },
                 ex =>
                 {
-                    ThisAddIn.Alert(ex.Message);
                     Logger.Error(ex,
                         $"Configuration Update Service ternimated accidently.");
                 },

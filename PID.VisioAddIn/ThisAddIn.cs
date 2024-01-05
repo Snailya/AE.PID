@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Drawing.Text;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Reactive.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -14,10 +11,8 @@ using System.Windows.Threading;
 using AE.PID.Controllers.Services;
 using AE.PID.Models;
 using AE.PID.Properties;
-using AE.PID.Tools;
 using AE.PID.ViewModels;
 using AE.PID.Views;
-using Microsoft.Office.Core;
 using NLog;
 using MessageBox = System.Windows.Forms.MessageBox;
 using Path = System.IO.Path;
@@ -27,6 +22,7 @@ namespace AE.PID;
 public partial class ThisAddIn
 {
     private Logger _logger;
+    private Ribbon _ribbon;
 
     /// <summary>
     ///     The data folder path in Application Data.
@@ -137,6 +133,11 @@ public partial class ThisAddIn
 
     private void ThisAddIn_Startup(object sender, EventArgs e)
     {
+        _ribbon = new Ribbon();
+        Globals.ThisAddIn.Application.RegisterRibbonX(_ribbon, null,
+            Microsoft.Office.Interop.Visio.VisRibbonXModes.visRXModeDrawing,
+            "AE PID RIBBON");
+
         // associate the main tread with a synchronization context so that the main thread would be achieved using SynchronizationContext.Current.
         SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext());
         SynchronizationContext = SynchronizationContext.Current;
@@ -175,12 +176,14 @@ public partial class ThisAddIn
 
     private void ThisAddIn_Shutdown(object sender, EventArgs e)
     {
+        Globals.ThisAddIn.Application.UnregisterRibbonX(_ribbon, null);
+
         Configuration.Save(Configuration);
         InputCache.Save(InputCache);
 
         _logger.Info($"Configuration and input cache saved on shut down.");
     }
-    
+
     /// <summary>
     ///     Initialize the configuration and environment setup.
     /// </summary>
@@ -221,7 +224,7 @@ public partial class ThisAddIn
 
         _logger.Info("Setuped.");
     }
-    
+
     #region VSTO generated code
 
     /// <summary>

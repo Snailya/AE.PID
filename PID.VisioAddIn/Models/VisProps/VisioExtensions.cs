@@ -1,14 +1,21 @@
 ﻿using System;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using AE.PID.Controllers.Services;
 using AE.PID.Interfaces;
+using AE.PID.Models.BOM;
+using AE.PID.Models.Exceptions;
 using AE.PID.Properties;
 using Microsoft.Office.Interop.Visio;
-using PID.VisioAddIn.Properties;
+using NLog;
 
 namespace AE.PID.Models.VisProps;
 
-public static class VisioExtensions
+internal static class VisioExtension
 {
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     public static Row GetOrAdd(this IVShape shape, IProp prop)
     {
         var existsAnywhere = shape.CellExists[prop.FullName, (short)VisExistsFlags.visExistsAnywhere] ==
@@ -46,7 +53,6 @@ public static class VisioExtensions
 
         return row;
     }
-
 
     public static Row AddOrUpdate(this IVShape shape, IShapeData data)
     {
@@ -111,5 +117,101 @@ public static class VisioExtensions
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Get formatted value from Shape Data. 
+    /// </summary>
+    /// <param name="row"></param>
+    /// <returns></returns>
+    /// <exception cref="FormatValueInvalidException"></exception>
+    public static string GetFormatValue(this IVRow row)
+    {
+        try
+        {
+            var value = row.CellU[VisCellIndices.visCustPropsValue].ResultStr[VisUnitCodes.visUnitsString];
+            if (string.IsNullOrEmpty(value)) return value;
+
+            var type = row.CellU[VisCellIndices.visCustPropsType].ResultStr[VisUnitCodes.visNoCast];
+
+            if (type != "0" && type != "2") return value;
+            var format = row.CellU[VisCellIndices.visCustPropsFormat].ResultStr[VisUnitCodes.visUnitsString];
+            if (string.IsNullOrEmpty(format)) return value;
+
+            var result = Regex.Replace(format, @"(\\.)|(@)|(0\.[#0]+|#)", match =>
+            {
+                if (match.Groups[1].Success)
+                    return match.Groups[1].Value.Substring(1); // Replace \\char with char
+
+                if (match.Groups[2].Success)
+                    return value; // Replace @ with the original string
+
+                if (match.Groups[3].Success)
+                    return Truncate(value, match.Value); // Handle other numeric patterns
+
+                return match.Value;
+            });
+            return result;
+        }
+        catch (COMException comException)
+        {
+            Logger.Error(comException, $"Failed to get value form {row.Shape.ID}!{row.Name}.");
+            throw new FormatValueInvalidException(row.Shape.ID, row.Name);
+        }
+    }
+
+    /// <summary>
+    /// Try convert a shape to line item.
+    /// </summary>
+    /// <param name="shape"></param>
+    /// <returns></returns>
+    public static LineItemBase ToLineItem(this IVShape shape)
+    {
+        try
+        {
+            var item = new LineItemBase
+            {
+                Id = shape.ID,
+                ProcessZone = shape.Cells["Prop.ProcessZone"].ResultStr[VisUnitCodes.visUnitsString],
+                FunctionalGroup = shape.Cells["Prop.FunctionalGroup"].ResultStr[VisUnitCodes.visUnitsString],
+                FunctionalElement = TryGetFormatValue(shape, "Prop.FunctionalElement"),
+                Name = shape.Cells["Prop.SubClass"].ResultStr[VisUnitCodes.visUnitsString]
+            };
+
+            if (double.TryParse(shape.Cells["Prop.Subtotal"].ResultStr[VisUnitCodes.visUnitsString], out var count))
+                item.Count = count;
+
+            if (shape.CellExists[LinkedControlManager.LinkedShapePropertyName,
+                    (short)VisExistsFlags.visExistsAnywhere] !=
+                (short)VBABool.True) return item;
+
+            item.Name = shape.Cells["Prop.Name"].ResultStr[VisUnitCodes.visUnitsString];
+            var parentId = (int)shape.CellsU[LinkedControlManager.LinkedShapePropertyName].ResultIU;
+            item.ParentId = parentId == 0 ? null : parentId;
+
+            return item;
+        }
+        catch (Exception e)
+        {
+            Logger.Error(e, $"Failed to convert ID:{shape.ID} to BOM item, please check if shape is a valid AE item.");
+            return null;
+        }
+    }
+
+    private static string TryGetFormatValue(IVShape shape, string propName)
+    {
+        var existsAnywhere = shape.CellExists[propName, (short)VisExistsFlags.visExistsAnywhere] ==
+                             (short)VBABool.True;
+        if (!existsAnywhere) return null;
+        var row = shape.Cells[propName].ContainingRow;
+
+        return row.GetFormatValue();
+    }
+
+    private static string Truncate(string originalString, string formatPattern)
+    {
+        if (!formatPattern.Contains(".") || !char.IsDigit(originalString[0])) return originalString;
+        var decimalIndex = originalString.IndexOf('.');
+        return originalString.Substring(0, decimalIndex);
     }
 }

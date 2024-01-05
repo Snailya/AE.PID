@@ -59,12 +59,18 @@ public abstract class AppUpdater
                     .Throttle(TimeSpan.FromMilliseconds(300))
                     .Select(_ => Constants.ManuallyInvokeMagicNumber)
                     .Do(_ => Logger.Info($"App Update started. {{Initiated by: User}}"))
-            )
-            // check for update
+            ).Subscribe(DoUpdate,
+                ex => { Logger.Error(ex, $"App update listener ternimated accidently."); },
+                () => { Logger.Error("App update listener should never complete."); });
+    }
+
+    private static void DoUpdate(long seed)
+    {
+        Observable.Return(seed)
             .SelectMany(value => Observable.FromAsync(GetUpdateAsync),
                 (value, result) => new { InvokeType = value, Result = result })
-            .Do(v => Logger.Info(v.Result.IsUpdateAvailable
-                ? $"New version found at {v.Result.DownloadUrl}. "
+            .Do(data => Logger.Info(data.Result.IsUpdateAvailable
+                ? $"New version found at {data.Result.DownloadUrl}. "
                 : "Application is up to date."))
             // notify user for no update
             .ObserveOn(Globals.ThisAddIn.SynchronizationContext)
@@ -85,7 +91,7 @@ public abstract class AppUpdater
                                                       Environment.NewLine +
                                                       data.ReleaseNotes +
                                                       Environment.NewLine + Environment.NewLine +
-                                                      "请在控制面板中卸载旧程序后重新安装。")
+                                                      "请关闭Visio后安装。")
             })
             .ObserveOn(TaskPoolScheduler.Default)
             .Where(x => x.DialogResult == DialogResult.Yes)
@@ -93,16 +99,20 @@ public abstract class AppUpdater
             .SelectMany(result => CacheAsync(result.Info.DownloadUrl))
             .Do(path => Logger.Info($"New version of app cached at {path}"))
             .Do(PromptManuallyUpdate)
-            // as http request may have error, retry for next emit
-            .Retry(3)
             .Subscribe(
                 _ => { },
                 ex =>
                 {
-                    ThisAddIn.Alert(ex.Message);
-                    Logger.Error(ex, $"App update listener ternimated accidently.");
-                },
-                () => { Logger.Error("App update listener should never complete."); });
+                    switch (ex)
+                    {
+                        case HttpRequestException httpRequestException:
+                            Logger.Error(httpRequestException,
+                                "Failed to donwload library from server. Firstly, check if you are able to ping to the api. If not, connect administrator.");
+                            ThisAddIn.Alert("无法连接至服务器，请检查网络。");
+                            break;
+                    }
+                }
+            );
     }
 
 

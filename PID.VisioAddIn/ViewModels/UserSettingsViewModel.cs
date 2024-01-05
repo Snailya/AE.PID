@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive;
+using System.Threading.Tasks;
 using AE.PID.Controllers.Services;
 using AE.PID.Models;
 using ReactiveUI;
@@ -15,10 +16,12 @@ public class UserSettingsViewModel : ReactiveObject
     private FrequencyOptionViewModel _libraryCheckFrequency;
     private FrequencyOptionViewModel _appNextCheckFrequency;
     private string _tmpPath = ThisAddIn.TmpFolder;
+    private IEnumerable<LibraryViewModel> _libraries;
 
     public UserSettingsViewModel()
     {
         GetCurrentInterval();
+        // LoadLibraries();
 
         CheckForAppUpdate = ReactiveCommand.Create(AppUpdater.Invoke);
         CheckForLibrariesUpdate = ReactiveCommand.Create(LibraryUpdater.Invoke);
@@ -50,6 +53,20 @@ public class UserSettingsViewModel : ReactiveObject
             Configuration.Save(Globals.ThisAddIn.Configuration);
         });
         Cancel = ReactiveCommand.Create(() => { });
+    }
+
+    private async Task LoadLibraries()
+    {
+        var dtos = await LibraryUpdater.GetLibraries();
+
+        Libraries = dtos.Select(x => new LibraryViewModel
+        {
+            Name = x.Name,
+            LocalVersion = new Version(Globals.ThisAddIn.Configuration.LibraryConfiguration.Libraries
+                .Single(i => i.Name == x.Name)
+                .Version),
+            RemoteVersion = new Version(x.Version)
+        });
     }
 
     public List<FrequencyOptionViewModel> CheckFrequencyOptions { get; set; } =
@@ -101,13 +118,18 @@ public class UserSettingsViewModel : ReactiveObject
         }
     }
 
+    public IEnumerable<LibraryViewModel> Libraries
+    {
+        get => _libraries;
+        set => this.RaiseAndSetIfChanged(ref _libraries, value);
+    }
+
     public ReactiveCommand<Unit, Unit> CheckForAppUpdate { get; set; }
     public ReactiveCommand<Unit, Unit> CheckForLibrariesUpdate { get; }
     public ReactiveCommand<Unit, Unit> OpenTmp { get; set; }
     public ReactiveCommand<Unit, Unit> ClearCache { get; set; }
     public ReactiveCommand<Unit, Unit> Submit { get; }
     public ReactiveCommand<Unit, Unit> Cancel { get; set; }
-
 
     private void GetCurrentInterval()
     {

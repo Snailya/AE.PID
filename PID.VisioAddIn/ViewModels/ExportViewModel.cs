@@ -1,6 +1,10 @@
-﻿using System.Reactive;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Reactive;
 using AE.PID.Controllers.Services;
 using AE.PID.Models;
+using AE.PID.Models.BOM;
 using ReactiveUI;
 
 namespace AE.PID.ViewModels;
@@ -14,9 +18,12 @@ public class ExportViewModel : ReactiveObject
 
     public ExportViewModel()
     {
+        var lineItems = DocumentExporter.GetLineItems().ToList();
+        LineItems = new ObservableCollection<LineItemBase>(lineItems);
+
         Submit = ReactiveCommand.Create(() =>
         {
-            DocumentExporter.SaveAsBom(Globals.ThisAddIn.Application.ActivePage, _customerName, _documentNo, _projectNo,
+            DocumentExporter.SaveAsBom(lineItems, _customerName, _documentNo, _projectNo,
                 _versionNo);
 
             Globals.ThisAddIn.InputCache.CustomerName = _customerName;
@@ -52,6 +59,7 @@ public class ExportViewModel : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _versionNo, value);
     }
 
+    public ObservableCollection<LineItemBase> LineItems { get; set; }
     public ReactiveCommand<Unit, Unit> Submit { get; set; }
     public ReactiveCommand<Unit, Unit> Cancel { get; set; }
 }

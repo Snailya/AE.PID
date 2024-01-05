@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using AE.PID.ViewModels;
@@ -40,21 +39,21 @@ public static class ShapeSelector
         return ManuallyInvokeTrigger
             .Throttle(TimeSpan.FromMilliseconds(300))
             .ObserveOn(Globals.ThisAddIn.SynchronizationContext)
-            .Select(_ =>
-            {
-                Globals.ThisAddIn.MainWindow.Content = new ShapeSelectionView();
-                Globals.ThisAddIn.MainWindow.Show();
-
-                return Unit.Default;
-            })
             .Subscribe(
-                _ => { },
-                ex =>
+                _ =>
                 {
-                    ThisAddIn.Alert(ex.Message);
-                    Logger.Error(ex,
-                        $"Select Service ternimated accidently.");
+                    try
+                    {
+                        Globals.ThisAddIn.MainWindow.Content = new ShapeSelectionView();
+                        Globals.ThisAddIn.MainWindow.Show();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error(ex, $"Failed to display selection window.");
+                        ThisAddIn.Alert($"加载失败：{ex.Message}");
+                    }
                 },
+                ex => { Logger.Error(ex, $"Select Service ternimated accidently."); },
                 () => { Logger.Error("Select Service should never complete."); }
             );
     }

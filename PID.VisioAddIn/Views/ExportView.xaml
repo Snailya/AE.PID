@@ -5,12 +5,14 @@
                           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                           xmlns:rxui="http://reactiveui.net"
                           xmlns:viewModels="clr-namespace:AE.PID.ViewModels"
+                          xmlns:converters="clr-namespace:AE.PID.Converters"
                           mc:Ignorable="d"
                           x:TypeArguments="viewModels:ExportViewModel"
-                          MinHeight="320" MinWidth="320"
-                          d:DesignHeight="320" d:DesignWidth="320">
+                          MinHeight="320" MinWidth="640" Height="640"
+                          d:DesignHeight="320" d:DesignWidth="480">
     <Grid Margin="8">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
@@ -21,25 +23,71 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <TextBlock Margin="4" Text="客户名称" />
             <TextBox Grid.Row="0" Grid.Column="1" Margin="4" x:Name="CustomerNameInput" />
-            <TextBlock Grid.Row="1" Grid.Column="0" Margin="4" Text="文档编号" />
-            <TextBox Grid.Row="1" Grid.Column="1" Margin="4" x:Name="DocNoInput" />
-            <TextBlock Grid.Row="2" Grid.Column="0" Margin="4" Text="项目编号" />
-            <TextBox Grid.Row="2" Grid.Column="1" Margin="4" x:Name="ProjectNoInput" />
-            <TextBlock Grid.Row="3" Grid.Column="0" Margin="4" Text="版本号" />
-            <TextBox Grid.Row="3" Grid.Column="1" Margin="4" x:Name="VersionNoInput" />
+            <TextBlock Grid.Row="0" Grid.Column="2" Margin="4" Text="文档编号" />
+            <TextBox Grid.Row="0" Grid.Column="3" Margin="4" x:Name="DocNoInput" />
+            <TextBlock Grid.Row="1" Grid.Column="0" Margin="4" Text="项目编号" />
+            <TextBox Grid.Row="1" Grid.Column="1" Margin="4" x:Name="ProjectNoInput" />
+            <TextBlock Grid.Row="1" Grid.Column="2" Margin="4" Text="版本号" />
+            <TextBox Grid.Row="1" Grid.Column="3" Margin="4" x:Name="VersionNoInput" />
         </Grid>
-        <Separator Grid.Row="2" />
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="3">
+
+        <DataGrid Grid.Row="2" x:Name="BillsOfMaterials" Margin="4"
+                  AutoGenerateColumns="False" CanUserAddRows="False"
+                  SelectionUnit="FullRow" SelectionMode="Single">
+            <DataGrid.Resources>
+                <converters:NullableToVisibilityConverter x:Key="NullableToVisibilityConverter" />
+            </DataGrid.Resources>
+
+            <DataGrid.RowHeaderTemplate>
+                <DataTemplate>
+                    <Border Width="16" Height="16" Background="LightGray"
+                            Visibility="{Binding DataContext.Children, RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}, Converter={StaticResource NullableToVisibilityConverter}}">
+                        <TextBlock Text="L" TextAlignment="Center" />
+                    </Border>
+                </DataTemplate>
+            </DataGrid.RowHeaderTemplate>
+
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="形状ID" Width="64" Binding="{Binding Id}" />
+                <DataGridTextColumn Header="功能组" Width="128" Binding="{Binding FunctionalGroup}" />
+                <DataGridTextColumn Header="功能元件" Width="128" Binding="{Binding FunctionalElement}" />
+                <DataGridTextColumn Header="名称" Width="128" Binding="{Binding Name}" />
+                <DataGridTextColumn Header="数量" Width="64" Binding="{Binding Count}" />
+            </DataGrid.Columns>
+
+            <DataGrid.RowDetailsTemplate>
+                <DataTemplate>
+                    <DataGrid ItemsSource="{Binding Children}"
+                              AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="None">
+                        <DataGrid.RowStyle>
+                            <Style TargetType="DataGridRow">
+                                <Setter Property="Background" Value="LightGray" />
+                                <!-- Set your desired background color -->
+                            </Style>
+                        </DataGrid.RowStyle>
+
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="形状ID" Width="64" Binding="{Binding Id}" />
+                            <DataGridTextColumn Header="功能组" Width="128" Binding="{Binding FunctionalGroup}" />
+                            <DataGridTextColumn Header="功能元件" Width="128" Binding="{Binding FunctionalElement}" />
+                            <DataGridTextColumn Header="名称" Width="128" Binding="{Binding Name}" />
+                            <DataGridTextColumn Header="数量" Width="64" Binding="{Binding Count}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DataTemplate>
+            </DataGrid.RowDetailsTemplate>
+        </DataGrid>
+        <Separator Grid.Row="3" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="4">
             <Button x:Name="SubmitButton" Margin="8 8 4 4" MinWidth="64" Content="确定" />
             <Button x:Name="CancelButton" Margin="4 8 8 4" MinWidth="64" Content="取消" />
         </StackPanel>

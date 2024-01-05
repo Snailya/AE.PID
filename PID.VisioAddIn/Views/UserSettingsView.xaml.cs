@@ -52,6 +52,10 @@ public partial class UserSettingsView
                     vm => vm.CheckForLibrariesUpdate,
                     v => v.LibraryCheckUpdateButton)
                 .DisposeWith(disposableRegistration);
+            // this.OneWayBind(ViewModel,
+            //         vm => vm.Libraries,
+            //         v => v.LibraryList.ItemsSource)
+            //     .DisposeWith(disposableRegistration);
 
             this.BindCommand(ViewModel,
                     vm => vm.Submit,

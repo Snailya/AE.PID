@@ -7,8 +7,8 @@
                           xmlns:viewModels="clr-namespace:AE.PID.ViewModels"
                           mc:Ignorable="d"
                           x:TypeArguments="viewModels:UserSettingsViewModel"
-                          MinHeight="320" MinWidth="320"
-                          d:DesignHeight="320" d:DesignWidth="320">
+                          MinHeight="480" MinWidth="320"
+                          d:DesignHeight="320" d:DesignWidth="480">
     <Grid Margin="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -43,9 +43,9 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <Label Content="更新频率" />
+                    <Label Content="更新频率" Margin="4 0 0 0" />
                     <ComboBox Grid.Column="1" x:Name="AppCheckFrequencySelector" DisplayMemberPath="Label" />
-                    <Button Grid.Column="2" x:Name="AppCheckUpdateButton" Margin="8 0" MinWidth="64" Content="检查更新" />
+                    <Button Grid.Column="2" x:Name="AppCheckUpdateButton" Margin="8 0" MinWidth="64" Content="更新" />
                 </Grid>
                 <Grid Grid.Row="2" Margin="0 4 0 4">
                     <Grid.ColumnDefinitions>
@@ -54,7 +54,7 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <Label Content="缓存路径" />
+                    <Label Content="缓存路径" Margin="4 0 0 0" />
                     <TextBox Grid.Column="1" x:Name="TmpPathInput" Margin="0 0 4 0" VerticalContentAlignment="Center"
                              IsEnabled="False" />
                     <Button Grid.Column="2" x:Name="OpenTmpButton" Margin="4 0" MinWidth="64" Content="打开" />
@@ -63,6 +63,7 @@
             </Grid>
             <Grid Grid.Row="1" Margin="0 4">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
@@ -80,10 +81,54 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <Label Content="更新频率" />
+                    <Label Content="更新频率" Margin="4 0 0 0" />
                     <ComboBox Grid.Column="1" x:Name="LibraryCheckFrequencySelector" DisplayMemberPath="Label" />
-                    <Button Grid.Column="2" x:Name="LibraryCheckUpdateButton" Margin="8 0" MinWidth="64" Content="检查更新" />
+                    <Button Grid.Column="2" x:Name="LibraryCheckUpdateButton" Margin="8 0" MinWidth="64" Content="更新" />
                 </Grid>
+                <!-- <DataGrid Grid.Row="2" x:Name="LibraryList" Margin="0 4" Padding="8 0" d:Height="120"  -->
+                <!--           AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column"> -->
+                <!--     <DataGrid.Resources> -->
+                <!--         <Style TargetType="{x:Type DataGrid}"> -->
+                <!--             <Setter Property="BorderBrush" Value="Black"/> -->
+                <!--             <Setter Property="BorderThickness" Value="0"/> -->
+                <!--             <Setter Property="GridLinesVisibility" Value="None"/> -->
+                <!--             <Setter Property="Background" Value="Transparent"></Setter> -->
+                <!--         </Style> -->
+                <!--         <Style TargetType="{x:Type DataGridColumnHeader}"> -->
+                <!--             <Setter Property="BorderBrush" Value="Black"/> -->
+                <!--             <Setter Property="BorderThickness" Value="0 0 0 1" /> -->
+                <!--             <Setter Property="Background" Value="Transparent"/> -->
+                <!--             <Setter Property="Foreground" Value="Black"/> -->
+                <!--             <Setter Property="Padding" Value="0 4"/> -->
+                <!--             <Setter Property="MinWidth" Value="80" /> -->
+                <!--         </Style> -->
+                <!--         <Style TargetType="{x:Type DataGridRow}"> -->
+                <!--             <Setter Property="Margin" Value="0"/> -->
+                <!--         </Style> -->
+                <!--     </DataGrid.Resources> -->
+                <!--     <DataGrid.Columns> -->
+                <!--         <DataGridTextColumn Header="名称" Binding="{Binding Name}"/> -->
+                <!--         <DataGridTextColumn Header="本地版本" Binding="{Binding LocalVersion}"/> -->
+                <!--         <DataGridTemplateColumn Header="服务器版本"> -->
+                <!--             <DataGridTemplateColumn.CellTemplate> -->
+                <!--                 <DataTemplate> -->
+                <!--                     <TextBlock Text="{Binding RemoteVersion}"> -->
+                <!--                         <TextBlock.Style>    -->
+                <!--                             <Style TargetType="TextBlock"> -->
+                <!--                                 <Style.Triggers> -->
+                <!--                                     <DataTrigger Binding="{Binding NeedUpdate}" Value="True"> -->
+                <!--                                         <Setter Property="Foreground" Value="ForestGreen" /> -->
+                <!--                                         <Setter Property="FontWeight" Value="Bold" /> -->
+                <!--                                     </DataTrigger> -->
+                <!--                                 </Style.Triggers> -->
+                <!--                             </Style> -->
+                <!--                         </TextBlock.Style> -->
+                <!--                     </TextBlock> -->
+                <!--                 </DataTemplate> -->
+                <!--             </DataGridTemplateColumn.CellTemplate> -->
+                <!--         </DataGridTemplateColumn> -->
+                <!--     </DataGrid.Columns> -->
+                <!-- </DataGrid> -->
             </Grid>
         </Grid>
         <Separator Grid.Row="2" />

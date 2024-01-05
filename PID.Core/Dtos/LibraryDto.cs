@@ -1,4 +1,4 @@
-﻿namespace PID.Core.Dtos;
+﻿namespace AE.PID.Core.Dtos;
 
 /// <summary>
 ///     The response dto used for get /libraries

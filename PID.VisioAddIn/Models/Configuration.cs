@@ -23,7 +23,7 @@ public class Configuration : UpdatableConfigurationBase
 
     [JsonIgnore] public NLogConfiguration NLogConfig;
     [JsonIgnore] public string Api { get; set; } = "http://172.18.128.104:32768";
-    [JsonIgnore] public Version Version { get; set; } = new(0, 2, 0, 0);
+    [JsonIgnore] public Version Version { get; set; } = new(0, 2, 1, 0);
 
     /// <summary>
     ///     The configuration for library version check.
@@ -49,12 +49,24 @@ public class Configuration : UpdatableConfigurationBase
                 var configContent = File.ReadAllText(GetPath());
 
                 if (!string.IsNullOrEmpty(configContent))
-                    config = JsonSerializer.Deserialize<Configuration>(
+                {
+                    var localConfig = JsonSerializer.Deserialize<Configuration>(
                         configContent,
                         new JsonSerializerOptions
                         {
                             Converters = { new ConcurrentBagConverter() }
                         });
+
+                    if (localConfig != null)
+                    {
+                        config = localConfig;
+                        LogManager.GetCurrentClassLogger().Debug("Local configuration loaded.");
+                    }
+                    else
+                    {
+                        LogManager.GetCurrentClassLogger().Debug("Default configuration loaded.");
+                    }
+                }
             }
             catch (JsonException jsonException)
             {
@@ -63,8 +75,6 @@ public class Configuration : UpdatableConfigurationBase
             }
 
         config.NLogConfig = NLogConfiguration.LoadXml();
-
-        LogManager.GetCurrentClassLogger().Debug("Configuration loaded.");
 
         return config;
     }

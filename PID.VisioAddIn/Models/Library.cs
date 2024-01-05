@@ -42,4 +42,9 @@ public class Library
     ///     Then content of the library.
     /// </summary>
     public IEnumerable<LibraryItem> Items { get; set; } = new List<LibraryItem>();
+
+    public override string ToString()
+    {
+        return $"{Name}: {Version}";
+    }
 }

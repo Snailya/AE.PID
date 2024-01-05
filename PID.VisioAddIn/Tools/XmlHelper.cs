@@ -12,6 +12,8 @@ namespace AE.PID.Tools;
 public abstract class XmlHelper
 {
     public static readonly Uri MastersPartUri = new("/visio/masters/masters.xml", UriKind.Relative);
+    public static readonly Uri DocumentPartUri = new("/visio/document.xml", UriKind.Relative);
+
     public static readonly XNamespace MainNs = @"http://schemas.microsoft.com/office/visio/2012/main";
     public static readonly XNamespace RelNs = @"http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 

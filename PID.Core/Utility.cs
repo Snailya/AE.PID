@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace PID.Core;
+namespace AE.PID.Core;
 
 public class Utility
 {

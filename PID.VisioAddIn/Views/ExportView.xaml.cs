@@ -28,6 +28,11 @@ public partial class ExportView
                     v => v.VersionNoInput.Text)
                 .DisposeWith(disposableRegistration);
 
+            this.OneWayBind(ViewModel,
+                    vm => vm.LineItems,
+                    v => v.BillsOfMaterials.ItemsSource)
+                .DisposeWith(disposableRegistration);
+
             this.BindCommand(ViewModel,
                     vm => vm.Submit,
                     v => v.SubmitButton)
