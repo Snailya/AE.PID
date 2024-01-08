@@ -10,6 +10,7 @@ using System.Windows.Interop;
 using System.Windows.Threading;
 using AE.PID.Controllers.Services;
 using AE.PID.Models;
+using AE.PID.Models.Configurations;
 using AE.PID.Properties;
 using AE.PID.ViewModels;
 using AE.PID.Views;

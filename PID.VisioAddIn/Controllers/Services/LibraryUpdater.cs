@@ -12,6 +12,7 @@ using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using AE.PID.Core.Dtos;
 using AE.PID.Models;
+using AE.PID.Models.Configurations;
 using NLog;
 
 namespace AE.PID.Controllers.Services;

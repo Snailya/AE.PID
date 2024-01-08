@@ -1,19 +1,16 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using AE.PID.Controllers;
 using AE.PID.Converters;
 using NLog;
 
-namespace AE.PID.Models;
+namespace AE.PID.Models.Configurations;
 
 [Serializable]
-public class Configuration : UpdatableConfigurationBase
+public class Configuration : ConfigurationBase
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     private static readonly string ConfigFileName = "ae-pid.json";
@@ -23,7 +20,7 @@ public class Configuration : UpdatableConfigurationBase
 
     [JsonIgnore] public NLogConfiguration NLogConfig;
     [JsonIgnore] public string Api { get; set; } = "http://172.18.128.104:32768";
-    [JsonIgnore] public Version Version { get; set; } = new(0, 2, 1, 0);
+    [JsonIgnore] public Version Version { get; set; } = new(0, 2, 2, 0);
 
     /// <summary>
     ///     The configuration for library version check.
@@ -75,6 +72,10 @@ public class Configuration : UpdatableConfigurationBase
             }
 
         config.NLogConfig = NLogConfiguration.LoadXml();
+
+#if DEBUG
+        config.Api = "http://localhost:32768";
+#endif
 
         return config;
     }

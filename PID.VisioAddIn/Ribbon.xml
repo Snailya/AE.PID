@@ -4,24 +4,49 @@
         <tabs>
             <tab idMso="TabAddIns" label="AE PID">
                 <group id="grpEdit" label="编辑">
-                    <button id="btnLibrary" onAction="btnOpenLibraries_Click"
-                            screentip="打开AE原理图库，请勿使用My Shapes中的模具库" label="库" size="large" getImage="GetButtonImage"/>
-                    <button id="btnInitialize" onAction="btnInitialize_Click" screentip="设置文档的字体和网格"
-                            label="初始化" getImage="GetButtonImage"/>
-                    <button id="btnSelectTool" onAction="btnSelectTool_Click" screentip="选择文档中的设备对象"
-                            supertip="支持ID选择与类型选择" label="选择" getImage="GetButtonImage"/>
-                    <button id="btnSynchronizeToLibrary" onAction="btnUpdateDocumentMasters_Click"
-                            screentip="更新图纸中的模具至最新版" label="更新" getImage="GetButtonImage"/>
+                    <button id="load_libraries"
+                            label="库"
+                            onAction="LoadLibraries"
+                            screentip="加载模具库"
+                            size="large"
+                            getImage="GetButtonImage"
+                    />
+                    <button id="format_page"
+                            label="初始化"
+                            onAction="FormatPage"
+                            screentip="设置文档的样式和网格"
+                            getImage="GetButtonImage"
+                    />
+                    <button id="open_select_tool"
+                            label="选择"
+                            onAction="OpenSelectTool"
+                            screentip="打开高级选择工具"
+                            getImage="GetButtonImage"
+                    />
+                    <button id="update_document"
+                            label="更新"
+                            onAction="UpdateDocument"
+                            screentip="使用模具库中的模具更新文档中的模具"
+                            getImage="GetButtonImage"
+                    />
                 </group>
                 <group id="grpExport" label="导出">
-                    <button id="btnBOM" onAction="btnExport_Click" screentip="导出完整BOM表" label="BOM"
-                            size="large" getImage="GetButtonImage"/>
-                    <button id="btnFlatten" onAction="btnFlatten_Click" screentip="删除设备对象携带的属性（不可逆）"
-                            label="简化" getImage="GetButtonImage"/>
+                    <button id="open_export_tool"
+                            label="BOM"
+                            onAction="OpenExportTool"
+                            screentip="打开导出工具"
+                            size="large"
+                            getImage="GetButtonImage"
+                    />
                 </group>
                 <group id="grpAbout" label="关于">
-                    <button id="btnSettings" onAction="btnSettings_Click" screentip="打开配置文件" label="设置"
-                            size="large" getImage="GetButtonImage"/>
+                    <button id="edit_configuration"
+                            label="设置"
+                            onAction="EditSettings"
+                            screentip="打开软件配置"
+                            size="large"
+                            getImage="GetButtonImage"
+                    />
                 </group>
             </tab>
         </tabs>
@@ -30,12 +55,16 @@
     <!--This section defines custom context menu controls.-->
     <contextMenus>
         <contextMenu idMso="ContextMenuShape">
-            <button id="btnAddLinkedControl" label="添加关联元件"
+            <button id="insert_linked_element"
+                    label="添加关联元件"
                     onAction="AddLinkedControl"
-                    getVisible="CanAddLinkedControl"/>
-            <button id="btnHighlight" label="高亮关联元件"
+                    getVisible="CanAddLinkedControl"
+            />
+            <button id="highlight_linked_element"
+                    label="高亮关联元件"
                     onAction="Highlight"
-                    getVisible="CanHighlight"/>
+                    getVisible="CanHighlight"
+            />
         </contextMenu>
     </contextMenus>
 </customUI>

@@ -122,7 +122,7 @@ public abstract class DocumentExporter
                 throw new BOMLayersNullException();
 
             // convert raw items to BOM item and flatten the linked functional elements
-            var bomLineItems = baseItems.SelectMany(BOMLineItem.FromLineItem).ToList();
+            var bomLineItems = baseItems.SelectMany(ExportBOMLineItem.FromLineItem).ToList();
 
             // supply the in page properties
             var totalDic = bomLineItems

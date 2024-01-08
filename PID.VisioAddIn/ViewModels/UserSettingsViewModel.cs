@@ -7,6 +7,7 @@ using System.Reactive;
 using System.Threading.Tasks;
 using AE.PID.Controllers.Services;
 using AE.PID.Models;
+using AE.PID.Models.Configurations;
 using ReactiveUI;
 
 namespace AE.PID.ViewModels;

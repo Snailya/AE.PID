@@ -300,6 +300,8 @@ public abstract class DocumentUpdater
     /// <returns></returns>
     private static string Preprocessing(IVDocument document)
     {
+        // todo: initialize style
+
         foreach (var doc in
                  Globals.ThisAddIn.Application.Documents.OfType<IVDocument>()
                      .Where(doc => doc.Type == VisDocumentTypes.visTypeStencil).ToList())

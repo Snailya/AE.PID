@@ -22,7 +22,7 @@ namespace AE.PID.Properties {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace AE.PID.Properties {
         ///   返回此类使用的缓存的 ResourceManager 实例。
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("AE.PID.Properties.Resources", typeof(Resources).Assembly);
@@ -51,7 +51,7 @@ namespace AE.PID.Properties {
         ///   使用此强类型资源类的所有资源查找执行重写。
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -63,7 +63,7 @@ namespace AE.PID.Properties {
         /// <summary>
         ///   查找 System.Byte[] 类型的本地化资源。
         /// </summary>
-        internal static byte[] BOM_template {
+        public static byte[] BOM_template {
             get {
                 object obj = ResourceManager.GetObject("BOM_template", resourceCulture);
                 return ((byte[])(obj));
@@ -71,72 +71,32 @@ namespace AE.PID.Properties {
         }
         
         /// <summary>
-        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        ///   查找类似于 (图标) 的 System.Drawing.Icon 类型的本地化资源。
         /// </summary>
-        internal static System.Drawing.Bitmap btnBOM {
+        public static System.Drawing.Icon edit_configuration {
             get {
-                object obj = ResourceManager.GetObject("btnBOM", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
+                object obj = ResourceManager.GetObject("edit_configuration", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
             }
         }
         
         /// <summary>
-        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        ///   查找类似于 (图标) 的 System.Drawing.Icon 类型的本地化资源。
         /// </summary>
-        internal static System.Drawing.Bitmap btnFlatten {
+        public static System.Drawing.Icon format_page {
             get {
-                object obj = ResourceManager.GetObject("btnFlatten", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
+                object obj = ResourceManager.GetObject("format_page", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
             }
         }
         
         /// <summary>
-        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        ///   查找类似于 (图标) 的 System.Drawing.Icon 类型的本地化资源。
         /// </summary>
-        internal static System.Drawing.Bitmap btnInitialize {
+        public static System.Drawing.Icon load_libraries {
             get {
-                object obj = ResourceManager.GetObject("btnInitialize", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
-        /// </summary>
-        internal static System.Drawing.Bitmap btnLibrary {
-            get {
-                object obj = ResourceManager.GetObject("btnLibrary", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
-        /// </summary>
-        internal static System.Drawing.Bitmap btnSelectTool {
-            get {
-                object obj = ResourceManager.GetObject("btnSelectTool", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
-        /// </summary>
-        internal static System.Drawing.Bitmap btnSettings {
-            get {
-                object obj = ResourceManager.GetObject("btnSettings", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
-        /// </summary>
-        internal static System.Drawing.Bitmap btnSynchronizeToLibrary {
-            get {
-                object obj = ResourceManager.GetObject("btnSynchronizeToLibrary", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
+                object obj = ResourceManager.GetObject("load_libraries", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
             }
         }
         
@@ -154,16 +114,26 @@ namespace AE.PID.Properties {
         ///        &lt;!-- write logs to file --&gt;
         ///        &lt;target xs [字符串的其余部分被截断]&quot;; 的本地化字符串。
         /// </summary>
-        internal static string NLog_config {
+        public static string NLog_config {
             get {
                 return ResourceManager.GetString("NLog_config", resourceCulture);
             }
         }
         
         /// <summary>
+        ///   查找类似于 (图标) 的 System.Drawing.Icon 类型的本地化资源。
+        /// </summary>
+        public static System.Drawing.Icon open_export_tool {
+            get {
+                object obj = ResourceManager.GetObject("open_export_tool", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 AE.PID 的本地化字符串。
         /// </summary>
-        internal static string Product_name {
+        public static string Product_name {
             get {
                 return ResourceManager.GetString("Product_name", resourceCulture);
             }
@@ -172,9 +142,19 @@ namespace AE.PID.Properties {
         /// <summary>
         ///   查找类似 属性 {0} 对于形状 {1} 已经有用户定义的值：{2}。您是否希望使用新值 {3} 覆盖它？{4}点击 &apos;是&apos; 覆盖该值，或点击 &apos;否&apos; 保留当前值。 的本地化字符串。
         /// </summary>
-        internal static string Property_Value_Override_Confirmation {
+        public static string Property_Value_Override_Confirmation {
             get {
                 return ResourceManager.GetString("Property_Value_Override_Confirmation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似于 (图标) 的 System.Drawing.Icon 类型的本地化资源。
+        /// </summary>
+        public static System.Drawing.Icon update_document {
+            get {
+                object obj = ResourceManager.GetObject("update_document", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
             }
         }
     }

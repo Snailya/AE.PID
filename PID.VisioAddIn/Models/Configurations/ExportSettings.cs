@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace AE.PID.Models;
+namespace AE.PID.Models.Configurations;
 
 [Serializable]
 public class ExportSettings : INotifyPropertyChanged

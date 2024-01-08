@@ -9,7 +9,7 @@ namespace AE.PID.Models.BOM;
 /// <summary>
 /// POCO to BOM_template.xlsx
 /// </summary>
-public class BOMLineItem
+public class ExportBOMLineItem
 {
     /// <summary>
     /// The index column.
@@ -106,12 +106,12 @@ public class BOMLineItem
     /// If the base item has linked functional elements, these linked functional elements will be flatted as individual bom line items.
     /// </summary>
     /// <param name="baseItem"></param>
-    /// <returns>A collection of <see cref="BOMLineItem"/></returns>
-    public static IEnumerable<BOMLineItem> FromLineItem(LineItemBase baseItem)
+    /// <returns>A collection of <see cref="ExportBOMLineItem"/></returns>
+    public static IEnumerable<ExportBOMLineItem> FromLineItem(LineItemBase baseItem)
     {
-        var items = new List<BOMLineItem>();
+        var items = new List<ExportBOMLineItem>();
 
-        var item = new BOMLineItem
+        var item = new ExportBOMLineItem
         {
             ProcessArea = baseItem.ProcessZone,
             FunctionalGroup = baseItem.FunctionalGroup,
@@ -129,7 +129,7 @@ public class BOMLineItem
 
         // flatten linked functional elements if exists
         if (baseItem.Children != null && baseItem.Children.Any())
-            items.AddRange(baseItem.Children.Select(baseChild => new BOMLineItem
+            items.AddRange(baseItem.Children.Select(baseChild => new ExportBOMLineItem
             {
                 ProcessArea = baseChild.ProcessZone,
                 FunctionalGroup = baseChild.FunctionalGroup,

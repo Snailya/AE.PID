@@ -7,7 +7,7 @@ using AE.PID.Properties;
 using NLog;
 using NLog.Common;
 
-namespace AE.PID.Models;
+namespace AE.PID.Models.Configurations;
 
 public class NLogConfiguration
 {

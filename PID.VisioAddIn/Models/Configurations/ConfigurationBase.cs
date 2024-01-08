@@ -5,14 +5,14 @@ using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 
-namespace AE.PID.Models;
+namespace AE.PID.Models.Configurations;
 
-public class UpdatableConfigurationBase : INotifyPropertyChanged
+public class ConfigurationBase : INotifyPropertyChanged
 {
     private DateTime _nextTime = DateTime.Now;
     private TimeSpan _checkInterval = TimeSpan.FromDays(1);
 
-    protected UpdatableConfigurationBase()
+    protected ConfigurationBase()
     {
         CheckIntervalSubject = new BehaviorSubject<TimeSpan>(_checkInterval);
     }

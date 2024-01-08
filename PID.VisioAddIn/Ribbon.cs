@@ -14,6 +14,8 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using AE.PID.Models.Exceptions;
 using Office = Microsoft.Office.Core;
+using System.Globalization;
+using System.Resources;
 
 // TODO:   按照以下步骤启用功能区(XML)项:
 
@@ -41,7 +43,7 @@ public class Ribbon : IRibbonExtensibility
 {
     private IRibbonUI ribbon;
     private Logger _logger;
-    private Dictionary<string, Bitmap> buttonImages = new Dictionary<string, Bitmap>();
+    private Dictionary<string, Bitmap> buttonImages = new();
 
     public Ribbon()
     {
@@ -66,21 +68,16 @@ public class Ribbon : IRibbonExtensibility
         ribbon = ribbonUi;
     }
 
-    public Bitmap GetButtonImage(Office.IRibbonControl control)
+    public Bitmap GetButtonImage(IRibbonControl control)
     {
-        // Load the image from resources based on the button's ID
-        // Replace "YourNamespace" with the appropriate value
-        string buttonId = control.Id;
-        if (!buttonImages.ContainsKey(buttonId))
-        {
-            string resourceName = $"AE.PID.Resources.{buttonId}";
-            buttonImages[buttonId] = (Bitmap)Properties.Resources.ResourceManager.GetObject(resourceName);
-        }
+        var buttonId = control.Id;
+        if (buttonImages.TryGetValue(buttonId, out var image)) return image;
 
+        buttonImages[buttonId] = ((Icon)Properties.Resources.ResourceManager.GetObject(buttonId))?.ToBitmap();
         return buttonImages[buttonId];
     }
-    
-    public void btnOpenLibraries_Click(IRibbonControl control)
+
+    public void LoadLibraries(IRibbonControl control)
     {
         try
         {
@@ -96,76 +93,34 @@ public class Ribbon : IRibbonExtensibility
         }
     }
 
-    public void btnInitialize_Click(IRibbonControl control)
+    public void FormatPage(IRibbonControl control)
     {
         DocumentInitializer.Invoke(Globals.ThisAddIn.Application.ActiveDocument);
     }
 
-    public void btnSelectTool_Click(IRibbonControl control)
+    public void OpenSelectTool(IRibbonControl control)
     {
         ShapeSelector.Invoke(Globals.ThisAddIn.Application.ActivePage);
     }
 
-    public void btnUpdateDocumentMasters_Click(IRibbonControl control)
+    public void UpdateDocument(IRibbonControl control)
     {
         DocumentUpdater.Invoke(Globals.ThisAddIn.Application.ActiveDocument);
     }
 
-    public static void RunScoped(Action action, string actionName = "")
-    {
-        var undoScope =
-            Globals.ThisAddIn.Application.BeginUndoScope(string.IsNullOrEmpty(actionName)
-                ? Guid.NewGuid().ToString()
-                : actionName);
-        action.Invoke();
-        Globals.ThisAddIn.Application.EndUndoScope(undoScope, true);
-    }
-
-    public void btnFlatten_Click(IRibbonControl control)
-    {
-        // todo: refactor using OpenXML
-        RunScoped(() =>
-        {
-            // delete all document masters
-            foreach (var master in Globals.ThisAddIn.Application.ActiveDocument.Masters.OfType<Master>())
-                master.Delete();
-
-            // ungroup all shapes
-            var shapesToFlatten = Globals.ThisAddIn.Application.ActiveDocument.Pages.OfType<Page>()
-                .SelectMany(x => x.Shapes.OfType<IVShape>()).ToList();
-            foreach (var shape in shapesToFlatten)
-                shape.Ungroup();
-
-            // delete the invisible shapes
-            foreach (var shape in Globals.ThisAddIn.Application.ActiveDocument.Pages.OfType<Page>()
-                         .SelectMany(x => x.Shapes.OfType<IVShape>()))
-            {
-                // ignore the performance, if too slow consider check if there's no visible geometry, delete shape directly
-                var firstComponent = (short)VisSectionIndices.visSectionFirstComponent;
-                var lastComponent = (short)(firstComponent + shape.GeometryCount - 1);
-
-                for (var s = lastComponent; s >= firstComponent; s--)
-                    if (shape.CellsSRC[s, 0, (short)VisCellIndices.visCompNoShow].FormulaU == "TRUE")
-                        shape.DeleteSection(s);
-
-                if (shape.GeometryCount == 0 && string.IsNullOrEmpty(shape.Text)) shape.Delete();
-            }
-        }, ((RibbonButton)control).Label);
-    }
-
-    public void btnExport_Click(IRibbonControl control)
+    public void OpenExportTool(IRibbonControl control)
     {
         DocumentExporter.Invoke(Globals.ThisAddIn.Application.ActivePage);
+    }
+
+    public void EditSettings(IRibbonControl control)
+    {
+        ConfigurationUpdater.Invoke();
     }
 
     public void btnToolbox_Click(IRibbonControl control)
     {
         AnchorBarsUsage.ShowAnchorBar(Globals.ThisAddIn.Application);
-    }
-
-    public void btnSettings_Click(IRibbonControl control)
-    {
-        ConfigurationUpdater.Invoke();
     }
 
     #region Context Menus

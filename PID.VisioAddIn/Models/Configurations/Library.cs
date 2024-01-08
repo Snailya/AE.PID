@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AE.PID.Models;
+namespace AE.PID.Models.Configurations;
 
 /// <summary>
 ///     Library is the equipment library created and maintained by AE painting visio group. The library is shown as a
