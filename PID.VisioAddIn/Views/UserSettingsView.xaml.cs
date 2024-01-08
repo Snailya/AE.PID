@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reactive.Disposables;
-using System.Windows;
 using AE.PID.ViewModels;
 using ReactiveUI;
 
@@ -72,11 +71,5 @@ public partial class UserSettingsView
                 x => x.ViewModel.Submit
             )
             .Subscribe(_ => Close());
-    }
-
-    private void Close()
-    {
-        var window = Window.GetWindow(this);
-        if (window != null) window.Visibility = Visibility.Collapsed;
     }
 }

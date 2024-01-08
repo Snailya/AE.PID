@@ -7,7 +7,7 @@ public class MainWindow : Window
 {
     protected override void OnClosing(CancelEventArgs e)
     {
-        Visibility = Visibility.Collapsed;
+        Hide();
         e.Cancel = true;
     }
 }

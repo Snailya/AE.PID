@@ -1,14 +1,14 @@
-﻿<rxui:ReactiveUserControl x:Class="AE.PID.Views.TaskProgressView"
-                          xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                          xmlns:rxui="http://reactiveui.net"
-                          xmlns:viewModels="clr-namespace:AE.PID.ViewModels"
-                          mc:Ignorable="d"
-                          x:TypeArguments="viewModels:TaskProgressViewModel"
-                          MinHeight="120" MinWidth="320"
-                          d:DesignHeight="120" d:DesignWidth="320">
+﻿<views:ViewBase x:Class="AE.PID.Views.TaskProgressView"
+                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                xmlns:viewModels="clr-namespace:AE.PID.ViewModels"
+                xmlns:views="clr-namespace:AE.PID.Views"
+                mc:Ignorable="d"
+                x:TypeArguments="viewModels:TaskProgressViewModel"
+                MinHeight="120" MinWidth="320"
+                d:DesignHeight="120" d:DesignWidth="320">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -18,4 +18,4 @@
         <Button Grid.Row="1" x:Name="CancelButton" Content="取消" Width="48" Margin="16 8 16 16" />
     </Grid>
 
-</rxui:ReactiveUserControl>
+</views:ViewBase>

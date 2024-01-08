@@ -26,10 +26,4 @@ public partial class TaskProgressView
         this.WhenAnyObservable(x => x.ViewModel.Cancel).Subscribe(_ => Close());
         this.WhenAnyValue(x => x.ViewModel.Current).Where(x => x >= 100).Subscribe(_ => Close());
     }
-
-    private void Close()
-    {
-        var window = Window.GetWindow(this);
-        if (window != null) window.Visibility = Visibility.Collapsed;
-    }
 }

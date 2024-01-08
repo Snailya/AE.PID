@@ -76,6 +76,8 @@ public abstract class DocumentExporter
     /// <returns></returns>
     public static IEnumerable<LineItemBase> GetLineItems()
     {
+        if (Globals.ThisAddIn.Application.ActivePage == null) return null;
+
         var items = Globals.ThisAddIn.Application.ActivePage
             .CreateSelection(VisSelectionTypes.visSelTypeByLayer, VisSelectMode.visSelModeSkipSuper,
                 string.Join(";", Globals.ThisAddIn.Configuration.ExportSettings.BomLayers)).OfType<IVShape>()

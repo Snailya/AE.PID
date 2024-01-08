@@ -1,15 +1,15 @@
-﻿<rxui:ReactiveUserControl x:Class="AE.PID.Views.ExportView"
-                          xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                          xmlns:rxui="http://reactiveui.net"
-                          xmlns:viewModels="clr-namespace:AE.PID.ViewModels"
-                          xmlns:converters="clr-namespace:AE.PID.Converters"
-                          mc:Ignorable="d"
-                          x:TypeArguments="viewModels:ExportViewModel"
-                          MinHeight="320" MinWidth="640" Height="640"
-                          d:DesignHeight="320" d:DesignWidth="480">
+﻿<views:ViewBase x:Class="AE.PID.Views.ExportView"
+                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                xmlns:viewModels="clr-namespace:AE.PID.ViewModels"
+                xmlns:converters="clr-namespace:AE.PID.Converters"
+                xmlns:views="clr-namespace:AE.PID.Views"
+                mc:Ignorable="d"
+                x:TypeArguments="viewModels:ExportViewModel"
+                MinHeight="320" MinWidth="640" Height="640"
+                d:DesignHeight="320" d:DesignWidth="480">
     <Grid Margin="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -92,4 +92,4 @@
             <Button x:Name="CancelButton" Margin="4 8 8 4" MinWidth="64" Content="取消" />
         </StackPanel>
     </Grid>
-</rxui:ReactiveUserControl>
+</views:ViewBase>

@@ -18,21 +18,36 @@ public partial class ShapeSelectionView
         this.WhenActivated(disposableRegistration =>
         {
             ViewModel = new ShapeSelectionViewModel();
-            this.Bind(ViewModel, viewModel => viewModel.IsByIdChecked, view => view.ByIdButton.IsChecked)
+            this.Bind(ViewModel,
+                    viewModel => viewModel.IsByIdChecked,
+                    view => view.ByIdButton.IsChecked)
                 .DisposeWith(disposableRegistration);
-            this.Bind(ViewModel, viewModel => viewModel.IsByMastersChecked, view => view.ByMasterButton.IsChecked)
+            this.Bind(ViewModel,
+                    viewModel => viewModel.IsByMastersChecked,
+                    view => view.ByMasterButton.IsChecked)
                 .DisposeWith(disposableRegistration);
-            this.OneWayBind(ViewModel, viewModel => viewModel.IsByIdChecked, view => view.IdTextBox.IsEnabled)
+            this.OneWayBind(ViewModel,
+                    viewModel => viewModel.IsByIdChecked,
+                    view => view.IdTextBox.IsEnabled)
                 .DisposeWith(disposableRegistration);
-            this.Bind(ViewModel, viewModel => viewModel.ShapeId, view => view.IdTextBox.Text)
+            this.Bind(ViewModel,
+                    viewModel => viewModel.ShapeId,
+                    view => view.IdTextBox.Text)
                 .DisposeWith(disposableRegistration);
-            this.BindCommand(ViewModel, viewModel => viewModel.Select, view => view.OkButton)
+            this.BindCommand(ViewModel,
+                    viewModel => viewModel.Select,
+                    view => view.OkButton)
                 .DisposeWith(disposableRegistration);
-            this.BindCommand(ViewModel, viewModel => viewModel.Cancel, view => view.CancelButton)
+            this.BindCommand(ViewModel,
+                    viewModel => viewModel.Cancel,
+                    view => view.CancelButton)
                 .DisposeWith(disposableRegistration);
-            this.OneWayBind(ViewModel, viewModel => viewModel.Masters, view => view.MastersCheckBox.ItemsSource)
+            this.OneWayBind(ViewModel,
+                    viewModel => viewModel.Masters,
+                    view => view.MastersCheckBox.ItemsSource)
                 .DisposeWith(disposableRegistration);
-            this.OneWayBind(ViewModel, viewModel => viewModel.IsByMastersChecked,
+            this.OneWayBind(ViewModel,
+                    viewModel => viewModel.IsByMastersChecked,
                     view => view.MastersCheckBox.IsEnabled)
                 .DisposeWith(disposableRegistration);
         });
@@ -42,11 +57,5 @@ public partial class ShapeSelectionView
                 x => x.ViewModel.Select
             )
             .Subscribe(_ => Close());
-    }
-
-    private void Close()
-    {
-        var window = Window.GetWindow(this);
-        if (window != null) window.Visibility = Visibility.Collapsed;
     }
 }

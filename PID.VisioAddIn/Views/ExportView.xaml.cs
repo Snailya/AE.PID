@@ -49,10 +49,4 @@ public partial class ExportView
             )
             .Subscribe(_ => Close());
     }
-
-    private void Close()
-    {
-        var window = Window.GetWindow(this);
-        if (window != null) window.Visibility = Visibility.Collapsed;
-    }
 }

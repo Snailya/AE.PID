@@ -64,7 +64,7 @@ public static class ShapeSelector
     /// <returns></returns>
     public static IEnumerable<MasterViewModel> GetMastersSource()
     {
-        return Globals.ThisAddIn.Application.ActivePage.Document.Masters
+        return Globals.ThisAddIn.Application.ActivePage?.Document.Masters
             .OfType<IVMaster>()
             .Select(x => new MasterViewModel { BaseId = x.BaseID, Name = x.Name, IsChecked = false });
     }
