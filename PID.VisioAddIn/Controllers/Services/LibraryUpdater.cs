@@ -9,6 +9,7 @@ using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading;
 using System.Threading.Tasks;
 using AE.PID.Core.Dtos;
 using AE.PID.Models;
@@ -189,7 +190,7 @@ public abstract class LibraryUpdater
         configuration.LibraryConfiguration.NextTime =
             DateTime.Now + configuration.LibraryConfiguration.CheckInterval;
         configuration.LibraryConfiguration.Libraries = new ConcurrentBag<Library>(updatedLibraries);
-        Configuration.Save(configuration);
+        configuration.Save();
 
         return updatedLibraries;
     }

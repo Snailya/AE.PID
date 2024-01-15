@@ -22,15 +22,14 @@ namespace AE.PID.Controllers.Services;
 public abstract class DocumentExporter
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    private static Subject<IVPage> ManuallyInvokeTrigger { get; } = new();
+    private static Subject<Unit> ManuallyInvokeTrigger { get; } = new();
 
     /// <summary>
     ///     Emit a value manually
     /// </summary>
-    /// <param name="page"></param>
-    public static void Invoke(IVPage page)
+    public static void Invoke()
     {
-        ManuallyInvokeTrigger.OnNext(page);
+        ManuallyInvokeTrigger.OnNext(Unit.Default);
     }
 
     /// <summary>
@@ -40,13 +39,13 @@ public abstract class DocumentExporter
     /// <returns></returns>
     public static IDisposable Listen()
     {
-        Logger.Info($"Export Service started.");
+        Logger.Info("Export Service started.");
 
         return ManuallyInvokeTrigger
             .Throttle(TimeSpan.FromMilliseconds(300))
             .ObserveOn(Globals.ThisAddIn.SynchronizationContext)
             .Subscribe(
-                _ =>
+                x =>
                 {
                     try
                     {
@@ -58,13 +57,13 @@ public abstract class DocumentExporter
                     {
                         ThisAddIn.Alert($"加载失败：{ex.Message}");
                         Logger.Error(ex,
-                            $"Failed to display export window.");
+                            "Failed to display export window.");
                     }
                 },
                 ex =>
                 {
                     Logger.Error(ex,
-                        $"Export Service ternimated accidently.");
+                        "Export Service ternimated accidently.");
                 },
                 () => { Logger.Error("Export Service should never complete."); }
             );
@@ -76,9 +75,7 @@ public abstract class DocumentExporter
     /// <returns></returns>
     public static IEnumerable<LineItemBase> GetLineItems()
     {
-        if (Globals.ThisAddIn.Application.ActivePage == null) return null;
-
-        var items = Globals.ThisAddIn.Application.ActivePage
+        var items = Globals.ThisAddIn.Application.ActivePage?
             .CreateSelection(VisSelectionTypes.visSelTypeByLayer, VisSelectMode.visSelModeSkipSuper,
                 string.Join(";", Globals.ThisAddIn.Configuration.ExportSettings.BomLayers)).OfType<IVShape>()
             .Select(x => x.ToLineItem()).ToList();
@@ -96,7 +93,14 @@ public abstract class DocumentExporter
         // append children to topLevelItems
         foreach (var item in topLevelItems)
             if (childrenDic.TryGetValue(item.Id, out var children))
+            {
                 item.Children = children;
+
+                // update children items count
+                foreach (var child in children) child.Count *= item.Count;
+            }
+
+        Logger.Info($"Found {topLevelItems.Count} bom items on current pages");
 
         return topLevelItems;
     }

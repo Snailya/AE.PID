@@ -179,7 +179,7 @@ public partial class ThisAddIn
     {
         Globals.ThisAddIn.Application.UnregisterRibbonX(_ribbon, null);
 
-        Configuration.Save(Configuration);
+        Configuration.Save();
         InputCache.Save(InputCache);
 
         _logger.Info($"Configuration and input cache saved on shut down.");

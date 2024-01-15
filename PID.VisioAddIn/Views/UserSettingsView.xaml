@@ -85,50 +85,50 @@
                     <ComboBox Grid.Column="1" x:Name="LibraryCheckFrequencySelector" DisplayMemberPath="Label" />
                     <Button Grid.Column="2" x:Name="LibraryCheckUpdateButton" Margin="8 0" MinWidth="64" Content="更新" />
                 </Grid>
-                <!-- <DataGrid Grid.Row="2" x:Name="LibraryList" Margin="0 4" Padding="8 0" d:Height="120"  -->
-                <!--           AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column"> -->
-                <!--     <DataGrid.Resources> -->
-                <!--         <Style TargetType="{x:Type DataGrid}"> -->
-                <!--             <Setter Property="BorderBrush" Value="Black"/> -->
-                <!--             <Setter Property="BorderThickness" Value="0"/> -->
-                <!--             <Setter Property="GridLinesVisibility" Value="None"/> -->
-                <!--             <Setter Property="Background" Value="Transparent"></Setter> -->
-                <!--         </Style> -->
-                <!--         <Style TargetType="{x:Type DataGridColumnHeader}"> -->
-                <!--             <Setter Property="BorderBrush" Value="Black"/> -->
-                <!--             <Setter Property="BorderThickness" Value="0 0 0 1" /> -->
-                <!--             <Setter Property="Background" Value="Transparent"/> -->
-                <!--             <Setter Property="Foreground" Value="Black"/> -->
-                <!--             <Setter Property="Padding" Value="0 4"/> -->
-                <!--             <Setter Property="MinWidth" Value="80" /> -->
-                <!--         </Style> -->
-                <!--         <Style TargetType="{x:Type DataGridRow}"> -->
-                <!--             <Setter Property="Margin" Value="0"/> -->
-                <!--         </Style> -->
-                <!--     </DataGrid.Resources> -->
-                <!--     <DataGrid.Columns> -->
-                <!--         <DataGridTextColumn Header="名称" Binding="{Binding Name}"/> -->
-                <!--         <DataGridTextColumn Header="本地版本" Binding="{Binding LocalVersion}"/> -->
-                <!--         <DataGridTemplateColumn Header="服务器版本"> -->
-                <!--             <DataGridTemplateColumn.CellTemplate> -->
-                <!--                 <DataTemplate> -->
-                <!--                     <TextBlock Text="{Binding RemoteVersion}"> -->
-                <!--                         <TextBlock.Style>    -->
-                <!--                             <Style TargetType="TextBlock"> -->
-                <!--                                 <Style.Triggers> -->
-                <!--                                     <DataTrigger Binding="{Binding NeedUpdate}" Value="True"> -->
-                <!--                                         <Setter Property="Foreground" Value="ForestGreen" /> -->
-                <!--                                         <Setter Property="FontWeight" Value="Bold" /> -->
-                <!--                                     </DataTrigger> -->
-                <!--                                 </Style.Triggers> -->
-                <!--                             </Style> -->
-                <!--                         </TextBlock.Style> -->
-                <!--                     </TextBlock> -->
-                <!--                 </DataTemplate> -->
-                <!--             </DataGridTemplateColumn.CellTemplate> -->
-                <!--         </DataGridTemplateColumn> -->
-                <!--     </DataGrid.Columns> -->
-                <!-- </DataGrid> -->
+                <DataGrid Grid.Row="2" x:Name="LibraryList" Margin="0 4" Padding="8 0" d:Height="120"
+                          AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
+                    <DataGrid.Resources>
+                        <Style TargetType="{x:Type DataGrid}">
+                            <Setter Property="BorderBrush" Value="Black" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="GridLinesVisibility" Value="None" />
+                            <Setter Property="Background" Value="Transparent" />
+                        </Style>
+                        <Style TargetType="{x:Type DataGridColumnHeader}">
+                            <Setter Property="BorderBrush" Value="Black" />
+                            <Setter Property="BorderThickness" Value="0 0 0 1" />
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="Foreground" Value="Black" />
+                            <Setter Property="Padding" Value="0 4" />
+                            <Setter Property="MinWidth" Value="80" />
+                        </Style>
+                        <Style TargetType="{x:Type DataGridRow}">
+                            <Setter Property="Margin" Value="0" />
+                        </Style>
+                    </DataGrid.Resources>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="名称" Binding="{Binding Name}" />
+                        <DataGridTextColumn Header="本地版本" Binding="{Binding LocalVersion}" />
+                        <DataGridTemplateColumn Header="服务器版本">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding RemoteVersion}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding NeedUpdate}" Value="True">
+                                                        <Setter Property="Foreground" Value="ForestGreen" />
+                                                        <Setter Property="FontWeight" Value="Bold" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
             </Grid>
         </Grid>
         <Separator Grid.Row="2" />

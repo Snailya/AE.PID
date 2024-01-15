@@ -1,19 +1,21 @@
-﻿using System;
+#nullable enable
+using System;
 using ReactiveUI;
 
 namespace AE.PID.ViewModels;
 
-public class LibraryViewModel : ReactiveObject
+public class LibraryInfoViewModel : ReactiveObject
 {
-    private string _name;
-    private Version _localVersion;
-    private Version _remoteVersion;
+    private string _name = string.Empty;
+    private Version? _localVersion;
+    private Version? _remoteVersion;
 
-    public LibraryViewModel()
+    public LibraryInfoViewModel()
     {
         this.WhenAnyValue(
                 x => x.LocalVersion,
-                x => x.RemoteVersion)
+                x => x.RemoteVersion
+            )
             .Subscribe(_ => this.RaisePropertyChanged(nameof(NeedUpdate)));
     }
 
@@ -23,7 +25,7 @@ public class LibraryViewModel : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _name, value);
     }
 
-    public Version LocalVersion
+    public Version? LocalVersion
     {
         get => _localVersion;
         set => this.RaiseAndSetIfChanged(ref _localVersion, value);
@@ -35,5 +37,5 @@ public class LibraryViewModel : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _remoteVersion, value);
     }
 
-    public bool NeedUpdate => _remoteVersion > _localVersion;
+    public bool NeedUpdate => _localVersion != null && _remoteVersion != null && _remoteVersion > _localVersion;
 }

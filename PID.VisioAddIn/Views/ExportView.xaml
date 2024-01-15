@@ -86,6 +86,9 @@
                 </DataTemplate>
             </DataGrid.RowDetailsTemplate>
         </DataGrid>
+        <!-- <TextBlock Grid.Row="2" x:Name="LoadingSkeleton" Text="加载中" TextAlignment="Center" VerticalAlignment="Center" -->
+        <!--            Width="{Binding Width, ElementName=BillsOfMaterials}" -->
+        <!--            Height="{Binding Height, ElementName=BillsOfMaterials}" /> -->
         <Separator Grid.Row="3" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="4">
             <Button x:Name="SubmitButton" Margin="8 8 4 4" MinWidth="64" Content="确定" />

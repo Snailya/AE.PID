@@ -50,12 +50,12 @@ public partial class ShapeSelectionView
                     viewModel => viewModel.IsByMastersChecked,
                     view => view.MastersCheckBox.IsEnabled)
                 .DisposeWith(disposableRegistration);
-        });
 
-        this.WhenAnyObservable(
-                x => x.ViewModel.Cancel,
-                x => x.ViewModel.Select
-            )
-            .Subscribe(_ => Close());
+            this.WhenAnyObservable(
+                    x => x.ViewModel.Cancel,
+                    x => x.ViewModel.Select
+                )
+                .Subscribe(_ => Close());
+        });
     }
 }

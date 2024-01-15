@@ -57,38 +57,38 @@ public abstract class DocumentUpdater
                 ManuallyInvokeTrigger
                     .Throttle(TimeSpan.FromMilliseconds(300))
                     .Do(_ => Logger.Info($"Document Update started. {{Initiated by: User}}"))
-            )
-            .ObserveOn(TaskPoolScheduler.Default)
-            // compare with library
-            .SelectMany(document => Task.Run(() => GetUpdatesAsync(document)),
-                (document, mappings) => new { Document = document, Mappings = mappings })
-            .Where(data => data.Mappings is not null && data.Mappings.Any())
-            // prompt user decision
-            .Select(result => new
-                { Info = result, DialogResult = ThisAddIn.AskForUpdate("检测到文档模具与库中模具不一致，是否立即更新文档模具？") })
-            .Where(x => x.DialogResult == DialogResult.Yes)
-            .ObserveOn(Globals.ThisAddIn.SynchronizationContext)
-            // close all document stencils to avoid occupied
-            .Select(x => new { FilePath = Preprocessing(x.Info.Document), x.Info.Mappings })
-            // display a progress bar to do time-consuming operation
-            .Select(data =>
-            {
-                Globals.ThisAddIn.ShowProgressWhileActing(
-                    (progress, token) =>
-                    {
-                        DoUpdatesByOpenXml(data.FilePath, data.Mappings, progress, token);
-                        PostProcess(data.FilePath);
-                    });
-                return Unit.Default;
-            })
-            .Subscribe(
-                _ => { },
-                ex =>
+            ).Subscribe(
+                document =>
                 {
-                    ThisAddIn.Alert(ex.Message);
-                    Logger.Error(ex,
-                        $"Document Update Service ternimated accidently.");
-                },
+                    Observable.Return(document)
+                        .SubscribeOn(TaskPoolScheduler.Default)
+                        .SelectMany(data => Task.Run(() => GetUpdatesAsync(data)),
+                            (data, mappings) => new { Document = document, Mappings = mappings })
+                        .Where(data => data.Mappings is not null && data.Mappings.Any())
+                        // prompt user decision
+                        .Select(result => new
+                            { Info = result, DialogResult = ThisAddIn.AskForUpdate("检测到文档模具与库中模具不一致，是否立即更新文档模具？") })
+                        .Where(x => x.DialogResult == DialogResult.Yes)
+                        .ObserveOn(Globals.ThisAddIn.SynchronizationContext)
+                        // close all document stencils to avoid occupied
+                        .Select(x => new { FilePath = Preprocessing(x.Info.Document), x.Info.Mappings })
+                        // display a progress bar to do time-consuming operation
+                        .Select(data =>
+                        {
+                            Globals.ThisAddIn.ShowProgressWhileActing(
+                                (progress, token) =>
+                                {
+                                    DoUpdatesByOpenXml(data.FilePath, data.Mappings, progress, token);
+                                });
+                            return data.FilePath;
+                        })
+                        .Subscribe(
+                            PostProcess,
+                            ex => { ThisAddIn.Alert(ex.Message); }
+                        );
+                }
+                ,
+                ex => { Logger.Error(ex, $"Document Update Service ternimated accidently."); },
                 () => { Logger.Error("Document Update Service should never complete."); });
     }
 

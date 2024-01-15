@@ -29,9 +29,14 @@ public partial class ExportView
                 .DisposeWith(disposableRegistration);
 
             this.OneWayBind(ViewModel,
-                    vm => vm.LineItems,
+                    vm => vm.Items,
                     v => v.BillsOfMaterials.ItemsSource)
                 .DisposeWith(disposableRegistration);
+            // this.OneWayBind(ViewModel,
+            //     vm => vm.IsLoading,
+            //     v => v.LoadingSkeleton.Visibility,
+            //     IsLoadingToVisibilityTypeConverterFunc)
+            //     .DisposeWith(disposableRegistration);
 
             this.BindCommand(ViewModel,
                     vm => vm.Submit,
@@ -41,12 +46,18 @@ public partial class ExportView
                     vm => vm.Cancel,
                     v => v.CancelButton)
                 .DisposeWith(disposableRegistration);
-        });
 
-        this.WhenAnyObservable(
-                x => x.ViewModel.Cancel,
-                x => x.ViewModel.Submit
-            )
-            .Subscribe(_ => Close());
+            this.WhenAnyObservable(
+                    x => x.ViewModel.Cancel,
+                    x => x.ViewModel.Submit
+                )
+                .Subscribe(_ => Close())
+                .DisposeWith(disposableRegistration);
+        });
+    }
+
+    private Visibility IsLoadingToVisibilityTypeConverterFunc(bool isLoading)
+    {
+        return isLoading ? Visibility.Visible : Visibility.Hidden;
     }
 }

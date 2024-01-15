@@ -1,6 +1,6 @@
 ﻿namespace AE.PID;
 
-public class Constants
+public abstract class Constants
 {
     public const long ManuallyInvokeMagicNumber = -255;
 }

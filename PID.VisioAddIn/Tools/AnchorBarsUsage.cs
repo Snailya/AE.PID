@@ -8,7 +8,7 @@ using Application = Microsoft.Office.Interop.Visio.Application;
 
 namespace AE.PID.Tools;
 
-internal class AnchorBarsUsage
+public abstract class AnchorBarsUsage
 {
     /// <summary>
     ///     GUID that identifies the custom anchor window when it
@@ -18,7 +18,7 @@ internal class AnchorBarsUsage
         "{6D5829C6-57E6-4BC7-8451-A27C936AEBC2}";
 
     /// <summary>This constructor is intentionally left blank.</summary>
-    public AnchorBarsUsage()
+    protected AnchorBarsUsage()
     {
         // No initialization is required.
     }

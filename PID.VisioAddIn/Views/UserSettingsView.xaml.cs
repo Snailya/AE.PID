@@ -26,6 +26,7 @@ public partial class UserSettingsView
                     vm => vm.CheckForAppUpdate,
                     v => v.AppCheckUpdateButton)
                 .DisposeWith(disposableRegistration);
+
             this.OneWayBind(ViewModel,
                     vm => vm.TmpPath,
                     v => v.TmpPathInput.Text)
@@ -51,10 +52,10 @@ public partial class UserSettingsView
                     vm => vm.CheckForLibrariesUpdate,
                     v => v.LibraryCheckUpdateButton)
                 .DisposeWith(disposableRegistration);
-            // this.OneWayBind(ViewModel,
-            //         vm => vm.Libraries,
-            //         v => v.LibraryList.ItemsSource)
-            //     .DisposeWith(disposableRegistration);
+            this.OneWayBind(ViewModel,
+                    vm => vm.Libraries,
+                    v => v.LibraryList.ItemsSource)
+                .DisposeWith(disposableRegistration);
 
             this.BindCommand(ViewModel,
                     vm => vm.Submit,
@@ -64,12 +65,12 @@ public partial class UserSettingsView
                     vm => vm.Cancel,
                     v => v.CancelButton)
                 .DisposeWith(disposableRegistration);
-        });
 
-        this.WhenAnyObservable(
-                x => x.ViewModel.Cancel,
-                x => x.ViewModel.Submit
-            )
-            .Subscribe(_ => Close());
+            this.WhenAnyObservable(
+                    x => x.ViewModel.Cancel,
+                    x => x.ViewModel.Submit
+                )
+                .Subscribe(_ => Close());
+        });
     }
 }

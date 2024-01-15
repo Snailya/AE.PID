@@ -14,6 +14,7 @@ using System.Windows.Forms;
 using AE.PID.Models;
 using AE.PID.Models.Configurations;
 using NLog;
+using ReactiveUI;
 
 namespace AE.PID.Controllers.Services;
 
@@ -60,45 +61,29 @@ public abstract class AppUpdater
                     .Throttle(TimeSpan.FromMilliseconds(300))
                     .Select(_ => Constants.ManuallyInvokeMagicNumber)
                     .Do(_ => Logger.Info($"App Update started. {{Initiated by: User}}"))
-            ).Subscribe(DoUpdate,
+            ).Subscribe(InvokeUpdate,
                 ex => { Logger.Error(ex, $"App update listener ternimated accidently."); },
                 () => { Logger.Error("App update listener should never complete."); });
     }
 
-    private static void DoUpdate(long seed)
+    /// <summary>
+    /// Invoke a app update process.
+    /// </summary>
+    /// <param name="seed"></param>
+    private static void InvokeUpdate(long seed)
     {
         Observable.Return(seed)
+            .SubscribeOn(TaskPoolScheduler.Default)
+            // check for valid update from server
             .SelectMany(value => Observable.FromAsync(GetUpdateAsync),
                 (value, result) => new { InvokeType = value, Result = result })
-            .Do(data => Logger.Info(data.Result.IsUpdateAvailable
-                ? $"New version found at {data.Result.DownloadUrl}. "
-                : "Application is up to date."))
-            // notify user for no update
+            // notify user if user decision needs to decide whether to continue updating or not.
             .ObserveOn(Globals.ThisAddIn.SynchronizationContext)
-            .Select(data =>
-            {
-                // prompt an alert to let user know no update needed if it is manually triggered
-                if (data.InvokeType == Constants.ManuallyInvokeMagicNumber && !data.Result.IsUpdateAvailable)
-                    ThisAddIn.Alert("这就是最新版本。");
-
-                return data.Result;
-            })
-            // notify user to decide when to update
-            .Where(data => data.IsUpdateAvailable) // filter only valid update
-            .Select(data => new
-            {
-                Info = data,
-                DialogResult = ThisAddIn.AskForUpdate("发现新版本。" +
-                                                      Environment.NewLine +
-                                                      data.ReleaseNotes +
-                                                      Environment.NewLine + Environment.NewLine +
-                                                      "请关闭Visio后安装。")
-            })
+            .Select(data => NotifyUserIfNeed(data.InvokeType, data.Result) ? data.Result.DownloadUrl : string.Empty)
+            // continue updating
             .ObserveOn(TaskPoolScheduler.Default)
-            .Where(x => x.DialogResult == DialogResult.Yes)
-            // perform update
-            .SelectMany(result => CacheAsync(result.Info.DownloadUrl))
-            .Do(path => Logger.Info($"New version of app cached at {path}"))
+            .Where(x => !string.IsNullOrEmpty(x))
+            .SelectMany(CacheAsync)
             .Do(PromptManuallyUpdate)
             .Subscribe(
                 _ => { },
@@ -115,7 +100,6 @@ public abstract class AppUpdater
                 }
             );
     }
-
 
     /// <summary>
     /// Request the server with current version of the app to check if there's a available update.
@@ -134,7 +118,7 @@ public abstract class AppUpdater
 
             // anytime there's a success response from check-version, the check time should update.
             configuration.NextTime = DateTime.Now + configuration.CheckInterval;
-            Configuration.Save(configuration);
+            configuration.Save();
 
             var responseBody = await response.Content.ReadAsStringAsync();
 
@@ -142,6 +126,9 @@ public abstract class AppUpdater
             var root = jsonDocument.RootElement;
 
             var isUpdate = root.GetProperty("isUpdateAvailable").GetBoolean();
+
+            Logger.Info(isUpdate ? "New app version available." : "App is up to date.");
+
             if (isUpdate)
                 return new AppCheckVersionResult
                 {
@@ -164,6 +151,31 @@ public abstract class AppUpdater
                 $"Some of the keys [isUpdateAvailable, latestVersion, downloadUrl, releaseNotes] not found in the response. Please check if the api response body is out of time.");
             throw;
         }
+    }
+
+    /// <summary>
+    /// Prompt user the get update result to let user decide whether to perform a update right now.
+    /// </summary>
+    /// <param name="invokeType"></param>
+    /// <param name="checkResult"></param>
+    /// <returns></returns>
+    private static bool NotifyUserIfNeed(long invokeType, AppCheckVersionResult checkResult)
+    {
+        if (!checkResult.IsUpdateAvailable)
+        {
+            // prompt a already updated version message if the check is invoked by user
+            if (invokeType == Constants.ManuallyInvokeMagicNumber)
+                ThisAddIn.Alert("这就是最新版本。");
+
+            return false;
+        }
+
+        var description = "发现新版本。" +
+                          Environment.NewLine +
+                          checkResult.ReleaseNotes +
+                          Environment.NewLine + Environment.NewLine +
+                          "请关闭Visio后安装。";
+        return DialogResult.Yes == ThisAddIn.AskForUpdate(description);
     }
 
     /// <summary>
@@ -193,6 +205,8 @@ public abstract class AppUpdater
             using var contentStream = await response.Content.ReadAsStreamAsync();
             using var fileStream = File.Create(filePath);
             await contentStream.CopyToAsync(fileStream);
+
+            Logger.Info($"New version of app cached at {filePath}.");
 
             return filePath;
         }
@@ -229,5 +243,23 @@ public abstract class AppUpdater
     {
         Logger.Info($"Open the explorer and select {installerPath}");
         Process.Start("explorer.exe", $"/select, \"{installerPath}\"");
+    }
+
+    private class AppCheckVersionResult
+    {
+        /// <summary>
+        ///     Indicates whether a update is available at DownloadUrl.
+        /// </summary>
+        public bool IsUpdateAvailable { get; set; }
+
+        /// <summary>
+        ///     The request url to get the latest version app.
+        /// </summary>
+        public string DownloadUrl { get; set; }
+
+        /// <summary>
+        ///     The release information about the latest version.
+        /// </summary>
+        public string ReleaseNotes { get; set; }
     }
 }

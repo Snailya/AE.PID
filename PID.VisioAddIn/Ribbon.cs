@@ -41,14 +41,9 @@ namespace AE.PID;
 [ComVisible(true)]
 public class Ribbon : IRibbonExtensibility
 {
-    private IRibbonUI ribbon;
-    private Logger _logger;
-    private Dictionary<string, Bitmap> buttonImages = new();
-
-    public Ribbon()
-    {
-        _logger = LogManager.GetCurrentClassLogger();
-    }
+    private IRibbonUI _ribbon;
+    private Logger _logger = LogManager.GetCurrentClassLogger();
+    private Dictionary<string, Bitmap> _buttonImages = new();
 
     #region IRibbonExtensibility 成员
 
@@ -65,16 +60,16 @@ public class Ribbon : IRibbonExtensibility
 
     public void Ribbon_Load(IRibbonUI ribbonUi)
     {
-        ribbon = ribbonUi;
+        _ribbon = ribbonUi;
     }
 
     public Bitmap GetButtonImage(IRibbonControl control)
     {
         var buttonId = control.Id;
-        if (buttonImages.TryGetValue(buttonId, out var image)) return image;
+        if (_buttonImages.TryGetValue(buttonId, out var image)) return image;
 
-        buttonImages[buttonId] = ((Icon)Properties.Resources.ResourceManager.GetObject(buttonId))?.ToBitmap();
-        return buttonImages[buttonId];
+        _buttonImages[buttonId] = ((Icon)Properties.Resources.ResourceManager.GetObject(buttonId))?.ToBitmap();
+        return _buttonImages[buttonId];
     }
 
     public void LoadLibraries(IRibbonControl control)
@@ -110,7 +105,7 @@ public class Ribbon : IRibbonExtensibility
 
     public void OpenExportTool(IRibbonControl control)
     {
-        DocumentExporter.Invoke(Globals.ThisAddIn.Application.ActivePage);
+        DocumentExporter.Invoke();
     }
 
     public void EditSettings(IRibbonControl control)

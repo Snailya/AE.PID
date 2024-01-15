@@ -1,9 +1,10 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using ReactiveUI;
 
 namespace AE.PID.Views;
 
-public class ViewBase<T> : ReactiveUserControl<T> where T : class
+public class ViewBase<TViewModel> : ReactiveUserControl<TViewModel> where TViewModel : class
 {
     protected virtual void Close()
     {
