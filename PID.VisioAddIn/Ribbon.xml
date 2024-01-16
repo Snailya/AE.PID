@@ -65,6 +65,11 @@
                     onAction="Highlight"
                     getVisible="CanHighlight"
             />
+            <button id="copy_with_linked_elements"
+                    label="带关联元件复制"
+                    onAction="CopyWithLinkedElements"
+                    getVisible="CanCopyWithLinkedElements"
+            />
         </contextMenu>
     </contextMenus>
 </customUI>

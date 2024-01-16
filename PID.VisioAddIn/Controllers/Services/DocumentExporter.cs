@@ -93,13 +93,8 @@ public abstract class DocumentExporter
         // append children to topLevelItems
         foreach (var item in topLevelItems)
             if (childrenDic.TryGetValue(item.Id, out var children))
-            {
                 item.Children = children;
-
-                // update children items count
-                foreach (var child in children) child.Count *= item.Count;
-            }
-
+        
         Logger.Info($"Found {topLevelItems.Count} bom items on current pages");
 
         return topLevelItems;
