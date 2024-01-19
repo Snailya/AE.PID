@@ -16,6 +16,8 @@ using AE.PID.Models.Exceptions;
 using Office = Microsoft.Office.Core;
 using System.Globalization;
 using System.Resources;
+using System.Windows.Controls;
+using AE.PID.Models.VisProps;
 
 // TODO:   按照以下步骤启用功能区(XML)项:
 
@@ -54,14 +56,12 @@ public class Ribbon : IRibbonExtensibility
 
     #endregion
 
-    #region 功能区回调
-
-    //在此处创建回叫方法。有关添加回叫方法的详细信息，请访问 https://go.microsoft.com/fwlink/?LinkID=271226
-
     public void Ribbon_Load(IRibbonUI ribbonUi)
     {
         _ribbon = ribbonUi;
     }
+
+    #region Ribbon
 
     public Bitmap GetButtonImage(IRibbonControl control)
     {
@@ -118,29 +118,59 @@ public class Ribbon : IRibbonExtensibility
         AnchorBarsUsage.ShowAnchorBar(Globals.ThisAddIn.Application);
     }
 
-    #region Context Menus
+    #endregion
 
-    public void AddLinkedControl(IRibbonControl control)
-    {
-        LinkedControlManager.AddControl(Globals.ThisAddIn.Application.ActiveWindow.Selection[1]);
-    }
+    #region Commands
 
-    public bool CanAddLinkedControl(IRibbonControl control)
+    public void CopyOverride(IRibbonControl control, ref bool cancel)
     {
-        return LinkedControlManager.CanAddControl(Globals.ThisAddIn.Application.ActiveWindow.Selection);
-    }
-
-    public void Highlight(IRibbonControl control)
-    {
-        LinkedControlManager.Highlight(Globals.ThisAddIn.Application.ActiveWindow.Selection[1]);
-    }
-
-    public bool CanHighlight(IRibbonControl control)
-    {
-        return LinkedControlManager.CanHighlight(Globals.ThisAddIn.Application.ActiveWindow.Selection);
+        Globals.ThisAddIn.Application.ActiveWindow.Selection.GetIDs(out var ids);
+        LinkedControlManager.PreviousCopy = ids.OfType<int>().ToList();
     }
 
     #endregion
+
+    #region Context Menus
+
+    public void InsertLinked(IRibbonControl control)
+    {
+        LinkedControlManager.InsertFunctionalElement(Globals.ThisAddIn.Application.ActiveWindow.Selection[1]);
+    }
+
+    public bool CanInsert(IRibbonControl control)
+    {
+        return LinkedControlManager.CanInsert(Globals.ThisAddIn.Application.ActiveWindow.Selection);
+    }
+
+    public void HighlightPrimary(IRibbonControl control)
+    {
+        LinkedControlManager.HighlightPrimary(Globals.ThisAddIn.Application.ActiveWindow.Selection[1]);
+    }
+
+    public bool CanHighlightPrimary(IRibbonControl control)
+    {
+        return LinkedControlManager.CanHighlightPrimary(Globals.ThisAddIn.Application.ActiveWindow.Selection);
+    }
+    
+    public void HighlightLinked(IRibbonControl control)
+    {
+        LinkedControlManager.HighlightLinked(Globals.ThisAddIn.Application.ActiveWindow.Selection[1]);
+    }
+
+    public bool CanHighlightLinked(IRibbonControl control)
+    {
+        return LinkedControlManager.CanHighlightLinked(Globals.ThisAddIn.Application.ActiveWindow.Selection);
+    }
+    
+    public void PasteWithLinked(IRibbonControl control)
+    {
+        LinkedControlManager.PasteToLocation();
+    }
+
+    public bool CanPaste(IRibbonControl control)
+    {
+        return LinkedControlManager.CanPaste();
+    }
 
     #endregion
 

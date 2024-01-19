@@ -86,8 +86,7 @@ public abstract class DocumentUpdater
                             PostProcess,
                             ex => { ThisAddIn.Alert(ex.Message); }
                         );
-                }
-                ,
+                },
                 ex => { Logger.Error(ex, $"Document Update Service ternimated accidently."); },
                 () => { Logger.Error("Document Update Service should never complete."); });
     }

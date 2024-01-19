@@ -164,6 +164,7 @@ public partial class ThisAddIn
             AppUpdater.Listen();
             LibraryUpdater.Listen();
             DocumentUpdater.Listen();
+            LinkedControlManager.Listen();
 
             // ribbon
             DocumentInitializer.Listen();

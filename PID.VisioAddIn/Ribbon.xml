@@ -1,5 +1,8 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <customUI onLoad="Ribbon_Load" xmlns="http://schemas.microsoft.com/office/2009/07/customui">
+    <commands>
+        <command idMso="Copy" onAction="CopyOverride"/>
+    </commands>
     <ribbon>
         <tabs>
             <tab idMso="TabAddIns" label="AE PID">
@@ -55,20 +58,28 @@
     <!--This section defines custom context menu controls.-->
     <contextMenus>
         <contextMenu idMso="ContextMenuShape">
-            <button id="insert_linked_element"
-                    label="添加关联元件"
-                    onAction="AddLinkedControl"
-                    getVisible="CanAddLinkedControl"
+            <button idQ="insert_linked"
+                    label="添加关联件"
+                    onAction="InsertLinked"
+                    getVisible="CanInsert"
             />
-            <button id="highlight_linked_element"
-                    label="高亮关联元件"
-                    onAction="Highlight"
-                    getVisible="CanHighlight"
+            <button id="highlight_primary"
+                    label="高亮主件"
+                    onAction="HighlightPrimary"
+                    getVisible="CanHighlightPrimary"
             />
-            <button id="copy_with_linked_elements"
-                    label="带关联元件复制"
-                    onAction="CopyWithLinkedElements"
-                    getVisible="CanCopyWithLinkedElements"
+            <button id="highlight_linked"
+                    label="高亮关联件"
+                    onAction="HighlightLinked"
+                    getVisible="CanHighlightLinked"
+            />
+        </contextMenu>
+        <contextMenu idMso="ContextMenuDrawingPage">
+            <button id="paste_with_linked"
+					insertAfterMso="PasteSpecialDialog"
+                    label="带关联件粘贴"
+                    onAction="PasteWithLinked"
+                    getVisible="CanPaste"
             />
         </contextMenu>
     </contextMenus>
