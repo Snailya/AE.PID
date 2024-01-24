@@ -15,9 +15,6 @@ public class Configuration : ConfigurationBase
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     private static readonly string ConfigFileName = "ae-pid.json";
-    private static readonly NLogConfiguration.LogLevel VerboseLogLevel = NLogConfiguration.LogLevel.Trace;
-
-    private readonly object _configurationLock = new();
 
     [JsonIgnore] public NLogConfiguration NLogConfig;
     [JsonIgnore] public string Api { get; set; } = "http://172.18.128.104:32768";
@@ -72,12 +69,14 @@ public class Configuration : ConfigurationBase
     /// <returns>An Configuration object.</returns>
     public static Configuration Load()
     {
-        var config = new Configuration();
+        Configuration config = null;
 
-        if (File.Exists(GetPath()))
-            try
+        try
+        {
+            if (File.Exists(GetPath()))
             {
                 var configContent = File.ReadAllText(GetPath());
+
 
                 if (!string.IsNullOrEmpty(configContent))
                 {
@@ -88,24 +87,20 @@ public class Configuration : ConfigurationBase
                             Converters = { new ConcurrentBagConverter() }
                         });
 
-                    if (localConfig != null)
-                    {
-                        config = localConfig;
-                        LogManager.GetCurrentClassLogger().Debug("Local configuration loaded.");
-                    }
-                    else
-                    {
-                        LogManager.GetCurrentClassLogger().Debug("Default configuration loaded.");
-                    }
                 }
             }
-            catch (JsonException jsonException)
-            {
-                Logger.Error(jsonException,
-                    $"Failed to log config from {GetPath()}, a default configuration file is used instead.");
-            }
+        }
+        catch (Exception exception)
+        {
+            Logger.Error(exception,
+                $"Failed to log config from {GetPath()}, a default configuration file is used instead.");
+        }
+        finally
+        {
+            config ??= new Configuration();
+            config.NLogConfig = NLogConfiguration.LoadXml();
 
-        config.NLogConfig = NLogConfiguration.LoadXml();
+        }
 
 #if DEBUG
         config.Api = "http://localhost:32768";
