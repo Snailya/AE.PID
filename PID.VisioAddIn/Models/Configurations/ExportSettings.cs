@@ -11,7 +11,7 @@ public class ExportSettings : INotifyPropertyChanged
     /// <summary>
     /// Layers to filter shapes for BOM table.
     /// </summary>
-    public IList<string> BomLayers { get; set; } = new List<string> { "Equipments" };
+    public IList<string> BomLayers { get; set; } = new List<string> { };
 
     protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {

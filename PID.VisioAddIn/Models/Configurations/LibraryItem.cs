@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AE.PID.Models;
+namespace AE.PID.Models.Configurations;
 
 /// <summary>
 ///     The item in the library used for comparing document stencils with latest library.

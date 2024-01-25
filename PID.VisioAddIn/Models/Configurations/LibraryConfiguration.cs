@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,7 +13,7 @@ public class LibraryConfiguration : ConfigurationBase
     /// <summary>
     ///     The config for libraries that defines the library name, version, hash and local path.
     /// </summary>
-    public ConcurrentBag<Library> Libraries { get; set; } = [];
+    public List<Library> Libraries { get; set; } = [];
 
     /// <summary>
     ///     Get item list of the libraries.

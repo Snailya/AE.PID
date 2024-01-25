@@ -160,13 +160,13 @@ namespace AE.PID {
         private Globals() {
         }
         
-        private static AE.PID.ThisAddIn _ThisAddIn;
+        private static ThisAddIn _ThisAddIn;
         
         private static global::Microsoft.Office.Tools.Factory _factory;
         
         private static ThisRibbonCollection _ThisRibbonCollection;
         
-        internal static AE.PID.ThisAddIn ThisAddIn {
+        internal static ThisAddIn ThisAddIn {
             get {
                 return _ThisAddIn;
             }

@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Text.Json;
+using Newtonsoft.Json;
 using NLog;
 
 namespace AE.PID.Models;
@@ -26,7 +26,7 @@ public class InputCache
             var configContent = File.ReadAllText(FilePath);
 
             if (!string.IsNullOrEmpty(configContent))
-                cache = JsonSerializer.Deserialize<InputCache>(configContent);
+                cache = JsonConvert.DeserializeObject<InputCache>(configContent);
         }
         catch (JsonException jsonException)
         {
@@ -42,11 +42,7 @@ public class InputCache
     {
         using var configFileStream = File.Open(FilePath, FileMode.Create);
         using var configStreamWriter = new StreamWriter(configFileStream, Encoding.UTF8);
-        var jsonString = JsonSerializer.Serialize(cache, new JsonSerializerOptions
-        {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, // 中文字不編碼
-            WriteIndented = true // 換行與縮排
-        });
+        var jsonString = JsonConvert.SerializeObject(cache, Formatting.Indented);
         configStreamWriter.Write(jsonString);
         configStreamWriter.Flush();
     }

@@ -1,19 +1,17 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Json;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Threading;
 using System.Threading.Tasks;
 using AE.PID.Core.Dtos;
 using AE.PID.Models;
 using AE.PID.Models.Configurations;
+using Newtonsoft.Json;
 using NLog;
 
 namespace AE.PID.Controllers.Services;
@@ -67,8 +65,9 @@ public abstract class LibraryUpdater
         var client = Globals.ThisAddIn.HttpClient;
         var configuration = Globals.ThisAddIn.Configuration;
 
-        return (await client.GetFromJsonAsync<IEnumerable<LibraryDto>>(configuration.Api + "/libraries"))
-            .ToList();
+        var response = await client.GetStringAsync(configuration.Api + "/libraries");
+
+        return  JsonConvert.DeserializeObject<IEnumerable<LibraryDto>>(response).ToList();
     }
 
     private static void DoUpdate(long seed)
@@ -189,7 +188,7 @@ public abstract class LibraryUpdater
 
         configuration.LibraryConfiguration.NextTime =
             DateTime.Now + configuration.LibraryConfiguration.CheckInterval;
-        configuration.LibraryConfiguration.Libraries = new ConcurrentBag<Library>(updatedLibraries);
+        configuration.LibraryConfiguration.Libraries = [..updatedLibraries];
         configuration.Save();
 
         return updatedLibraries;

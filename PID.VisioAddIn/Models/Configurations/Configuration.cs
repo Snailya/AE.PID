@@ -2,10 +2,7 @@
 using System.IO;
 using System.Reactive.Subjects;
 using System.Text;
-using System.Text.Encodings.Web;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using AE.PID.Converters;
+using Newtonsoft.Json;
 using NLog;
 
 namespace AE.PID.Models.Configurations;
@@ -14,7 +11,7 @@ namespace AE.PID.Models.Configurations;
 public class Configuration : ConfigurationBase
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    private static readonly string ConfigFileName = "ae-pid.json";
+    private const string ConfigFileName = "ae-pid.json";
 
     [JsonIgnore] public NLogConfiguration NLogConfig;
     [JsonIgnore] public string Api { get; set; } = "http://172.18.128.104:32768";
@@ -42,11 +39,7 @@ public class Configuration : ConfigurationBase
             // app config
             using var configFileStream = File.Open(GetPath(), FileMode.Create);
             using var configStreamWriter = new StreamWriter(configFileStream, Encoding.UTF8);
-            var jsonString = JsonSerializer.Serialize(this, new JsonSerializerOptions
-            {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, // 中文字不編碼
-                WriteIndented = true // 換行與縮排
-            });
+            var jsonString = JsonConvert.SerializeObject(this, Formatting.Indented);
             configStreamWriter.Write(jsonString);
             configStreamWriter.Flush();
 
@@ -76,17 +69,11 @@ public class Configuration : ConfigurationBase
             if (File.Exists(GetPath()))
             {
                 var configContent = File.ReadAllText(GetPath());
-
-
+                
                 if (!string.IsNullOrEmpty(configContent))
                 {
-                    var localConfig = JsonSerializer.Deserialize<Configuration>(
-                        configContent,
-                        new JsonSerializerOptions
-                        {
-                            Converters = { new ConcurrentBagConverter() }
-                        });
-
+                    var localConfig = JsonConvert.DeserializeObject<Configuration>(configContent);
+                    config = localConfig;
                 }
             }
         }

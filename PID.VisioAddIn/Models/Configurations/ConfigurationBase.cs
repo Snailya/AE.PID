@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
-using System.Text.Json.Serialization;
 
 namespace AE.PID.Models.Configurations;
 

@@ -58,7 +58,7 @@
     <!--This section defines custom context menu controls.-->
     <contextMenus>
         <contextMenu idMso="ContextMenuShape">
-            <button idQ="insert_linked"
+            <button id="insert_linked"
                     label="添加关联件"
                     onAction="InsertLinked"
                     getVisible="CanInsert"
