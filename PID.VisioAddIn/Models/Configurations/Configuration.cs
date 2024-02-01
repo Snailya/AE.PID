@@ -15,7 +15,7 @@ public class Configuration : ConfigurationBase
 
     [JsonIgnore] public NLogConfiguration NLogConfig;
     [JsonIgnore] public string Api { get; set; } = "http://172.18.128.104:32768";
-    [JsonIgnore] public Version Version { get; set; } = new(0, 2, 2, 0);
+    [JsonIgnore] public Version Version { get; set; } = new(0, 2, 3, 0);
 
     [JsonIgnore] public BehaviorSubject<Configuration> ConfigurationSubject = new(null);
 
