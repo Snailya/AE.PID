@@ -155,8 +155,8 @@ public abstract class LinkedControlManager
             // append the related items to selection if it has not been selected yet.
             // cache their primary item index in the selection
             foreach (var item in from item in linkedElements
-                     where !PreviousCopy.Contains(item.ID)
-                     select item)
+                                 where !PreviousCopy.Contains(item.ID)
+                                 select item)
             {
                 selection.Select((Shape)item, (short)VisSelectArgs.visSelect);
                 primaryItemIndexes.Add(i);
@@ -180,7 +180,6 @@ public abstract class LinkedControlManager
         for (var i = 0; i < Globals.ThisAddIn.Application.ActiveWindow.Selection.Count; i++)
         {
             if (primaryItemIndexes[i] == -1) continue;
-
 
             var shape = Globals.ThisAddIn.Application.ActiveWindow
                 .Selection[i + 1]; // pay attention to that the selection index starts with 1
@@ -220,8 +219,8 @@ public abstract class LinkedControlManager
 
     public static bool CanHighlightLinked(Selection selection)
     {
-        // todo: if it's a opened master, should avoid this
-
+        // verify is not opened master
+        if (selection.ContainingPage == null) return false;
 
         // verify is single selected
         if (selection.Count != 1) return false;
