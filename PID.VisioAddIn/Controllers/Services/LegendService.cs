@@ -202,6 +202,9 @@ public static class LegendService
 
         // make it not count for export
         shape.CellsU["Prop.Quantity"].Formula = "0";
+
+        if (shape.CellExists["User.NumOfShapes", (short)VisExistsFlags.visExistsLocally] == (short)VBABool.True)
+            shape.Cells["User.NumOfShapes"].Formula = "1";
     }
 
     private static Shape InsertLabelAsCallout(Shape shape)
