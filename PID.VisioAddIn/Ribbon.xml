@@ -32,6 +32,12 @@
                             screentip="使用模具库中的模具更新文档中的模具"
                             getImage="GetButtonImage"
                     />
+                    <button id="insert_legend"
+                            label="图例"
+                            onAction="InsertLegend"
+                            screentip="在当前绘图页中插入图例"
+                            getImage="GetButtonImage"
+                    />
                 </group>
                 <group id="grpExport" label="导出">
                     <button id="open_export_tool"
@@ -51,6 +57,9 @@
                             getImage="GetButtonImage"
                     />
                 </group>
+                <!--                <group id="grpDebug" label="调试">-->
+
+                <!--                </group>-->
             </tab>
         </tabs>
     </ribbon>
@@ -76,7 +85,7 @@
         </contextMenu>
         <contextMenu idMso="ContextMenuDrawingPage">
             <button id="paste_with_linked"
-					insertAfterMso="PasteSpecialDialog"
+                    insertAfterMso="PasteSpecialDialog"
                     label="带关联件粘贴"
                     onAction="PasteWithLinked"
                     getVisible="CanPaste"

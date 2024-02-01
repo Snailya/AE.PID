@@ -161,6 +161,48 @@ internal static class VisioExtension
     }
 
     /// <summary>
+    /// Drop an object using mm unit.
+    /// </summary>
+    /// <param name="page"></param>
+    /// <param name="objectToDrop"></param>
+    /// <param name="xPos"></param>
+    /// <param name="yPos"></param>
+    /// <returns></returns>
+    public static Shape DropMetric(this IVPage page, object objectToDrop, double xPos, double yPos)
+    {
+        return page.Drop(objectToDrop, xPos / 25.4, yPos / 25.4);
+    }
+
+    public static Shape DrawRectangleMetric(this IVPage page, double x1, double y1, double x2, double y2)
+    {
+        return page.DrawRectangle(x1 / 25.4, y1 / 25.4, x2 / 25.4, y2 / 25.4);
+    }
+
+    /// <summary>
+    /// Get bounding box in mm unit.
+    /// </summary>
+    /// <param name="shape"></param>
+    /// <param name="flags"></param>
+    /// <returns></returns>
+    public static (double, double, double, double) BoundingBoxMetric(this IVShape shape, short flags)
+    {
+        shape.BoundingBox(flags, out var left, out var bottom, out var right, out var top);
+        return (left * 25.4, bottom * 25.4, right * 25.4, top * 25.4);
+    }
+
+    public static Position GetAlignBoxCenter(this IVShape shape)
+    {
+        return new Position(shape.CellsU["PinX"].Result["mm"], shape.CellsU["PinY"].Result["mm"]);
+    }
+
+    public static Position GetGeometricCenter(this IVShape shape)
+    {
+        var (left, bottom, right, top) = shape.BoundingBoxMetric(
+            (short)VisBoundingBoxArgs.visBBoxDrawingCoords + (short)VisBoundingBoxArgs.visBBoxExtents);
+        return new Position(left + right / 2, (top + bottom) / 2);
+    }
+
+    /// <summary>
     /// Try convert a shape to line item.
     /// </summary>
     /// <param name="shape"></param>

@@ -169,6 +169,7 @@ public partial class ThisAddIn
             // ribbon
             DocumentInitializer.Listen();
             ShapeSelector.Listen();
+            LegendService.Listen();
 
             DocumentExporter.Listen();
 

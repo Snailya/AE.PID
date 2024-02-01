@@ -18,6 +18,14 @@ using System.Globalization;
 using System.Resources;
 using System.Windows.Controls;
 using AE.PID.Models.VisProps;
+using System.Windows;
+using System.Drawing.Imaging;
+using System.Windows.Media.Imaging;
+using System.Windows.Media;
+using Brushes = System.Windows.Media.Brushes;
+using Point = System.Windows.Point;
+using System.Windows.Forms;
+using AE.PID.Controllers.Services;
 
 // TODO:   按照以下步骤启用功能区(XML)项:
 
@@ -118,6 +126,11 @@ public class Ribbon : IRibbonExtensibility
         AnchorBarsUsage.ShowAnchorBar(Globals.ThisAddIn.Application);
     }
 
+    public void InsertLegend(IRibbonControl control)
+    {
+        LegendService.Invoke(Globals.ThisAddIn.Application.ActivePage);
+    }
+
     #endregion
 
     #region Commands
@@ -126,6 +139,8 @@ public class Ribbon : IRibbonExtensibility
     {
         Globals.ThisAddIn.Application.ActiveWindow.Selection.GetIDs(out var ids);
         LinkedControlManager.PreviousCopy = ids.OfType<int>().ToList();
+
+        cancel = false;
     }
 
     #endregion
@@ -151,7 +166,7 @@ public class Ribbon : IRibbonExtensibility
     {
         return LinkedControlManager.CanHighlightPrimary(Globals.ThisAddIn.Application.ActiveWindow.Selection);
     }
-    
+
     public void HighlightLinked(IRibbonControl control)
     {
         LinkedControlManager.HighlightLinked(Globals.ThisAddIn.Application.ActiveWindow.Selection[1]);
@@ -161,7 +176,7 @@ public class Ribbon : IRibbonExtensibility
     {
         return LinkedControlManager.CanHighlightLinked(Globals.ThisAddIn.Application.ActiveWindow.Selection);
     }
-    
+
     public void PasteWithLinked(IRibbonControl control)
     {
         LinkedControlManager.PasteToLocation();

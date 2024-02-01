@@ -67,7 +67,7 @@ public abstract class LibraryUpdater
 
         var response = await client.GetStringAsync(configuration.Api + "/libraries");
 
-        return  JsonConvert.DeserializeObject<IEnumerable<LibraryDto>>(response).ToList();
+        return JsonConvert.DeserializeObject<IEnumerable<LibraryDto>>(response).ToList();
     }
 
     private static void DoUpdate(long seed)

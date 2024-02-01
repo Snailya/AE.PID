@@ -15,7 +15,7 @@ public abstract class LinkedControlManager
     private static string _libraryPath = string.Empty;
     private static readonly BehaviorSubject<Position> PositionSubject = new(new Position(0, 0));
 
-    private const string FunctionalElementBaseId = "{B28A5C75-E7CB-4700-A060-1A6D0A777A94}";
+    public const string FunctionalElementBaseId = "{B28A5C75-E7CB-4700-A060-1A6D0A777A94}";
 
     public static List<int> PreviousCopy { get; set; }
     public const string LinkedShapePropertyName = "User.LinkedShapeID";
@@ -155,8 +155,8 @@ public abstract class LinkedControlManager
             // append the related items to selection if it has not been selected yet.
             // cache their primary item index in the selection
             foreach (var item in from item in linkedElements
-                                 where !PreviousCopy.Contains(item.ID)
-                                 select item)
+                     where !PreviousCopy.Contains(item.ID)
+                     select item)
             {
                 selection.Select((Shape)item, (short)VisSelectArgs.visSelect);
                 primaryItemIndexes.Add(i);
@@ -170,9 +170,11 @@ public abstract class LinkedControlManager
             new Position(Globals.ThisAddIn.Application.ActiveWindow.Selection.PrimaryItem.Cells["PinX"].ResultIU,
                 Globals.ThisAddIn.Application.ActiveWindow.Selection.PrimaryItem.Cells["PinY"].ResultIU);
         selection.Duplicate();
-        Globals.ThisAddIn.Application.ActiveWindow.Selection.Move(location.X - originLocation.X, location.Y - originLocation.Y);
+        Globals.ThisAddIn.Application.ActiveWindow.Selection.Move(location.X - originLocation.X,
+            location.Y - originLocation.Y);
 
-        Logger.Debug($"Pasted {Globals.ThisAddIn.Application.ActiveWindow.Selection.Count} elements: {string.Join(", ", Globals.ThisAddIn.Application.ActiveWindow.Selection.OfType<IVShape>().Select(x => x.Name))}");
+        Logger.Debug(
+            $"Pasted {Globals.ThisAddIn.Application.ActiveWindow.Selection.Count} elements: {string.Join(", ", Globals.ThisAddIn.Application.ActiveWindow.Selection.OfType<IVShape>().Select(x => x.Name))}");
 
         // update the linked shape id
         for (var i = 0; i < Globals.ThisAddIn.Application.ActiveWindow.Selection.Count; i++)
@@ -218,6 +220,9 @@ public abstract class LinkedControlManager
 
     public static bool CanHighlightLinked(Selection selection)
     {
+        // todo: if it's a opened master, should avoid this
+
+
         // verify is single selected
         if (selection.Count != 1) return false;
 

@@ -69,7 +69,7 @@ public class Configuration : ConfigurationBase
             if (File.Exists(GetPath()))
             {
                 var configContent = File.ReadAllText(GetPath());
-                
+
                 if (!string.IsNullOrEmpty(configContent))
                 {
                     var localConfig = JsonConvert.DeserializeObject<Configuration>(configContent);
@@ -86,7 +86,6 @@ public class Configuration : ConfigurationBase
         {
             config ??= new Configuration();
             config.NLogConfig = NLogConfiguration.LoadXml();
-
         }
 
 #if DEBUG
