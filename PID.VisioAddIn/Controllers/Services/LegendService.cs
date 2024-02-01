@@ -205,6 +205,9 @@ public static class LegendService
 
         if (shape.CellExists["User.NumOfShapes", (short)VisExistsFlags.visExistsLocally] == (short)VBABool.True)
             shape.Cells["User.NumOfShapes"].Formula = "1";
+        
+        if (shape.CellExists["Prop.ValveIsAdjustable", (short)VisExistsFlags.visExistsLocally] == (short)VBABool.True)
+            shape.Cells["Prop.ValveIsAdjustable"].Formula = "FALSE";
     }
 
     private static Shape InsertLabelAsCallout(Shape shape)
