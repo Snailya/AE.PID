@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Packaging;
 using System.Linq;
-using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -63,7 +62,7 @@ public abstract class DocumentUpdater
                     Observable.Return(document)
                         .SubscribeOn(TaskPoolScheduler.Default)
                         .SelectMany(data => Task.Run(() => GetUpdatesAsync(data)),
-                            (data, mappings) => new { Document = document, Mappings = mappings })
+                            (data, mappings) => new { Document = data, Mappings = mappings })
                         .Where(data => data.Mappings is not null && data.Mappings.Any())
                         // prompt user decision
                         .Select(result => new
@@ -96,7 +95,7 @@ public abstract class DocumentUpdater
     /// </summary>
     /// <param name="document"></param>
     /// <returns></returns>
-    public static IEnumerable<MasterDocumentLibraryMapping> GetUpdatesAsync(IVDocument document)
+    private static IEnumerable<MasterDocumentLibraryMapping> GetUpdatesAsync(IVDocument document)
     {
         var configuration = Globals.ThisAddIn.Configuration;
 
@@ -278,14 +277,21 @@ public abstract class DocumentUpdater
     /// <param name="filePath"></param>
     private static void PostProcess(string filePath)
     {
-        // open all stencils 
-        foreach (var path in Globals.ThisAddIn.Configuration.LibraryConfiguration.Libraries
-                     .Select(x => x.Path))
-            Globals.ThisAddIn.Application.Documents.OpenEx(path,
-                (short)VisOpenSaveArgs.visOpenDocked);
-
         Logger.Info(
             $"Document masters updated successfully.");
+
+        try
+        {
+            // open all stencils 
+            foreach (var path in Globals.ThisAddIn.Configuration.LibraryConfiguration.Libraries
+                         .Select(x => x.Path))
+                Globals.ThisAddIn.Application.Documents.OpenEx(path,
+                    (short)VisOpenSaveArgs.visOpenDocked);
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, "Failed to restore stencils after updated");
+        }
 
         ThisAddIn.Alert("更新成功，请在新文件打开后手动另存。");
         Globals.ThisAddIn.Application.Documents.OpenEx(filePath,
