@@ -8,10 +8,12 @@ using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using NLog;
+using Microsoft.Win32;
+using ReactiveUI;
+using Newtonsoft.Json.Linq;
 
 namespace AE.PID.Controllers.Services;
 
@@ -42,23 +44,24 @@ public abstract class AppUpdater
     {
         Logger.Info($"App Update Service started. Current version: {Globals.ThisAddIn.Configuration.Version}");
 
-        return Globals.ThisAddIn.Configuration.CheckIntervalSubject // auto check
+        var userInvokeObservable = ManuallyInvokeTrigger
+            .Throttle(TimeSpan.FromMilliseconds(300))
+            .Select(_ => Constants.ManuallyInvokeMagicNumber)
+            .Do(_ => Logger.Info($"App Update started. {{Initiated by: User}}"));
+
+        var autoInvokeObservable = Globals.ThisAddIn.Configuration.CheckIntervalSubject // auto check
             .Select(Observable.Interval)
             .Switch()
             .Merge(Observable
                 .Return<
                     long>(-1)) // add a immediately value as the interval method emits only after the interval collapse.
-            .Where(_ =>
-                Globals.ThisAddIn.Configuration.NextTime == null ||
-                DateTime.Now > Globals.ThisAddIn.Configuration.NextTime) // ignore if it not till the next check time
-            .Do(_ => Logger.Info($"Library Update started. {{Initiated by: Auto-Run}}"))
-            // merge with user invoke
-            .Merge(
-                ManuallyInvokeTrigger
-                    .Throttle(TimeSpan.FromMilliseconds(300))
-                    .Select(_ => Constants.ManuallyInvokeMagicNumber)
-                    .Do(_ => Logger.Info($"App Update started. {{Initiated by: User}}"))
-            ).Subscribe(InvokeUpdate,
+            .Where(_ => DateTime.Now >
+                        Globals.ThisAddIn.Configuration.NextTime) // ignore if it not till the next check time
+            .Do(_ => Logger.Info($"App Update started. {{Initiated by: Auto-Run}}"));
+
+        return autoInvokeObservable
+            .Merge(userInvokeObservable)
+            .Subscribe(InvokeUpdate,
                 ex => { Logger.Error(ex, $"App update listener ternimated accidently."); },
                 () => { Logger.Error("App update listener should never complete."); });
     }
@@ -75,15 +78,14 @@ public abstract class AppUpdater
             .SelectMany(value => Observable.FromAsync(GetUpdateAsync),
                 (value, result) => new { InvokeType = value, Result = result })
             // notify user if user decision needs to decide whether to continue updating or not.
-            .ObserveOn(Globals.ThisAddIn.SynchronizationContext)
+            .ObserveOn(RxApp.MainThreadScheduler)
             .Select(data => NotifyUserIfNeed(data.InvokeType, data.Result) ? data.Result.DownloadUrl : string.Empty)
             // continue updating
             .ObserveOn(TaskPoolScheduler.Default)
             .Where(x => !string.IsNullOrEmpty(x))
             .SelectMany(CacheAsync)
-            .Do(PromptManuallyUpdate)
             .Subscribe(
-                _ => { },
+                Install,
                 ex =>
                 {
                     switch (ex)
@@ -119,10 +121,10 @@ public abstract class AppUpdater
 
             var responseBody = await response.Content.ReadAsStringAsync();
 
-            var jsonDocument = JsonDocument.Parse(responseBody);
-            var root = jsonDocument.RootElement;
+            var jObject = JObject.Parse(responseBody);
 
-            var isUpdate = root.GetProperty("isUpdateAvailable").GetBoolean();
+            var isUpdate = (bool)jObject["isUpdateAvailable"]!;
+            var versionToken = jObject["latestVersion"]!;
 
             Logger.Info(isUpdate ? "New app version available." : "App is up to date.");
 
@@ -130,8 +132,8 @@ public abstract class AppUpdater
                 return new AppCheckVersionResult
                 {
                     IsUpdateAvailable = true,
-                    DownloadUrl = root.GetProperty("latestVersion").GetProperty("downloadUrl").GetString(),
-                    ReleaseNotes = root.GetProperty("latestVersion").GetProperty("releaseNotes").GetString()
+                    DownloadUrl = (string)versionToken["downloadUrl"] !,
+                    ReleaseNotes = (string)versionToken["releaseNotes"] !
                 };
 
             return new AppCheckVersionResult { IsUpdateAvailable = false };
@@ -171,8 +173,9 @@ public abstract class AppUpdater
                           Environment.NewLine +
                           checkResult.ReleaseNotes +
                           Environment.NewLine + Environment.NewLine +
-                          "请关闭Visio后安装。";
-        return DialogResult.Yes == ThisAddIn.AskForUpdate(description);
+                          "请在安装完成后重启Visio";
+        var result = DialogResult.Yes == ThisAddIn.AskForUpdate(description);
+        return result;
     }
 
     /// <summary>
@@ -193,9 +196,11 @@ public abstract class AppUpdater
             using var response = await client.GetAsync(downloadUrl);
             response.EnsureSuccessStatusCode();
 
-            var filePath = Path.GetFullPath(Path.Combine(installerFolder,
-                Path.GetFileName(
-                    GetFilenameFromContentDisposition(response.Content.Headers.ContentDisposition.ToString()))));
+            var fileName = Path.GetFileName(
+                GetFilenameFromContentDisposition(response.Content.Headers.ContentDisposition.ToString()) ??
+                Path.GetTempFileName());
+
+            var filePath = Path.GetFullPath(Path.Combine(installerFolder, fileName));
             if (File.Exists(filePath)) return filePath; // already exist
 
             // Otherwise, get the content as a stream
@@ -221,7 +226,12 @@ public abstract class AppUpdater
         }
     }
 
-    private static string GetFilenameFromContentDisposition(string contentDisposition)
+    /// <summary>
+    /// Get the filename from content disposition from an response.
+    /// </summary>
+    /// <param name="contentDisposition"></param>
+    /// <returns></returns>
+    private static string? GetFilenameFromContentDisposition(string contentDisposition)
     {
         // Split the header value by semicolons
         var parts = contentDisposition.Split(';');
@@ -233,13 +243,81 @@ public abstract class AppUpdater
     }
 
     /// <summary>
-    /// Open the explorer.exe and select the installer exe.
+    /// Execute .msi file in a new process. Need restart Visio to apply changes.
     /// </summary>
-    /// <param name="installerPath"></param>
-    private static void PromptManuallyUpdate(string installerPath)
+    /// <param name="source"></param>
+    private static void Install(string source)
     {
-        Logger.Info($"Open the explorer and select {installerPath}");
-        Process.Start("explorer.exe", $"/select, \"{installerPath}\"");
+        string msiPath;
+        if (Path.GetExtension(source) == ".rar")
+        {
+            var destination = Path.Combine(ThisAddIn.TmpFolder, Path.GetFileNameWithoutExtension(source));
+            ExtractAndOverWriteRarFile(source, destination);
+            var files = Directory.GetFiles(destination);
+            msiPath = files.Single(x => Path.GetExtension(x) == ".msi");
+        }
+        else
+            msiPath = source;
+        
+        try
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "msiexec",
+                Arguments = $"/i \"{msiPath}\"",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var process = new Process();
+            process.StartInfo = startInfo;
+            process.Start();
+            process.WaitForExit();
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, "Failed to execute installer.");
+        }
+    }
+
+    /// <summary>
+    /// Find the WinRar.exe by regedit and extract .rar file using WinRar in new process.
+    /// </summary>
+    /// <param name="sourceArchiveFileName"></param>
+    /// <param name="destinationDirectoryName"></param>
+    private static void ExtractAndOverWriteRarFile(string sourceArchiveFileName, string destinationDirectoryName)
+    {
+        try
+        {
+            const string registryKey = @"SOFTWARE\WinRAR";
+
+            // Attempt to open the WinRAR registry key
+            using var key = Registry.LocalMachine.OpenSubKey(registryKey);
+            // Retrieve the InstallPath value from the registry
+            var installPath = key?.GetValue("exe64");
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = $"{installPath}",
+                Arguments = $"x -o+ \"{sourceArchiveFileName}\" \"{destinationDirectoryName}\"", // -o+ means overwirte all
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var process = new Process();
+            process.StartInfo = startInfo;
+            process.Start();
+            process.WaitForExit();
+        }
+        catch (Exception e)
+        {
+            Logger.Error(e, "Failed to extract rar file.");
+            throw;
+        }
     }
 
     private class AppCheckVersionResult
