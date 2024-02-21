@@ -15,29 +15,14 @@ public partial class ExportView
 
         this.WhenActivated(disposableRegistration =>
         {
-            this.Bind(ViewModel, vm => vm.CustomerName,
-                    v => v.CustomerNameInput.Text)
+            this.OneWayBind(ViewModel,
+                    vm => vm.DocumentInfo,
+                    v => v.DocumentInfo.ViewModel)
                 .DisposeWith(disposableRegistration);
-            this.Bind(ViewModel, vm => vm.DocumentNo,
-                    v => v.DocNoInput.Text)
-                .DisposeWith(disposableRegistration);
-            this.Bind(ViewModel, vm => vm.ProjectNo,
-                    v => v.ProjectNoInput.Text)
-                .DisposeWith(disposableRegistration);
-            this.Bind(ViewModel, vm => vm.VersionNo,
-                    v => v.VersionNoInput.Text)
-                .DisposeWith(disposableRegistration);
-
             this.OneWayBind(ViewModel,
                     vm => vm.Items,
                     v => v.BillsOfMaterials.ItemsSource)
                 .DisposeWith(disposableRegistration);
-            // this.OneWayBind(ViewModel,
-            //     vm => vm.IsLoading,
-            //     v => v.LoadingSkeleton.Visibility,
-            //     IsLoadingToVisibilityTypeConverterFunc)
-            //     .DisposeWith(disposableRegistration);
-
             this.BindCommand(ViewModel,
                     vm => vm.Submit,
                     v => v.SubmitButton)
@@ -54,10 +39,5 @@ public partial class ExportView
                 .Subscribe(_ => Close())
                 .DisposeWith(disposableRegistration);
         });
-    }
-
-    private Visibility IsLoadingToVisibilityTypeConverterFunc(bool isLoading)
-    {
-        return isLoading ? Visibility.Visible : Visibility.Hidden;
     }
 }

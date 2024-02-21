@@ -8,8 +8,9 @@
                 xmlns:views="clr-namespace:AE.PID.Views"
                 mc:Ignorable="d"
                 x:TypeArguments="viewModels:ExportViewModel"
-                MinHeight="320" MinWidth="640" Height="640"
-                d:DesignHeight="320" d:DesignWidth="480">
+                MinHeight="320" MinWidth="800" Height="640"
+                d:DataContext="{d:DesignInstance Type=viewModels:ExportViewModel}"
+                d:DesignHeight="320" d:DesignWidth="800">
     <Grid Margin="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -19,30 +20,9 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <TextBlock Margin="4 4 4 4" FontSize="28" Text="导出" />
-        <Grid Grid.Row="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <TextBlock Margin="4" Text="客户名称" />
-            <TextBox Grid.Row="0" Grid.Column="1" Margin="4" x:Name="CustomerNameInput" />
-            <TextBlock Grid.Row="0" Grid.Column="2" Margin="4" Text="文档编号" />
-            <TextBox Grid.Row="0" Grid.Column="3" Margin="4" x:Name="DocNoInput" />
-            <TextBlock Grid.Row="1" Grid.Column="0" Margin="4" Text="项目编号" />
-            <TextBox Grid.Row="1" Grid.Column="1" Margin="4" x:Name="ProjectNoInput" />
-            <TextBlock Grid.Row="1" Grid.Column="2" Margin="4" Text="版本号" />
-            <TextBox Grid.Row="1" Grid.Column="3" Margin="4" x:Name="VersionNoInput" />
-        </Grid>
-
+        <views:DocumentInfoControl Grid.Row="1" x:Name="DocumentInfo" />
         <views:TreeListView Grid.Row="2" x:Name="BillsOfMaterials" BorderThickness="2">
             <views:TreeListView.Resources>
-
                 <Style x:Key="ExpandCollapseToggleStyle" TargetType="{x:Type ToggleButton}">
                     <Setter Property="Focusable" Value="False" />
                     <Setter Property="Width" Value="19" />
@@ -77,7 +57,7 @@
                 </Style>
                 <converters:LevelToIndentConverter x:Key="LevelToIndentConverter" />
 
-                <DataTemplate x:Key="CellTemplate_Name">
+                <DataTemplate x:Key="CellTemplateName">
                     <DockPanel>
                         <ToggleButton x:Name="Expander" Style="{StaticResource ExpandCollapseToggleStyle}"
                                       Margin="{Binding Level,
@@ -95,11 +75,12 @@
                     </DataTemplate.Triggers>
                 </DataTemplate>
 
-                <GridViewColumnCollection x:Key="gvcc">
+                <GridViewColumnCollection x:Key="GridViewColumnCollection">
                     <GridViewColumn Header="形状ID" DisplayMemberBinding="{Binding Id}" Width="60" />
-                    <GridViewColumn Header="名称" CellTemplate="{StaticResource CellTemplate_Name}" />
+                    <GridViewColumn Header="名称" CellTemplate="{StaticResource CellTemplateName}" />
                     <GridViewColumn Header="功能组" DisplayMemberBinding="{Binding FunctionalGroup}" Width="60" />
                     <GridViewColumn Header="功能元件" DisplayMemberBinding="{Binding FunctionalElement}" Width="120" />
+                    <GridViewColumn Header="物料号" DisplayMemberBinding="{Binding MaterialNo}" Width="120" />
                     <GridViewColumn Header="数量" DisplayMemberBinding="{Binding Count}" Width="60" />
                 </GridViewColumnCollection>
 
@@ -115,7 +96,7 @@
                                             Padding="{TemplateBinding Padding}">
                                         <GridViewRowPresenter x:Name="PART_Header"
                                                               Content="{TemplateBinding Header}"
-                                                              Columns="{StaticResource gvcc}" />
+                                                              Columns="{StaticResource GridViewColumnCollection}" />
                                     </Border>
 
                                     <ItemsPresenter x:Name="ItemsHost" />
@@ -171,7 +152,7 @@
                                 <Border BorderBrush="{TemplateBinding BorderBrush}"
                                         BorderThickness="{TemplateBinding BorderThickness}">
                                     <DockPanel>
-                                        <GridViewHeaderRowPresenter Columns="{StaticResource gvcc}"
+                                        <GridViewHeaderRowPresenter Columns="{StaticResource GridViewColumnCollection}"
                                                                     DockPanel.Dock="Top" />
                                         <Border BorderThickness="2">
                                             <ItemsPresenter />
@@ -182,8 +163,6 @@
                         </Setter.Value>
                     </Setter>
                 </Style>
-
-
             </views:TreeListView.Resources>
             <views:TreeListView.ItemTemplate>
                 <HierarchicalDataTemplate ItemsSource="{Binding Children}">
@@ -197,56 +176,6 @@
                 </HierarchicalDataTemplate>
             </views:TreeListView.ItemTemplate>
         </views:TreeListView>
-        <!-- <DataGrid Grid.Row="2" x:Name="BillsOfMaterials" Margin="4" -->
-        <!--           AutoGenerateColumns="False" CanUserAddRows="False" -->
-        <!--           SelectionUnit="FullRow" SelectionMode="Single"> -->
-        <!--     <DataGrid.Resources> -->
-        <!--         <converters:NullableToVisibilityConverter x:Key="NullableToVisibilityConverter" /> -->
-        <!--         <converters:LineItemTypeToSymbolConverter x:Key="LineItemTypeToSymbolConverter" /> -->
-        <!--     </DataGrid.Resources> -->
-        <!-- -->
-        <!--     <DataGrid.RowHeaderTemplate> -->
-        <!--         <DataTemplate> -->
-        <!--             <Border Width="16" Height="16" Background="LightGray" -->
-        <!--                     Visibility="{Binding DataContext.Children, RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}, Converter={StaticResource NullableToVisibilityConverter}}"> -->
-        <!--                 <TextBlock Text="{Binding DataContext.Type, Converter={StaticResource LineItemTypeToSymbolConverter }}" TextAlignment="Center" /> -->
-        <!--             </Border> -->
-        <!--         </DataTemplate> -->
-        <!--     </DataGrid.RowHeaderTemplate> -->
-        <!-- -->
-        <!--     <DataGrid.Columns> -->
-        <!--         <DataGridTextColumn Header="形状ID" Width="64" Binding="{Binding Id}" /> -->
-        <!--         <DataGridTextColumn Header="功能组" Width="128" Binding="{Binding FunctionalGroup}" /> -->
-        <!--         <DataGridTextColumn Header="功能元件" Width="128" Binding="{Binding FunctionalElement}" /> -->
-        <!--         <DataGridTextColumn Header="名称" Width="128" Binding="{Binding Name}" /> -->
-        <!--         <DataGridTextColumn Header="数量" Width="64" Binding="{Binding Count}" /> -->
-        <!--     </DataGrid.Columns> -->
-        <!-- -->
-        <!--     <DataGrid.RowDetailsTemplate> -->
-        <!--         <DataTemplate> -->
-        <!--             <DataGrid ItemsSource="{Binding Children}" -->
-        <!--                       AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="None"> -->
-        <!--                 <DataGrid.RowStyle> -->
-        <!--                     <Style TargetType="DataGridRow"> -->
-        <!--                         <Setter Property="Background" Value="LightGray" /> -->
-        <!--                         ~1~ Set your desired background color @1@ -->
-        <!--                     </Style> -->
-        <!--                 </DataGrid.RowStyle> -->
-        <!-- -->
-        <!--                 <DataGrid.Columns> -->
-        <!--                     <DataGridTextColumn Header="形状ID" Width="64" Binding="{Binding Id}" /> -->
-        <!--                     <DataGridTextColumn Header="功能组" Width="128" Binding="{Binding FunctionalGroup}" /> -->
-        <!--                     <DataGridTextColumn Header="功能元件" Width="128" Binding="{Binding FunctionalElement}" /> -->
-        <!--                     <DataGridTextColumn Header="名称" Width="128" Binding="{Binding Name}" /> -->
-        <!--                     <DataGridTextColumn Header="数量" Width="64" Binding="{Binding Count}" /> -->
-        <!--                 </DataGrid.Columns> -->
-        <!--             </DataGrid> -->
-        <!--         </DataTemplate> -->
-        <!--     </DataGrid.RowDetailsTemplate> -->
-        <!-- </DataGrid> -->
-        <!-- <TextBlock Grid.Row="2" x:Name="LoadingSkeleton" Text="加载中" TextAlignment="Center" VerticalAlignment="Center" -->
-        <!--            Width="{Binding Width, ElementName=BillsOfMaterials}" -->
-        <!--            Height="{Binding Height, ElementName=BillsOfMaterials}" /> -->
         <Separator Grid.Row="3" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="4">
             <Button x:Name="SubmitButton" Margin="8 8 4 4" MinWidth="64" Content="确定" />

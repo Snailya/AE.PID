@@ -2,7 +2,7 @@
 using PID.Server.Data;
 using PID.Server.Models;
 
-namespace PID.Server.Controllers;
+namespace AE.PID.Server.Controllers;
 
 [ApiController]
 public class AppController : ControllerBase
