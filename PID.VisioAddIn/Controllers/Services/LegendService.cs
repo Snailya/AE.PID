@@ -118,7 +118,7 @@ public static class LegendService
 
             page.Application.EndUndoScope(undoScope, true);
         }
-        catch 
+        catch
         {
             page.Application.EndUndoScope(undoScope, false);
             throw;
@@ -205,7 +205,7 @@ public static class LegendService
 
         if (shape.CellExists["User.NumOfShapes", (short)VisExistsFlags.visExistsLocally] == (short)VBABool.True)
             shape.Cells["User.NumOfShapes"].Formula = "1";
-        
+
         if (shape.CellExists["Prop.ValveIsAdjustable", (short)VisExistsFlags.visExistsLocally] == (short)VBABool.True)
             shape.Cells["Prop.ValveIsAdjustable"].Formula = "FALSE";
     }

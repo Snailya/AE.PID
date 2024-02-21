@@ -52,7 +52,7 @@ public class LineItemBase
     /// The linked function elements.
     /// </summary>
     public List<LineItemBase>? Children { get; set; }
-    
+
     /// <summary>
     /// The type used to specify if the item is treated as a unit equipment which might have several different equipments inside,
     /// or a single equipment that might have some equipments attached to it or not, or a equipment that attached to other single equipment.

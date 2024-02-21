@@ -3,19 +3,16 @@ using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
 using AE.PID.Controllers.Services;
 using AE.PID.Models;
 using AE.PID.Models.BOM;
 using DynamicData;
-using DynamicData.Binding;
 using ReactiveUI;
 
 namespace AE.PID.ViewModels;
 
 public class ExportViewModel : ViewModelBase
 {
-    private readonly ObservableCollectionExtended<LineItemBase> _itemsSource = [];
     private ReadOnlyObservableCollection<LineItemBase> _items;
     private string _customerName;
     private string _documentNo;
@@ -71,22 +68,16 @@ public class ExportViewModel : ViewModelBase
 
     protected override void SetupSubscriptions(CompositeDisposable d)
     {
-        _itemsSource.ToObservableChangeSet()
+        new DocumentExporter(Globals.ThisAddIn.Application.ActivePage)
+            .Connect()
             .ObserveOn(RxApp.MainThreadScheduler)
             .Bind(out _items)
-            .Subscribe()
-            .DisposeWith(d);
+            .Subscribe().DisposeWith(d);
     }
 
     protected override void SetupStart()
     {
         LoadInputCache();
-        LoadItemsAsync();
-    }
-
-    private Task LoadItemsAsync()
-    {
-        return Task.Run(() => _itemsSource.AddRange(DocumentExporter.GetLineItems()));
     }
 
     protected override void SetupDeactivate()
@@ -113,7 +104,7 @@ public class ExportViewModel : ViewModelBase
 
     private void ExportAsBOMTable()
     {
-        DocumentExporter.SaveAsBom(_itemsSource, _customerName, _documentNo, _projectNo,
+        DocumentExporter.SaveAsBom(_items, _customerName, _documentNo, _projectNo,
             _versionNo);
     }
 }

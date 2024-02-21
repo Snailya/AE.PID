@@ -257,8 +257,10 @@ public abstract class AppUpdater
             msiPath = files.Single(x => Path.GetExtension(x) == ".msi");
         }
         else
+        {
             msiPath = source;
-        
+        }
+
         try
         {
             var startInfo = new ProcessStartInfo
@@ -301,7 +303,8 @@ public abstract class AppUpdater
             var startInfo = new ProcessStartInfo
             {
                 FileName = $"{installPath}",
-                Arguments = $"x -o+ \"{sourceArchiveFileName}\" \"{destinationDirectoryName}\"", // -o+ means overwirte all
+                Arguments =
+                    $"x -o+ \"{sourceArchiveFileName}\" \"{destinationDirectoryName}\"", // -o+ means overwirte all
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,

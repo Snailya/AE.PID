@@ -57,10 +57,10 @@
                             getImage="GetButtonImage"
                     />
                 </group>
-                 <group id="grpDebug" label="调试">
-					 <button id="help"
-							 label="帮助"
-							 size="large"
+                <group id="grpDebug" label="调试">
+                    <button id="help"
+                            label="帮助"
+                            size="large"
                     />
                 </group>
             </tab>

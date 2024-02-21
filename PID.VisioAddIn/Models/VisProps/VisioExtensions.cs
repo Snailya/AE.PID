@@ -221,13 +221,17 @@ internal static class VisioExtension
     {
         try
         {
+            var processZone = shape.Cells["Prop.ProcessZone"].ResultStr[VisUnitCodes.visUnitsString];
+            var functionalGroup = shape.Cells["Prop.FunctionalGroup"];
+            var functionalElement = TryGetFormatValue(shape, "Prop.FunctionalElement");
+
             // general properties
             var item = new LineItemBase
             {
                 Id = shape.ID,
                 ProcessZone = shape.Cells["Prop.ProcessZone"].ResultStr[VisUnitCodes.visUnitsString],
                 FunctionalGroup = shape.Cells["Prop.FunctionalGroup"].ResultStr[VisUnitCodes.visUnitsString],
-                FunctionalElement = TryGetFormatValue(shape, "Prop.FunctionalElement"),
+                FunctionalElement = TryGetFormatValue(shape, "Prop.FunctionalElement")
             };
 
             // if it is a unit
@@ -236,16 +240,17 @@ internal static class VisioExtension
                 item.Name = shape.Cells["Prop.UnitName"].ResultStr[VisUnitCodes.visUnitsString];
                 item.Type = LineItemType.UnitEquipment;
 
-                if (double.TryParse(shape.Cells["Prop.Quantity"].ResultStr[VisUnitCodes.visUnitsString], out var quantity))
+                if (double.TryParse(shape.Cells["Prop.Quantity"].ResultStr[VisUnitCodes.visUnitsString],
+                        out var quantity))
                     item.Count = quantity;
-                
+
                 return item;
             }
-            
+
             // if it is not a unit
             if (double.TryParse(shape.Cells["Prop.Subtotal"].ResultStr[VisUnitCodes.visUnitsString], out var subtotal))
                 item.Count = subtotal;
-            
+
             // if it is a single equipment
             if (shape.CellExists[LinkedControlManager.LinkedShapePropertyName,
                     (short)VisExistsFlags.visExistsAnywhere] !=
@@ -257,7 +262,7 @@ internal static class VisioExtension
                 // check if it has a parent
                 var containers = shape.MemberOfContainers;
                 if (containers.Length == 0) return item;
-                
+
                 // loop to find the unit id
                 foreach (int containerId in containers)
                 {
@@ -268,7 +273,7 @@ internal static class VisioExtension
 
                 return item;
             }
-            
+
             // if it is a attached equipment
             item.Name = shape.Cells["Prop.Name"].ResultStr[VisUnitCodes.visUnitsString];
             var parentId = (int)shape.CellsU[LinkedControlManager.LinkedShapePropertyName].ResultIU;

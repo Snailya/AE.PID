@@ -10,6 +10,7 @@ using AE.PID.Models.Exceptions;
 using AE.PID.Models.VisProps;
 using AE.PID.Properties;
 using AE.PID.Views;
+using DynamicData;
 using Microsoft.Office.Interop.Visio;
 using MiniExcelLibs;
 using NLog;
@@ -19,10 +20,51 @@ namespace AE.PID.Controllers.Services;
 /// <summary>
 ///     Dealing with extracting data from shape sheet and export that data into different format in excel.
 /// </summary>
-public abstract class DocumentExporter
+public class DocumentExporter : IDisposable
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     private static Subject<Unit> ManuallyInvokeTrigger { get; } = new();
+
+    private readonly SourceCache<LineItemBase, int> _items = new(t => t.Id);
+    private readonly List<IDisposable> _changeSubscriptions = [];
+
+    public DocumentExporter(Page page)
+    {
+        // initialize items by get all items from current page
+        _items.AddOrUpdate(GetLineItems(page));
+
+        // listen on formula changed event to update the items
+        var modifySubscription = Observable
+            .FromEvent<EPage_FormulaChangedEventHandler, Cell>(
+                handler => page.FormulaChanged += handler,
+                handler => page.FormulaChanged -= handler)
+            .Subscribe(cell =>
+            {
+                var item = cell.Shape.ToLineItem();
+
+                // delete the item if on cast error
+                if (item == null) _items.RemoveKey(cell.Shape.ID);
+
+                // update item
+                _items.AddOrUpdate(item!);
+            });
+        var addOrDeleteSubscription = Observable.FromEvent<EPage_ShapeAddedEventHandler, Shape>(
+                handler => page.ShapeAdded += handler,
+                handler => page.ShapeAdded -= handler)
+            .Subscribe(shape =>
+            {
+                var item = shape.ToLineItem();
+
+                // update item
+                if (item != null) _items.AddOrUpdate(item);
+            });
+        var deleteSubscription = Observable.FromEvent<EPage_BeforeShapeDeleteEventHandler, Shape>(
+                handler => page.BeforeShapeDelete += handler,
+                handler => page.BeforeShapeDelete -= handler)
+            .Subscribe(shape => { _items.RemoveKey(shape.ID); });
+
+        _changeSubscriptions.AddRange(new[] { modifySubscription, addOrDeleteSubscription, deleteSubscription });
+    }
 
     /// <summary>
     ///     Emit a value manually
@@ -69,42 +111,21 @@ public abstract class DocumentExporter
             );
     }
 
+
     /// <summary>
     /// Convert all shapes in BOM layers to line items.
     /// </summary>
     /// <returns></returns>
-    public static IEnumerable<LineItemBase> GetLineItems()
+    public static IEnumerable<LineItemBase> GetLineItems(IVPage page)
     {
-        var items = Globals.ThisAddIn.Application.ActivePage?
-            .CreateSelection(VisSelectionTypes.visSelTypeByLayer, VisSelectMode.visSelModeSkipSuper,
+        var items = page.CreateSelection(VisSelectionTypes.visSelTypeByLayer, VisSelectMode.visSelModeSkipSuper,
                 string.Join(";", Globals.ThisAddIn.Configuration.ExportSettings.BomLayers)).OfType<IVShape>()
-            .Select(x => x.ToLineItem()).ToList();
+            .Select(x => x.ToLineItem()).Where(x => x != null).ToList();
+
+        if (items == null) return Array.Empty<LineItemBase>();
 
         var itemTree = ConvertToTree(items);
         return itemTree;
-        
-        // filter top level items
-        var topLevelItems = items.Where(x => x.ParentId == null)
-            .OrderBy(x => x.FunctionalGroup).ThenBy(x => x.Name)
-            .ToList();
-
-        // filter children
-        var childrenDic = items.Where(x => x.ParentId != null)
-            .GroupBy(x => x.ParentId)
-            .ToDictionary(x => x.Key, g => g.ToList());
-
-        // append children to topLevelItems
-        foreach (var item in topLevelItems)
-            if (childrenDic.TryGetValue(item.Id, out var children))
-            {
-                item.Children = children;
-                foreach (var child in item.Children)
-                    child.FunctionalElement = item.FunctionalElement + "-" + child.FunctionalElement;
-            }
-
-        Logger.Info($"Found {topLevelItems.Count} bom items on current pages");
-
-        return topLevelItems;
     }
 
     /// <summary>
@@ -170,14 +191,13 @@ public abstract class DocumentExporter
             ThisAddIn.Alert($"执行失败。{ex.Message}");
         }
     }
-    
-    private static List<LineItemBase> ConvertToTree(List<LineItemBase> flatList)
+
+    private static IEnumerable<LineItemBase> ConvertToTree(List<LineItemBase> flatList)
     {
         var itemDictionary = flatList.ToDictionary(item => item.Id);
         var tree = new List<LineItemBase>();
 
         foreach (var item in flatList)
-        {
             if (item.ParentId == null)
             {
                 tree.Add(item);
@@ -198,8 +218,21 @@ public abstract class DocumentExporter
                     // (e.g., log a warning, skip the item, etc.)
                 }
             }
-        }
 
         return tree;
+    }
+
+    // We expose the Connect() since we are interested in a stream of changes.
+    // If we have more than one subscriber, and the subscribers are known, 
+    // it is recommended you look into the Reactive Extension method Publish().
+    public IObservable<IChangeSet<LineItemBase, int>> Connect()
+    {
+        return _items.Connect();
+    }
+
+    public void Dispose()
+    {
+        _changeSubscriptions.ForEach(x => x.Dispose());
+        _items.Dispose();
     }
 }

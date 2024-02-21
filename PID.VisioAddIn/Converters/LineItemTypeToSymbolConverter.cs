@@ -11,15 +11,13 @@ public class LineItemTypeToSymbolConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (value is LineItemType type)
-        {
             return type switch
             {
                 LineItemType.UnitEquipment => "U",
-                LineItemType.SingleEquipment => "L",
-                LineItemType.AttachedEquipment => "",
+                LineItemType.SingleEquipment => "E",
+                LineItemType.AttachedEquipment => "A",
                 _ => throw new ArgumentOutOfRangeException()
             };
-        }
 
         throw new ArgumentOutOfRangeException();
     }

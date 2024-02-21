@@ -155,8 +155,8 @@ public abstract class LinkedControlManager
             // append the related items to selection if it has not been selected yet.
             // cache their primary item index in the selection
             foreach (var item in from item in linkedElements
-                                 where !PreviousCopy.Contains(item.ID)
-                                 select item)
+                     where !PreviousCopy.Contains(item.ID)
+                     select item)
             {
                 selection.Select((Shape)item, (short)VisSelectArgs.visSelect);
                 primaryItemIndexes.Add(i);
