@@ -125,7 +125,7 @@ internal static class VisioExtension
     /// <param name="row"></param>
     /// <returns></returns>
     /// <exception cref="FormatValueInvalidException"></exception>
-    public static string GetFormatValue(this IVRow row)
+    public static string? GetFormatValue(this IVRow row)
     {
         try
         {
@@ -190,11 +190,21 @@ internal static class VisioExtension
         return (left * 25.4, bottom * 25.4, right * 25.4, top * 25.4);
     }
 
-    public static Position GetAlignBoxCenter(this IVShape shape)
+    /// <summary>
+    /// Get the pin location of the shape. The pin location is by default the align box's center
+    /// </summary>
+    /// <param name="shape"></param>
+    /// <returns></returns>
+    public static Position GetPinLocation(this IVShape shape)
     {
         return new Position(shape.CellsU["PinX"].Result["mm"], shape.CellsU["PinY"].Result["mm"]);
     }
 
+    /// <summary>
+    /// Get the geometric center of the shape. This is done by compute the center of BBox Extents.
+    /// </summary>
+    /// <param name="shape"></param>
+    /// <returns></returns>
     public static Position GetGeometricCenter(this IVShape shape)
     {
         var (left, bottom, right, top) = shape.BoundingBoxMetric(
@@ -207,30 +217,63 @@ internal static class VisioExtension
     /// </summary>
     /// <param name="shape"></param>
     /// <returns></returns>
-    public static LineItemBase ToLineItem(this IVShape shape)
+    public static LineItemBase? ToLineItem(this IVShape shape)
     {
         try
         {
+            // general properties
             var item = new LineItemBase
             {
                 Id = shape.ID,
                 ProcessZone = shape.Cells["Prop.ProcessZone"].ResultStr[VisUnitCodes.visUnitsString],
                 FunctionalGroup = shape.Cells["Prop.FunctionalGroup"].ResultStr[VisUnitCodes.visUnitsString],
                 FunctionalElement = TryGetFormatValue(shape, "Prop.FunctionalElement"),
-                Name = shape.Cells["Prop.SubClass"].ResultStr[VisUnitCodes.visUnitsString]
             };
 
-            if (double.TryParse(shape.Cells["Prop.Subtotal"].ResultStr[VisUnitCodes.visUnitsString], out var count))
-                item.Count = count;
+            // if it is a unit
+            if (shape.ContainerProperties != null)
+            {
+                item.Name = shape.Cells["Prop.UnitName"].ResultStr[VisUnitCodes.visUnitsString];
+                item.Type = LineItemType.UnitEquipment;
 
+                if (double.TryParse(shape.Cells["Prop.Quantity"].ResultStr[VisUnitCodes.visUnitsString], out var quantity))
+                    item.Count = quantity;
+                
+                return item;
+            }
+            
+            // if it is not a unit
+            if (double.TryParse(shape.Cells["Prop.Subtotal"].ResultStr[VisUnitCodes.visUnitsString], out var subtotal))
+                item.Count = subtotal;
+            
+            // if it is a single equipment
             if (shape.CellExists[LinkedControlManager.LinkedShapePropertyName,
                     (short)VisExistsFlags.visExistsAnywhere] !=
-                (short)VBABool.True) return item;
+                (short)VBABool.True)
+            {
+                item.Name = shape.Cells["Prop.SubClass"].ResultStr[VisUnitCodes.visUnitsString];
+                item.Type = LineItemType.SingleEquipment;
 
+                // check if it has a parent
+                var containers = shape.MemberOfContainers;
+                if (containers.Length == 0) return item;
+                
+                // loop to find the unit id
+                foreach (int containerId in containers)
+                {
+                    var parent = shape.ContainingPage.Shapes.ItemFromID[containerId];
+                    if (parent.HasCategory("Unit"))
+                        item.ParentId = containerId;
+                }
+
+                return item;
+            }
+            
+            // if it is a attached equipment
             item.Name = shape.Cells["Prop.Name"].ResultStr[VisUnitCodes.visUnitsString];
             var parentId = (int)shape.CellsU[LinkedControlManager.LinkedShapePropertyName].ResultIU;
             item.ParentId = parentId == 0 ? null : parentId;
-
+            item.Type = LineItemType.AttachedEquipment;
             return item;
         }
         catch (Exception e)
@@ -240,7 +283,7 @@ internal static class VisioExtension
         }
     }
 
-    private static string TryGetFormatValue(IVShape shape, string propName)
+    private static string? TryGetFormatValue(IVShape shape, string propName)
     {
         var existsAnywhere = shape.CellExists[propName, (short)VisExistsFlags.visExistsAnywhere] ==
                              (short)VBABool.True;
@@ -250,7 +293,7 @@ internal static class VisioExtension
         return row.GetFormatValue();
     }
 
-    private static string Truncate(string originalString, string formatPattern)
+    private static string? Truncate(string? originalString, string formatPattern)
     {
         if (!formatPattern.Contains(".") || !char.IsDigit(originalString[0])) return originalString;
         var decimalIndex = originalString.IndexOf('.');

@@ -80,6 +80,9 @@ public abstract class DocumentExporter
                 string.Join(";", Globals.ThisAddIn.Configuration.ExportSettings.BomLayers)).OfType<IVShape>()
             .Select(x => x.ToLineItem()).ToList();
 
+        var itemTree = ConvertToTree(items);
+        return itemTree;
+        
         // filter top level items
         var topLevelItems = items.Where(x => x.ParentId == null)
             .OrderBy(x => x.FunctionalGroup).ThenBy(x => x.Name)
@@ -166,5 +169,37 @@ public abstract class DocumentExporter
             Logger.Error(ex, "Failed to export.");
             ThisAddIn.Alert($"执行失败。{ex.Message}");
         }
+    }
+    
+    private static List<LineItemBase> ConvertToTree(List<LineItemBase> flatList)
+    {
+        var itemDictionary = flatList.ToDictionary(item => item.Id);
+        var tree = new List<LineItemBase>();
+
+        foreach (var item in flatList)
+        {
+            if (item.ParentId == null)
+            {
+                tree.Add(item);
+            }
+            else
+            {
+                if (itemDictionary.TryGetValue(item.ParentId.Value, out var parent))
+                {
+                    parent.Children ??= [];
+                    parent.Children.Add(item);
+
+                    if (item.Type == LineItemType.AttachedEquipment)
+                        item.FunctionalElement = parent.FunctionalElement + "-" + item.FunctionalElement;
+                }
+                else
+                {
+                    // Handle the case where parent is not found, if needed
+                    // (e.g., log a warning, skip the item, etc.)
+                }
+            }
+        }
+
+        return tree;
     }
 }

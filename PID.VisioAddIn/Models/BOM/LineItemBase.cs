@@ -26,7 +26,7 @@ public class LineItemBase
     /// <summary>
     /// A functional element is an indicator used in electric system for a part item.
     /// </summary>
-    public string FunctionalElement { get; set; } = string.Empty;
+    public string? FunctionalElement { get; set; } = string.Empty;
 
     /// <summary>
     /// The material number used in the system to get extra information about the part.
@@ -51,5 +51,11 @@ public class LineItemBase
     /// <summary>
     /// The linked function elements.
     /// </summary>
-    public IEnumerable<LineItemBase>? Children { get; set; }
+    public List<LineItemBase>? Children { get; set; }
+    
+    /// <summary>
+    /// The type used to specify if the item is treated as a unit equipment which might have several different equipments inside,
+    /// or a single equipment that might have some equipments attached to it or not, or a equipment that attached to other single equipment.
+    /// </summary>
+    public LineItemType Type { get; set; }
 }

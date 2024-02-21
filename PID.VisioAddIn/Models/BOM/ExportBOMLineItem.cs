@@ -29,7 +29,7 @@ public class ExportBOMLineItem
     /// <summary>
     /// The function element mapping.
     /// </summary>
-    public string FunctionalElement { get; set; } = string.Empty;
+    public string? FunctionalElement { get; set; } = string.Empty;
 
     /// <summary>
     /// The material no mapping.
@@ -123,21 +123,13 @@ public class ExportBOMLineItem
 
         var shape = Globals.ThisAddIn.Application.ActivePage.Shapes.OfType<IVShape>()
             .SingleOrDefault(x => x.ID == baseItem.Id);
-        if (shape != null)
+        if (shape != null && baseItem.Type == LineItemType.SingleEquipment)
             item.TechnicalDataChinese = GetTechnicalData(shape);
         items.Add(item);
 
         // flatten linked functional elements if exists
         if (baseItem.Children != null && baseItem.Children.Any())
-            items.AddRange(baseItem.Children.Select(baseChild => new ExportBOMLineItem
-            {
-                ProcessArea = baseChild.ProcessZone,
-                FunctionalGroup = baseChild.FunctionalGroup,
-                FunctionalElement = baseChild.FunctionalElement,
-                AEMaterialNo = baseChild.MaterialNo,
-                NameChinese = baseChild.Name,
-                Count = baseChild.Count
-            }));
+            items.AddRange(baseItem.Children.SelectMany(FromLineItem));
 
         return items;
     }

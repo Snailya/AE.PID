@@ -156,7 +156,7 @@ public static class LegendService
         shape.CellsU["PinY"].Formula = $"{yPos} mm";
 
         // after scaled, we should get the displacement between the center of the nominal bounding and bbox bounding, so that we could place the bbox center at the target position
-        var alignBoxCenter = shape.GetAlignBoxCenter();
+        var alignBoxCenter = shape.GetPinLocation();
         var geoCenter = shape.GetGeometricCenter();
 
         var displacement = Math.Round(geoCenter.Y - alignBoxCenter.Y, 4);
