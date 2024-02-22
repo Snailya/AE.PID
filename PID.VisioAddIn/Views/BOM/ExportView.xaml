@@ -6,6 +6,7 @@
                 xmlns:viewModels="clr-namespace:AE.PID.ViewModels"
                 xmlns:converters="clr-namespace:AE.PID.Converters"
                 xmlns:views="clr-namespace:AE.PID.Views"
+                xmlns:local="clr-namespace:AE.PID.Views.BOM"
                 mc:Ignorable="d"
                 x:TypeArguments="viewModels:ExportViewModel"
                 MinHeight="320" MinWidth="800" Height="640"
@@ -20,9 +21,9 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <TextBlock Margin="4 4 4 4" FontSize="28" Text="导出" />
-        <views:DocumentInfoControl Grid.Row="1" x:Name="DocumentInfo" />
-        <views:TreeListView Grid.Row="2" x:Name="BillsOfMaterials" BorderThickness="2">
-            <views:TreeListView.Resources>
+        <local:DocumentInfoControl Grid.Row="1" x:Name="DocumentInfo" />
+        <local:TreeListView Grid.Row="2" x:Name="BillsOfMaterials" BorderThickness="2">
+            <local:TreeListView.Resources>
                 <Style x:Key="ExpandCollapseToggleStyle" TargetType="{x:Type ToggleButton}">
                     <Setter Property="Focusable" Value="False" />
                     <Setter Property="Width" Value="19" />
@@ -56,19 +57,18 @@
                     </Setter>
                 </Style>
                 <converters:LevelToIndentConverter x:Key="LevelToIndentConverter" />
-
                 <DataTemplate x:Key="CellTemplateName">
                     <DockPanel>
                         <ToggleButton x:Name="Expander" Style="{StaticResource ExpandCollapseToggleStyle}"
                                       Margin="{Binding Level,
-                             Converter={StaticResource LevelToIndentConverter},RelativeSource={RelativeSource AncestorType={x:Type views:TreeListViewItem}}}"
-                                      IsChecked="{Binding Path=IsExpanded,RelativeSource={RelativeSource AncestorType={x:Type views:TreeListViewItem}}}"
+                             Converter={StaticResource LevelToIndentConverter},RelativeSource={RelativeSource AncestorType={x:Type local:TreeListViewItem}}}"
+                                      IsChecked="{Binding Path=IsExpanded,RelativeSource={RelativeSource AncestorType={x:Type local:TreeListViewItem}}}"
                                       ClickMode="Press" />
                         <TextBlock Text="{Binding Name}" />
                     </DockPanel>
                     <DataTemplate.Triggers>
                         <DataTrigger
-                            Binding="{Binding Path=HasItems,RelativeSource={RelativeSource AncestorType={x:Type views:TreeListViewItem}}}"
+                            Binding="{Binding Path=HasItems,RelativeSource={RelativeSource AncestorType={x:Type local:TreeListViewItem}}}"
                             Value="False">
                             <Setter TargetName="Expander" Property="Visibility" Value="Hidden" />
                         </DataTrigger>
@@ -84,10 +84,10 @@
                     <GridViewColumn Header="数量" DisplayMemberBinding="{Binding Count}" Width="60" />
                 </GridViewColumnCollection>
 
-                <Style TargetType="{x:Type views:TreeListViewItem}">
+                <Style TargetType="{x:Type local:TreeListViewItem}">
                     <Setter Property="Template">
                         <Setter.Value>
-                            <ControlTemplate TargetType="{x:Type views:TreeListViewItem}">
+                            <ControlTemplate TargetType="{x:Type local:TreeListViewItem}">
                                 <StackPanel>
                                     <Border Name="Bd"
                                             Background="{TemplateBinding Background}"
@@ -145,10 +145,10 @@
                     </Setter>
                 </Style>
 
-                <Style TargetType="{x:Type views:TreeListView}">
+                <Style TargetType="{x:Type local:TreeListView}">
                     <Setter Property="Template">
                         <Setter.Value>
-                            <ControlTemplate TargetType="{x:Type views:TreeListView}">
+                            <ControlTemplate TargetType="{x:Type local:TreeListView}">
                                 <Border BorderBrush="{TemplateBinding BorderBrush}"
                                         BorderThickness="{TemplateBinding BorderThickness}">
                                     <DockPanel>
@@ -163,8 +163,8 @@
                         </Setter.Value>
                     </Setter>
                 </Style>
-            </views:TreeListView.Resources>
-            <views:TreeListView.ItemTemplate>
+            </local:TreeListView.Resources>
+            <local:TreeListView.ItemTemplate>
                 <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                     <Border BorderThickness="2" BorderBrush="Yellow" CornerRadius="0" Margin="1" x:Name="back"
                             MinWidth="70"
@@ -174,8 +174,8 @@
                         </StackPanel>
                     </Border>
                 </HierarchicalDataTemplate>
-            </views:TreeListView.ItemTemplate>
-        </views:TreeListView>
+            </local:TreeListView.ItemTemplate>
+        </local:TreeListView>
         <Separator Grid.Row="3" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="4">
             <Button x:Name="SubmitButton" Margin="8 8 4 4" MinWidth="64" Content="确定" />

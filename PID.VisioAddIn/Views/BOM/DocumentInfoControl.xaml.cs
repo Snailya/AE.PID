@@ -1,8 +1,7 @@
-﻿using ReactiveUI;
-using System.Reactive.Disposables;
+﻿using System.Reactive.Disposables;
+using ReactiveUI;
 
-
-namespace AE.PID.Views;
+namespace AE.PID.Views.BOM;
 
 /// <summary>
 /// Interaction logic for DocumentInfo.xaml
@@ -18,8 +17,8 @@ public partial class DocumentInfoControl
             this.Bind(ViewModel, vm => vm.CustomerName,
                     v => v.CustomerNameInput.Text)
                 .DisposeWith(disposableRegistration);
-            this.Bind(ViewModel, vm => vm.DocumentNo,
-                    v => v.DocNoInput.Text)
+            this.OneWayBind(ViewModel, vm => vm.DocumentNo,
+                    v => v.DocumentNo.Text)
                 .DisposeWith(disposableRegistration);
             this.Bind(ViewModel, vm => vm.ProjectNo,
                     v => v.ProjectNoInput.Text)

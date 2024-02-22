@@ -61,6 +61,7 @@
                     <button id="help"
                             label="帮助"
                             size="large"
+                            onAction="Help"
                     />
                 </group>
             </tab>

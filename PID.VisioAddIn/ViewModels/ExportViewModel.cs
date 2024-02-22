@@ -55,19 +55,17 @@ public class ExportViewModel : ViewModelBase
 
     protected override void SetupStart()
     {
-        _documentInfo = new DocumentInfoViewModel();
-        _documentInfo.Load();
+        _documentInfo = new DocumentInfoViewModel(Globals.ThisAddIn.Application.ActivePage);
     }
 
     protected override void SetupDeactivate()
     {
-        _documentInfo.Cache();
     }
 
     private void ExportAsBOMTable()
     {
-        DocumentExporter.SaveAsBom(_items, 
-            _documentInfo.CustomerName, 
+        DocumentExporter.SaveAsBom(_items,
+            _documentInfo.CustomerName,
             _documentInfo.DocumentNo,
             _documentInfo.ProjectNo,
             _documentInfo.VersionNo);

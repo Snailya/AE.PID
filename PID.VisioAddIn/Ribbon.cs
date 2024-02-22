@@ -131,6 +131,10 @@ public class Ribbon : IRibbonExtensibility
         LegendService.Invoke(Globals.ThisAddIn.Application.ActivePage);
     }
 
+    public void Help(IRibbonControl control)
+    {
+    }
+
     #endregion
 
     #region Commands
