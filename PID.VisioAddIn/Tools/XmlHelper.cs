@@ -12,6 +12,7 @@ namespace AE.PID.Tools;
 public abstract class XmlHelper
 {
     public static readonly Uri MastersPartUri = new("/visio/masters/masters.xml", UriKind.Relative);
+    public static readonly Uri PagesPartUri = new("/visio/pages/pages.xml", UriKind.Relative);
     public static readonly Uri DocumentPartUri = new("/visio/document.xml", UriKind.Relative);
 
     public static readonly XNamespace MainNs = @"http://schemas.microsoft.com/office/visio/2012/main";
@@ -21,7 +22,7 @@ public abstract class XmlHelper
     private const string MastersRel = @"http://schemas.microsoft.com/visio/2010/relationships/masters";
     public const string MasterRel = @"http://schemas.microsoft.com/visio/2010/relationships/master";
 
-    public static XDocument GetXmlFromPart(PackagePart packagePart)
+    public static XDocument GetDocumentFromPart(PackagePart packagePart)
     {
         // Open the packagePart as a stream and then 
         // open the stream in an XDocument object.
@@ -138,9 +139,14 @@ public abstract class XmlHelper
         // define the characteristics for the XmlWriter
         var partWriterSettings = new XmlWriterSettings();
         partWriterSettings.Encoding = Encoding.UTF8;
+
+        // reset the stream length to 0 to clear the stream content, otherwise if might be remained content after overwrite when the new xdocument is longer than the previous
+        using var stream = packagePart.GetStream();
+        stream.SetLength(0);
+
         // Create a new XmlWriter and then write the XML
         // back to the document part.
-        var partWriter = XmlWriter.Create(packagePart.GetStream(),
+        var partWriter = XmlWriter.Create(stream,
             partWriterSettings);
         partXml.WriteTo(partWriter);
         // Flush and close the XmlWriter.
@@ -196,7 +202,7 @@ public abstract class XmlHelper
         var customPart = GetPackagePart(filePackage,
             "http://schemas.openxmlformats.org/officeDocument/2006/relationships/" +
             "custom-properties");
-        var customPartXML = GetXmlFromPart(customPart);
+        var customPartXML = GetDocumentFromPart(customPart);
         // Check to see whether document recalculation has already been 
         // set for this document. If it hasn't, use the integer
         // value returned by CheckForRecalc as the property ID.
