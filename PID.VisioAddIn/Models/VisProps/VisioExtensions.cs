@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -161,6 +163,25 @@ internal static class VisioExtension
     }
 
     /// <summary>
+    /// Check if the shape is on specified layer.
+    /// </summary>
+    /// <param name="shape"></param>
+    /// <param name="layerNames"></param>
+    /// <returns></returns>
+    public static bool IsOnLayers(this IVShape shape, IEnumerable<string> layerNames)
+    {
+        var enumerable = layerNames as string[] ?? layerNames.ToArray();
+        
+        for (short i = 1; i < shape.LayerCount + 1; i++)
+        {
+            var layer = shape.Layer[i];
+            if (enumerable.Contains(layer.Name)) return true;
+        }
+
+        return false;
+    }
+    
+    /// <summary>
     /// Drop an object using mm unit.
     /// </summary>
     /// <param name="page"></param>
@@ -217,16 +238,12 @@ internal static class VisioExtension
     /// </summary>
     /// <param name="shape"></param>
     /// <returns></returns>
-    public static LineItemBase? ToLineItem(this IVShape shape)
+    public static Element? ToElement(this IVShape shape)
     {
         try
         {
-            var processZone = shape.Cells["Prop.ProcessZone"].ResultStr[VisUnitCodes.visUnitsString];
-            var functionalGroup = shape.Cells["Prop.FunctionalGroup"];
-            var functionalElement = TryGetFormatValue(shape, "Prop.FunctionalElement");
-
             // general properties
-            var item = new LineItemBase
+            var item = new Element
             {
                 Id = shape.ID,
                 ProcessZone = shape.Cells["Prop.ProcessZone"].ResultStr[VisUnitCodes.visUnitsString],
@@ -234,11 +251,15 @@ internal static class VisioExtension
                 FunctionalElement = TryGetFormatValue(shape, "Prop.FunctionalElement")
             };
 
-            // if it is a unit
+            // if it is a container, check if it is a unit container
             if (shape.ContainerProperties != null)
             {
+                // if it is not a unit but other containers return null
+                if (shape.CellExists["Prop.UnitName", (short)VisExistsFlags.visExistsAnywhere] !=
+                    (short)VBABool.True) return null;
+
                 item.Name = shape.Cells["Prop.UnitName"].ResultStr[VisUnitCodes.visUnitsString];
-                item.Type = LineItemType.UnitEquipment;
+                item.Type = ElementType.Unit;
 
                 if (double.TryParse(shape.Cells["Prop.Quantity"].ResultStr[VisUnitCodes.visUnitsString],
                         out var quantity))
@@ -257,7 +278,7 @@ internal static class VisioExtension
                 (short)VBABool.True)
             {
                 item.Name = shape.Cells["Prop.SubClass"].ResultStr[VisUnitCodes.visUnitsString];
-                item.Type = LineItemType.SingleEquipment;
+                item.Type = ElementType.Single;
 
                 // check if it has a parent
                 var containers = shape.MemberOfContainers;
@@ -277,8 +298,8 @@ internal static class VisioExtension
             // if it is a attached equipment
             item.Name = shape.Cells["Prop.Name"].ResultStr[VisUnitCodes.visUnitsString];
             var parentId = (int)shape.CellsU[LinkedControlManager.LinkedShapePropertyName].ResultIU;
-            item.ParentId = parentId == 0 ? null : parentId;
-            item.Type = LineItemType.AttachedEquipment;
+            item.ParentId = parentId;
+            item.Type = ElementType.Attached;
             return item;
         }
         catch (Exception e)

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Office.Interop.Visio;
@@ -9,7 +10,7 @@ namespace AE.PID.Models.BOM;
 /// <summary>
 /// POCO to BOM_template.xlsx
 /// </summary>
-public class ExportBOMLineItem
+public class Material
 {
     /// <summary>
     /// The index column.
@@ -106,12 +107,10 @@ public class ExportBOMLineItem
     /// If the base item has linked functional elements, these linked functional elements will be flatted as individual bom line items.
     /// </summary>
     /// <param name="baseItem"></param>
-    /// <returns>A collection of <see cref="ExportBOMLineItem"/></returns>
-    public static IEnumerable<ExportBOMLineItem> FromLineItem(LineItemBase baseItem)
+    /// <returns>A collection of <see cref="Material"/></returns>
+    public static Material FromElement(Element baseItem)
     {
-        var items = new List<ExportBOMLineItem>();
-
-        var item = new ExportBOMLineItem
+        var item = new Material
         {
             ProcessArea = baseItem.ProcessZone,
             FunctionalGroup = baseItem.FunctionalGroup,
@@ -123,15 +122,14 @@ public class ExportBOMLineItem
 
         var shape = Globals.ThisAddIn.Application.ActivePage.Shapes.OfType<IVShape>()
             .SingleOrDefault(x => x.ID == baseItem.Id);
-        if (shape != null && baseItem.Type == LineItemType.SingleEquipment)
+        if (shape != null && baseItem.Type == ElementType.Single)
             item.TechnicalDataChinese = GetTechnicalData(shape);
-        items.Add(item);
 
-        // flatten linked functional elements if exists
-        if (baseItem.Children != null && baseItem.Children.Any())
-            items.AddRange(baseItem.Children.SelectMany(FromLineItem));
+        // // flatten linked functional elements if exists
+        // if (baseItem.Children != null && baseItem.Children.Any())
+        //     items.AddRange(baseItem.Children.SelectMany(FromLineItem));
 
-        return items;
+        return item;
     }
 
     private static string GetTechnicalData(IVShape shape)

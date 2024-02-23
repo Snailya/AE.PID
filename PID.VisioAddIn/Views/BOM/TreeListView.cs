@@ -5,7 +5,6 @@ namespace AE.PID.Views.BOM;
 
 public class TreeListView : TreeView
 {
-    //这两个默认的是TreeViewItem
     protected override DependencyObject GetContainerForItemOverride() //创建或标识用于显示指定项的元素。 
     {
         return new TreeListViewItem();

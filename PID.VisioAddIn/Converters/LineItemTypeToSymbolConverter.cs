@@ -10,12 +10,12 @@ public class LineItemTypeToSymbolConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (value is LineItemType type)
+        if (value is ElementType type)
             return type switch
             {
-                LineItemType.UnitEquipment => "U",
-                LineItemType.SingleEquipment => "E",
-                LineItemType.AttachedEquipment => "A",
+                ElementType.Unit => "U",
+                ElementType.Single => "E",
+                ElementType.Attached => "A",
                 _ => throw new ArgumentOutOfRangeException()
             };
 

@@ -14,9 +14,10 @@ public class DocumentInfoViewModel : ViewModelBase
 
     public DocumentInfoViewModel(IVPage page)
     {
-        _documentNo = GetValueIfExist(page.PageSheet, "User.DocumentNo")??Guid.NewGuid().ToString();
-        page.PageSheet.Cells["User.DocumentNo"].Formula = _documentNo;
-        
+        //_documentNo = GetValueIfExist(page.PageSheet, "User.DocumentNo") ?? Guid.NewGuid().ToString();
+        //page.PageSheet.Cells["User.DocumentNo"].Formula = _documentNo;
+
+        Load();
     }
 
     public string CustomerName
@@ -46,12 +47,12 @@ public class DocumentInfoViewModel : ViewModelBase
 
     public void Load()
     {
-        // CustomerName = Globals.ThisAddIn.InputCache.CustomerName;
+        CustomerName = Globals.ThisAddIn.InputCache.CustomerName;
+        DocumentNo = Globals.ThisAddIn.InputCache.DocumentNo;
 
 
-        
-        // ProjectNo = Globals.ThisAddIn.InputCache.ProjectNo;
-        // VersionNo = Globals.ThisAddIn.InputCache.VersionNo;
+        ProjectNo = Globals.ThisAddIn.InputCache.ProjectNo;
+        VersionNo = Globals.ThisAddIn.InputCache.VersionNo;
     }
 
     // todo: remove, if the project is selected from database, no need to cache there in cache, but in page sheet
@@ -68,12 +69,9 @@ public class DocumentInfoViewModel : ViewModelBase
     {
         string? value = null;
         if (shape.CellExists[propName, (short)VisExistsFlags.visExistsLocally] == (short)VBABool.True) return value;
-        
-        var  valueFromShape = shape.Cells[propName].ResultStr[VisUnitCodes.visUnitsString];
-        if (!string.IsNullOrEmpty(valueFromShape))
-        {
-            value = valueFromShape;
-        }
+
+        var valueFromShape = shape.Cells[propName].ResultStr[VisUnitCodes.visUnitsString];
+        if (!string.IsNullOrEmpty(valueFromShape)) value = valueFromShape;
 
         return value;
     }

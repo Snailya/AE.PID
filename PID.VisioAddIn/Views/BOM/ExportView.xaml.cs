@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Reactive.Disposables;
-using System.Windows;
+using AE.PID.Controllers.Services;
 using AE.PID.ViewModels;
 using ReactiveUI;
 
-namespace AE.PID.Views;
+namespace AE.PID.Views.BOM;
 
 public partial class ExportView
 {
     public ExportView()
     {
         InitializeComponent();
-        ViewModel = new ExportViewModel();
+        ViewModel = new ExportViewModel(new DocumentExporter(Globals.ThisAddIn.Application.ActivePage));
 
         this.WhenActivated(disposableRegistration =>
         {

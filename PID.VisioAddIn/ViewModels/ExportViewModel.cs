@@ -12,8 +12,14 @@ namespace AE.PID.ViewModels;
 
 public class ExportViewModel : ViewModelBase
 {
-    private ReadOnlyObservableCollection<LineItemBase> _items;
+    private ReadOnlyObservableCollection<ElementViewModel> _items;
     private DocumentInfoViewModel _documentInfo;
+    private readonly DocumentExporter _service;
+
+    public ExportViewModel(DocumentExporter service)
+    {
+        _service = service;
+    }
 
     #region Read-Write Properties
 
@@ -34,7 +40,7 @@ public class ExportViewModel : ViewModelBase
 
     #region Output Properties
 
-    public ReadOnlyObservableCollection<LineItemBase> Items => _items;
+    public ReadOnlyObservableCollection<ElementViewModel> Items => _items;
 
     #endregion
 
@@ -46,11 +52,23 @@ public class ExportViewModel : ViewModelBase
 
     protected override void SetupSubscriptions(CompositeDisposable d)
     {
-        new DocumentExporter(Globals.ThisAddIn.Application.ActivePage)
+        var subscription = _service
             .Connect()
             .ObserveOn(RxApp.MainThreadScheduler)
+            .TransformToTree(x => x.ParentId, Observable.Return(DefaultPredicate))
+            .Transform(node => new ElementViewModel(node))
+            .Sort(new ElementViewModelComparer())
             .Bind(out _items)
-            .Subscribe().DisposeWith(d);
+            .DisposeMany()
+            .Subscribe();
+
+        CleanUp = Disposable.Create(() => subscription.Dispose());
+        return;
+
+        bool DefaultPredicate(Node<Element, int> node)
+        {
+            return node.IsRoot;
+        }
     }
 
     protected override void SetupStart()
@@ -64,10 +82,7 @@ public class ExportViewModel : ViewModelBase
 
     private void ExportAsBOMTable()
     {
-        DocumentExporter.SaveAsBom(_items,
-            _documentInfo.CustomerName,
-            _documentInfo.DocumentNo,
-            _documentInfo.ProjectNo,
-            _documentInfo.VersionNo);
+        // todo:
+        _service.ExportToExcel(_documentInfo);
     }
 }
