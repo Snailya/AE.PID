@@ -248,7 +248,7 @@ internal static class VisioExtension
                 Id = shape.ID,
                 ProcessZone = shape.Cells["Prop.ProcessZone"].ResultStr[VisUnitCodes.visUnitsString],
                 FunctionalGroup = shape.Cells["Prop.FunctionalGroup"].ResultStr[VisUnitCodes.visUnitsString],
-                FunctionalElement = TryGetFormatValue(shape, "Prop.FunctionalElement")
+                FunctionalElement = TryGetFormatValue(shape, "Prop.FunctionalElement")?? string.Empty
             };
 
             // if it is a container, check if it is a unit container
@@ -304,7 +304,7 @@ internal static class VisioExtension
         }
         catch (Exception e)
         {
-            Logger.Error(e, $"Failed to convert ID:{shape.ID} to BOM item, please check if shape is a valid AE item.");
+            Logger.Warn(e, $"Failed to convert ID:{shape.ID} to an Element, please check if shape is a valid AE item.");
             return null;
         }
     }

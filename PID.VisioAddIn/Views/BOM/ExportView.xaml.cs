@@ -8,10 +8,12 @@ namespace AE.PID.Views.BOM;
 
 public partial class ExportView
 {
+    
     public ExportView()
     {
         InitializeComponent();
-        ViewModel = new ExportViewModel(new DocumentExporter(Globals.ThisAddIn.Application.ActivePage));
+        var service = new DocumentExporter(Globals.ThisAddIn.Application.ActivePage);
+        ViewModel = new ExportViewModel(service);
 
         this.WhenActivated(disposableRegistration =>
         {

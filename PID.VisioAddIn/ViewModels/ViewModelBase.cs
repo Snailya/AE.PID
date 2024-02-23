@@ -1,14 +1,10 @@
-﻿using System;
-using System.Diagnostics;
-using System.Reactive.Disposables;
+﻿using System.Reactive.Disposables;
 using ReactiveUI;
 
 namespace AE.PID.ViewModels;
 
 public abstract class ViewModelBase : ReactiveObject, IActivatableViewModel
 {
-    protected IDisposable? CleanUp;
-
     public ViewModelActivator Activator { get; }
 
     protected ViewModelBase()
@@ -39,6 +35,5 @@ public abstract class ViewModelBase : ReactiveObject, IActivatableViewModel
 
     protected virtual void SetupDeactivate()
     {
-        CleanUp?.Dispose();
     }
 }

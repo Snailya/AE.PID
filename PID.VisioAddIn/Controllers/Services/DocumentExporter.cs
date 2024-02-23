@@ -22,29 +22,22 @@ namespace AE.PID.Controllers.Services;
 /// <summary>
 ///     Dealing with extracting data from shape sheet and exporting.
 /// </summary>
-public class DocumentExporter : IDisposable
+public class DocumentExporter
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     private static Subject<Unit> ManuallyInvokeTrigger { get; } = new();
 
-    private readonly IDisposable _cleanUp;
     private readonly IList<string> _validLayers;
     private readonly SourceCache<Element, int> _elements = new(t => t.Id);
+    private readonly Page _page;
 
     public DocumentExporter(Page page)
     {
+        _page = page;
         _validLayers = Globals.ThisAddIn.Configuration.ExportSettings.BomLayers;
 
         // initialize items by get all items from current page
-        _elements.AddOrUpdate(GetElementsFromPage(page));
-
-        var listenOnShapeChange = ListenOnShapeChange(page);
-
-        _cleanUp = Disposable.Create(() =>
-        {
-            listenOnShapeChange.Dispose();
-            _elements.Dispose();
-        });
+        _elements.AddOrUpdate(GetElementsFromPage(_page));
     }
     
     /// <summary>
@@ -92,13 +85,7 @@ public class DocumentExporter : IDisposable
             );
     }
 
-    // We expose the Connect() since we are interested in a stream of changes.
-    // If we have more than one subscriber, and the subscribers are known, 
-    // it is recommended you look into the Reactive Extension method Publish().
-    public IObservable<IChangeSet<Element, int>> Connect()
-    {
-        return _elements.Connect();
-    }
+    public IObservableCache<Element, int> Elements => _elements.AsObservableCache();
     
     /// <summary>
     ///     extract data from shapes on layers defined in config and group them as BOM items.
@@ -175,55 +162,48 @@ public class DocumentExporter : IDisposable
         }
     }
     
-    public void Dispose()
-    {
-        _cleanUp.Dispose();
-    }
-
     /// <summary>
     /// Listen on the shape modification, addition and delete from the page to make element dynamic.
     /// </summary>
     /// <param name="page"></param>
     /// <returns>A <see cref="Disposable"/> to unsubscribe from these change events</returns>
-    private IDisposable ListenOnShapeChange(EPage_Event page)
+    public CompositeDisposable MonitorChange()
     {
+        var compositeDisposable = new CompositeDisposable();
+        
         // when a shape's property is modified, it will raise up FormulaChanged event, so that the modification could be captured to emit as a new value
         var modifySubscription = Observable
             .FromEvent<EPage_FormulaChangedEventHandler, Cell>(
-                handler => page.FormulaChanged += handler,
-                handler => page.FormulaChanged -= handler)
+                handler => _page.FormulaChanged += handler,
+                handler => _page.FormulaChanged -= handler)
             .Where(cell => cell.Shape.IsOnLayers(_validLayers))
             .Subscribe(cell =>
             {
                 var item = cell.Shape.ToElement();
                 if (item != null) _elements.AddOrUpdate(item);
-            });
+            }).DisposeWith(compositeDisposable);
         
         // when a new shape is add to the page, it could be captured using ShapeAdded event
         var addSubscription = Observable.FromEvent<EPage_ShapeAddedEventHandler, Shape>(
-                handler => page.ShapeAdded += handler,
-                handler => page.ShapeAdded -= handler)
+                handler => _page.ShapeAdded += handler,
+                handler => _page.ShapeAdded -= handler)
             .Where(shape => shape.IsOnLayers(_validLayers))
             .Subscribe(shape =>
             {
                 var item = shape.ToElement();
                 if (item != null) _elements.AddOrUpdate(item);
-            });
+            }).DisposeWith(compositeDisposable);
         
         // when a shape is deleted from the page, it could be captured by BeforeShapeDelete event
         var deleteSubscription = Observable.FromEvent<EPage_BeforeShapeDeleteEventHandler, Shape>(
-                handler => page.BeforeShapeDelete += handler,
-                handler => page.BeforeShapeDelete -= handler)
+                handler => _page.BeforeShapeDelete += handler,
+                handler => _page.BeforeShapeDelete -= handler)
             .Where(shape => shape.IsOnLayers(_validLayers))
-            .Subscribe(shape => { _elements.RemoveKey(shape.ID); });
+            .Subscribe(shape => { _elements.RemoveKey(shape.ID); })
+            .DisposeWith(compositeDisposable);
 
         // return a disposable to unsubscribe from all these change event
-        return Disposable.Create(() =>
-        {
-            modifySubscription.Dispose();
-            addSubscription.Dispose();
-            deleteSubscription.Dispose();
-        });
+        return compositeDisposable;
     }
 
     /// <summary>

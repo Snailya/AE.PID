@@ -52,7 +52,7 @@ public class ExportViewModel : ViewModelBase
 
     protected override void SetupSubscriptions(CompositeDisposable d)
     {
-        var subscription = _service
+       _service.Elements
             .Connect()
             .ObserveOn(RxApp.MainThreadScheduler)
             .TransformToTree(x => x.ParentId, Observable.Return(DefaultPredicate))
@@ -60,9 +60,11 @@ public class ExportViewModel : ViewModelBase
             .Sort(new ElementViewModelComparer())
             .Bind(out _items)
             .DisposeMany()
-            .Subscribe();
+            .Subscribe()
+            .DisposeWith(d);
 
-        CleanUp = Disposable.Create(() => subscription.Dispose());
+        _service.MonitorChange()
+            .DisposeWith(d);
         return;
 
         bool DefaultPredicate(Node<Element, int> node)

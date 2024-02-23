@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net.Http;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +25,7 @@ public partial class ThisAddIn
 {
     private Logger _logger;
     private Ribbon _ribbon;
+    private CompositeDisposable _compositeDisposable = new CompositeDisposable();
 
     /// <summary>
     ///     The data folder path in Application Data.
@@ -161,19 +163,28 @@ public partial class ThisAddIn
         setupObservable.Subscribe(_ =>
         {
             // background service
-            AppUpdater.Listen();
-            LibraryUpdater.Listen();
-            DocumentUpdater.Listen();
-            LinkedControlManager.Listen();
+            AppUpdater.Listen()
+                .DisposeWith(_compositeDisposable);
+            LibraryUpdater.Listen()
+                .DisposeWith(_compositeDisposable);
+            DocumentUpdater.Listen()
+                .DisposeWith(_compositeDisposable);
+            LinkedControlManager.Listen()
+                .DisposeWith(_compositeDisposable);
 
             // ribbon
-            DocumentInitializer.Listen();
-            ShapeSelector.Listen();
-            LegendService.Listen();
+            DocumentInitializer.Listen()
+                .DisposeWith(_compositeDisposable);
+            ShapeSelector.Listen()
+                .DisposeWith(_compositeDisposable);
+            LegendService.Listen()
+                .DisposeWith(_compositeDisposable);
 
-            DocumentExporter.Listen();
+            DocumentExporter.Listen()
+                .DisposeWith(_compositeDisposable);
 
-            ConfigurationUpdater.Listen();
+            ConfigurationUpdater.Listen()
+                .DisposeWith(_compositeDisposable);
         });
     }
 
@@ -185,6 +196,8 @@ public partial class ThisAddIn
         InputCache.Save(InputCache);
 
         _logger.Info($"Configuration and input cache saved on shut down.");
+
+        _compositeDisposable.Dispose();
     }
 
     /// <summary>
