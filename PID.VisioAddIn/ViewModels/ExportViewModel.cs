@@ -52,7 +52,7 @@ public class ExportViewModel : ViewModelBase
 
     protected override void SetupSubscriptions(CompositeDisposable d)
     {
-       _service.Elements
+        _service.Elements
             .Connect()
             .ObserveOn(RxApp.MainThreadScheduler)
             .TransformToTree(x => x.ParentId, Observable.Return(DefaultPredicate))

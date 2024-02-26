@@ -138,16 +138,20 @@ public static class LegendService
 
     private static List<LegendItem> GetLegendItemsOnPage(IVPage page)
     {
-        return page.CreateSelection(VisSelectionTypes.visSelTypeByLayer, VisSelectMode.visSelModeSkipSuper,
-                "Equipments").OfType<IVShape>()
-            .Where(x => x.Master != null)
-            .Where(x => x.OneD == (short)VBABool.False)
-            .Where(x => x.Master.BaseID != LinkedControlManager.FunctionalElementBaseId)
-            .Where(x => x.CellExistsU["Prop.SubClass", (short)VisExistsFlags.visExistsAnywhere] ==
-                        (short)VBABool.True)
-            .Select(x =>
-                new LegendItem(x.CellsU["Prop.Class"].ResultStr[""], x.CellsU["Prop.SubClass"].ResultStr[""], x))
-            .Distinct(new LegendItemComparer()).OrderBy(x => x.Category).ThenBy(x => x.Name).ToList();
+        return
+        [
+            .. page.CreateSelection(VisSelectionTypes.visSelTypeByLayer, VisSelectMode.visSelModeSkipSuper,
+                    "Equipments").OfType<IVShape>()
+                .Where(x => !x.IsOnLayers(["Containers", "Container"]))
+                .Where(x => x.Master != null)
+                .Where(x => x.OneD == (short)VBABool.False)
+                .Where(x => x.Master.BaseID != LinkedControlManager.FunctionalElementBaseId)
+                .Where(x => x.CellExistsU["Prop.SubClass", (short)VisExistsFlags.visExistsAnywhere] ==
+                            (short)VBABool.True)
+                .Select(x =>
+                    new LegendItem(x.CellsU["Prop.Class"].ResultStr[""], x.CellsU["Prop.SubClass"].ResultStr[""], x))
+                .Distinct(new LegendItemComparer()).OrderBy(x => x.Category).ThenBy(x => x.Name)
+        ];
     }
 
     private static void ReLocateToGeometricCenter(IVShape shape, double xPos, double yPos)
@@ -195,13 +199,16 @@ public static class LegendService
         shape.Cells["Angle"].Formula = "0 deg";
 
         // disable key parameter display
-        shape.CellsU["User.ShowKeyParameters"].Formula = "FALSE";
+        if (shape.CellExists["User.ShowKeyParameters", (short)VisExistsFlags.visExistsAnywhere] == (short)VBABool.True)
+            shape.CellsU["User.ShowKeyParameters"].Formula = "FALSE";
 
         // disable tag display
-        shape.CellsU["Prop.Tag"].FormulaForce = "\"\"";
+        if (shape.CellExists["Prop.Tag", (short)VisExistsFlags.visExistsAnywhere] == (short)VBABool.True)
+            shape.CellsU["Prop.Tag"].FormulaForce = "\"\"";
 
         // make it not count for export
-        shape.CellsU["Prop.Quantity"].Formula = "0";
+        if (shape.CellExists["Prop.Quantity", (short)VisExistsFlags.visExistsAnywhere] == (short)VBABool.True)
+            shape.CellsU["Prop.Quantity"].Formula = "0";
 
         if (shape.CellExists["User.NumOfShapes", (short)VisExistsFlags.visExistsLocally] == (short)VBABool.True)
             shape.Cells["User.NumOfShapes"].Formula = "1";

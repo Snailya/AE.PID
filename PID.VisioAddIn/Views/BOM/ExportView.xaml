@@ -166,7 +166,8 @@
                 </Style>
             </local:TreeListView.Resources>
             <local:TreeListView.ItemTemplate>
-                <HierarchicalDataTemplate ItemsSource="{Binding Inferiors}"  DataType="{x:Type viewModels:ElementViewModel}">
+                <HierarchicalDataTemplate ItemsSource="{Binding Inferiors}"
+                                          DataType="{x:Type viewModels:ElementViewModel}">
                     <Border BorderThickness="2" BorderBrush="Yellow" CornerRadius="0" Margin="1" x:Name="back"
                             MinWidth="70"
                             DataContext="{Binding}">

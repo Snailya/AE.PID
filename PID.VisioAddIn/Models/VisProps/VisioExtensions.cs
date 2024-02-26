@@ -171,7 +171,7 @@ internal static class VisioExtension
     public static bool IsOnLayers(this IVShape shape, IEnumerable<string> layerNames)
     {
         var enumerable = layerNames as string[] ?? layerNames.ToArray();
-        
+
         for (short i = 1; i < shape.LayerCount + 1; i++)
         {
             var layer = shape.Layer[i];
@@ -180,7 +180,7 @@ internal static class VisioExtension
 
         return false;
     }
-    
+
     /// <summary>
     /// Drop an object using mm unit.
     /// </summary>
@@ -248,7 +248,7 @@ internal static class VisioExtension
                 Id = shape.ID,
                 ProcessZone = shape.Cells["Prop.ProcessZone"].ResultStr[VisUnitCodes.visUnitsString],
                 FunctionalGroup = shape.Cells["Prop.FunctionalGroup"].ResultStr[VisUnitCodes.visUnitsString],
-                FunctionalElement = TryGetFormatValue(shape, "Prop.FunctionalElement")?? string.Empty
+                FunctionalElement = TryGetFormatValue(shape, "Prop.FunctionalElement") ?? string.Empty
             };
 
             // if it is a container, check if it is a unit container

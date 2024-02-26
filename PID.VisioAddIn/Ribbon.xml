@@ -56,13 +56,11 @@
                             size="large"
                             getImage="GetButtonImage"
                     />
-                </group>
-                <group id="grpDebug" label="调试">
-                    <button id="help"
+                    <!--<button id="help"
                             label="帮助"
                             size="large"
                             onAction="Help"
-                    />
+                    />-->
                 </group>
             </tab>
         </tabs>

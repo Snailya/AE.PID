@@ -8,7 +8,6 @@ namespace AE.PID.Views.BOM;
 
 public partial class ExportView
 {
-    
     public ExportView()
     {
         InitializeComponent();

@@ -29,7 +29,7 @@ namespace AE.PID.ViewModels
             FunctionalGroup = node.Item.FunctionalGroup;
             FunctionalElement = node.Item.Type == ElementType.Attached && node.Parent.HasValue
                 ? $"{node.Parent.Value.Item.FunctionalElement}-{node.Item.FunctionalElement}"
-                :node.Item.FunctionalElement;
+                : node.Item.FunctionalElement;
             MaterialNo = node.Item.MaterialNo;
             Count = node.Item.Count;
 
@@ -67,7 +67,7 @@ namespace AE.PID.ViewModels
         /// The parent of the item.
         /// </summary>
         public Optional<ElementViewModel> Parent { get; }
-        
+
         /// <summary>
         /// The children of the item
         /// </summary>

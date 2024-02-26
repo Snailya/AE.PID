@@ -14,6 +14,7 @@ using NLog;
 using Microsoft.Win32;
 using ReactiveUI;
 using Newtonsoft.Json.Linq;
+using System.Reflection;
 
 namespace AE.PID.Controllers.Services;
 
@@ -42,7 +43,8 @@ public abstract class AppUpdater
     /// </summary>
     public static IDisposable Listen()
     {
-        Logger.Info($"App Update Service started. Current version: {Globals.ThisAddIn.Configuration.Version}");
+        var version = Assembly.GetExecutingAssembly().GetName().Version;
+        Logger.Info($"App Update Service started. Current version: {version}");
 
         var userInvokeObservable = ManuallyInvokeTrigger
             .Throttle(TimeSpan.FromMilliseconds(300))
@@ -108,11 +110,12 @@ public abstract class AppUpdater
     {
         var configuration = Globals.ThisAddIn.Configuration;
         var client = Globals.ThisAddIn.HttpClient;
+        var version = Assembly.GetExecutingAssembly().GetName().Version;
 
         try
         {
             using var response =
-                await client.GetAsync(configuration.Api + $"/check-version?version={configuration.Version}");
+                await client.GetAsync(configuration.Api + $"/check-version?version={version}");
             response.EnsureSuccessStatusCode();
 
             // anytime there's a success response from check-version, the check time should update.
@@ -132,8 +135,8 @@ public abstract class AppUpdater
                 return new AppCheckVersionResult
                 {
                     IsUpdateAvailable = true,
-                    DownloadUrl = (string)versionToken["downloadUrl"] !,
-                    ReleaseNotes = (string)versionToken["releaseNotes"] !
+                    DownloadUrl = (string)versionToken["downloadUrl"]!,
+                    ReleaseNotes = (string)versionToken["releaseNotes"]!
                 };
 
             return new AppCheckVersionResult { IsUpdateAvailable = false };
@@ -293,6 +296,8 @@ public abstract class AppUpdater
     {
         try
         {
+            Directory.CreateDirectory(destinationDirectoryName);
+
             const string registryKey = @"SOFTWARE\WinRAR";
 
             // Attempt to open the WinRAR registry key

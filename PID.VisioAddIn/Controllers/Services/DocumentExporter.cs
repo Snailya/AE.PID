@@ -39,7 +39,7 @@ public class DocumentExporter
         // initialize items by get all items from current page
         _elements.AddOrUpdate(GetElementsFromPage(_page));
     }
-    
+
     /// <summary>
     ///     Emit a value manually
     /// </summary>
@@ -86,7 +86,7 @@ public class DocumentExporter
     }
 
     public IObservableCache<Element, int> Elements => _elements.AsObservableCache();
-    
+
     /// <summary>
     ///     extract data from shapes on layers defined in config and group them as BOM items.
     /// </summary>
@@ -115,7 +115,7 @@ public class DocumentExporter
                 var parent = orderedElements.Single(x => x.Id == item.ParentId);
                 var parentIndex = orderedElements.IndexOf(parent);
                 orderedElements.Insert(parentIndex + 1, item);
-                
+
                 // overwrite the function element property if it is a Attached element
                 if (item.Type == ElementType.Attached)
                     item.FunctionalElement = $"{parent.FunctionalElement}-{item.FunctionalElement}";
@@ -161,7 +161,7 @@ public class DocumentExporter
             ThisAddIn.Alert($"执行失败。{ex.Message}");
         }
     }
-    
+
     /// <summary>
     /// Listen on the shape modification, addition and delete from the page to make element dynamic.
     /// </summary>
@@ -170,7 +170,7 @@ public class DocumentExporter
     public CompositeDisposable MonitorChange()
     {
         var compositeDisposable = new CompositeDisposable();
-        
+
         // when a shape's property is modified, it will raise up FormulaChanged event, so that the modification could be captured to emit as a new value
         var modifySubscription = Observable
             .FromEvent<EPage_FormulaChangedEventHandler, Cell>(
@@ -182,7 +182,7 @@ public class DocumentExporter
                 var item = cell.Shape.ToElement();
                 if (item != null) _elements.AddOrUpdate(item);
             }).DisposeWith(compositeDisposable);
-        
+
         // when a new shape is add to the page, it could be captured using ShapeAdded event
         var addSubscription = Observable.FromEvent<EPage_ShapeAddedEventHandler, Shape>(
                 handler => _page.ShapeAdded += handler,
@@ -193,7 +193,7 @@ public class DocumentExporter
                 var item = shape.ToElement();
                 if (item != null) _elements.AddOrUpdate(item);
             }).DisposeWith(compositeDisposable);
-        
+
         // when a shape is deleted from the page, it could be captured by BeforeShapeDelete event
         var deleteSubscription = Observable.FromEvent<EPage_BeforeShapeDeleteEventHandler, Shape>(
                 handler => _page.BeforeShapeDelete += handler,

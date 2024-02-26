@@ -25,7 +25,7 @@ public partial class ThisAddIn
 {
     private Logger _logger;
     private Ribbon _ribbon;
-    private CompositeDisposable _compositeDisposable = new CompositeDisposable();
+    private CompositeDisposable _compositeDisposable = new();
 
     /// <summary>
     ///     The data folder path in Application Data.
