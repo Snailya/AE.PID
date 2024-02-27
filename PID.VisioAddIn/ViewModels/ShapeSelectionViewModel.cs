@@ -11,7 +11,7 @@ using ReactiveUI;
 
 namespace AE.PID.ViewModels;
 
-public class ShapeSelectionViewModel : ReactiveObject
+public class ShapeSelectionViewModel : ViewModelBase
 {
     private bool _isByIdChecked = true;
     private bool _isByMasterChecked;

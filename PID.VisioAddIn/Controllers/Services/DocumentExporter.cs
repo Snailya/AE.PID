@@ -6,12 +6,13 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Windows.Forms;
+using AE.PID.Models;
 using AE.PID.Models.BOM;
 using AE.PID.Models.Exceptions;
 using AE.PID.Models.VisProps;
 using AE.PID.Properties;
 using AE.PID.ViewModels;
-using AE.PID.Views.BOM;
+using AE.PID.Views;
 using DynamicData;
 using Microsoft.Office.Interop.Visio;
 using MiniExcelLibs;
@@ -33,11 +34,15 @@ public class DocumentExporter
 
     public DocumentExporter(Page page)
     {
+        if (page == null) throw new ArgumentNullException(nameof(page));
+
         _page = page;
         _validLayers = Globals.ThisAddIn.Configuration.ExportSettings.BomLayers;
 
         // initialize items by get all items from current page
-        _elements.AddOrUpdate(GetElementsFromPage(_page));
+        var elements = GetElementsFromPage(_page);
+        if (elements != null)
+            _elements.AddOrUpdate(elements);
     }
 
     /// <summary>
@@ -212,6 +217,8 @@ public class DocumentExporter
     /// <returns>A collection of elements from page</returns>
     private IEnumerable<Element> GetElementsFromPage(IVPage page)
     {
+        if (page == null) return null;
+
         var elements = page.CreateSelection(
                 VisSelectionTypes.visSelTypeByLayer, VisSelectMode.visSelModeSkipSuper, string.Join(";", _validLayers))
             .OfType<IVShape>()
@@ -220,5 +227,15 @@ public class DocumentExporter
             .OfType<Element>().ToList();
 
         return elements;
+    }
+
+    public void SetDesignMaterial(int id, string designMaterial)
+    {
+        var shape = _page.Shapes.OfType<IVShape>().SingleOrDefault(x => x.ID == id);
+        if (shape != null)
+        {
+            var shapeData = new ShapeData("D_BOM", "\"设计物料\"", "", $"\"{designMaterial}\"");
+            shape.AddOrUpdate(shapeData);
+        }
     }
 }

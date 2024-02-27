@@ -4,7 +4,7 @@ using ReactiveUI;
 
 namespace AE.PID.ViewModels;
 
-public class TaskProgressViewModel(CancellationTokenSource cts) : ReactiveObject
+public class TaskProgressViewModel(CancellationTokenSource cts) : ViewModelBase
 {
     private int _current;
 

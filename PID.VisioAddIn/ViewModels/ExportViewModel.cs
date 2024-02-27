@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -12,13 +13,16 @@ namespace AE.PID.ViewModels;
 
 public class ExportViewModel : ViewModelBase
 {
-    private ReadOnlyObservableCollection<ElementViewModel> _items;
-    private DocumentInfoViewModel _documentInfo;
     private readonly DocumentExporter _service;
+
+    private DocumentInfoViewModel _documentInfo;
+    private ReadOnlyObservableCollection<ElementViewModel> _items;
+    private ElementViewModel _selected;
 
     public ExportViewModel(DocumentExporter service)
     {
         _service = service;
+        DesignMaterialsViewModel = new DesignMaterialsControlViewModel(new DesignMaterialService());
     }
 
     #region Read-Write Properties
@@ -29,10 +33,17 @@ public class ExportViewModel : ViewModelBase
         private set => this.RaiseAndSetIfChanged(ref _documentInfo, value);
     }
 
+    public ElementViewModel Selected
+    {
+        get => _selected;
+        set => this.RaiseAndSetIfChanged(ref _selected, value);
+    }
+
     #endregion
 
     #region Read-Only Properties
 
+    public DesignMaterialsControlViewModel DesignMaterialsViewModel { get; private set; }
     public ReactiveCommand<Unit, Unit> Submit { get; private set; }
     public ReactiveCommand<Unit, Unit> Cancel { get; private set; }
 
@@ -48,6 +59,14 @@ public class ExportViewModel : ViewModelBase
     {
         Submit = ReactiveCommand.Create(ExportAsBOMTable);
         Cancel = ReactiveCommand.Create(() => { });
+        DesignMaterialsViewModel.Select = ReactiveCommand.Create(() =>
+        {
+            var designMaterial = DesignMaterialsViewModel.Selected;
+            if (designMaterial == null) return;
+
+            var id = _selected.Id;
+            _service.SetDesignMaterial(id, designMaterial.Id);
+        });
     }
 
     protected override void SetupSubscriptions(CompositeDisposable d)
@@ -65,6 +84,14 @@ public class ExportViewModel : ViewModelBase
 
         _service.MonitorChange()
             .DisposeWith(d);
+
+        this.WhenAnyValue(x => x.Selected)
+            .Where(x => x != null)
+            .Select(x => x.Id)
+            .DistinctUntilChanged()
+            .Subscribe(x => { DesignMaterialsViewModel.Seed = _items.SingleOrDefault(i => i.Id == x); })
+            .DisposeWith(d);
+
         return;
 
         bool DefaultPredicate(Node<Element, int> node)

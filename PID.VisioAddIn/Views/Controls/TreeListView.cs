@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 
-namespace AE.PID.Views.BOM;
+namespace AE.PID.Views.Controls;
 
 public class TreeListView : TreeView
 {

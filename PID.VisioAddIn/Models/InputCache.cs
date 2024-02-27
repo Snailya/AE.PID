@@ -26,7 +26,7 @@ public class InputCache
             var configContent = File.ReadAllText(FilePath);
 
             if (!string.IsNullOrEmpty(configContent))
-                cache = JsonConvert.DeserializeObject<InputCache>(configContent);
+                cache = JsonConvert.DeserializeObject<InputCache>(configContent) ?? cache;
         }
         catch (JsonException jsonException)
         {

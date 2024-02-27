@@ -25,7 +25,6 @@ using System.Windows.Media;
 using Brushes = System.Windows.Media.Brushes;
 using Point = System.Windows.Point;
 using System.Windows.Forms;
-using AE.PID.Controllers.Services;
 
 // TODO:   按照以下步骤启用功能区(XML)项:
 

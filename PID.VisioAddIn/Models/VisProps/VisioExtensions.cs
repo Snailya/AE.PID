@@ -251,6 +251,10 @@ internal static class VisioExtension
                 FunctionalElement = TryGetFormatValue(shape, "Prop.FunctionalElement") ?? string.Empty
             };
 
+            // get D_BOM if exist
+            if (shape.CellExists["Prop.D_BOM", (short)VisExistsFlags.visExistsLocally] == (short)VBABool.True)
+                item.MaterialNo = shape.Cells["Prop.D_BOM"].ResultStr[VisUnitCodes.visUnitsString];
+
             // if it is a container, check if it is a unit container
             if (shape.ContainerProperties != null)
             {
