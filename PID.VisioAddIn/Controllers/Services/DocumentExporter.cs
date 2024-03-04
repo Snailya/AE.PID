@@ -170,45 +170,49 @@ public class DocumentExporter
     /// <summary>
     /// Listen on the shape modification, addition and delete from the page to make element dynamic.
     /// </summary>
-    /// <param name="page"></param>
     /// <returns>A <see cref="Disposable"/> to unsubscribe from these change events</returns>
     public CompositeDisposable MonitorChange()
     {
-        var compositeDisposable = new CompositeDisposable();
+        var subscription = new CompositeDisposable();
 
         // when a shape's property is modified, it will raise up FormulaChanged event, so that the modification could be captured to emit as a new value
-        var modifySubscription = Observable
+        var observeChanged = Observable
             .FromEvent<EPage_FormulaChangedEventHandler, Cell>(
                 handler => _page.FormulaChanged += handler,
                 handler => _page.FormulaChanged -= handler)
             .Where(cell => cell.Shape.IsOnLayers(_validLayers))
-            .Subscribe(cell =>
+            .Do(cell =>
             {
                 var item = cell.Shape.ToElement();
                 if (item != null) _elements.AddOrUpdate(item);
-            }).DisposeWith(compositeDisposable);
+            })
+            .Subscribe()
+            .DisposeWith(subscription);
 
         // when a new shape is add to the page, it could be captured using ShapeAdded event
-        var addSubscription = Observable.FromEvent<EPage_ShapeAddedEventHandler, Shape>(
+        var observeCreated = Observable.FromEvent<EPage_ShapeAddedEventHandler, Shape>(
                 handler => _page.ShapeAdded += handler,
                 handler => _page.ShapeAdded -= handler)
             .Where(shape => shape.IsOnLayers(_validLayers))
-            .Subscribe(shape =>
+            .Do(shape =>
             {
                 var item = shape.ToElement();
                 if (item != null) _elements.AddOrUpdate(item);
-            }).DisposeWith(compositeDisposable);
+            })
+            .Subscribe()
+            .DisposeWith(subscription);
 
         // when a shape is deleted from the page, it could be captured by BeforeShapeDelete event
-        var deleteSubscription = Observable.FromEvent<EPage_BeforeShapeDeleteEventHandler, Shape>(
+        var observeDeleted = Observable.FromEvent<EPage_BeforeShapeDeleteEventHandler, Shape>(
                 handler => _page.BeforeShapeDelete += handler,
                 handler => _page.BeforeShapeDelete -= handler)
             .Where(shape => shape.IsOnLayers(_validLayers))
-            .Subscribe(shape => { _elements.RemoveKey(shape.ID); })
-            .DisposeWith(compositeDisposable);
+            .Do(shape => { _elements.RemoveKey(shape.ID); })
+            .Subscribe()
+            .DisposeWith(subscription);
 
         // return a disposable to unsubscribe from all these change event
-        return compositeDisposable;
+        return subscription;
     }
 
     /// <summary>
@@ -217,8 +221,6 @@ public class DocumentExporter
     /// <returns>A collection of elements from page</returns>
     private IEnumerable<Element> GetElementsFromPage(IVPage page)
     {
-        if (page == null) return null;
-
         var elements = page.CreateSelection(
                 VisSelectionTypes.visSelTypeByLayer, VisSelectMode.visSelModeSkipSuper, string.Join(";", _validLayers))
             .OfType<IVShape>()
@@ -232,10 +234,9 @@ public class DocumentExporter
     public void SetDesignMaterial(int id, string designMaterial)
     {
         var shape = _page.Shapes.OfType<IVShape>().SingleOrDefault(x => x.ID == id);
-        if (shape != null)
-        {
-            var shapeData = new ShapeData("D_BOM", "\"设计物料\"", "", $"\"{designMaterial}\"");
-            shape.AddOrUpdate(shapeData);
-        }
+        if (shape == null) return;
+
+        var shapeData = new ShapeData("D_BOM", "\"设计物料\"", "", $"\"{designMaterial}\"");
+        shape.AddOrUpdate(shapeData);
     }
 }

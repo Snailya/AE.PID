@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using AE.PID.Controllers.Services;
 
 namespace AE.PID.ViewModels;
 

@@ -105,10 +105,6 @@ public class ExportViewModel : ViewModelBase
         _documentInfo = new DocumentInfoViewModel(Globals.ThisAddIn.Application.ActivePage);
     }
 
-    protected override void SetupDeactivate()
-    {
-    }
-
     private void ExportAsBOMTable()
     {
         // todo:

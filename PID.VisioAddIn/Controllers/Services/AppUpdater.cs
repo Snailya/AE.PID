@@ -80,7 +80,7 @@ public abstract class AppUpdater
             .SelectMany(value => Observable.FromAsync(GetUpdateAsync),
                 (value, result) => new { InvokeType = value, Result = result })
             // notify user if user decision needs to decide whether to continue updating or not.
-            .ObserveOn(RxApp.MainThreadScheduler)
+            .ObserveOn(Globals.ThisAddIn.SynchronizationContext)
             .Select(data => NotifyUserIfNeed(data.InvokeType, data.Result) ? data.Result.DownloadUrl : string.Empty)
             // continue updating
             .ObserveOn(TaskPoolScheduler.Default)

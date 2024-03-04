@@ -1,95 +1,103 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Windows;
 using AE.PID.Controllers.Services;
+using AE.PID.Models;
 using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
 
 namespace AE.PID.ViewModels;
 
-public class ShapeSelectionViewModel : ViewModelBase
+public class ShapeSelectionViewModel(ShapeSelector service) : ViewModelBase
 {
-    private bool _isByIdChecked = true;
-    private bool _isByMasterChecked;
+    private SelectionType _selectionType = SelectionType.ById;
     private int _shapeId;
+    private ReadOnlyObservableCollection<MasterViewModel> _masters;
+    private bool _hasSelection = false;
 
-    public ShapeSelectionViewModel()
+    #region Read-Write Properties
+
+    public SelectionType SelectionType
     {
-        Masters = new ObservableCollection<MasterViewModel>(ShapeSelector.GetMastersSource());
-
-        var canSelectShapeById = this.WhenAnyValue(
-            x => x.IsByIdChecked,
-            x => x.ShapeId,
-            (isChecked, id) => isChecked && id > 0);
-        var selectShapeById = ReactiveCommand.Create(() => ShapeSelector.SelectShapeById(_shapeId), canSelectShapeById);
-        selectShapeById.ThrownExceptions.Subscribe(error => MessageBox.Show(error.Message));
-
-        // create a by masters command executable only when masters in list selected and mode is by master
-        var canSelectShapesByMaster = this.WhenAnyValue(
-                x => x.IsByMastersChecked)
-            .CombineLatest(
-                Masters.ToObservableChangeSet().WhenPropertyChanged(x => x.IsChecked)
-                    .Select(_ => Masters.Any(x => x.IsChecked)),
-                (isChecked, hasSelection) => isChecked & hasSelection);
-        var selectShapesByMasters =
-            ReactiveCommand.Create(
-                () => ShapeSelector.SelectShapesByMasters(Masters.Where(x => x.IsChecked).Select(x => x.BaseId)),
-                canSelectShapesByMaster);
-        selectShapesByMasters.ThrownExceptions.Subscribe(error => MessageBox.Show(error.Message));
-
-        // todo: don't know if this is the better way to execute a set of command if any of them can execute. or to say bind two command to a button.
-        Select = ReactiveCommand.Create(() => { },
-            canSelectShapeById.CombineLatest(canSelectShapesByMaster, (canById, canByMaster) => canById | canByMaster));
-        Select.InvokeCommand(selectShapeById);
-        Select.InvokeCommand(selectShapesByMasters);
-
-        // close window command
-        Cancel = ReactiveCommand.Create(() => { });
+        get => _selectionType;
+        set => this.RaiseAndSetIfChanged(ref _selectionType, value);
     }
 
-    /// <summary>
-    ///     The master options for use to choose in by master mode.
-    /// </summary>
-    public ObservableCollection<MasterViewModel> Masters { get; }
-
-    /// <summary>
-    ///     Whether is in by id mode.
-    /// </summary>
-    public bool IsByIdChecked
-    {
-        get => _isByIdChecked;
-        set => this.RaiseAndSetIfChanged(ref _isByIdChecked, value);
-    }
-
-    /// <summary>
-    ///     Whether is in by master mode
-    /// </summary>
-    public bool IsByMastersChecked
-    {
-        get => _isByMasterChecked;
-        set => this.RaiseAndSetIfChanged(ref _isByMasterChecked, value);
-    }
-
-    /// <summary>
-    ///     The shape id display and edit in input box by user.
-    /// </summary>
     public int ShapeId
     {
         get => _shapeId;
         set => this.RaiseAndSetIfChanged(ref _shapeId, value);
     }
 
-    /// <summary>
-    ///     Execute select command which might disabled by can execute.
-    /// </summary>
-    public ReactiveCommand<Unit, Unit> Select { get; }
+    #endregion
 
-    /// <summary>
-    ///     Close window command.
-    /// </summary>
-    public ReactiveCommand<Unit, Unit> Cancel { get; }
+    #region Read-Only Properties
+
+    public ReactiveCommand<Unit, Unit> Select { get; private set; }
+
+    public ReactiveCommand<Unit, Unit> Cancel { get; private set; }
+
+    public bool HasSelection
+    {
+        get => _hasSelection;
+        private set => this.RaiseAndSetIfChanged(ref _hasSelection, value);
+    }
+
+    #endregion
+
+    #region Output Properties
+
+    public ReadOnlyObservableCollection<MasterViewModel> Masters => _masters;
+
+    #endregion
+
+    protected override void SetupCommands()
+    {
+        var canSelect = this.WhenAnyValue(
+            x => x.SelectionType,
+            x => x.ShapeId,
+            x => x.HasSelection,
+            (type, shapeId, hasSelection) =>
+            {
+                if (type == SelectionType.ById) return shapeId > 0;
+                return hasSelection;
+            });
+
+        Select = ReactiveCommand.Create(() =>
+            {
+                if (SelectionType == SelectionType.ById)
+                    ShapeSelector.SelectShapeById(_shapeId);
+                else
+                    ShapeSelector.SelectShapesByMasters(_masters.Where(x => x.IsChecked).Select(x => x.BaseId));
+            },
+            canSelect);
+
+        Cancel = ReactiveCommand.Create(() => { });
+    }
+
+
+    protected override void SetupSubscriptions(CompositeDisposable d)
+    {
+        service.Masters
+            .Connect()
+            .Transform(x => new MasterViewModel() { BaseId = x.BaseID, Name = x.Name })
+            .Bind(out _masters)
+            .DisposeMany()
+            .Subscribe()
+            .DisposeWith(d);
+
+        service.MonitorChange()
+            .DisposeWith(d);
+        
+        Masters.ToObservableChangeSet()
+            .WhenPropertyChanged(i => i.IsChecked)
+            .Select(_ => Masters.Any(x => x.IsChecked))
+            .BindTo(this, x => x.HasSelection)
+            .DisposeWith(d);
+    }
 }

@@ -102,7 +102,7 @@ public class Ribbon : IRibbonExtensibility
 
     public void OpenSelectTool(IRibbonControl control)
     {
-        ShapeSelector.Invoke(Globals.ThisAddIn.Application.ActivePage);
+        ShapeSelector.Invoke(Globals.ThisAddIn.Application.ActiveDocument);
     }
 
     public void UpdateDocument(IRibbonControl control)

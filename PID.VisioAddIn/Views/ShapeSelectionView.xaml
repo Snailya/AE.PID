@@ -34,14 +34,15 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <RadioButton x:Name="ByIdButton"
-                         GroupName="rbs" Margin="4,8,16,7" VerticalAlignment="Center">
-                ID
+                         GroupName="rbs" Margin="4,8,16,7" VerticalAlignment="Center" 
+                         Content="ID" IsChecked="True"/>
+            <RadioButton x:Name="ByMasterButton" 
+                         Grid.Row="1" Grid.Column="0"
+                         GroupName="rbs" Margin="4,8,16,7" VerticalAlignment="Top"
+                         Content="类型">
             </RadioButton>
-            <RadioButton x:Name="ByMasterButton" Grid.Row="1" Grid.Column="0"
-                         GroupName="rbs" Margin="4,8,16,7" VerticalAlignment="Top">
-                类型
-            </RadioButton>
-            <TextBox x:Name="IdTextBox" Grid.Row="0" Grid.Column="1"
+            <TextBox x:Name="IdTextBox" 
+                     Grid.Row="0" Grid.Column="1"
                      Margin="16,8,4,8" VerticalAlignment="Top" />
             <ListView x:Name="MastersCheckBox" Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Masters}"
                       Margin="16,8,4,8" VerticalAlignment="Stretch">

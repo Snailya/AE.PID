@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Windows;
+using AE.PID.Controllers.Services;
+using AE.PID.Models;
 using AE.PID.ViewModels;
 using ReactiveUI;
 
@@ -14,46 +18,59 @@ public partial class ShapeSelectionView
     public ShapeSelectionView()
     {
         InitializeComponent();
+        ViewModel = new ShapeSelectionViewModel(new ShapeSelector(Globals.ThisAddIn.Application.ActiveDocument));
 
-        this.WhenActivated(disposableRegistration =>
+        this.WhenActivated(d =>
         {
-            ViewModel = new ShapeSelectionViewModel();
-            this.Bind(ViewModel,
-                    viewModel => viewModel.IsByIdChecked,
-                    view => view.ByIdButton.IsChecked)
-                .DisposeWith(disposableRegistration);
-            this.Bind(ViewModel,
-                    viewModel => viewModel.IsByMastersChecked,
-                    view => view.ByMasterButton.IsChecked)
-                .DisposeWith(disposableRegistration);
-            this.OneWayBind(ViewModel,
-                    viewModel => viewModel.IsByIdChecked,
-                    view => view.IdTextBox.IsEnabled)
-                .DisposeWith(disposableRegistration);
+
             this.Bind(ViewModel,
                     viewModel => viewModel.ShapeId,
                     view => view.IdTextBox.Text)
-                .DisposeWith(disposableRegistration);
-            this.BindCommand(ViewModel,
-                    viewModel => viewModel.Select,
-                    view => view.OkButton)
-                .DisposeWith(disposableRegistration);
-            this.BindCommand(ViewModel,
-                    viewModel => viewModel.Cancel,
-                    view => view.CancelButton)
-                .DisposeWith(disposableRegistration);
+                .DisposeWith(d);
             this.OneWayBind(ViewModel,
                     viewModel => viewModel.Masters,
                     view => view.MastersCheckBox.ItemsSource)
-                .DisposeWith(disposableRegistration);
-            this.OneWayBind(ViewModel,
-                    viewModel => viewModel.IsByMastersChecked,
-                    view => view.MastersCheckBox.IsEnabled)
-                .DisposeWith(disposableRegistration);
+                .DisposeWith(d);
+            
+            this.BindCommand(ViewModel,
+                    viewModel => viewModel.Select,
+                    view => view.OkButton)
+                .DisposeWith(d);
+            this.BindCommand(ViewModel,
+                    viewModel => viewModel.Cancel,
+                    view => view.CancelButton)
+                .DisposeWith(d);
 
-            this.WhenAnyObservable(
-                    x => x.ViewModel.Cancel,
-                    x => x.ViewModel.Select
+            this.WhenAnyValue(x => x.ByIdButton.IsChecked)
+                .Where(isChecked => isChecked is true)
+                .Select(x=>SelectionType.ById)
+                .BindTo(ViewModel, x => x.SelectionType)
+                .DisposeWith(d);
+            this.WhenAnyValue(x => x.ByMasterButton.IsChecked)
+                .Where(isChecked => isChecked is true)
+                .Select(x=>SelectionType.ByMasters)
+                .BindTo(ViewModel, vm => vm.SelectionType)
+                .DisposeWith(d);
+            
+            ViewModel.WhenAnyValue(x => x.SelectionType)
+                .Subscribe(v =>
+                {
+                    if (v == SelectionType.ById)
+                    {
+                        IdTextBox.IsEnabled = true;
+                        MastersCheckBox.IsEnabled = false;
+                    }
+                    else
+                    {
+                        IdTextBox.IsEnabled = false;
+                        MastersCheckBox.IsEnabled = true;
+                    }
+                })
+                .DisposeWith(d);
+
+            ViewModel.WhenAnyObservable(
+                    x => x.Cancel,
+                    x => x.Select
                 )
                 .Subscribe(_ => Close());
         });
