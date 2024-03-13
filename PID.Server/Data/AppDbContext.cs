@@ -1,13 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace PID.Server.Data;
+namespace AE.PID.Server.Data;
 
-public class AppDbContext : DbContext
+public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-    {
-    }
-
     public DbSet<AppVersionEntity> AppVersions { get; set; }
     public DbSet<LibraryEntity> Libraries { get; set; }
 

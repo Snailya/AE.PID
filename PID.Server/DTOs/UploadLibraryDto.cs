@@ -1,4 +1,4 @@
-﻿namespace PID.Server.Models;
+﻿namespace AE.PID.Server.DTOs;
 
 public class UploadLibraryDto
 {

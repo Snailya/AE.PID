@@ -1,5 +1,5 @@
+using AE.PID.Server.Data;
 using Microsoft.EntityFrameworkCore;
-using PID.Server.Data;
 
 // initialize the environment
 if (!Directory.Exists("/opt/pid/data")) Directory.CreateDirectory("/opt/pid/data");
@@ -20,6 +20,9 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite("Data S
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.Configure<RouteOptions>(options => { options.LowercaseUrls = true; });
+
+builder.Services.AddHttpClient("PDMS",
+    client => { client.BaseAddress = new Uri("http://172.18.168.57:8000/api/cube/restful/interface/"); });
 
 var app = builder.Build();
 

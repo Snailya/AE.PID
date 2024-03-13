@@ -1,9 +1,9 @@
 ﻿using System.IO.Packaging;
 using System.Xml;
 using System.Xml.Linq;
-using PID.Server.Data;
+using AE.PID.Server.Data;
 
-namespace PID.Server.Services;
+namespace AE.PID.Server.Services;
 
 public class OpenXmlService
 {
@@ -50,7 +50,7 @@ public class OpenXmlService
     {
         // get document relationship part
         var documentPartRelationship = package.GetRelationshipsByType(DocumentType).FirstOrDefault();
-        if (documentPartRelationship == null) throw new Exception($"Doucment part not found by type: {DocumentType}");
+        if (documentPartRelationship == null) throw new Exception($"Document part not found by type: {DocumentType}");
 
         var documentPart = package.GetPart(PackUriHelper.ResolvePartUri(documentPartRelationship.SourceUri,
             documentPartRelationship.TargetUri));

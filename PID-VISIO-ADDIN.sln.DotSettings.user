@@ -6,7 +6,10 @@
   &lt;Assembly Path="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\PresentationFramework.dll" /&gt;&#xD;
 &lt;/AssemblyExplorer&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=25921c3e_002D189a_002D4658_002D8017_002D4b4a8978b69b/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from &amp;lt;PID.Test&amp;gt; #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;Project Location="E:\pid-visio-addin\PID.Test" Presentation="&amp;lt;PID.Test&amp;gt;" /&gt;&#xD;
+  &lt;TestAncestor&gt;&#xD;
+    &lt;TestId&gt;4A018E47-461D-471E-9B2C-23DC7A736287::net8.0::NUnit3x::PID.Server.Test.Tests.DateTimeFormatTest&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;4A018E47-461D-471E-9B2C-23DC7A736287::net8.0::NUnit3x::PID.Server.Test.Tests.MD5Test&lt;/TestId&gt;&#xD;
+  &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=81371777_002D03b9_002D4010_002D8215_002D63c58d80586c/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="All tests from &amp;lt;PID.Test&amp;gt;" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;Project Location="E:\pid-visio-addin\PID.Test" Presentation="&amp;lt;PID.Test&amp;gt;" /&gt;&#xD;

@@ -1,6 +1,6 @@
 ﻿using NLog;
 
-namespace PID.Server.Services;
+namespace AE.PID.Server.Services;
 
 public static class LoggerExtension
 {

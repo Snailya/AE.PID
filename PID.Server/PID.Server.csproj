@@ -8,6 +8,7 @@
         <AssemblyName>AE.PID.Server</AssemblyName>
         <RootNamespace>AE.PID.Server</RootNamespace>
         <Platforms>AnyCPU;x86;x64</Platforms>
+        <LangVersion>12</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>

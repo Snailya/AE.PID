@@ -1,4 +1,4 @@
-﻿namespace PID.Server.Data;
+﻿namespace AE.PID.Server.Data;
 
 /// <summary>
 ///     Entity framework object for Version.

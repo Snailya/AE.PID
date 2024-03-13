@@ -1,31 +1,24 @@
-using AE.PID.Core.Dtos;
+using AE.PID.Core.DTOs;
+using AE.PID.Server.Data;
+using AE.PID.Server.DTOs;
+using AE.PID.Server.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using PID.Server.Data;
-using PID.Server.Models;
-using PID.Server.Services;
 
-namespace PID.Server.Controllers;
+namespace AE.PID.Server.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class LibrariesController : ControllerBase
+public class LibrariesController(
+    ILogger<LibrariesController> logger,
+    AppDbContext dbContext,
+    LinkGenerator linkGenerator)
+    : ControllerBase
 {
-    private readonly AppDbContext _dbContext;
-    private readonly LinkGenerator _linkGenerator;
-    private readonly ILogger<LibrariesController> _logger;
-
-    public LibrariesController(ILogger<LibrariesController> logger, AppDbContext dbContext, LinkGenerator linkGenerator)
-    {
-        _logger = logger;
-        _dbContext = dbContext;
-        _linkGenerator = linkGenerator;
-    }
-
     [HttpGet]
     public IActionResult GetLibraries()
     {
-        var libraries = _dbContext.Libraries.Include(x => x.Versions).ThenInclude(x => x.Items).AsEnumerable().Select(
+        var libraries = dbContext.Libraries.Include(x => x.Versions).ThenInclude(x => x.Items).AsEnumerable().Select(
             x =>
                 new LibraryDto
                 {
@@ -36,11 +29,10 @@ public class LibrariesController : ControllerBase
                         }).ToList()
                 }).ToList();
 
-
         foreach (var library in libraries)
         {
             var downloadUrl =
-                _linkGenerator.GetUriByAction(HttpContext, nameof(DownloadLibrary), null, new { id = library.Id });
+                linkGenerator.GetUriByAction(HttpContext, nameof(DownloadLibrary), null, new { id = library.Id });
             library.DownloadUrl = string.IsNullOrEmpty(downloadUrl) ? string.Empty : downloadUrl;
         }
 
@@ -51,11 +43,11 @@ public class LibrariesController : ControllerBase
     public IActionResult Upload([FromForm] UploadLibraryDto dto)
     {
         // Validate model and handle the file upload
-        if (dto?.File == null || Path.GetExtension(dto.File.FileName) != ".vssx")
+        if (Path.GetExtension(dto.File.FileName) != ".vssx")
             return BadRequest("Invalid request. Please provide a vssx file.");
 
         // validate if the version is larger than the latest version
-        var library = _dbContext.Libraries.SingleOrDefault(x => x.Name == dto.Name) ??
+        var library = dbContext.Libraries.SingleOrDefault(x => x.Name == dto.Name) ??
                       new LibraryEntity { Name = dto.Name };
         var latestVersion = library.GetLatestVersion();
         if (latestVersion != null && new Version(latestVersion.Version) > new Version(dto.Version))
@@ -76,8 +68,8 @@ public class LibrariesController : ControllerBase
             Items = OpenXmlService.GetItems(filePath).ToList()
         });
 
-        _dbContext.Libraries.Update(library);
-        _dbContext.SaveChanges();
+        dbContext.Libraries.Update(library);
+        dbContext.SaveChanges();
 
         return Ok("File uploaded successfully.");
     }
@@ -85,12 +77,12 @@ public class LibrariesController : ControllerBase
     [HttpDelete("{id:int}")]
     public IActionResult DeleteLibrary([FromRoute] int id)
     {
-        var library = _dbContext.Libraries.Include(x => x.Versions).SingleOrDefault(x => x.Id == id);
+        var library = dbContext.Libraries.Include(x => x.Versions).SingleOrDefault(x => x.Id == id);
         if (library == null)
             return NoContent();
 
-        _dbContext.Libraries.Remove(library);
-        _dbContext.SaveChanges();
+        dbContext.Libraries.Remove(library);
+        dbContext.SaveChanges();
 
         return NoContent(); // Or handle the case when the file is not found
     }
@@ -98,9 +90,9 @@ public class LibrariesController : ControllerBase
     [HttpGet("{id:int}/download")]
     public IActionResult DownloadLibrary([FromRoute] int id)
     {
-        var library = _dbContext.Libraries.Include(x => x.Versions).SingleOrDefault(x => x.Id == id);
+        var library = dbContext.Libraries.Include(x => x.Versions).SingleOrDefault(x => x.Id == id);
         if (library != null)
-            _logger.LogInformation($"Find {library.Name} with {library.Versions.Count} versions.");
+            logger.LogInformation($"Find {library.Name} with {library.Versions.Count} versions.");
 
         var latestVersion = library?.GetLatestVersion();
         if (latestVersion != null && System.IO.File.Exists(latestVersion.FileName))

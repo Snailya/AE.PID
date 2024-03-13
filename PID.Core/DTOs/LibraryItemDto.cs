@@ -1,4 +1,4 @@
-﻿namespace AE.PID.Core.Dtos;
+﻿namespace AE.PID.Core.DTOs;
 
 public class LibraryItemDto
 {

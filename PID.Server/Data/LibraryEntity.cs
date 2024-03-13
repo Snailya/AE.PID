@@ -1,4 +1,4 @@
-﻿namespace PID.Server.Data;
+﻿namespace AE.PID.Server.Data;
 
 public class LibraryEntity
 {
@@ -8,7 +8,7 @@ public class LibraryEntity
     public int Id { get; set; }
 
     /// <summary>
-    ///     The name of the library.
+    /// The name of the library.
     /// </summary>
     public string Name { get; set; }
 
