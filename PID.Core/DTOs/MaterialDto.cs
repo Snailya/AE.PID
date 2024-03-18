@@ -12,7 +12,7 @@ public class MaterialDto
     public string Unit { get; set; }
     public string Manufacturer { get; set; }
     public string ManufacturerMaterialNumber { get; set; }
-    public int Type { get; set; }
+    public string Type { get; set; }
     public int State { get; set; }
     public string Description { get; set; }
     public IEnumerable<MaterialPropertyDto> Properties { get; set; }

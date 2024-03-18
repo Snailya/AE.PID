@@ -1,4 +1,6 @@
-﻿namespace AE.PID.Server.DTOs;
+﻿using Microsoft.AspNetCore.Http;
+
+namespace AE.PID.Server.DTOs;
 
 public class UploadLibraryDto
 {

@@ -1,9 +1,18 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text.Json;
+using System.Threading.Tasks;
 using AE.PID.Core.DTOs;
 using AE.PID.Server.DTOs;
 using AE.PID.Server.DTOs.PDMS;
 using AE.PID.Server.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Logging;
 
 namespace AE.PID.Server.Controllers;
 
@@ -22,6 +31,10 @@ public class MaterialsController(
         [FromQuery] int pageSize = 10)
     {
         var count = await GetMaterialsCount(category ?? string.Empty);
+        var designMaterialDto = new DesignMaterialDto
+        {
+            MaterialCategory = category ?? string.Empty
+        };
 
         var data = ApiHelper.BuildFormUrlEncodedContent(new SelectDesignMaterialRequestDto
         {
@@ -36,10 +49,10 @@ public class MaterialsController(
         var response = await _client.PostAsync("getModeDataPageList/selectDesignMaterial", data);
 
         if (!response.IsSuccessStatusCode) return BadRequest("Failed to send form data to the API");
-
+        
         var responseData = await response.Content.ReadFromJsonAsync<ResponseDto>();
         if (string.IsNullOrEmpty(responseData?.Result)) return NoContent();
-
+        
         var materials =
             JsonSerializer.Deserialize<IEnumerable<SelectDesignMaterialResponseItemDto>>(responseData.Result)?
                 .Select(x => x.FromPDMS());

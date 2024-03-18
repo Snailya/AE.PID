@@ -1,5 +1,10 @@
+using System;
+using System.IO;
 using AE.PID.Server.Data;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 // initialize the environment
 if (!Directory.Exists("/opt/pid/data")) Directory.CreateDirectory("/opt/pid/data");

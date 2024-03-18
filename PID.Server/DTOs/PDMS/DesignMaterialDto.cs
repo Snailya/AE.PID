@@ -4,7 +4,8 @@ namespace AE.PID.Server.DTOs.PDMS;
 
 public class DesignMaterialDto
 {
-    [JsonPropertyName("id")] public int Id { get; set; }
+    [JsonPropertyName("id")] 
+    public string Id { get; set; }
 
     /// <summary>
     /// 物料名称
@@ -70,14 +71,8 @@ public class DesignMaterialDto
     /// 物料类别，0-易损件；1-备件；2-中间件；3-组件
     /// </summary>
     [JsonPropertyName("materialType")]
-    public int MaterialType { get; set; }
-
-    /// <summary>
-    /// 物料状态，0-审核；1-有效；2-无效
-    /// </summary>
-    [JsonPropertyName("materialState")]
-    public int MaterialState { get; set; }
-
+    public string MaterialType { get; set; }
+    
     /// <summary>
     /// 说明
     /// </summary>

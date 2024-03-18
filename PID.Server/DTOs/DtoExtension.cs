@@ -1,4 +1,6 @@
-﻿using AE.PID.Core.DTOs;
+﻿using System;
+using System.Linq;
+using AE.PID.Core.DTOs;
 using AE.PID.Server.DTOs.PDMS;
 
 namespace AE.PID.Server.DTOs;
@@ -18,9 +20,9 @@ public static class DtoExtension
 
     public static MaterialDto FromPDMS(this SelectDesignMaterialResponseItemDto dto)
     {
-        return new MaterialDto()
+        return new MaterialDto
         {
-            Id = dto.MainTable.Id,
+            Id = int.TryParse(dto.MainTable.Id, out var id) ? id : default,
             Brand = dto.MainTable.Brand,
             // todo: get parent categories
             Categories = [dto.MainTable.MaterialCategory],
@@ -32,7 +34,6 @@ public static class DtoExtension
             Name = dto.MainTable.MaterialName,
             Properties = dto.Detail1.Select(x => new MaterialPropertyDto()
                 { Id = x.Id, Name = x.Name, Value = x.Value }),
-            State = dto.MainTable.MaterialState,
             Specifications = dto.MainTable.Specifications,
             Type = dto.MainTable.MaterialType,
             Unit = dto.MainTable.Unit

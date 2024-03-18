@@ -1,4 +1,8 @@
-﻿namespace AE.PID.Server.Data;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace AE.PID.Server.Data;
 
 public class LibraryEntity
 {

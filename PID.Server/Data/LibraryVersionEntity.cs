@@ -1,4 +1,6 @@
-﻿namespace AE.PID.Server.Data;
+﻿using System.Collections.Generic;
+
+namespace AE.PID.Server.Data;
 
 public class LibraryVersionEntity
 {
