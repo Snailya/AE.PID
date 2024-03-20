@@ -3,7 +3,7 @@
 POST http://172.18.168.57:8000/api/cube/restful/interface/getModeDataPageList/selectDesignMaterialCategory
 Content-Type: application/x-www-form-urlencoded
 
-datajson={
+datajson = {
     "pageInfo":{
         "pageNo":"1",
         "pageSize":"10"
@@ -29,7 +29,7 @@ datajson={
 POST http://172.18.168.57:8000/api/cube/restful/interface/getModeDataPageCount/countDesignMaterial
 Content-Type: application/x-www-form-urlencoded
 
-datajson={
+datajson = {
     "mainTable": {
         "materialName":"",
         "materialCode":"",
@@ -54,7 +54,7 @@ datajson={
 POST http://172.18.168.57:8000/api/cube/restful/interface/getModeDataPageList/selectDesignMaterial
 Content-Type: application/x-www-form-urlencoded
 
-datajson={
+datajson = {
   "pageInfo": {
         "pageNo":"1",
         "pageSize":"1"

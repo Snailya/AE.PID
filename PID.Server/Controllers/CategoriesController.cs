@@ -29,7 +29,7 @@ public class CategoriesController(
         var data = ApiHelper.BuildFormUrlEncodedContent(new SelectDesignMaterialCategoryRequestDto()
         {
             OperationInfo = new OperationInfoDto { Operator = "6470" },
-            MainTable = new DesignMaterialCategoryDto { CategoryName = name??"" },
+            MainTable = new DesignMaterialCategoryDto { CategoryName = name ?? "" },
             PageInfo = new PageInfoDto(1, 10000)
         });
 

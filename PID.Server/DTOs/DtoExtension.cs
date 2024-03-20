@@ -25,7 +25,7 @@ public static class DtoExtension
             Id = int.TryParse(dto.MainTable.Id, out var id) ? id : default,
             Brand = dto.MainTable.Brand,
             // todo: get parent categories
-            Categories = [dto.MainTable.MaterialCategory],
+            Categories = [int.TryParse(dto.MainTable.MaterialCategory, out var categoryId) ? categoryId : default],
             Code = dto.MainTable.MaterialCode,
             Description = dto.MainTable.Description,
             Manufacturer = dto.MainTable.Manufacturer,

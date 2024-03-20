@@ -3,17 +3,17 @@
 public class MaterialDto
 {
     public int Id { get; set; }
-    public string Name { get; set; }
-    public string Code { get; set; }
-    public string[] Categories { get; set; }
-    public string Brand { get; set; }
-    public string Specifications { get; set; }
-    public string Model { get; set; }
-    public string Unit { get; set; }
-    public string Manufacturer { get; set; }
-    public string ManufacturerMaterialNumber { get; set; }
-    public string Type { get; set; }
-    public int State { get; set; }
-    public string Description { get; set; }
-    public IEnumerable<MaterialPropertyDto> Properties { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Code { get; set; } = string.Empty;
+    public int[] Categories { get; set; } = { };
+    public string Brand { get; set; } = string.Empty;
+    public string Specifications { get; set; } = string.Empty;
+    public string Model { get; set; } = string.Empty;
+    public string Unit { get; set; } = string.Empty;
+    public string Manufacturer { get; set; } = string.Empty;
+    public string ManufacturerMaterialNumber { get; set; } = string.Empty;
+    public string Type { get; set; } = string.Empty;
+    // public int State { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public IEnumerable<MaterialPropertyDto>? Properties { get; set; }
 }

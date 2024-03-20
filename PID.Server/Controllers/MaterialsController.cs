@@ -49,10 +49,10 @@ public class MaterialsController(
         var response = await _client.PostAsync("getModeDataPageList/selectDesignMaterial", data);
 
         if (!response.IsSuccessStatusCode) return BadRequest("Failed to send form data to the API");
-        
+
         var responseData = await response.Content.ReadFromJsonAsync<ResponseDto>();
         if (string.IsNullOrEmpty(responseData?.Result)) return NoContent();
-        
+
         var materials =
             JsonSerializer.Deserialize<IEnumerable<SelectDesignMaterialResponseItemDto>>(responseData.Result)?
                 .Select(x => x.FromPDMS());

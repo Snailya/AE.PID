@@ -4,8 +4,7 @@ namespace AE.PID.Server.DTOs.PDMS;
 
 public class DesignMaterialAttributeDto
 {
-    [JsonPropertyName("id")]
-    public string Id { get; set; }
+    [JsonPropertyName("id")] public string Id { get; set; }
 
     [JsonPropertyName("materialAttributeName")]
     public string Name { get; set; }
