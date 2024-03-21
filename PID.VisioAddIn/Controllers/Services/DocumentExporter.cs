@@ -228,12 +228,27 @@ public class DocumentExporter
         return elements;
     }
 
-    public void SetDesignMaterial(int id, string materialId)
+    public void SetDesignMaterial(int id, DesignMaterial? material)
     {
         var shape = _page.Shapes.OfType<IVShape>().SingleOrDefault(x => x.ID == id);
         if (shape == null) return;
 
-        var shapeData = new ShapeData("D_BOM", "\"设计物料\"", "", $"\"{materialId}\"");
+        // clear all shape data starts with D_
+        for (var i = shape.RowCount[(short)VisSectionIndices.visSectionProp] - 1; i >= 0; i--)
+        {
+            var cell = shape.CellsSRC[(short)VisSectionIndices.visSectionProp, (short)i,
+                (short)VisCellIndices.visCustPropsValue];
+            if (cell.RowName.StartsWith("D_")) shape.DeleteRow((short)VisSectionIndices.visSectionProp, (short)i);
+        }
+
+        // write material id
+        var shapeData = new ShapeData("D_BOM", "\"设计物料\"", "", $"\"{material.Code}\"");
         shape.AddOrUpdate(shapeData);
+
+        // write related properties
+        foreach (var propertyData in from property in material.Properties
+                 let rowName = $"D_Attribute{material.Properties.IndexOf(property) + 1}"
+                 select new ShapeData(rowName, $"\"{property.Name}\"", "", $"\"{property.Value.Replace("\"", "\"\"")}\""))
+            shape.AddOrUpdate(propertyData);
     }
 }

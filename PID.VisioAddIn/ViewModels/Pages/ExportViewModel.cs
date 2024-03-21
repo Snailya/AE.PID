@@ -14,7 +14,7 @@ public class ExportViewModel(DocumentExporter service) : ViewModelBase
 {
     private DocumentInfoViewModel _documentInfo;
     private ReadOnlyObservableCollection<ElementViewModel> _items;
-    private ElementViewModel _selected;
+    private ElementViewModel? _selected;
 
     #region Read-Write Properties
 
@@ -24,7 +24,7 @@ public class ExportViewModel(DocumentExporter service) : ViewModelBase
         private set => this.RaiseAndSetIfChanged(ref _documentInfo, value);
     }
 
-    public ElementViewModel Selected
+    public ElementViewModel? Selected
     {
         get => _selected;
         set => this.RaiseAndSetIfChanged(ref _selected, value);
@@ -49,30 +49,21 @@ public class ExportViewModel(DocumentExporter service) : ViewModelBase
 
     protected override void SetupCommands()
     {
-        DesignMaterialsViewModel.Select = ReactiveCommand.Create<DesignMaterial>(material =>
-        {
-            if (material != null)
-            {
-                var id = _selected.Id;
-                service.SetDesignMaterial(id, material.Code);
-
-                DesignMaterialsViewModel.AddToLastUsed(material, _selected.Name);
-            }
-        });
+        DesignMaterialsViewModel.Select = ReactiveCommand.Create<DesignMaterial>(WriteDesignMaterialIntoShape);
         DesignMaterialsViewModel.Close = ReactiveCommand.Create(() => { });
 
         OkCancelFeedbackViewModel.Ok = ReactiveCommand.Create(ExportAsBOMTable);
         OkCancelFeedbackViewModel.Cancel = ReactiveCommand.Create(() => { });
     }
-
+    
     protected override void SetupSubscriptions(CompositeDisposable d)
     {
         service.Elements
             .Connect()
-            .ObserveOn(RxApp.MainThreadScheduler)
             .TransformToTree(x => x.ParentId, Observable.Return(DefaultPredicate))
             .Transform(node => new ElementViewModel(node))
             .Sort(new ElementViewModelComparer())
+            .ObserveOn(RxApp.MainThreadScheduler)
             .Bind(out _items)
             .DisposeMany()
             .Subscribe()
@@ -82,11 +73,12 @@ public class ExportViewModel(DocumentExporter service) : ViewModelBase
             .DisposeWith(d);
 
         this.WhenAnyValue(x => x.Selected)
-            .Where(x => x != null)
+            .WhereNotNull()
             .Select(x => _items.SingleOrDefault(i => i.Id == x.Id))
             .WhereNotNull()
             .Select(x => x.Name)
             .DistinctUntilChanged()
+            .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(x => { DesignMaterialsViewModel.ElementName = x; })
             .DisposeWith(d);
 
@@ -103,6 +95,14 @@ public class ExportViewModel(DocumentExporter service) : ViewModelBase
         _documentInfo = new DocumentInfoViewModel(Globals.ThisAddIn.Application.ActivePage);
     }
 
+    private void WriteDesignMaterialIntoShape(DesignMaterial? material)
+    {
+        if (material == null || _selected?.Id == null) return;
+            
+        var id = _selected.Id;
+        service.SetDesignMaterial(id, material);
+    }
+    
     private void ExportAsBOMTable()
     {
         service.ExportToExcel(_documentInfo);

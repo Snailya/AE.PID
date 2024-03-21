@@ -76,6 +76,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
 
     protected override void SetupCommands()
     {
+        Select = ReactiveCommand.Create<DesignMaterial>(material => AddToLastUsed(material, _elementName));
         Load = ReactiveCommand.Create(() => { });
     }
 
@@ -136,7 +137,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
             .TransformMany(x => x.Materials)
             .WhereNotNull()
             .Filter(userFilter)
-            .ObserveOnDispatcher()
+            .ObserveOn(RxApp.MainThreadScheduler)
             .Bind(out _validMaterials)
             .DisposeMany()
             .Subscribe()
