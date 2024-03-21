@@ -3,7 +3,88 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        WindowStartupLocation="CenterOwner" SizeToContent="WidthAndHeight"
+        xmlns:windows="clr-namespace:AE.PID.Views.Windows"
+        xmlns:wpf="clr-namespace:Material.Icons.WPF;assembly=Material.Icons.WPF"
+        xmlns:pid="clr-namespace:AE.PID"
+        x:Name="ThisWindow"
+        WindowStyle="None" 
+        AllowsTransparency="True"
+        WindowStartupLocation="CenterOwner"
+        SizeToContent="WidthAndHeight"
         mc:Ignorable="d"
         d:DesignHeight="450" d:DesignWidth="800">
+    <Window.Resources> 
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../MyResources.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Window.Template>
+        <ControlTemplate TargetType="{x:Type Window}">
+            <!-- Outer border with the drop shadow margin -->
+            <Border Padding="{Binding  OuterMarginSize, FallbackValue=0}"
+                    BorderBrush="{StaticResource PrimaryBrush}" 
+                    >
+                <Grid Background="White">
+                    <Border BorderBrush="{StaticResource PrimaryBrush}"
+                            BorderThickness="1"
+                            Panel.ZIndex="2" />
+                    <Border Background="White">
+                        <Border.Effect>
+                            <DropShadowEffect Color="Black" BlurRadius="8" ShadowDepth="0.5" />
+                        </Border.Effect>
+                    </Border>
+
+                    <DockPanel>
+                        <Grid DockPanel.Dock="Top" Height="24">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="{TemplateBinding Title}"
+                                       HorizontalAlignment="Center"  VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1"
+                                        Orientation="Horizontal" Button.Click="ButtonBase_OnClick"
+                                        WindowChrome.IsHitTestVisibleInChrome="True">
+                                <StackPanel.Resources>
+                                    <Style TargetType="{x:Type Button}">
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <Setter Property="BorderThickness" Value="0" />
+                                        <Setter Property="Padding" Value="6"/>
+                                    </Style>
+                                </StackPanel.Resources>
+                                <Button x:Name="PART_Minimize">
+                                    <wpf:MaterialIcon Kind="Minimize" />
+                                </Button>
+                                <Button x:Name="PART_Maximize">
+                                    <wpf:MaterialIcon Kind="Maximize" />
+                                </Button>
+                                <Button x:Name="PART_Close">
+                                    <wpf:MaterialIcon Kind="Close" />
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                        <ContentPresenter Content="{TemplateBinding Content}" />
+                    </DockPanel>
+
+                    <Border VerticalAlignment="Bottom" HorizontalAlignment="Left">
+                        <TextBlock TextWrapping="Wrap" 
+                                   Text="{Binding Version}" 
+                                   Opacity="0.5" FontSize="12" Margin="4"
+                                   Foreground="Black" FontWeight="Light" />
+                    </Border>
+                </Grid>
+            </Border>
+        </ControlTemplate>
+    </Window.Template>
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome
+            ResizeBorderThickness="{Binding Path=ResizeBorderThickness}"
+            CaptionHeight="24"
+            CornerRadius="0"
+            GlassFrameThickness="0" />
+    </WindowChrome.WindowChrome>
 </Window>

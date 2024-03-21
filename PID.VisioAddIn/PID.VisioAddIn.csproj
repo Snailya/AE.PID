@@ -285,13 +285,16 @@
             <SubType>Code</SubType>
         </Compile>
         <Compile Include="Views\ViewBase.cs"/>
+        <Compile Include="Views\Windows\BaseWindowViewModel.cs" />
         <Compile Include="Views\Windows\MainWindow.xaml.cs">
             <DependentUpon>MainWindow.xaml</DependentUpon>
         </Compile>
         <Compile Include="Views\Windows\SideWindow.xaml.cs">
             <DependentUpon>SideWindow.xaml</DependentUpon>
         </Compile>
+        <Compile Include="Views\Windows\WindowDockPosition.cs" />
         <Compile Include="Views\Windows\WindowManager.cs"/>
+        <Compile Include="Views\Windows\WindowResizer.cs" />
         <EmbeddedResource Include="Properties\Resources.resx">
             <Generator>PublicResXFileCodeGenerator</Generator>
             <SubType>Designer</SubType>

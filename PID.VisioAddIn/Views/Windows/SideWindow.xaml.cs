@@ -10,12 +10,11 @@ public partial class SideWindow
 {
     public SideWindow()
     {
-        MaxWidth = SystemParameters.WorkArea.Size.Width;
-        MaxHeight = SystemParameters.WorkArea.Size.Height;
-
         InitializeComponent();
+        
+        DataContext = new BaseWindowViewModel(this);
     }
-
+    
     protected override void OnClosing(CancelEventArgs e)
     {
         Hide();

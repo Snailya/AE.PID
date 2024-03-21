@@ -4,26 +4,48 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         WindowStyle="None"
+        AllowsTransparency="True"
         Width="800"
         ShowInTaskbar="False"
         mc:Ignorable="d"
         d:DesignHeight="450" d:DesignWidth="800">
-    <Window.Resources>
-        <Style TargetType="Window">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Window">
-                        <Border BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                Background="{TemplateBinding Background}">
-                            <DockPanel>
-                                <TextBlock Text="{TemplateBinding Title}" DockPanel.Dock="Top" />
-                                <!-- Other content here -->
-                            </DockPanel>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+ <Window.Resources> 
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../MyResources.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Window.Resources>
+    <Window.Template>
+        <ControlTemplate TargetType="{x:Type Window}">
+            <!-- Outer border with the drop shadow margin -->
+            <Border Padding="{Binding OuterMarginSize, FallbackValue=0}"
+                    BorderBrush="{StaticResource PrimaryBrush}" 
+                    >
+                <Grid Background="White">
+                    <Border BorderBrush="{StaticResource PrimaryBrush}"
+                            BorderThickness="1"
+                            Panel.ZIndex="2" />
+                    <Border Background="White">
+                        <Border.Effect>
+                            <DropShadowEffect Color="Black" BlurRadius="8" ShadowDepth="0.5" />
+                        </Border.Effect>
+                    </Border>
+
+                    <DockPanel>
+                        <Grid DockPanel.Dock="Top" Height="24">
+                        </Grid>
+                        <ContentPresenter Content="{TemplateBinding Content}" />
+                    </DockPanel>
+                </Grid>
+            </Border>
+        </ControlTemplate>
+    </Window.Template>
+    <WindowChrome.WindowChrome>
+        <WindowChrome
+            ResizeBorderThickness="{Binding Path=ResizeBorderThickness}"
+            CaptionHeight="24"
+            CornerRadius="0"
+            GlassFrameThickness="0" />
+    </WindowChrome.WindowChrome>
 </Window>

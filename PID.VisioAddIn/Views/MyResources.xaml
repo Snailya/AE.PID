@@ -3,7 +3,13 @@
                     xmlns:controls="clr-namespace:AE.PID.Views.Controls"
                     xmlns:viewModels="clr-namespace:AE.PID.ViewModels"
                     xmlns:converters="clr-namespace:AE.PID.Converters">
-
+    
+    <Color x:Key="PrimaryColor">#185ABD</Color>
+    <Color x:Key="OnPrimaryColor">#FFFFFF</Color>
+    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
+    <SolidColorBrush x:Key="OnPrimaryBrush" Color="{StaticResource OnPrimaryColor}" />
+    
+    
     <Style x:Key="TitleStyle" TargetType="{x:Type TextBlock}">
         <Setter Property="Margin" Value="4" />
         <Setter Property="FontSize" Value="28" />
