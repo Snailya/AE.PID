@@ -115,7 +115,7 @@ public abstract class AppUpdater
         try
         {
             using var response =
-                await client.GetAsync(configuration.Api + $"/check-version?version={version}");
+                await client.GetAsync($"check-version?version={version}");
             response.EnsureSuccessStatusCode();
 
             // anytime there's a success response from check-version, the check time should update.

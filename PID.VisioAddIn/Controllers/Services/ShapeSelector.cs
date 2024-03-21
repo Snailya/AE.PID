@@ -10,6 +10,7 @@ using AE.PID.Models.VisProps;
 using AE.PID.ViewModels;
 using AE.PID.Views;
 using AE.PID.Views.Controls;
+using AE.PID.Views.Pages;
 using DynamicData;
 using Microsoft.Office.Interop.Visio;
 using NLog;
@@ -63,8 +64,7 @@ public class ShapeSelector
                 {
                     try
                     {
-                        Globals.ThisAddIn.MainWindow.Content = new ShapeSelectionView();
-                        Globals.ThisAddIn.MainWindow.Show();
+                        Globals.ThisAddIn.WindowManager.Show(new ShapeSelectionPage());
                     }
                     catch (Exception ex)
                     {

@@ -6,13 +6,13 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Windows.Forms;
-using AE.PID.Models;
 using AE.PID.Models.BOM;
 using AE.PID.Models.Exceptions;
 using AE.PID.Models.VisProps;
 using AE.PID.Properties;
 using AE.PID.ViewModels;
 using AE.PID.Views;
+using AE.PID.Views.Pages;
 using DynamicData;
 using Microsoft.Office.Interop.Visio;
 using MiniExcelLibs;
@@ -34,13 +34,12 @@ public class DocumentExporter
 
     public DocumentExporter(Page page)
     {
-        if (page == null) throw new ArgumentNullException(nameof(page));
-
-        _page = page;
+        _page = page ?? throw new ArgumentNullException(nameof(page));
         _validLayers = Globals.ThisAddIn.Configuration.ExportSettings.BomLayers;
 
         // initialize items by get all items from current page
         var elements = GetElementsFromPage(_page);
+
         if (elements != null)
             _elements.AddOrUpdate(elements);
     }
@@ -70,9 +69,7 @@ public class DocumentExporter
                 {
                     try
                     {
-                        Globals.ThisAddIn.MainWindow.Content = new ExportView();
-                        Globals.ThisAddIn.MainWindow
-                            .Show(); // this observable only display the view, not focus on any task
+                        Globals.ThisAddIn.WindowManager.Show(new ExportPage());
                     }
                     catch (Exception ex)
                     {
@@ -126,7 +123,7 @@ public class DocumentExporter
                     item.FunctionalElement = $"{parent.FunctionalElement}-{item.FunctionalElement}";
             }
 
-            var materials = orderedElements.Select(Material.FromElement).ToList();
+            var materials = orderedElements.Select(AE.PID.Models.BOM.Material.FromElement).ToList();
 
             // append aggregated properties
             var totalDic = materials
@@ -231,12 +228,12 @@ public class DocumentExporter
         return elements;
     }
 
-    public void SetDesignMaterial(int id, string designMaterial)
+    public void SetDesignMaterial(int id, string materialId)
     {
         var shape = _page.Shapes.OfType<IVShape>().SingleOrDefault(x => x.ID == id);
         if (shape == null) return;
 
-        var shapeData = new ShapeData("D_BOM", "\"设计物料\"", "", $"\"{designMaterial}\"");
+        var shapeData = new ShapeData("D_BOM", "\"设计物料\"", "", $"\"{materialId}\"");
         shape.AddOrUpdate(shapeData);
     }
 }

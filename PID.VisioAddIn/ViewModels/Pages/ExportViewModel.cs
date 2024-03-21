@@ -1,0 +1,110 @@
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using AE.PID.Controllers.Services;
+using AE.PID.Models.BOM;
+using DynamicData;
+using ReactiveUI;
+
+namespace AE.PID.ViewModels.Pages;
+
+public class ExportViewModel(DocumentExporter service) : ViewModelBase
+{
+    private DocumentInfoViewModel _documentInfo;
+    private ReadOnlyObservableCollection<ElementViewModel> _items;
+    private ElementViewModel _selected;
+
+    #region Read-Write Properties
+
+    public DocumentInfoViewModel DocumentInfo
+    {
+        get => _documentInfo;
+        private set => this.RaiseAndSetIfChanged(ref _documentInfo, value);
+    }
+
+    public ElementViewModel Selected
+    {
+        get => _selected;
+        set => this.RaiseAndSetIfChanged(ref _selected, value);
+    }
+
+    #endregion
+
+    #region Read-Only Properties
+
+    public DesignMaterialsViewModel DesignMaterialsViewModel { get; private set; } =
+        new(Globals.ThisAddIn.ServiceManager.MaterialsService);
+
+    public OkCancelFeedbackViewModel OkCancelFeedbackViewModel { get; private set; } = new();
+
+    #endregion
+
+    #region Output Properties
+
+    public ReadOnlyObservableCollection<ElementViewModel> Items => _items;
+
+    #endregion
+
+    protected override void SetupCommands()
+    {
+        DesignMaterialsViewModel.Select = ReactiveCommand.Create<DesignMaterial>(material =>
+        {
+            if (material != null)
+            {
+                var id = _selected.Id;
+                service.SetDesignMaterial(id, material.Code);
+
+                DesignMaterialsViewModel.AddToLastUsed(material, _selected.Name);
+            }
+        });
+        DesignMaterialsViewModel.Close = ReactiveCommand.Create(() => { });
+
+        OkCancelFeedbackViewModel.Ok = ReactiveCommand.Create(ExportAsBOMTable);
+        OkCancelFeedbackViewModel.Cancel = ReactiveCommand.Create(() => { });
+    }
+
+    protected override void SetupSubscriptions(CompositeDisposable d)
+    {
+        service.Elements
+            .Connect()
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .TransformToTree(x => x.ParentId, Observable.Return(DefaultPredicate))
+            .Transform(node => new ElementViewModel(node))
+            .Sort(new ElementViewModelComparer())
+            .Bind(out _items)
+            .DisposeMany()
+            .Subscribe()
+            .DisposeWith(d);
+
+        service.MonitorChange()
+            .DisposeWith(d);
+
+        this.WhenAnyValue(x => x.Selected)
+            .Where(x => x != null)
+            .Select(x => _items.SingleOrDefault(i => i.Id == x.Id))
+            .WhereNotNull()
+            .Select(x => x.Name)
+            .DistinctUntilChanged()
+            .Subscribe(x => { DesignMaterialsViewModel.ElementName = x; })
+            .DisposeWith(d);
+
+        return;
+
+        bool DefaultPredicate(Node<Element, int> node)
+        {
+            return node.IsRoot;
+        }
+    }
+
+    protected override void SetupStart()
+    {
+        _documentInfo = new DocumentInfoViewModel(Globals.ThisAddIn.Application.ActivePage);
+    }
+
+    private void ExportAsBOMTable()
+    {
+        service.ExportToExcel(_documentInfo);
+    }
+}

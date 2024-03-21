@@ -7,14 +7,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
-using System.Windows.Interop;
 using System.Windows.Threading;
+using AE.PID.Controllers;
 using AE.PID.Controllers.Services;
 using AE.PID.Models;
 using AE.PID.Models.Configurations;
 using AE.PID.Properties;
 using AE.PID.ViewModels;
 using AE.PID.Views;
+using AE.PID.Views.Windows;
 using NLog;
 using MessageBox = System.Windows.Forms.MessageBox;
 using Path = System.IO.Path;
@@ -25,7 +26,8 @@ public partial class ThisAddIn
 {
     private Logger _logger;
     private Ribbon _ribbon;
-    private CompositeDisposable _compositeDisposable = new();
+
+    private readonly CompositeDisposable _compositeDisposable = new();
 
     /// <summary>
     ///     The data folder path in Application Data.
@@ -45,9 +47,14 @@ public partial class ThisAddIn
     public static readonly string TmpFolder = Path.Combine(AppDataFolder, "Tmp");
 
     /// <summary>
-    /// The main UI window for this add in, which is reusable to enhance performance.
+    /// Manges window and side window, make all windows reusable to reduce memory usage.
     /// </summary>
-    public readonly MainWindow MainWindow = new();
+    public WindowManager WindowManager;
+
+    /// <summary>
+    /// Manges all services
+    /// </summary>
+    public ServiceManager ServiceManager;
 
     /// <summary>
     /// The synchronization context for wpf dispatching.
@@ -94,7 +101,7 @@ public partial class ThisAddIn
         var vm = new TaskProgressViewModel(cts);
 
         // create a window center Visio App
-        MainWindow.Content = new TaskProgressView(vm);
+        var window = new Window { Content = new TaskProgressView(vm) };
 
         // do updates in a background thread thought VISIO is STA, but still could do in a single thread without concurrent
         Observable.Create<int>(async observer =>
@@ -117,12 +124,12 @@ public partial class ThisAddIn
                 // if the subscription to this observable is disposed, the task should also be canceled as it is not monitor by anyone
                 return () => cts.Cancel();
             })
-            .ObserveOn(MainWindow.Dispatcher)
+            .ObserveOn(window.Dispatcher)
             .Subscribe(
                 value => { vm.Current = value; },
                 ex =>
                 {
-                    MainWindow.Visibility = Visibility.Collapsed;
+                    window.Visibility = Visibility.Collapsed;
 
                     _logger.Error(ex,
                         $"Process failed.");
@@ -131,7 +138,7 @@ public partial class ThisAddIn
                 () => { });
 
         // show a progress bar while executing this long running task
-        MainWindow.Show();
+        window.Show();
     }
 
     private void ThisAddIn_Startup(object sender, EventArgs e)
@@ -145,23 +152,16 @@ public partial class ThisAddIn
         SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext());
         SynchronizationContext = SynchronizationContext.Current;
 
-        // title
-        MainWindow.Title = Resources.Product_name;
-
-        // make the window auto size to it's content
-        MainWindow.SizeToContent = SizeToContent.WidthAndHeight;
-
-        // initialize a reusable window to hold WPF controls
-        _ = new WindowInteropHelper(MainWindow)
-        {
-            Owner = new IntPtr(Globals.ThisAddIn.Application.WindowHandle32)
-        };
-        MainWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        WindowManager = new WindowManager();
 
         // invoke the setup process immediately
         var setupObservable = Observable.Start(Setup);
         setupObservable.Subscribe(_ =>
         {
+            HttpClient.BaseAddress = new Uri(Configuration.Api);
+
+            ServiceManager = new ServiceManager(HttpClient);
+
             // background service
             AppUpdater.Listen()
                 .DisposeWith(_compositeDisposable);

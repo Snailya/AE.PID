@@ -1,0 +1,63 @@
+﻿<pages:PageBase x:Class="AE.PID.Views.Pages.ShapeSelectionPage"
+                x:TypeArguments="viewModel1:ShapeSelectionViewModel"
+                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                xmlns:viewModel="clr-namespace:AE.PID.ViewModels"
+                xmlns:components="clr-namespace:AE.PID.Views.Components"
+                xmlns:pages="clr-namespace:AE.PID.Views.Pages"
+                xmlns:viewModel1="clr-namespace:AE.PID.ViewModels.Pages"
+                MinHeight="320" MinWidth="320"
+                mc:Ignorable="d"
+                d:DesignHeight="320" d:DesignWidth="320">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../MyResources.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock Style="{StaticResource TitleStyle}" Text="选择工具" />
+        <Grid Grid.Row="1" Margin="0 4">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <RadioButton x:Name="ByIdButton"
+                         GroupName="rbs" Margin="4,8,16,7" VerticalAlignment="Center"
+                         Content="ID" IsChecked="True" />
+            <RadioButton x:Name="ByMasterButton"
+                         Grid.Row="1" Grid.Column="0"
+                         GroupName="rbs" Margin="4,8,16,7" VerticalAlignment="Top"
+                         Content="类型" />
+            <TextBox x:Name="IdTextBox"
+                     Grid.Row="0" Grid.Column="1"
+                     Margin="16,8,4,8" VerticalAlignment="Top" />
+            <ListView x:Name="MastersCheckBox" Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Masters}"
+                      Margin="16,8,4,8" VerticalAlignment="Stretch">
+                <ListView.ItemTemplate>
+                    <DataTemplate DataType="{x:Type viewModel:MasterViewModel}">
+                        <StackPanel>
+                            <CheckBox Content="{Binding Name}" IsChecked="{Binding IsChecked}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+        <Separator Grid.Row="2" />
+        <components:OkCancelFeedback x:Name="Feedback"
+                                     Grid.Row="3" />
+    </Grid>
+</pages:PageBase>

@@ -3,6 +3,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using AE.PID.Views;
+using AE.PID.Views.Pages;
 using NLog;
 
 namespace AE.PID.Controllers.Services;
@@ -40,8 +41,7 @@ public abstract class ConfigurationUpdater
                 {
                     try
                     {
-                        Globals.ThisAddIn.MainWindow.Content = new UserSettingsView();
-                        Globals.ThisAddIn.MainWindow.Show();
+                        Globals.ThisAddIn.WindowManager.Show(new UserSettingsPage());
                     }
                     catch (Exception ex)
                     {

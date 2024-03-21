@@ -1,0 +1,31 @@
+﻿<views:ViewBase x:Class="AE.PID.Views.Components.OkCancelFeedback"
+                x:TypeArguments="viewModels:OkCancelFeedbackViewModel"
+                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                xmlns:local="clr-namespace:AE.PID.Views.Components"
+                xmlns:views="clr-namespace:AE.PID.Views"
+                xmlns:viewModels="clr-namespace:AE.PID.ViewModels"
+                mc:Ignorable="d"
+                d:DesignHeight="32" d:DesignWidth="144">
+    <UserControl.Resources>
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="Width" Value="64" />
+            <Setter Property="Margin" Value="4" />
+        </Style>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <TextBlock x:Name="Message" />
+        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button x:Name="OkButton"
+                    Content="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:OkCancelFeedback}}, Path=OkText}" />
+            <Button x:Name="CancelButton"
+                    Content="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:OkCancelFeedback}}, Path=CancelText}" />
+        </StackPanel>
+    </Grid>
+</views:ViewBase>

@@ -17,35 +17,3 @@ public class TreeListView : TreeView
         return isTreeLvi;
     }
 }
-
-public class TreeListViewItem : TreeViewItem
-{
-    /// <summary>
-    /// hierarchy 
-    /// </summary>
-    public int Level
-    {
-        get
-        {
-            if (_level != -1) return _level;
-
-            _level = ItemsControlFromItemContainer(this) is TreeListViewItem parent ? parent.Level + 1 : 0;
-            return _level;
-        }
-    }
-
-
-    protected override DependencyObject GetContainerForItemOverride()
-    {
-        return new TreeListViewItem();
-    }
-
-    protected override bool IsItemItsOwnContainerOverride(object item)
-    {
-        //return item is TreeListViewItem;
-        var isItv = item is TreeListViewItem;
-        return isItv;
-    }
-
-    private int _level = -1;
-}

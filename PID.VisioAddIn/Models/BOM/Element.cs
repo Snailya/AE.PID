@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace AE.PID.Models.BOM;
 
+/// <summary>
+/// An element is an item in BOM table which represents a equipment, a unit or a logical group.
+/// </summary>
 public class Element : IComparable<Element>
 
 {

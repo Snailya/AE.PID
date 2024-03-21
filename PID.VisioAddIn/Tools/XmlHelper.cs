@@ -31,14 +31,14 @@ public abstract class XmlHelper
         return partXml;
     }
 
-    public static PackagePart GetPackagePart(Package filePackage,
+    public static PackagePart? GetPackagePart(Package filePackage,
         string relationship)
     {
         // Use the namespace that describes the relationship 
         // to get the relationship.
         var packageRel =
             filePackage.GetRelationshipsByType(relationship).FirstOrDefault();
-        PackagePart part = null;
+        PackagePart? part = null;
         // If the Visio file package contains this type of relationship with 
         // one of its parts, return that part.
         if (packageRel != null)
@@ -52,7 +52,7 @@ public abstract class XmlHelper
         return part;
     }
 
-    public static IEnumerable<PackagePart> GetPackageParts(Package filePackage,
+    public static IEnumerable<PackagePart>? GetPackageParts(Package filePackage,
         PackagePart sourcePart, string relationship)
     {
         // This gets only the first PackagePart that shares the relationship
@@ -66,7 +66,7 @@ public abstract class XmlHelper
         return null;
     }
 
-    public static XElement GetXElementByAttribute(IEnumerable<XElement> elements,
+    public static XElement? GetXElementByAttribute(IEnumerable<XElement> elements,
         string attributeName, string attributeValue)
     {
         // Construct a LINQ query that selects elements from a group
@@ -81,7 +81,7 @@ public abstract class XmlHelper
         return selectedElements.DefaultIfEmpty(null).FirstOrDefault();
     }
 
-    public static IEnumerable<XElement> GetXElementsByName(
+    public static IEnumerable<XElement?> GetXElementsByName(
         XDocument packagePart, string elementType)
     {
         // Construct a LINQ query that selects elements by their element type.
@@ -93,9 +93,9 @@ public abstract class XmlHelper
         return elements.DefaultIfEmpty(null);
     }
 
-    public static Package OpenRead(string filePath)
+    public static Package? OpenRead(string filePath)
     {
-        Package visioPackage = null;
+        Package? visioPackage = null;
 
         if (Directory.Exists(filePath))
             // Open the Visio file as a package with
@@ -137,8 +137,10 @@ public abstract class XmlHelper
     {
         // Create a new XmlWriterSettings object to 
         // define the characteristics for the XmlWriter
-        var partWriterSettings = new XmlWriterSettings();
-        partWriterSettings.Encoding = Encoding.UTF8;
+        var partWriterSettings = new XmlWriterSettings
+        {
+            Encoding = Encoding.UTF8
+        };
 
         // reset the stream length to 0 to clear the stream content, otherwise if might be remained content after overwrite when the new xdocument is longer than the previous
         using var stream = packagePart.GetStream();
@@ -181,12 +183,12 @@ public abstract class XmlHelper
                 from prop in props
                 where prop.Name.LocalName == "property"
                 select prop.Attribute("pid").Value;
-            var propIDArray = propIDs.ToArray();
+            var propIdArray = propIDs.ToArray();
             // Increment this id value until a unique value is found.
             // This starts at 2, because 0 and 1 are not valid pid values.
             var id = 2;
             while (pidValue == -1)
-                if (propIDArray.Contains(id.ToString()))
+                if (propIdArray.Contains(id.ToString()))
                     id++;
                 else
                     pidValue = id;

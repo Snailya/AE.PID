@@ -8,7 +8,7 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using AE.PID.Core.Dtos;
+using AE.PID.Core.DTOs;
 using AE.PID.Models;
 using AE.PID.Models.Configurations;
 using Newtonsoft.Json;
@@ -46,7 +46,6 @@ public abstract class LibraryUpdater
             .Switch()
             .Merge(Observable.Return<long>(-1))
             .Where(_ =>
-                Globals.ThisAddIn.Configuration.LibraryConfiguration.NextTime == null ||
                 DateTime.Now > Globals.ThisAddIn.Configuration.LibraryConfiguration.NextTime)
             .Do(_ => Logger.Info($"Library Update started. {{Initiated by: Auto-Run}}"))
             // merge with user manually invoke observable
@@ -60,14 +59,13 @@ public abstract class LibraryUpdater
                 () => { Logger.Error("Library Update Service should never completed."); });
     }
 
-    public static async Task<List<LibraryDto>> GetLibraries()
+    public static async Task<List<LibraryDto>?> GetLibraries()
     {
         var client = Globals.ThisAddIn.HttpClient;
-        var configuration = Globals.ThisAddIn.Configuration;
 
-        var response = await client.GetStringAsync(configuration.Api + "/libraries");
+        var response = await client.GetStringAsync("/libraries");
 
-        return JsonConvert.DeserializeObject<IEnumerable<LibraryDto>>(response).ToList();
+        return JsonConvert.DeserializeObject<IEnumerable<LibraryDto>>(response)?.ToList();
     }
 
     private static void DoUpdate(long seed)

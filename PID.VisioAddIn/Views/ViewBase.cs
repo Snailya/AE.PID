@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using AE.PID.ViewModels;
 using ReactiveUI;
 
@@ -12,6 +11,6 @@ public class ViewBase<TViewModel> : ReactiveUserControl<TViewModel> where TViewM
         var window = Window.GetWindow(this);
         window?.Close();
 
-        this.ViewModel = null;
+        ViewModel = null;
     }
 }

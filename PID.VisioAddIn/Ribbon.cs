@@ -1,35 +1,18 @@
 ﻿using AE.PID.Controllers.Services;
-using AE.PID.Tools;
 using Microsoft.Office.Core;
 using Microsoft.Office.Interop.Visio;
-using Microsoft.Office.Tools.Ribbon;
 using NLog;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using AE.PID.Models.Exceptions;
-using Office = Microsoft.Office.Core;
-using System.Globalization;
-using System.Resources;
-using System.Windows.Controls;
-using AE.PID.Models.VisProps;
-using System.Windows;
-using System.Drawing.Imaging;
-using System.Windows.Media.Imaging;
-using System.Windows.Media;
-using Brushes = System.Windows.Media.Brushes;
-using Point = System.Windows.Point;
-using System.Windows.Forms;
 
 // TODO:   按照以下步骤启用功能区(XML)项:
 
 // 1. 将以下代码块复制到 ThisAddin、ThisWorkbook 或 ThisDocument 类中。
-
 //  protected override Microsoft.Office.Core.IRibbonExtensibility CreateRibbonExtensibilityObject()
 //  {
 //      return new Ribbon1();
@@ -120,11 +103,6 @@ public class Ribbon : IRibbonExtensibility
         ConfigurationUpdater.Invoke();
     }
 
-    public void btnToolbox_Click(IRibbonControl control)
-    {
-        AnchorBarsUsage.ShowAnchorBar(Globals.ThisAddIn.Application);
-    }
-
     public void InsertLegend(IRibbonControl control)
     {
         LegendService.Invoke(Globals.ThisAddIn.Application.ActivePage);
@@ -198,9 +176,8 @@ public class Ribbon : IRibbonExtensibility
     {
         var asm = Assembly.GetExecutingAssembly();
         var resourceNames = asm.GetManifestResourceNames();
-        for (var index = 0; index < resourceNames.Length; index++)
+        foreach (var t in resourceNames)
         {
-            var t = resourceNames[index];
             if (string.Compare(resourceName, t, StringComparison.OrdinalIgnoreCase) != 0) continue;
             using var resourceReader = new StreamReader(asm.GetManifestResourceStream(t));
             return resourceReader.ReadToEnd();

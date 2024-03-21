@@ -1,2 +1,6 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-	<s:String x:Key="/Default/CodeEditing/Localization/MoveToResource/LastResourceFile/@EntryValue">5A986C6F-8D43-46A0-8B3A-50FB44234214/d:Properties/f:Resources.resx</s:String></wpf:ResourceDictionary>
+	<s:String x:Key="/Default/CodeEditing/Localization/MoveToResource/LastResourceFile/@EntryValue">5A986C6F-8D43-46A0-8B3A-50FB44234214/d:Properties/f:Resources.resx</s:String>
+	<s:String x:Key="/Default/CodeInspection/WebPathMapping/MappedPaths/=MYRESOURCES_002EXAML/@EntryIndexedValue"></s:String>
+	<s:String x:Key="/Default/CodeInspection/WebPathMapping/MappedPaths/=VIEWS_005CPAGES_005CMYRESOURCES_002EXAML/@EntryIndexedValue"></s:String>
+	<s:String x:Key="/Default/CodeInspection/WebPathMapping/PathsInCorrectCasing/=MYRESOURCES_002EXAML/@EntryIndexedValue">MyResources.xaml</s:String>
+	<s:String x:Key="/Default/CodeInspection/WebPathMapping/PathsInCorrectCasing/=VIEWS_005CPAGES_005CMYRESOURCES_002EXAML/@EntryIndexedValue">Views\Pages\MyResources.xaml</s:String></wpf:ResourceDictionary>
