@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using AE.PID.Controllers.Services;
 using AE.PID.Models;
 using DynamicData;
+using DynamicData.Aggregation;
 using DynamicData.Binding;
 using ReactiveUI;
 
@@ -81,7 +82,7 @@ public class ShapeSelectionViewModel(ShapeSelector service) : ViewModelBase
     {
         service.Masters
             .Connect()
-            .Transform(x => new MasterViewModel() { BaseId = x.BaseID, Name = x.Name })
+            .Transform(x => new MasterViewModel { BaseId = x.BaseID, Name = x.Name })
             .Bind(out _masters)
             .DisposeMany()
             .Subscribe()
@@ -91,8 +92,8 @@ public class ShapeSelectionViewModel(ShapeSelector service) : ViewModelBase
             .DisposeWith(d);
 
         Masters.ToObservableChangeSet()
-            .WhenPropertyChanged(i => i.IsChecked)
-            .Select(_ => Masters.Any(x => x.IsChecked))
+            .FilterOnObservable(static item => item.WhenPropertyChanged(x => x.IsChecked).Select(x => x.Value))
+            .IsNotEmpty()
             .BindTo(this, x => x.HasSelection)
             .DisposeWith(d);
     }
