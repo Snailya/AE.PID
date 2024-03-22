@@ -1,14 +1,9 @@
-using System;
-using System.IO;
-using System.Linq;
 using AE.PID.Core.DTOs;
 using AE.PID.Server.Data;
 using AE.PID.Server.DTOs;
 using AE.PID.Server.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace AE.PID.Server.Controllers;
 
@@ -20,14 +15,20 @@ public class LibrariesController(
     LinkGenerator linkGenerator)
     : ControllerBase
 {
+    /// <summary>
+    /// Get info for all library. For client.
+    /// </summary>
+    /// <param name="involvePrerelease"></param>
+    /// <returns></returns>
     [HttpGet]
-    public IActionResult GetLibraries()
+    public IActionResult GetLibraries([FromQuery]bool involvePrerelease = false)
     {
-        var libraries = dbContext.Libraries.Include(x => x.Versions).ThenInclude(x => x.Items).AsEnumerable().Select(
+        var libraries = dbContext.Libraries.Include(x => x.Versions).ThenInclude(x => x.Items).AsEnumerable()
+            .Select(
             x =>
                 new LibraryDto
                 {
-                    Id = x.Id, Name = x.Name, Version = x.GetLatestVersion()!.Version, Items = x.GetLatestVersion()!
+                    Id = x.Id, Name = x.Name, Version = x.GetLatestVersion(involvePrerelease)?.Version??string.Empty, Items = x.GetLatestVersion(involvePrerelease)?
                         .Items.Select(i => new LibraryItemDto
                         {
                             Name = i.Name, BaseId = i.BaseId, UniqueId = i.UniqueId
@@ -44,6 +45,85 @@ public class LibrariesController(
         return Ok(libraries);
     }
 
+    /// <summary>
+    /// Get library info by id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpGet("{id:int}")]
+    public IActionResult GetLibrary([FromRoute] int id)
+    {
+        var library = dbContext.Libraries.Include(x=>x.Versions).SingleOrDefault(x => x.Id == id);
+        if (library == null)
+            return NoContent();
+        return Ok(library);
+    }
+    
+    /// <summary>
+    /// Update version state by version id.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="versionId"></param>
+    /// <returns></returns>
+    [HttpGet("{id:int}/versions/{versionId:int}")]
+    public IActionResult GetVersion([FromRoute] int id, [FromRoute] int versionId)
+    {
+        var version = dbContext.Libraries.Where(x => x.Id==id)
+            .SelectMany(x=>x.Versions)
+            .Include(x=>x.Items)
+            .SingleOrDefault(x => x.Id == versionId);
+ 
+        return Ok(version);
+    }
+    
+    /// <summary>
+    /// Update version state by version id.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="versionId"></param>
+    /// <returns></returns>
+    [HttpPost("{id:int}/versions/{versionId:int}")]
+    public IActionResult Release([FromRoute] int id, [FromRoute] int versionId)
+    {
+        var library = dbContext.Libraries.Include(x => x.Versions).SingleOrDefault(x => x.Id == id);
+        if (library == null)
+            return BadRequest();
+        var version = library.Versions.SingleOrDefault(x => x.Id == versionId);
+        if (version == null)
+            return BadRequest();
+        version.IsReleased = true;
+        dbContext.Libraries.Update(library);
+        dbContext.SaveChanges();
+        return Ok(version);
+    }
+    
+    /// <summary>
+    /// Update version state by version id.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="versionId"></param>
+    /// <returns></returns>
+    [HttpDelete("{id:int}/versions/{versionId:int}")]
+    public IActionResult DeleteVersion([FromRoute] int id, [FromRoute] int versionId)
+    {
+        var library = dbContext.Libraries.Include(x => x.Versions).SingleOrDefault(x => x.Id == id);
+        if (library == null)
+            return BadRequest();
+        var version = library.Versions.SingleOrDefault(x => x.Id == versionId);
+        if (version == null)
+            return NoContent();
+
+        library.Versions.Remove(version);
+        dbContext.Libraries.Update(library);
+        dbContext.SaveChanges();
+        return NoContent();
+    }
+    
+    /// <summary>
+    /// Upload library.
+    /// </summary>
+    /// <param name="dto"></param>
+    /// <returns></returns>
     [HttpPost("upload")]
     public IActionResult Upload([FromForm] UploadLibraryDto dto)
     {
@@ -51,12 +131,30 @@ public class LibrariesController(
         if (Path.GetExtension(dto.File.FileName) != ".vssx")
             return BadRequest("Invalid request. Please provide a vssx file.");
 
-        // validate if the version is larger than the latest version
-        var library = dbContext.Libraries.SingleOrDefault(x => x.Name == dto.Name) ??
-                      new LibraryEntity { Name = dto.Name };
-        var latestVersion = library.GetLatestVersion();
-        if (latestVersion != null && new Version(latestVersion.Version) > new Version(dto.Version))
-            return BadRequest($"Invalid request. upload version must larger than {latestVersion.Version}");
+        var name = Path.GetFileNameWithoutExtension(dto.File.FileName);
+        
+        var library = dbContext.Libraries.Include(x=>x.Versions).SingleOrDefault(x => x.Name == name) ??
+                      new LibraryEntity { Name = name };
+        var currentVersion = new Version(0,1,0,0);
+
+        var latestLibraryVersion = library.GetLatestVersion(true);
+        logger.LogInformation("Found latest version {V}", latestLibraryVersion);
+        if (latestLibraryVersion != null)
+        {
+            var latestVersion = new Version(latestLibraryVersion.Version);
+            if (dto.IsMinorUpdate)
+            {
+                currentVersion = new Version(latestVersion.Major, latestVersion.Minor + 1, 0,
+                    0);
+            }
+            else
+            {
+                currentVersion = new Version(latestVersion.Major, latestVersion.Minor, latestVersion.Build,
+                    latestVersion.Revision + 1);
+            }
+        }
+        
+        logger.LogInformation("Set current version {V}", currentVersion);
 
         // Save the uploaded file to a folder
         var filePath = Path.Combine("/opt/pid/data/libraries", Path.GetFileName(Path.GetTempFileName()));
@@ -69,7 +167,7 @@ public class LibrariesController(
         // You can process the version and release note as needed
         library.Versions.Add(new LibraryVersionEntity
         {
-            FileName = filePath, ReleaseNotes = dto.ReleaseNote, Version = dto.Version,
+            FileName = filePath, ReleaseNotes = dto.ReleaseNote, Version = currentVersion.ToString(),
             Items = OpenXmlService.GetItems(filePath).ToList()
         });
 
@@ -93,13 +191,13 @@ public class LibrariesController(
     }
 
     [HttpGet("{id:int}/download")]
-    public IActionResult DownloadLibrary([FromRoute] int id)
+    public IActionResult DownloadLibrary([FromRoute] int id, bool involvePrerelease = false)
     {
         var library = dbContext.Libraries.Include(x => x.Versions).SingleOrDefault(x => x.Id == id);
         if (library != null)
             logger.LogInformation($"Find {library.Name} with {library.Versions.Count} versions.");
 
-        var latestVersion = library?.GetLatestVersion();
+        var latestVersion = library?.GetLatestVersion(involvePrerelease);
         if (latestVersion != null && System.IO.File.Exists(latestVersion.FileName))
             // Return the file as a downloadable response
             return PhysicalFile(Path.Combine(Directory.GetCurrentDirectory(), latestVersion.FileName),

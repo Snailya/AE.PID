@@ -1,4 +1,6 @@
-﻿namespace AE.PID.Core.DTOs;
+﻿using System.Collections.Generic;
+
+namespace AE.PID.Core.DTOs;
 
 public class Paged<T>
 {

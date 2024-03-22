@@ -1,4 +1,6 @@
-﻿namespace AE.PID.Core.DTOs;
+﻿using System.Collections.Generic;
+
+namespace AE.PID.Core.DTOs;
 
 public class MaterialDto
 {
@@ -12,10 +14,7 @@ public class MaterialDto
     public string Unit { get; set; } = string.Empty;
     public string Manufacturer { get; set; } = string.Empty;
     public string ManufacturerMaterialNumber { get; set; } = string.Empty;
-
     public string Type { get; set; } = string.Empty;
-
-    // public int State { get; set; }
     public string Description { get; set; } = string.Empty;
     public IEnumerable<MaterialPropertyDto>? Properties { get; set; }
 }

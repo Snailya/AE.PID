@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using AE.PID.Core.DTOs;
+﻿using AE.PID.Core.DTOs;
 using AE.PID.Server.DTOs.PDMS;
 
 namespace AE.PID.Server.DTOs;
@@ -32,8 +30,7 @@ public static class DtoExtension
             Model = dto.MainTable.Model,
             ManufacturerMaterialNumber = dto.MainTable.ManufacturerMaterialNumber,
             Name = dto.MainTable.MaterialName,
-            Properties = dto.Detail1.Select(x => new MaterialPropertyDto()
-                { Id = x.Id, Name = x.Name, Value = x.Value }),
+            Properties = dto.Detail1.Select(x => new MaterialPropertyDto { Id = x.Id, Name = x.Name, Value = x.Value }),
             Specifications = dto.MainTable.Specifications,
             Type = dto.MainTable.MaterialType,
             Unit = dto.MainTable.Unit
@@ -42,7 +39,7 @@ public static class DtoExtension
 
     public static ProjectDto FromPDMS(this SelectNewProjectInfoResponseItemDto dto)
     {
-        return new ProjectDto()
+        return new ProjectDto
         {
             Id = dto.MainTable.Id,
             Code = dto.MainTable.ProjectCode,

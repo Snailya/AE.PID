@@ -7,21 +7,10 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace AE.PID.Tools;
+namespace AE.PID.Core.Tools;
 
 public abstract class XmlHelper
 {
-    public static readonly Uri MastersPartUri = new("/visio/masters/masters.xml", UriKind.Relative);
-    public static readonly Uri PagesPartUri = new("/visio/pages/pages.xml", UriKind.Relative);
-    public static readonly Uri DocumentPartUri = new("/visio/document.xml", UriKind.Relative);
-
-    public static readonly XNamespace MainNs = @"http://schemas.microsoft.com/office/visio/2012/main";
-    public static readonly XNamespace RelNs = @"http://schemas.openxmlformats.org/officeDocument/2006/relationships";
-
-    private const string DocumentRel = @"http://schemas.microsoft.com/visio/2010/relationships/document";
-    private const string MastersRel = @"http://schemas.microsoft.com/visio/2010/relationships/masters";
-    public const string MasterRel = @"http://schemas.microsoft.com/visio/2010/relationships/master";
-
     public static XDocument GetDocumentFromPart(PackagePart packagePart)
     {
         // Open the packagePart as a stream and then 
@@ -108,29 +97,6 @@ public abstract class XmlHelper
         return visioPackage;
     }
 
-    public static PackagePart GetMastersPart(Package package)
-    {
-        // get document relationship part
-        var documentPartRelationship = package.GetRelationshipsByType(DocumentRel).FirstOrDefault();
-        if (documentPartRelationship == null) throw new Exception($"Doucment part not found by type: {DocumentRel}");
-
-        var documentPart = package.GetPart(PackUriHelper.ResolvePartUri(documentPartRelationship.SourceUri,
-            documentPartRelationship.TargetUri));
-        if (documentPart == null)
-            throw new Exception($"Unable to get masters part through partUri: {documentPartRelationship}");
-
-        // get masters part
-        var mastersPartRelationship = documentPart
-            .GetRelationshipsByType(MastersRel)
-            .FirstOrDefault();
-        if (mastersPartRelationship == null) throw new Exception($"Masters part not found by type: {MastersRel}");
-
-        var mastersPart = package.GetPart(PackUriHelper.ResolvePartUri(mastersPartRelationship.SourceUri,
-            mastersPartRelationship.TargetUri));
-        if (mastersPart == null)
-            throw new Exception($"Unable to get masters part through partUri: {mastersPartRelationship}");
-        return mastersPart;
-    }
 
     public static void SaveXDocumentToPart(PackagePart packagePart,
         XDocument partXml)
@@ -171,28 +137,23 @@ public abstract class XmlHelper
         // If there is already a RecalcDocument instruction in the 
         // Custom File Properties part, then we don't need to add another one. 
         // Otherwise, we need to create a unique pid value.
-        if (recalculateProp != null)
-        {
-            return pidValue;
-        }
-        else
-        {
-            // Get all of the pid values of the property elements and then
-            // convert the IEnumerable object into an array.
-            var propIDs =
-                from prop in props
-                where prop.Name.LocalName == "property"
-                select prop.Attribute("pid").Value;
-            var propIdArray = propIDs.ToArray();
-            // Increment this id value until a unique value is found.
-            // This starts at 2, because 0 and 1 are not valid pid values.
-            var id = 2;
-            while (pidValue == -1)
-                if (propIdArray.Contains(id.ToString()))
-                    id++;
-                else
-                    pidValue = id;
-        }
+        if (recalculateProp != null) return pidValue;
+
+        // Get all of the pid values of the property elements and then
+        // convert the IEnumerable object into an array.
+        var propIDs =
+            from prop in props
+            where prop.Name.LocalName == "property"
+            select prop.Attribute("pid").Value;
+        var propIdArray = propIDs.ToArray();
+        // Increment this id value until a unique value is found.
+        // This starts at 2, because 0 and 1 are not valid pid values.
+        var id = 2;
+        while (pidValue == -1)
+            if (propIdArray.Contains(id.ToString()))
+                id++;
+            else
+                pidValue = id;
 
         return pidValue;
     }

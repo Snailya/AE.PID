@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Text.Json.Serialization;
 
 namespace AE.PID.Server.Data;
 
@@ -12,10 +10,10 @@ public class LibraryEntity
     public int Id { get; set; }
 
     /// <summary>
-    /// The name of the library.
+    ///     The name of the library.
     /// </summary>
     public string Name { get; set; }
-
+    
     /// <summary>
     ///     The published version of the library.
     /// </summary>
@@ -25,8 +23,8 @@ public class LibraryEntity
     ///     Get the latest version of the library.
     /// </summary>
     /// <returns></returns>
-    public LibraryVersionEntity? GetLatestVersion()
+    public LibraryVersionEntity? GetLatestVersion(bool involvePrerelease = false)
     {
-        return Versions.MaxBy(x => new Version(x.Version));
+        return involvePrerelease ? Versions.MaxBy(x => new Version(x.Version)) : Versions.Where(x=>x.IsReleased).MaxBy(x => new Version(x.Version));
     }
 }

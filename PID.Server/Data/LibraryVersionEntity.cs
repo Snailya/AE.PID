@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace AE.PID.Server.Data;
+﻿namespace AE.PID.Server.Data;
 
 public class LibraryVersionEntity
 {
@@ -23,6 +21,11 @@ public class LibraryVersionEntity
     public string ReleaseNotes { get; set; } = string.Empty;
 
     /// <summary>
+    /// Indicates whether this library has been released
+    /// </summary>
+    public bool IsReleased { get; set; } = false;
+
+    /// <summary>
     ///     The file store path that used for downloading.
     /// </summary>
     public string FileName { get; set; } = string.Empty;
@@ -35,5 +38,5 @@ public class LibraryVersionEntity
     /// <summary>
     ///     The item info related to this library version.
     /// </summary>
-    public IList<LibraryItemEntity> Items { get; set; } = new List<LibraryItemEntity>();
+    public ICollection<LibraryItemEntity> Items { get; set; } = new List<LibraryItemEntity>();
 }

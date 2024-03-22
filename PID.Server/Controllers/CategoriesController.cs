@@ -1,15 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 using AE.PID.Server.DTOs;
 using AE.PID.Server.DTOs.PDMS;
 using AE.PID.Server.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Logging;
 
 namespace AE.PID.Server.Controllers;
 
@@ -26,7 +19,7 @@ public class CategoriesController(
     [HttpGet]
     public async Task<IActionResult> GetCategories([FromQuery] string? name = null)
     {
-        var data = ApiHelper.BuildFormUrlEncodedContent(new SelectDesignMaterialCategoryRequestDto()
+        var data = ApiHelper.BuildFormUrlEncodedContent(new SelectDesignMaterialCategoryRequestDto
         {
             OperationInfo = new OperationInfoDto { Operator = "6470" },
             MainTable = new DesignMaterialCategoryDto { CategoryName = name ?? "" },

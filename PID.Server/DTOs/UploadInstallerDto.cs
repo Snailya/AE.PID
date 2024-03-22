@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-
-namespace AE.PID.Server.DTOs;
+﻿namespace AE.PID.Server.DTOs;
 
 /// <summary>
 ///     The request dto used for upload installer.
