@@ -71,7 +71,7 @@ public abstract class VisioXmlWrapper
     }
 
     /// <summary>
-    ///     Get /visio/masters/master{i}.xml by master id .
+    ///     Get /visio/masters/master{i}.xml by master id.
     /// </summary>
     /// <param name="package"></param>
     /// <param name="id">the id property of the </param>
@@ -88,6 +88,16 @@ public abstract class VisioXmlWrapper
         return GetRelPart(mastersPart, relId);
     }
 
+    /// <summary>
+    /// Get /visio/pages/pages.xml.
+    /// </summary>
+    /// <param name="package"></param>
+    /// <returns></returns>
+    public static PackagePart GetPagesPart(Package package)
+    {
+        return package.GetPart(PagesPartUri);
+    }
+    
     /// <summary>
     ///     Get related part by relationship id.
     /// </summary>
@@ -112,6 +122,7 @@ public abstract class VisioXmlWrapper
             ? element.Attribute(RelNs + "id")?.Value
             : element.Descendants(MainNs + "Rel").FirstOrDefault()?.Attribute(RelNs + "id")?.Value;
     }
+    
 
     /// <summary>
     ///     Get style tables from package
@@ -130,4 +141,6 @@ public abstract class VisioXmlWrapper
                 Name = styleSheetElement.Attribute("Name")!.Value
             }).ToList();
     }
+
+
 }
