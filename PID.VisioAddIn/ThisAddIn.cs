@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -60,6 +62,8 @@ public partial class ThisAddIn
     /// Manges all services
     /// </summary>
     public ServiceManager ServiceManager;
+
+    public static string Version { get; private set; }
 
     /// <summary>
     /// The synchronization context for wpf dispatching.
@@ -148,6 +152,10 @@ public partial class ThisAddIn
 
     private void ThisAddIn_Startup(object sender, EventArgs e)
     {
+        // get the current add in version
+        var assemblyPath = Assembly.GetExecutingAssembly().Location;
+        Version = FileVersionInfo.GetVersionInfo(assemblyPath).FileVersion;
+            
         _ribbon = new Ribbon();
         Globals.ThisAddIn.Application.RegisterRibbonX(_ribbon, null,
             Microsoft.Office.Interop.Visio.VisRibbonXModes.visRXModeDrawing,
@@ -164,7 +172,6 @@ public partial class ThisAddIn
         setupObservable.Subscribe(_ =>
         {
             HttpClient.BaseAddress = new Uri(Configuration.Api);
-
             ServiceManager = new ServiceManager(httpClient: HttpClient);
 
             // background service
