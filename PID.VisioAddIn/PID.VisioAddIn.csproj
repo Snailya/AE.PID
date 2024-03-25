@@ -232,7 +232,6 @@
         <Compile Include="Ribbon.cs">
             <XmlRibbon>true</XmlRibbon>
         </Compile>
-        <Compile Include="Tools\XmlHelper.cs"/>
         <Compile Include="ViewModels\DesignMaterialCategoryViewModel.cs"/>
         <Compile Include="ViewModels\ElementViewModel.cs"/>
         <Compile Include="ViewModels\DocumentInfoViewModel.cs"/>

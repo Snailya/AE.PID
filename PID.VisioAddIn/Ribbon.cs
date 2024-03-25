@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Xml.Linq;
 
 // TODO:   按照以下步骤启用功能区(XML)项:
 
@@ -110,6 +111,11 @@ public class Ribbon : IRibbonExtensibility
 
     public void Help(IRibbonControl control)
     {
+    }
+
+    public void Debug(IRibbonControl control)
+    {
+
     }
 
     #endregion

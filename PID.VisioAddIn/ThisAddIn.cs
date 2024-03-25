@@ -44,6 +44,11 @@ public partial class ThisAddIn
     /// <summary>
     ///     The tmp folder to store updated file.
     /// </summary>
+    public static readonly string LibraryCheatSheet = Path.Combine(LibraryFolder, ".cheatsheet");
+    
+    /// <summary>
+    ///     The tmp folder to store updated file.
+    /// </summary>
     public static readonly string TmpFolder = Path.Combine(AppDataFolder, "Tmp");
 
     /// <summary>
@@ -160,7 +165,7 @@ public partial class ThisAddIn
         {
             HttpClient.BaseAddress = new Uri(Configuration.Api);
 
-            ServiceManager = new ServiceManager(HttpClient);
+            ServiceManager = new ServiceManager(httpClient: HttpClient);
 
             // background service
             AppUpdater.Listen()

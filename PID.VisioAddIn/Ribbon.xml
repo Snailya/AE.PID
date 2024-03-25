@@ -56,6 +56,11 @@
                             size="large"
                             getImage="GetButtonImage"
                     />
+					<button id="debug"
+		                    label="调试"
+		                    size="large"
+		                    onAction="Debug"
+                    />
                     <!--<button id="help"
                             label="帮助"
                             size="large"

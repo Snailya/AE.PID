@@ -42,6 +42,7 @@ public class Library
     ///     Then content of the library.
     /// </summary>
     public IEnumerable<LibraryItem> Items { get; set; } = new List<LibraryItem>();
+    // todo: to refactor library items from cheat sheet.
 
     public override string ToString()
     {

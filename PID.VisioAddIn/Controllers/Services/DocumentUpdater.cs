@@ -10,76 +10,34 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
-using AE.PID.Models;
-using AE.PID.Models.Exceptions;
-using AE.PID.Tools;
+using System.Xml.XPath;
+using AE.PID.Core.DTOs;
+using AE.PID.Core.Tools;
+using DynamicData;
 using Microsoft.Office.Interop.Visio;
+using Newtonsoft.Json;
 using NLog;
 using Path = System.IO.Path;
 
 namespace AE.PID.Controllers.Services;
 
 /// <summary>
-/// Compare document stencil with library ones and do updates for the document to keep stencil in time.
+///     Compare document stencil with library ones and do updates for the document to keep stencil in time.
 /// </summary>
-public class DocumentUpdater : IDisposable
+public class DocumentUpdater
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    private static Subject<IVDocument> ManuallyInvokeTrigger { get; } = new();
+    private readonly string _filePath;
 
-    private Package _package;
-    private readonly List<MasterUsageRecord> _usages;
-
-    private class MasterUsageRecord(string id, string uniqueId, string baseId, string relId)
-    {
-        public string Id { get; set; } = id;
-        public string UniqueId { get; set; } = uniqueId;
-        public string BaseId { get; set; } = baseId;
-        public string RelId { get; set; } = relId;
-        public List<PageRelIdAndShapeIdPair> UsedBy { get; set; } = [];
-    }
-
-    private class PageRelIdAndShapeIdPair(string pageRelId, string shapeId)
-    {
-        public string PageRelId { get; set; } = pageRelId;
-        public string ShapeId { get; set; } = shapeId;
-    }
-
+    /// <summary>
+    ///     Compare document stencil with library ones and do updates for the document to keep stencil in time.
+    /// </summary>
     public DocumentUpdater(string filePath)
     {
-        _package = Package.Open(filePath, FileMode.Open, FileAccess.ReadWrite);
-
-        // generate a master usage info about each master is used by which shapes
-        var mastersPart = _package.GetPart(XmlHelper.MastersPartUri);
-        var mastersXml = XmlHelper.GetDocumentFromPart(mastersPart);
-        var masterElements = XmlHelper.GetXElementsByName(mastersXml, "Master").ToList();
-
-        _usages = (from masterElement in masterElements
-            let id = masterElement.Attribute("ID")!.Value
-            let uniqueId = masterElement.Attribute("UniqueID")!.Value
-            let baseId = masterElement.Attribute("BaseID")!.Value
-            let relElement = masterElement.Descendants(XmlHelper.MainNs + "Rel").First()
-            let relId = relElement.Attribute(XmlHelper.RelNs + "id")!.Value
-            select new MasterUsageRecord(id, uniqueId, baseId, relId)).ToList();
-        var pagesPart = _package.GetPart(XmlHelper.PagesPartUri);
-        foreach (var pageRel in pagesPart.GetRelationships())
-        {
-            var pagePart = _package.GetPart(PackUriHelper.ResolvePartUri(pageRel.SourceUri, pageRel.TargetUri));
-            var pageXml = XmlHelper.GetDocumentFromPart(pagePart);
-
-            var shapeElements = XmlHelper.GetXElementsByName(pageXml, "Shape").ToList();
-            foreach (var shapeElement in shapeElements)
-            {
-                var master = shapeElement.Attribute("Master")?.Value;
-                if (master == null) continue;
-
-                var record = _usages.Single(x => x.Id == master);
-
-                var id = shapeElement.Attribute("ID")!.Value;
-                record.UsedBy.Add(new PageRelIdAndShapeIdPair(pageRel.Id, id));
-            }
-        }
+        _filePath = filePath;
     }
+
+    private static Subject<IVDocument> ManuallyInvokeTrigger { get; } = new();
 
     /// <summary>
     ///     Emit a value manually
@@ -91,25 +49,25 @@ public class DocumentUpdater : IDisposable
     }
 
     /// <summary>
-    /// Listen to both document open event and user click event to monitor if a document master update is needed.
-    /// The update process is done on a background thread using OpenXML, so it is extremely fast.
-    /// However, a progress bar still provided in case a long time run needed in the future.
+    ///     Listen to both document open event and user click event to monitor if a document master update is needed.
+    ///     The update process is done on a background thread using OpenXML, so it is extremely fast.
+    ///     However, a progress bar still provided in case a long time run needed in the future.
     /// </summary>
     public static IDisposable Listen()
     {
-        Logger.Info($"Document Update Service started.");
+        Logger.Info("Document Update Service started.");
 
         return Observable
             .FromEvent<EApplication_DocumentOpenedEventHandler, Document>(
                 handler => Globals.ThisAddIn.Application.DocumentOpened += handler,
                 handler => Globals.ThisAddIn.Application.DocumentOpened -= handler)
             .Where(document => document.Type == VisDocumentTypes.visTypeDrawing)
-            .Do(_ => Logger.Info($"Document Update started. {{Initiated by: Document Open Event}}"))
+            .Do(_ => Logger.Info("Document Update started. {Initiated by: Document Open Event}"))
             // manually invoke from ribbon
             .Merge(
                 ManuallyInvokeTrigger
                     .Throttle(TimeSpan.FromMilliseconds(300))
-                    .Do(_ => Logger.Info($"Document Update started. {{Initiated by: User}}"))
+                    .Do(_ => Logger.Info("Document Update started. {Initiated by: User}"))
             ).Subscribe(
                 document =>
                 {
@@ -124,24 +82,23 @@ public class DocumentUpdater : IDisposable
                         .Where(x => x.DialogResult == DialogResult.Yes)
                         .ObserveOn(Globals.ThisAddIn.SynchronizationContext)
                         // close all document stencils to avoid occupied
-                        .Select(x => new { FilePath = Preprocessing(x.Info.Document) })
+                        .Select(x => new { FilePath = CreateCopy(x.Info.Document) })
                         // display a progress bar to do time-consuming operation
                         .Select(data =>
                         {
-                            Globals.ThisAddIn.ShowProgressWhileActing(
-                                (progress, token) =>
-                                {
-                                    using var updater = new DocumentUpdater(data.FilePath);
-                                    updater.DoUpdatesByOpenXml(progress, token);
-                                });
+                            var progress = new Progress<int>();
+                            var token = new CancellationTokenSource().Token;
+                            var updater = new DocumentUpdater(data.FilePath);
+                            updater.DoUpdatesByOpenXml(progress, token);
+
                             return data.FilePath;
                         })
                         .Subscribe(
-                            PostProcess,
+                            OpenCopy,
                             ex => { ThisAddIn.Alert(ex.Message); }
                         );
                 },
-                ex => { Logger.Error(ex, $"Document Update Service ternimated accidently."); },
+                ex => { Logger.Error(ex, "Document Update Service ternimated accidently."); },
                 () => { Logger.Error("Document Update Service should never complete."); });
     }
 
@@ -164,6 +121,20 @@ public class DocumentUpdater : IDisposable
     }
 
     /// <summary>
+    ///     Close all opened document in docked window to prevent document busy, copy the source file to a temporary path.
+    /// </summary>
+    /// <param name="document"></param>
+    /// <returns></returns>
+    private static string CreateCopy(IVDocument document)
+    {
+        // create a copy of source file
+        var copied = Path.Combine(ThisAddIn.TmpFolder, Path.ChangeExtension(Path.GetRandomFileName(), "vsdx"));
+        File.Copy(document.FullName, copied);
+
+        return copied;
+    }
+
+    /// <summary>
     ///     Update a document's document stencil by overwrite the masters.xml and related master{i}.xml file in background
     /// </summary>
     /// <param name="progress"></param>
@@ -171,328 +142,243 @@ public class DocumentUpdater : IDisposable
     /// <exception cref="OperationCanceledException"></exception>
     private void DoUpdatesByOpenXml(IProgress<int> progress, CancellationToken token)
     {
-        // cleanup the document
-        ReplaceShapeMasterIfItIsAMasterCopy();
-        RemoveUnusedMasters();
-
-        var validMasters = _usages.GroupBy(x => x.BaseId).Select(x => x.First()).ToList();
-
-        var packageMappings = new Dictionary<string, PackageMapping>();
-        // todo: consider to serialize the stencil info and offer it from server so that no close of stencils is needed
-        // group the library path to reduce io
-        foreach (var library in Globals.ThisAddIn.Configuration.LibraryConfiguration.Libraries.Select(x => x.Path))
-            // open the target package
-            try
-            {
-                using (var targetPackage = Package.Open(library, FileMode.Open, FileAccess.Read))
-                {
-                    var styleSheetsInTarget = targetPackage.GetPart(XmlHelper.DocumentPartUri);
-                    var stylesInTarget = XmlHelper
-                        .GetXElementsByName(XmlHelper.GetDocumentFromPart(styleSheetsInTarget), "StyleSheet").Select(
-                            x =>
-                                new StyleNameId(x.Attribute("NameU")!.Value, x.Attribute("ID")!.Value)).ToList();
-
-                    var mastersPartInTarget = targetPackage.GetPart(XmlHelper.MastersPartUri);
-                    var mastersXmlInTarget = XmlHelper.GetDocumentFromPart(mastersPartInTarget);
-
-                    // loop the masters element to get the master element, the Rel element is used to get the relationship id from masters.xml to master{i}.xml
-                    foreach (var masterElement in XmlHelper.GetXElementsByName(mastersXmlInTarget, "Master"))
-                    {
-                        if (token.IsCancellationRequested)
-                        {
-                            Logger.Info("User cancelled the update process.");
-                            throw new OperationCanceledException(token);
-                        }
-
-                        // get the baseID
-                        var baseId = masterElement.Attribute("BaseID")!.Value;
-                        if (validMasters.SingleOrDefault(x => x.BaseId == baseId) == null) continue;
-
-                        // get the rel:id in order to get related MasterPart
-                        var relElement = masterElement.Descendants(XmlHelper.MainNs + "Rel").First();
-                        var relId = relElement.Attribute(XmlHelper.RelNs + "id")!.Value;
-                        var rel = mastersPartInTarget.GetRelationship(relId);
-                        var masterPart =
-                            targetPackage.GetPart(PackUriHelper.ResolvePartUri(rel.SourceUri, rel.TargetUri));
-                        var mapping = new PackageMapping(masterElement, XmlHelper.GetDocumentFromPart(masterPart),
-                            stylesInTarget);
-                        packageMappings.Add(baseId, mapping);
-                    }
-                }
-            }
-            catch (IOException ioException)
-            {
-                Logger.Error(ioException,
-                    $"Unable to open the library as is currently used by another process. Please close the stencil document in source file and retry.");
-                throw;
-            }
-
-        // First update the styles for master.xml as the style id name match may vary from documents.
-        // For example, a style named MyStyle in the stencil document might have an id of 10, but a id of 11 in drawing document.
-        // If the administrator changed the style of any master in stencil, replace the MasterContents in drawing document with that in stencil might mislead to a wrong style.
-        var styleSheetsInSource = _package.GetPart(XmlHelper.DocumentPartUri);
-        var stylesInSource = XmlHelper
-            .GetXElementsByName(XmlHelper.GetDocumentFromPart(styleSheetsInSource), "StyleSheet").Select(x =>
-                new StyleNameId(x.Attribute("NameU")!.Value, x.Attribute("ID")!.Value)).ToList();
-
-        // check if multiple masters is of the same prototype, if so merge with the latest id
-        var mastersPartInSource = _package.GetPart(XmlHelper.MastersPartUri);
-        var mastersXmlInSource = XmlHelper.GetDocumentFromPart(mastersPartInSource);
-        var masterElements = XmlHelper.GetXElementsByName(mastersXmlInSource, "Master").ToList();
-
-
-        foreach (var packageMapping in packageMappings)
-        {
-            if (token.IsCancellationRequested)
-            {
-                Logger.Info("User cancelled the update process.");
-                throw new OperationCanceledException(token);
-            }
-
-            var shapeElements = packageMapping.Value.MasterXml.Descendants(XmlHelper.MainNs + "Shape");
-            foreach (var shapeElement in shapeElements)
-            {
-                var lineAttribute = shapeElement.Attribute("LineStyle");
-                if (lineAttribute == null) continue;
-
-                var lineStyleNameInTarget = packageMapping.Value.StyleNameIds
-                    .Single(x => x.Id == lineAttribute.Value).Name;
-                var lineStyleIdInSource = stylesInSource.SingleOrDefault(x => x.Name == lineStyleNameInTarget)?.Id;
-                if (lineStyleIdInSource != null) lineAttribute.Value = lineStyleIdInSource;
-
-                var fillAttribute = shapeElement.Attribute("FillStyle");
-                if (fillAttribute == null) continue;
-
-                var fillStyleNameInTarget = packageMapping.Value.StyleNameIds
-                    .Single(x => x.Id == fillAttribute.Value).Name;
-                var fillStyleIdInSource = stylesInSource.SingleOrDefault(x => x.Name == fillStyleNameInTarget)?.Id;
-                if (fillStyleIdInSource != null) fillAttribute.Value = fillStyleIdInSource;
-
-                var textAttribute = shapeElement.Attribute("TextStyle");
-                if (textAttribute == null) continue;
-
-                var textStyleNameInTarget = packageMapping.Value.StyleNameIds
-                    .Single(x => x.Id == textAttribute.Value).Name;
-                var textStyleIdInSource = stylesInSource.SingleOrDefault(x => x.Name == textStyleNameInTarget)?.Id;
-                if (textStyleIdInSource != null) textAttribute.Value = textStyleIdInSource;
-            }
-        }
-
-        // After revise the style ids in MasterContents, loop through the drawing document to replace the masters.xml and master{i}.xml
-
-        for (var index = 0; index < masterElements.Count; index++)
-        {
-            progress.Report(index * 100 / masterElements.Count);
-
-            var masterElement = masterElements[index];
-            if (token.IsCancellationRequested)
-            {
-                Logger.Info("User cancelled the update process.");
-                throw new OperationCanceledException(token);
-            }
-
-            // get the map
-            var baseId = masterElement.Attribute("BaseID")!.Value;
-            if (!packageMappings.TryGetValue(baseId, out var mapping)) continue;
-
-            // get id attribute
-            var id = masterElement.Attribute("ID")!.Value;
-            mapping.MasterElement.Attribute("ID")!.SetValue(id);
-
-            // get the rel
-            var relElement = masterElement.Descendants(XmlHelper.MainNs + "Rel").First();
-            mapping.MasterElement.Descendants(XmlHelper.MainNs + "Rel").First().ReplaceWith(relElement);
-
-            // get the related master xml
-            var relId = relElement.Attribute(XmlHelper.RelNs + "id")!.Value;
-            var rel = mastersPartInSource.GetRelationship(relId);
-            var masterPart = _package.GetPart(PackUriHelper.ResolvePartUri(rel.SourceUri, rel.TargetUri));
-
-            XmlHelper.SaveXDocumentToPart(masterPart, mapping.MasterXml);
-
-            // overwrite the origin masterElement
-            masterElement.ReplaceWith(mapping.MasterElement);
-        }
-
-        progress.Report(100);
-
-        XmlHelper.RecalculateDocument(_package);
-        XmlHelper.SaveXDocumentToPart(mastersPartInSource, mastersXmlInSource);
-    }
-
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="filePath"></param>
-    private static void PostProcess(string filePath)
-    {
-        Logger.Info(
-            $"Document masters updated successfully.");
-
         try
         {
-            // open all stencils 
-            foreach (var path in Globals.ThisAddIn.Configuration.LibraryConfiguration.Libraries
-                         .Select(x => x.Path))
-                Globals.ThisAddIn.Application.Documents.OpenEx(path,
-                    (short)VisOpenSaveArgs.visOpenDocked);
-        }
-        catch (Exception ex)
-        {
-            Logger.Error(ex, "Failed to restore stencils after updated");
-        }
+            using var package = Package.Open(_filePath, FileMode.Open, FileAccess.ReadWrite);
 
+            // when user using context menu to setup the subclass property, the subclass property value is a string, which will lost if the subclass format changed
+            // therefore, replace this string value with a formula basing the index
+            SupplementSubClassFormula(package);
+
+            // though the masters is set to match name on drop, it still could not restrict user to use the unique master.
+            // by checking the BaseID in the masters, replace the shapes to point to one single master
+            ReplaceDuplicateMasters(package);
+
+            ReplaceMasterElementAndMasterContentWithReportProgress(package, progress, token);
+
+            Logger.Info("Document masters updated successfully.");
+        }
+        catch (Exception e)
+        {
+            Logger.Info("Failed to updates masters");
+        }
+    }
+
+    /// <summary>
+    /// </summary>
+    /// <param name="filePath"></param>
+    private static void OpenCopy(string filePath)
+    {
         ThisAddIn.Alert("更新成功，请在新文件打开后手动另存。");
         Globals.ThisAddIn.Application.Documents.OpenEx(filePath,
             (short)VisOpenSaveArgs.visOpenRW);
     }
 
     /// <summary>
-    /// Close all opened document in docked window to prevent document busy, copy the source file to a temporary path.
+    ///     Replace the master and report progress.
     /// </summary>
-    /// <param name="document"></param>
-    /// <returns></returns>
-    private static string Preprocessing(IVDocument document)
-    {
-        // todo: initialize style
-
-        foreach (var doc in
-                 Globals.ThisAddIn.Application.Documents.OfType<IVDocument>()
-                     .Where(doc => doc.Type == VisDocumentTypes.visTypeStencil).ToList())
-            doc.Close();
-
-        // create a copy of source file
-        var copied = Path.Combine(ThisAddIn.TmpFolder, Path.ChangeExtension(Path.GetRandomFileName(), "vsdx"));
-        File.Copy(document.FullName, copied);
-
-
-        return copied;
-    }
-
-    /// <summary>
-    ///     Update document stencil by delete the origin stencil from document master, then replace all instances with new one
-    ///     by calling Shape.Replace().
-    ///     This method may execute in a long time ant might cause the main thread run not as expected. Will block the ui thread, as it also marshalling for the ui thread.
-    /// </summary>
-    /// <param name="document"></param>
-    /// <param name="mappings"></param>
+    /// <param name="package"></param>
     /// <param name="progress"></param>
     /// <param name="token"></param>
-    /// <exception cref="OperationCanceledException"></exception>
-    public static void DoUpdatesInSite(IVDocument document, IEnumerable<MasterDocumentLibraryMapping> mappings,
-        IProgress<int> progress,
+    private static void ReplaceMasterElementAndMasterContentWithReportProgress(Package package, IProgress<int> progress,
         CancellationToken token)
     {
-        Globals.ThisAddIn.Application.ShowChanges = false;
-        var undoScope = Globals.ThisAddIn.Application.BeginUndoScope(nameof(DoUpdatesInSite));
         try
         {
-            var masterDocumentLibraryMappings = mappings as MasterDocumentLibraryMapping[] ?? mappings.ToArray();
-            for (var i = 0; i < masterDocumentLibraryMappings.Length; i++)
+            var masters = LoadMastersFromCheatSheet().ToList();
+
+            // get style sheets from current document
+            var styleTable = VisioXmlWrapper.GetStyles(package).ToList();
+
+            var mastersPart = VisioXmlWrapper.GetMastersPart(package);
+            var mastersDocument = XmlHelper.GetDocumentFromPart(mastersPart);
+
+            var processCount = masters.Count;
+            var processIndicator = 0;
+
+            foreach (var master in masters)
             {
-                if (token.IsCancellationRequested)
-                {
-                    Logger.Info("User cancelled the update process.");
-                    throw new OperationCanceledException(token);
-                }
+                if (token.IsCancellationRequested) return;
 
-                var mapping = masterDocumentLibraryMappings[i];
-                ReplaceMaster(document, mapping.BaseId, mapping.LibraryPath);
+                // skip the master if there's error in cheatsheet
+                if (string.IsNullOrEmpty(master.MasterElement) || string.IsNullOrEmpty(master.MasterDocument)) continue;
 
-                progress.Report((i + 1) * 100 / masterDocumentLibraryMappings.Length);
+                // skip the master if not used by current document
+                var oldMasterElement = mastersDocument.XPathSelectElement($"//main:Master[@BaseID='{master.BaseId}']",
+                    VisioXmlWrapper.NamespaceManager);
+                if (oldMasterElement == null) continue;
+
+                var masterElement = XElement.Parse(master.MasterElement);
+                var masterDocument = XDocument.Parse(master.MasterDocument);
+
+                // to build new master element,
+                // we should replace the ID attribute of Master node with the origin one,
+                // and the Rel node with the origin one
+                var id = oldMasterElement.Attribute("ID")!.Value;
+                masterElement.Attribute("ID")!.SetValue(id);
+
+                var relElement = mastersDocument.XPathSelectElement(
+                    $"//main:Master[@BaseID='{master.BaseId}']/main:Rel",
+                    VisioXmlWrapper.NamespaceManager)!;
+                masterElement.Descendants(VisioXmlWrapper.MainNs + "Rel").First().ReplaceWith(relElement);
+
+                oldMasterElement.ReplaceWith(masterElement);
+
+                // then handle master{i} part
+                // we should replace the LineStyle, FillStyle, TextStyle of the First Shape node with correct id in style tables.
+                var oldMasterPart = VisioXmlWrapper.GetMasterPartById(package, int.Parse(id))!;
+                var shapeElement = masterDocument.XPathSelectElement("/main:MasterContents/main:Shapes/main:Shape",
+                    VisioXmlWrapper.NamespaceManager)!;
+                var lineStyleId = styleTable.SingleOrDefault(x => x.Name == master.LineStyleName)?.Id;
+                if (lineStyleId != null)
+                    shapeElement.Attribute("LineStyle")?.SetValue(lineStyleId);
+                var fillStyleId = styleTable.SingleOrDefault(x => x.Name == master.FillStyleName)?.Id;
+                if (fillStyleId != null)
+                    shapeElement.Attribute("FillStyle")?.SetValue(fillStyleId);
+                var textStyleId = styleTable.SingleOrDefault(x => x.Name == master.TextStyleName)?.Id;
+                if (textStyleId != null)
+                    shapeElement.Attribute("TextStyle")?.SetValue(textStyleId);
+
+                XmlHelper.SaveXDocumentToPart(oldMasterPart, masterDocument);
+
+                var current = 100 * ++processIndicator / processCount;
+                progress.Report(current);
             }
 
-            Globals.ThisAddIn.Application.EndUndoScope(undoScope, true);
+            XmlHelper.SaveXDocumentToPart(mastersPart, mastersDocument);
+            
+            // recalculate formula in shape sheet
+            XmlHelper.RecalculateDocument(package);
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            Globals.ThisAddIn.Application.EndUndoScope(undoScope, false);
+            Logger.Error(e, "Failed to replace masters.");
             throw;
         }
-        finally
-        {
-            Globals.ThisAddIn.Application.ShowChanges = true;
-        }
-    }
-
-    private static void ReplaceMaster(IVDocument document, string baseId, string targetFilePath)
-    {
-        var logger = LogManager.GetCurrentClassLogger();
-
-        // get the origin master from the document stencil
-        var source = document.Masters[$"B{baseId}"] ??
-                     throw new MasterNotFoundException(baseId);
-
-        if (source.Shapes[1].OneD == (int)VBABool.True)
-        {
-            logger.Debug(
-                $"REPLACEMENT SKIPPED FOR 1D [DOCUMENT: {document.Name}] [LIRARYPATH: {targetFilePath}] [NAME: {source.Name}] [BASEID: {baseId}]");
-            return;
-        }
-
-        var target =
-            Globals.ThisAddIn.Application.Documents.OfType<IVDocument>().Single(x => x.FullName == targetFilePath)
-                .Masters[$"B{baseId}"] ?? throw new MasterNotFoundException(baseId, targetFilePath);
-
-        // get the instances in the active document, convert to list as the master will clear after the delete
-        var instances = document.Pages.OfType<IVPage>()
-            .SelectMany(x => x.Shapes.OfType<IVShape>()).Where(x => x.Master?.BaseID == baseId).ToList();
-        if (instances.Count == 0) return;
-
-        logger.Debug(
-            $"REPLACEMENT [DOCUMENT: {document.Name}] [LIRARYPATH: {targetFilePath}] [NAME: {target.Name}] [BASEID: {baseId}] [UNIQUEID: {source.UniqueID} ===> {target.UniqueID}] [COUNT: {instances.Count}]");
-
-        // delete the origin master
-        source.Delete();
-
-        //replace with new target one
-        instances.ForEach(i => { i.ReplaceShape(target); });
-
-        logger.Debug($"REPLACEMENT DONE [NAME: {target.Name}]");
-    }
-
-    private class PackageMapping(XElement masterElement, XDocument masterXml, IEnumerable<StyleNameId> styleNameIds)
-    {
-        public XElement MasterElement { get; } = masterElement;
-        public XDocument MasterXml { get; } = masterXml;
-
-        public IEnumerable<StyleNameId> StyleNameIds { get; } = styleNameIds;
-    }
-
-    private class StyleNameId(string name, string id)
-    {
-        public string Name { get; } = name;
-        public string Id { get; } = id;
     }
 
     /// <summary>
-    /// If there's more than one masters of the same baseId, replace the shapes in the pages to a single master.
-    /// If not, the masters after update will have the same unique id but different name, which leads to unexpected end file when using copy and paste shapes.
+    ///     Load masters from cheat sheet, this cheat sheet is updated along with library updates.
     /// </summary>
-    private void ReplaceShapeMasterIfItIsAMasterCopy()
+    /// <returns></returns>
+    private static IEnumerable<DetailedLibraryItemDto> LoadMastersFromCheatSheet()
+    {
+        var fileContents = File.ReadAllText(ThisAddIn.LibraryCheatSheet);
+        var masters = JsonConvert.DeserializeObject<IEnumerable<DetailedLibraryItemDto>>(fileContents);
+        if (masters == null) throw new Exception("No contents found in cheat sheet.");
+        return masters;
+    }
+
+
+    /// <summary>
+    ///     If there's more than one masters of the same baseId, replace the shapes in the pages to a single master.
+    ///     If not, the masters after update will have the same unique id but different name, which leads to unexpected end
+    ///     file when using copy and paste shapes.
+    /// </summary>
+    private static void ReplaceDuplicateMasters(Package package)
     {
         try
         {
-            var pagesPart = _package.GetPart(XmlHelper.PagesPartUri);
+            var mastersPart = VisioXmlWrapper.GetMastersPart(package);
+            var mastersDocument = XmlHelper.GetDocumentFromPart(mastersPart);
 
-            foreach (var recordsGroupByBaseId in _usages.GroupBy(x => x.BaseId))
+            var pagesPart = VisioXmlWrapper.GetPagesPart(package);
+            var pages = pagesPart.GetRelationships()
+                .Select(x => package.GetPart(PackUriHelper.ResolvePartUri(x.SourceUri, x.TargetUri)))
+                .Select(x => new { Part = x, Document = XmlHelper.GetDocumentFromPart(x) }).ToList();
+
+            foreach (var group in mastersDocument.XPathSelectElements("//main:Master", VisioXmlWrapper.NamespaceManager)
+                         .GroupBy(x => x.Attribute("BaseID")!.Value).Where(x => x.Count() > 1))
             {
-                if (recordsGroupByBaseId.Count() == 1) continue;
+                // treat the first XElement as the correct one
+                var prototype = group.First();
+                var prototypeId = prototype.Attribute("ID")!.Value;
 
-                // treat the first item as the target
-                var targetId = recordsGroupByBaseId.First().Id;
-
-                foreach (var record in recordsGroupByBaseId.Skip(1))
-                foreach (var pairsGroupByPageRelId in record.UsedBy.GroupBy(x => x.PageRelId))
+                // treat the others as duplicates
+                foreach (var duplicate in group.Skip(1).ToList())
                 {
-                    var pageRel = pagesPart.GetRelationship(pairsGroupByPageRelId.Key);
-                    var pagePart = _package.GetPart(PackUriHelper.ResolvePartUri(pageRel.SourceUri, pageRel.TargetUri));
+                    var duplicateId = duplicate.Attribute("ID")!.Value;
+
+                    // to safely delete the master, we should find find out all related shapes in page
+                    foreach (var shapeElement in pages.SelectMany(x =>
+                                 x.Document.XPathSelectElements($"//main:Shape[@Master='{duplicateId}']",
+                                     VisioXmlWrapper.NamespaceManager)))
+                        shapeElement.Attribute("Master")!.SetValue(prototypeId);
+
+                    // after replace the related shape's ID with prototypeId, it is disconnect from the duplicate master, so we could delete this duplicate master
+                    // first is to delete the relationship, then remove the element
+                    var relId = VisioXmlWrapper.GetRelId(duplicate)!;
+                    mastersPart.DeleteRelationship(relId);
+
+                    duplicate.Remove();
+                }
+            }
+
+            // persist page change
+            foreach (var page in pages)
+                XmlHelper.SaveXDocumentToPart(page.Part, page.Document);
+
+            // persist master change
+            XmlHelper.SaveXDocumentToPart(mastersPart, mastersDocument);
+        }
+        catch (Exception e)
+        {
+            Logger.Error(e, "Failed to remove duplicate masters.");
+            throw;
+        }
+    }
+
+
+    /// <summary>
+    ///     If there's more than one masters of the same baseId, replace the shapes in the pages to a single master.
+    ///     If not, the masters after update will have the same unique id but different name, which leads to unexpected end
+    ///     file when using copy and paste shapes.
+    /// </summary>
+    private static void SupplementSubClassFormula(Package package)
+    {
+        try
+        {
+            var mastersPart = package.GetPart(VisioXmlWrapper.MastersPartUri);
+            var mastersDocument = XmlHelper.GetDocumentFromPart(mastersPart);
+
+            foreach (var masterElement in mastersDocument.Descendants(VisioXmlWrapper.MainNs + "Master"))
+            {
+                var masterId = masterElement.Attribute("ID")!.Value;
+
+                var masterRelId = VisioXmlWrapper.GetRelId(masterElement)!;
+                var masterPart = VisioXmlWrapper.GetRelPart(mastersPart, masterRelId);
+
+                var masterDocument = XmlHelper.GetDocumentFromPart(masterPart);
+
+                // get the subclass options;
+                var subClassElement = masterDocument.XPathSelectElement(
+                    "//main:Section[@N='Property']/main:Row[@N='SubClass']/main:Cell[@N='Type' and @V='1']/preceding-sibling::main:Cell[@N='Format']",
+                    VisioXmlWrapper.NamespaceManager);
+                if (subClassElement == null) continue;
+
+                var options = subClassElement.Attribute("F")!.Value.Replace("GUARD(\"", "")
+                    .Replace("\")", "").Split(';');
+
+                // get all shapes from page
+                var pagesPart = package.GetPart(VisioXmlWrapper.PagesPartUri);
+                var pagesDocument = XmlHelper.GetDocumentFromPart(pagesPart);
+
+                foreach (var pageElement in pagesDocument.Descendants(VisioXmlWrapper.MainNs + "Page"))
+                {
+                    var pageRelId = VisioXmlWrapper.GetRelId(pageElement)!;
+                    var pagePart = VisioXmlWrapper.GetRelPart(pagesPart, pageRelId);
                     var pageDocument = XmlHelper.GetDocumentFromPart(pagePart);
 
-                    foreach (var shape in pageDocument.Descendants(XmlHelper.MainNs + "Shape")
-                                 .Where(node => node.Attribute("Master")?.Value == record.Id))
-                        shape.Attribute("Master")!.SetValue(targetId);
+
+                    var cells = pageDocument.XPathSelectElements(
+                        $"//main:Shape[@Master='{masterId}']/main:Section[@N='Property']/main:Row[@N='SubClass']/main:Cell",
+                        VisioXmlWrapper.NamespaceManager);
+                    foreach (var cellElement in cells)
+                    {
+                        var value = cellElement.Attribute("V")!.Value;
+                        var index = options.IndexOf(value);
+                        cellElement.SetAttributeValue("F", $"INDEX({index},Prop.SubClass.Format)");
+                    }
 
                     XmlHelper.SaveXDocumentToPart(pagePart, pageDocument);
                 }
@@ -500,49 +386,8 @@ public class DocumentUpdater : IDisposable
         }
         catch (Exception e)
         {
-            Logger.Error(e, "Failed to replace duplicated masters from document.");
+            Logger.Error(e, "Failed to supplement subclass formula.");
             throw;
         }
-    }
-
-    private void RemoveUnusedMasters()
-    {
-        try
-        {
-            var mastersPart = _package.GetPart(XmlHelper.MastersPartUri);
-            var mastersDocument = XmlHelper.GetDocumentFromPart(mastersPart);
-
-            foreach (var recordsGroupByBaseId in _usages.GroupBy(x => x.BaseId))
-            {
-                if (recordsGroupByBaseId.Count() == 1) continue;
-
-                foreach (var record in recordsGroupByBaseId.Skip(1))
-                {
-                    // delete the masterPart
-                    var rel = mastersPart.GetRelationship(record.RelId);
-                    var masterPart = _package.GetPart(PackUriHelper.ResolvePartUri(rel.SourceUri, rel.TargetUri));
-
-                    // delete the relationship
-                    mastersPart.DeleteRelationship(record.RelId);
-
-                    // delete the node from document
-                    var masterElement = mastersDocument.Descendants(XmlHelper.MainNs + "Master")
-                        .Single(x => x.Attribute("ID")!.Value == record.Id);
-                    masterElement.Remove();
-                }
-            }
-
-            XmlHelper.SaveXDocumentToPart(mastersPart, mastersDocument);
-        }
-        catch (Exception e)
-        {
-            Logger.Error(e, "Failed to remove unsed masters from document.");
-            throw;
-        }
-    }
-
-    public void Dispose()
-    {
-        ((IDisposable)_package).Dispose();
     }
 }

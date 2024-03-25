@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -63,8 +64,12 @@ public abstract class LibraryUpdater
     {
         var client = Globals.ThisAddIn.HttpClient;
 
-        var response = await client.GetStringAsync("/libraries");
-
+        #if DEBUG
+            var response = await client.GetStringAsync("/libraries?involvePrerelease=true");
+        #else
+            var response = await client.GetStringAsync("/libraries");
+        #endif
+        
         return JsonConvert.DeserializeObject<IEnumerable<LibraryDto>>(response)?.ToList();
     }
 
@@ -102,6 +107,7 @@ public abstract class LibraryUpdater
                 }
             )
             .Do(_ => { Logger.Info($"Libraries are up to date."); })
+            .Do(_=>DownloadCheatSheet())
             // notify user if need
             .Where(x => x.InvokeType == Constants.ManuallyInvokeMagicNumber)
             .ObserveOn(Globals.ThisAddIn.SynchronizationContext)
@@ -133,6 +139,24 @@ public abstract class LibraryUpdater
                     }
                 });
     }
+
+    private static async  Task DownloadCheatSheet()
+    {
+        #if DEBUG
+        var responseString =
+            await Globals.ThisAddIn.ServiceManager.Client.GetStringAsync("/libraries/cheatsheet?involvePrerelease=true");
+        #else 
+                    await Globals.ThisAddIn.ServiceManager.Client.GetStringAsync("/libraries/cheatsheets");
+        #endif
+        
+        if (string.IsNullOrEmpty(responseString)) return;
+        var responseResult = JsonConvert.DeserializeObject<IEnumerable<DetailedLibraryItemDto>>(responseString);
+        Debug.Assert(responseResult != null);
+
+        using var writer = new StreamWriter(ThisAddIn.LibraryCheatSheet);
+        await writer.WriteLineAsync(responseString);
+    }
+    
 
     private static async Task<List<Library>> UpdateLibrariesAsync()
     {
