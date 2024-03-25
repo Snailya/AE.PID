@@ -45,8 +45,8 @@ public abstract class OpenXmlService
                 LineStyleName = styles.Single(x => x.Id == int.Parse(shapeElement.Attribute("LineStyle").Value)).Name,
                 FillStyleName = styles.Single(x => x.Id == int.Parse(shapeElement.Attribute("FillStyle").Value)).Name,
                 TextStyleName = styles.Single(x => x.Id == int.Parse(shapeElement.Attribute("TextStyle").Value)).Name,
-                MasterElement = masterElement.ToString(),
-                MasterDocument = masterDocument.ToString()
+                MasterElement = masterElement.ToString(SaveOptions.DisableFormatting),
+                MasterDocument = masterDocument.ToString(SaveOptions.DisableFormatting)
             }).ToList();
     }
 }
