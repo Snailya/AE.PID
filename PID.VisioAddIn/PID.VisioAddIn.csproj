@@ -184,6 +184,7 @@
         <Compile Include="Controllers\Services\LegendService.cs"/>
         <Compile Include="Controllers\Services\LinkedControlManager.cs"/>
         <Compile Include="Controllers\Services\LibraryUpdater.cs"/>
+        <Compile Include="Controllers\Services\OpenXmlService.cs"/>
         <Compile Include="Controllers\Services\ShapeSelector.cs"/>
         <Compile Include="Controllers\Services\ConfigurationUpdater.cs"/>
         <Compile Include="Controllers\Services\DocumentSimplifier.cs"/>
@@ -284,16 +285,16 @@
             <SubType>Code</SubType>
         </Compile>
         <Compile Include="Views\ViewBase.cs"/>
-        <Compile Include="Views\Windows\BaseWindowViewModel.cs" />
+        <Compile Include="Views\Windows\BaseWindowViewModel.cs"/>
         <Compile Include="Views\Windows\MainWindow.xaml.cs">
             <DependentUpon>MainWindow.xaml</DependentUpon>
         </Compile>
         <Compile Include="Views\Windows\SideWindow.xaml.cs">
             <DependentUpon>SideWindow.xaml</DependentUpon>
         </Compile>
-        <Compile Include="Views\Windows\WindowDockPosition.cs" />
+        <Compile Include="Views\Windows\WindowDockPosition.cs"/>
         <Compile Include="Views\Windows\WindowManager.cs"/>
-        <Compile Include="Views\Windows\WindowResizer.cs" />
+        <Compile Include="Views\Windows\WindowResizer.cs"/>
         <EmbeddedResource Include="Properties\Resources.resx">
             <Generator>PublicResXFileCodeGenerator</Generator>
             <SubType>Designer</SubType>

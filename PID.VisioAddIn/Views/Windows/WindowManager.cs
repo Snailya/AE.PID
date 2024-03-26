@@ -16,7 +16,7 @@ public class WindowManager
     public WindowManager()
     {
         _mainWindow.Title = Assembly.GetExecutingAssembly().GetName().Name;
-        
+
         _ = new WindowInteropHelper(_mainWindow)
         {
             Owner = new IntPtr(Globals.ThisAddIn.Application.WindowHandle32)

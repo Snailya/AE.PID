@@ -16,31 +16,6 @@ public class ExportViewModel(DocumentExporter service) : ViewModelBase
     private ReadOnlyObservableCollection<ElementViewModel> _items;
     private ElementViewModel? _selected;
 
-    #region Read-Write Properties
-
-    public DocumentInfoViewModel DocumentInfo
-    {
-        get => _documentInfo;
-        private set => this.RaiseAndSetIfChanged(ref _documentInfo, value);
-    }
-
-    public ElementViewModel? Selected
-    {
-        get => _selected;
-        set => this.RaiseAndSetIfChanged(ref _selected, value);
-    }
-
-    #endregion
-
-    #region Read-Only Properties
-
-    public DesignMaterialsViewModel DesignMaterialsViewModel { get; private set; } =
-        new(Globals.ThisAddIn.ServiceManager.MaterialsService);
-
-    public OkCancelFeedbackViewModel OkCancelFeedbackViewModel { get; private set; } = new();
-
-    #endregion
-
     #region Output Properties
 
     public ReadOnlyObservableCollection<ElementViewModel> Items => _items;
@@ -55,7 +30,7 @@ public class ExportViewModel(DocumentExporter service) : ViewModelBase
         OkCancelFeedbackViewModel.Ok = ReactiveCommand.Create(ExportAsBOMTable);
         OkCancelFeedbackViewModel.Cancel = ReactiveCommand.Create(() => { });
     }
-    
+
     protected override void SetupSubscriptions(CompositeDisposable d)
     {
         service.Elements
@@ -98,13 +73,38 @@ public class ExportViewModel(DocumentExporter service) : ViewModelBase
     private void WriteDesignMaterialIntoShape(DesignMaterial? material)
     {
         if (material == null || _selected?.Id == null) return;
-            
+
         var id = _selected.Id;
         service.SetDesignMaterial(id, material);
     }
-    
+
     private void ExportAsBOMTable()
     {
         service.ExportToExcel(_documentInfo);
     }
+
+    #region Read-Write Properties
+
+    public DocumentInfoViewModel DocumentInfo
+    {
+        get => _documentInfo;
+        private set => this.RaiseAndSetIfChanged(ref _documentInfo, value);
+    }
+
+    public ElementViewModel? Selected
+    {
+        get => _selected;
+        set => this.RaiseAndSetIfChanged(ref _selected, value);
+    }
+
+    #endregion
+
+    #region Read-Only Properties
+
+    public DesignMaterialsViewModel DesignMaterialsViewModel { get; } =
+        new(Globals.ThisAddIn.ServiceManager.MaterialsService);
+
+    public OkCancelFeedbackViewModel OkCancelFeedbackViewModel { get; } = new();
+
+    #endregion
 }

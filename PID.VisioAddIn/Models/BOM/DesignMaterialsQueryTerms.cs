@@ -14,7 +14,7 @@ public record DesignMaterialsQueryTerms
     }
 
     /// <summary>
-    /// The code of the category, category code could not be empty
+    ///     The code of the category, category code could not be empty
     /// </summary>
     public int CategoryId
     {
@@ -27,7 +27,7 @@ public record DesignMaterialsQueryTerms
     }
 
     /// <summary>
-    /// The page number, must be large than 1
+    ///     The page number, must be large than 1
     /// </summary>
     public int PageNumber
     {

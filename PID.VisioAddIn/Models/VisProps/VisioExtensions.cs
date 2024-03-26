@@ -122,7 +122,7 @@ internal static class VisioExtension
     }
 
     /// <summary>
-    /// Get formatted value from Shape Data. 
+    ///     Get formatted value from Shape Data.
     /// </summary>
     /// <param name="row"></param>
     /// <returns></returns>
@@ -163,7 +163,7 @@ internal static class VisioExtension
     }
 
     /// <summary>
-    /// Check if the shape is on specified layer.
+    ///     Check if the shape is on specified layer.
     /// </summary>
     /// <param name="shape"></param>
     /// <param name="layerNames"></param>
@@ -182,7 +182,7 @@ internal static class VisioExtension
     }
 
     /// <summary>
-    /// Drop an object using mm unit.
+    ///     Drop an object using mm unit.
     /// </summary>
     /// <param name="page"></param>
     /// <param name="objectToDrop"></param>
@@ -200,7 +200,7 @@ internal static class VisioExtension
     }
 
     /// <summary>
-    /// Get bounding box in mm unit.
+    ///     Get bounding box in mm unit.
     /// </summary>
     /// <param name="shape"></param>
     /// <param name="flags"></param>
@@ -212,7 +212,7 @@ internal static class VisioExtension
     }
 
     /// <summary>
-    /// Get the pin location of the shape. The pin location is by default the align box's center
+    ///     Get the pin location of the shape. The pin location is by default the align box's center
     /// </summary>
     /// <param name="shape"></param>
     /// <returns></returns>
@@ -222,7 +222,7 @@ internal static class VisioExtension
     }
 
     /// <summary>
-    /// Get the geometric center of the shape. This is done by compute the center of BBox Extents.
+    ///     Get the geometric center of the shape. This is done by compute the center of BBox Extents.
     /// </summary>
     /// <param name="shape"></param>
     /// <returns></returns>
@@ -234,7 +234,7 @@ internal static class VisioExtension
     }
 
     /// <summary>
-    /// Try convert a shape to line item.
+    ///     Try convert a shape to line item.
     /// </summary>
     /// <param name="shape"></param>
     /// <returns></returns>

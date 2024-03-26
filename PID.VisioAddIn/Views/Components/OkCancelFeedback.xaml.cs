@@ -6,27 +6,15 @@ using ReactiveUI;
 namespace AE.PID.Views.Components;
 
 /// <summary>
-/// Interaction logic for OkCancelControl.xaml
+///     Interaction logic for OkCancelControl.xaml
 /// </summary>
 public partial class OkCancelFeedback
 {
     public static readonly DependencyProperty OkTextProperty = DependencyProperty.Register(
         nameof(OkText), typeof(string), typeof(OkCancelFeedback), new PropertyMetadata("确认"));
 
-    public string OkText
-    {
-        get => (string)GetValue(OkTextProperty);
-        set => SetValue(OkTextProperty, value);
-    }
-
     public static readonly DependencyProperty CancelTextProperty = DependencyProperty.Register(
         nameof(CancelText), typeof(string), typeof(OkCancelFeedback), new PropertyMetadata("取消"));
-
-    public string CancelText
-    {
-        get => (string)GetValue(CancelTextProperty);
-        set => SetValue(CancelTextProperty, value);
-    }
 
     public OkCancelFeedback()
     {
@@ -46,5 +34,17 @@ public partial class OkCancelFeedback
                 .Subscribe(_ => Close())
                 .DisposeWith(d);
         });
+    }
+
+    public string OkText
+    {
+        get => (string)GetValue(OkTextProperty);
+        set => SetValue(OkTextProperty, value);
+    }
+
+    public string CancelText
+    {
+        get => (string)GetValue(CancelTextProperty);
+        set => SetValue(CancelTextProperty, value);
     }
 }

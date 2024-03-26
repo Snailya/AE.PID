@@ -34,37 +34,37 @@ public class DesignMaterialCategoryViewModel : ViewModelBase, IDisposable
     }
 
     /// <summary>
-    /// The id of the item
+    ///     The id of the item
     /// </summary>
     public int Id { get; }
 
     /// <summary>
-    /// The level of the item
+    ///     The level of the item
     /// </summary>
     public int Depth { get; }
 
     /// <summary>
-    /// The parent id of the item, used to reconstruct for tree
+    ///     The parent id of the item, used to reconstruct for tree
     /// </summary>
     public int? ParentId { get; }
 
     /// <summary>
-    /// The origin data
+    ///     The origin data
     /// </summary>
     public MaterialCategoryDto Source { get; }
 
     /// <summary>
-    /// The parent of the item.
+    ///     The parent of the item.
     /// </summary>
     public Optional<DesignMaterialCategoryViewModel> Parent { get; }
 
     /// <summary>
-    /// The children of the item
+    ///     The children of the item
     /// </summary>
     public ReadOnlyObservableCollection<DesignMaterialCategoryViewModel> Inferiors => _inferiors;
 
     /// <summary>
-    /// The display name of the category.
+    ///     The display name of the category.
     /// </summary>
     public string Name { get; set; }
 

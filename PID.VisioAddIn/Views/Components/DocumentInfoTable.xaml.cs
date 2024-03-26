@@ -4,7 +4,7 @@ using ReactiveUI;
 namespace AE.PID.Views.Components;
 
 /// <summary>
-/// Interaction logic for DocumentInfo.xaml
+///     Interaction logic for DocumentInfo.xaml
 /// </summary>
 public partial class DocumentInfoTable
 {

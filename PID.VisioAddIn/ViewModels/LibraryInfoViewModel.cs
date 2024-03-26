@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using ReactiveUI;
 
@@ -6,8 +5,8 @@ namespace AE.PID.ViewModels;
 
 public class LibraryInfoViewModel : ReactiveObject
 {
-    private string _name = string.Empty;
     private Version? _localVersion;
+    private string _name = string.Empty;
     private Version? _remoteVersion;
 
     public LibraryInfoViewModel()

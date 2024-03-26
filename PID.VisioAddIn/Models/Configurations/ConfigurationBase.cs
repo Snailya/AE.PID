@@ -1,16 +1,16 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
+using Newtonsoft.Json;
 
 namespace AE.PID.Models.Configurations;
 
 public class ConfigurationBase : INotifyPropertyChanged
 {
-    private DateTime _nextTime = DateTime.Now;
     private TimeSpan _checkInterval = TimeSpan.FromDays(1);
+    private DateTime _nextTime = DateTime.Now;
 
     protected ConfigurationBase()
     {
@@ -18,7 +18,7 @@ public class ConfigurationBase : INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Observers can subscribe to the subject to receive the last (or initial) value of <see cref="CheckInterval"/>.
+    ///     Observers can subscribe to the subject to receive the last (or initial) value of <see cref="CheckInterval" />.
     /// </summary>
     [JsonIgnore]
     public BehaviorSubject<TimeSpan> CheckIntervalSubject { get; }
@@ -33,7 +33,7 @@ public class ConfigurationBase : INotifyPropertyChanged
     }
 
     /// <summary>
-    /// The check interval for app update.
+    ///     The check interval for app update.
     /// </summary>
     public TimeSpan CheckInterval
     {

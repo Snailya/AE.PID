@@ -1,12 +1,12 @@
-﻿using AE.PID.Models.BOM;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Reactive.Disposables;
+using AE.PID.Models.BOM;
 using AE.PID.ViewModels;
 using DynamicData;
 using DynamicData.Kernel;
 using ReactiveUI;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Reactive.Disposables;
 
 namespace AE.PID.ViewModels
 {
@@ -44,62 +44,62 @@ namespace AE.PID.ViewModels
         }
 
         /// <summary>
-        /// The id of the item
+        ///     The id of the item
         /// </summary>
         public int Id { get; }
 
         /// <summary>
-        /// The level of the item
+        ///     The level of the item
         /// </summary>
         public int Depth { get; }
 
         /// <summary>
-        /// The parent id of the item, used to reconstruct for tree
+        ///     The parent id of the item, used to reconstruct for tree
         /// </summary>
         public int ParentId { get; }
 
         /// <summary>
-        /// The origin data
+        ///     The origin data
         /// </summary>
         public Element Source { get; }
 
         /// <summary>
-        /// The parent of the item.
+        ///     The parent of the item.
         /// </summary>
         public Optional<ElementViewModel> Parent { get; }
 
         /// <summary>
-        /// The children of the item
+        ///     The children of the item
         /// </summary>
         public ReadOnlyObservableCollection<ElementViewModel> Inferiors => _inferiors;
 
         /// <summary>
-        /// The name displayed in View
+        ///     The name displayed in View
         /// </summary>
         public string Name { get; }
 
         /// <summary>
-        /// The process zone displayed in View
+        ///     The process zone displayed in View
         /// </summary>
         public string ProcessZone { get; set; }
 
         /// <summary>
-        /// The functional group displayed in View
+        ///     The functional group displayed in View
         /// </summary>
         public string FunctionalGroup { get; set; }
 
         /// <summary>
-        /// The functional element displayed in View
+        ///     The functional element displayed in View
         /// </summary>
         public string FunctionalElement { get; set; }
 
         /// <summary>
-        /// The material no displayed in View
+        ///     The material no displayed in View
         /// </summary>
         public string MaterialNo { get; set; }
 
         /// <summary>
-        /// The count of item in View
+        ///     The count of item in View
         /// </summary>
         public double Count { get; set; }
 

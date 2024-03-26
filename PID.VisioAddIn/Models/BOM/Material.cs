@@ -1,111 +1,112 @@
 ﻿using System.Linq;
 using System.Text;
-using Microsoft.Office.Interop.Visio;
 using AE.PID.Models.VisProps;
+using Microsoft.Office.Interop.Visio;
 
 namespace AE.PID.Models.BOM;
 
 /// <summary>
-/// POCO to BOM_template.xlsx
+///     POCO to BOM_template.xlsx
 /// </summary>
 public class Material
 {
     /// <summary>
-    /// The index column.
+    ///     The index column.
     /// </summary>
     public int Index { get; set; }
 
     /// <summary>
-    /// The process zone mapping.
+    ///     The process zone mapping.
     /// </summary>
     public string ProcessArea { get; set; } = string.Empty;
 
     /// <summary>
-    /// The functional group mapping.
+    ///     The functional group mapping.
     /// </summary>
     public string FunctionalGroup { get; set; } = string.Empty;
 
     /// <summary>
-    /// The function element mapping.
+    ///     The function element mapping.
     /// </summary>
     public string? FunctionalElement { get; set; } = string.Empty;
 
     /// <summary>
-    /// The material no mapping.
+    ///     The material no mapping.
     /// </summary>
     public string AEMaterialNo { get; set; } = string.Empty;
 
     /// <summary>
-    /// The name mapping.
+    ///     The name mapping.
     /// </summary>
     public string NameChinese { get; set; } = string.Empty;
 
     /// <summary>
-    /// The translation of name in English.
+    ///     The translation of name in English.
     /// </summary>
     public string NameEnglish { get; set; } = string.Empty;
 
     /// <summary>
-    /// The merged technical data.
+    ///     The merged technical data.
     /// </summary>
     public string TechnicalDataChinese { get; set; } = string.Empty;
 
     /// <summary>
-    /// The translation of merged technical data.
+    ///     The translation of merged technical data.
     /// </summary>
     public string TechnicalDataEnglish { get; set; } = string.Empty;
 
     /// <summary>
-    /// The quantity of the line item.
+    ///     The quantity of the line item.
     /// </summary>
     public double Count { get; set; }
 
     /// <summary>
-    /// The sum of the line items of the same technical data within the BOM table.
+    ///     The sum of the line items of the same technical data within the BOM table.
     /// </summary>
     public double Total { get; set; }
 
     /// <summary>
-    /// The sum of the line items of the same technical data within the functional group.
+    ///     The sum of the line items of the same technical data within the functional group.
     /// </summary>
     public double InGroup { get; set; }
 
     /// <summary>
-    /// todo:
+    ///     todo:
     /// </summary>
     public string Units { get; set; } = string.Empty;
 
     /// <summary>
-    /// todo:
+    ///     todo:
     /// </summary>
     public string Manufacturer { get; set; } = string.Empty;
 
     /// <summary>
-    /// todo:
+    ///     todo:
     /// </summary>
     public string ManufacturerArticleNo { get; set; } = string.Empty;
 
     /// <summary>
-    /// todo:
+    ///     todo:
     /// </summary>
     public string SerialNo { get; set; } = string.Empty;
 
     /// <summary>
-    /// todo:
+    ///     todo:
     /// </summary>
     public string Classification { get; set; } = string.Empty;
 
     /// <summary>
-    /// todo:
+    ///     todo:
     /// </summary>
     public string Attachment { get; set; } = string.Empty;
 
     /// <summary>
-    /// Converts a base line item to BOM line items.
-    /// If the base item has linked functional elements, these linked functional elements will be flatted as individual bom line items.
+    ///     Converts a base line item to BOM line items.
+    ///     If the base item has linked functional elements, these linked functional elements will be flatted as individual bom
+    ///     line items.
     /// </summary>
     /// <param name="baseItem"></param>
-    /// <returns>A collection of <see cref="Material"/></returns>
+    /// <returns>A collection of <see cref="Material" /></returns>
     public static Material FromElement(Element baseItem)
     {
         var item = new Material

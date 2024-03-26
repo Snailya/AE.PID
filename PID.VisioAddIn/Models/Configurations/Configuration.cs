@@ -10,12 +10,12 @@ namespace AE.PID.Models.Configurations;
 [Serializable]
 public class Configuration : ConfigurationBase
 {
-    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     private const string ConfigFileName = "ae-pid.json";
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+    [JsonIgnore] public BehaviorSubject<Configuration> ConfigurationSubject = new(null);
 
     [JsonIgnore] public NLogConfiguration NLogConfig;
     [JsonIgnore] public string Api { get; set; } = "http://172.18.128.104:32768";
-    [JsonIgnore] public BehaviorSubject<Configuration> ConfigurationSubject = new(null);
 
     /// <summary>
     ///     The configuration for library version check.
@@ -50,7 +50,7 @@ public class Configuration : ConfigurationBase
         }
         catch (Exception ex)
         {
-            Logger.Error(ex, $"Failed to save configuration");
+            Logger.Error(ex, "Failed to save configuration");
         }
     }
 

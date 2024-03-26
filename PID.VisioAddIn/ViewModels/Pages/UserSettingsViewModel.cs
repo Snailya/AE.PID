@@ -17,47 +17,10 @@ namespace AE.PID.ViewModels.Pages;
 
 public class UserSettingsViewModel : ViewModelBase
 {
-    private FrequencyOptionViewModel _libraryCheckFrequency;
-    private FrequencyOptionViewModel _appNextCheckFrequency;
     private readonly ObservableCollectionExtended<LibraryInfoViewModel> _servers = [];
+    private FrequencyOptionViewModel _appNextCheckFrequency;
     private ObservableAsPropertyHelper<IEnumerable<LibraryInfoViewModel>> _libraries;
-
-    #region Read-Write Properties
-
-    public OkCancelFeedbackViewModel OkCancelFeedbackViewModel { get; private set; } = new();
-
-    public FrequencyOptionViewModel AppNextCheckFrequency
-    {
-        get => _appNextCheckFrequency;
-        private set
-        {
-            if (value != _appNextCheckFrequency)
-                this.RaiseAndSetIfChanged(ref _appNextCheckFrequency, value);
-        }
-    }
-
-    public FrequencyOptionViewModel LibraryCheckFrequency
-    {
-        get => _libraryCheckFrequency;
-        private set
-        {
-            if (value != _libraryCheckFrequency)
-                this.RaiseAndSetIfChanged(ref _libraryCheckFrequency, value);
-        }
-    }
-
-    #endregion
-
-    #region Read-Only Properties
-
-    public IEnumerable<FrequencyOptionViewModel> CheckFrequencyOptions { get; } = FrequencyOptionViewModel.GetOptions();
-    public string TmpPath { get; } = ThisAddIn.TmpFolder;
-    public ReactiveCommand<Unit, Unit> CheckForAppUpdate { get; private set; }
-    public ReactiveCommand<Unit, Unit> CheckForLibrariesUpdate { get; private set; }
-    public ReactiveCommand<Unit, Unit> OpenTmp { get; private set; }
-    public ReactiveCommand<Unit, Unit> ClearCache { get; private set; }
-
-    #endregion
+    private FrequencyOptionViewModel _libraryCheckFrequency;
 
     #region Output Properties
 
@@ -91,7 +54,7 @@ public class UserSettingsViewModel : ViewModelBase
 
         local
             .CombineLatest(server)
-            .Select((data) =>
+            .Select(data =>
             {
                 foreach (var item in data.First)
                     item.RemoteVersion = data.Second.SingleOrDefault(i => i.Name == item.Name)?.RemoteVersion;
@@ -131,7 +94,7 @@ public class UserSettingsViewModel : ViewModelBase
     {
         return Task.Run(async () =>
         {
-            var servers = (await LibraryUpdater.GetLibraries()).Select(x => new LibraryInfoViewModel()
+            var servers = (await LibraryUpdater.GetLibraries()).Select(x => new LibraryInfoViewModel
             {
                 Name = x.Name,
                 RemoteVersion = new Version(x.Version)
@@ -172,4 +135,41 @@ public class UserSettingsViewModel : ViewModelBase
 
         Globals.ThisAddIn.Configuration.Save();
     }
+
+    #region Read-Write Properties
+
+    public OkCancelFeedbackViewModel OkCancelFeedbackViewModel { get; } = new();
+
+    public FrequencyOptionViewModel AppNextCheckFrequency
+    {
+        get => _appNextCheckFrequency;
+        private set
+        {
+            if (value != _appNextCheckFrequency)
+                this.RaiseAndSetIfChanged(ref _appNextCheckFrequency, value);
+        }
+    }
+
+    public FrequencyOptionViewModel LibraryCheckFrequency
+    {
+        get => _libraryCheckFrequency;
+        private set
+        {
+            if (value != _libraryCheckFrequency)
+                this.RaiseAndSetIfChanged(ref _libraryCheckFrequency, value);
+        }
+    }
+
+    #endregion
+
+    #region Read-Only Properties
+
+    public IEnumerable<FrequencyOptionViewModel> CheckFrequencyOptions { get; } = FrequencyOptionViewModel.GetOptions();
+    public string TmpPath { get; } = ThisAddIn.TmpFolder;
+    public ReactiveCommand<Unit, Unit> CheckForAppUpdate { get; private set; }
+    public ReactiveCommand<Unit, Unit> CheckForLibrariesUpdate { get; private set; }
+    public ReactiveCommand<Unit, Unit> OpenTmp { get; private set; }
+    public ReactiveCommand<Unit, Unit> ClearCache { get; private set; }
+
+    #endregion
 }

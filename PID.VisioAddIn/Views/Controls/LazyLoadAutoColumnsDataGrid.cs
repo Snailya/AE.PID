@@ -10,8 +10,12 @@ namespace AE.PID.Views.Controls;
 [DefaultEvent("LoadMore")]
 public sealed class LazyLoadAutoColumnsDataGrid : AutoColumnsDataGrid
 {
-    private ScrollViewer? _scrollViewer;
     private const double Tolerance = 0.1;
+
+    public static readonly RoutedEvent LoadMoreEvent = EventManager.RegisterRoutedEvent("LoadMore",
+        RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(ButtonBase));
+
+    private ScrollViewer? _scrollViewer;
 
     public LazyLoadAutoColumnsDataGrid()
     {
@@ -24,9 +28,6 @@ public sealed class LazyLoadAutoColumnsDataGrid : AutoColumnsDataGrid
         // unregister the above event when unloaded
         Unloaded += LazyLoadDataGrid_Unloaded;
     }
-
-    public static readonly RoutedEvent LoadMoreEvent = EventManager.RegisterRoutedEvent("LoadMore",
-        RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(ButtonBase));
 
 
     [Category("Behavior")]

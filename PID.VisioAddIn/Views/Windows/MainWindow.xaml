@@ -3,17 +3,15 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:windows="clr-namespace:AE.PID.Views.Windows"
         xmlns:wpf="clr-namespace:Material.Icons.WPF;assembly=Material.Icons.WPF"
-        xmlns:pid="clr-namespace:AE.PID"
         x:Name="ThisWindow"
-        WindowStyle="None" 
+        WindowStyle="None"
         AllowsTransparency="True"
         WindowStartupLocation="CenterOwner"
         SizeToContent="WidthAndHeight"
         mc:Ignorable="d"
         d:DesignHeight="450" d:DesignWidth="800">
-    <Window.Resources> 
+    <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../MyResources.xaml" />
@@ -24,8 +22,7 @@
         <ControlTemplate TargetType="{x:Type Window}">
             <!-- Outer border with the drop shadow margin -->
             <Border Padding="{Binding  OuterMarginSize, FallbackValue=0}"
-                    BorderBrush="{StaticResource PrimaryBrush}" 
-                    >
+                    BorderBrush="{StaticResource PrimaryBrush}">
                 <Grid Background="White">
                     <Border BorderBrush="{StaticResource PrimaryBrush}"
                             BorderThickness="1"
@@ -44,7 +41,7 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0"
                                        Text="{TemplateBinding Title}"
-                                       HorizontalAlignment="Center"  VerticalAlignment="Center"/>
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
                             <StackPanel Grid.Column="1"
                                         Orientation="Horizontal" Button.Click="ButtonBase_OnClick"
                                         WindowChrome.IsHitTestVisibleInChrome="True">
@@ -52,7 +49,7 @@
                                     <Style TargetType="{x:Type Button}">
                                         <Setter Property="Background" Value="Transparent" />
                                         <Setter Property="BorderThickness" Value="0" />
-                                        <Setter Property="Padding" Value="6"/>
+                                        <Setter Property="Padding" Value="6" />
                                     </Style>
                                 </StackPanel.Resources>
                                 <Button x:Name="PART_Minimize">
@@ -70,8 +67,8 @@
                     </DockPanel>
 
                     <Border VerticalAlignment="Bottom" HorizontalAlignment="Left">
-                        <TextBlock TextWrapping="Wrap" 
-                                   Text="{Binding Version}" 
+                        <TextBlock TextWrapping="Wrap"
+                                   Text="{Binding Version}"
                                    Opacity="0.5" FontSize="12" Margin="4"
                                    Foreground="Black" FontWeight="Light" />
                     </Border>

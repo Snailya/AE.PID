@@ -14,38 +14,10 @@ namespace AE.PID.ViewModels.Pages;
 
 public class ShapeSelectionViewModel(ShapeSelector service) : ViewModelBase
 {
+    private bool _hasSelection;
+    private ReadOnlyObservableCollection<MasterViewModel> _masters;
     private SelectionType _selectionType = SelectionType.ById;
     private int _shapeId;
-    private ReadOnlyObservableCollection<MasterViewModel> _masters;
-    private bool _hasSelection = false;
-
-    #region Read-Write Properties
-
-    public SelectionType SelectionType
-    {
-        get => _selectionType;
-        set => this.RaiseAndSetIfChanged(ref _selectionType, value);
-    }
-
-    public int ShapeId
-    {
-        get => _shapeId;
-        set => this.RaiseAndSetIfChanged(ref _shapeId, value);
-    }
-
-    #endregion
-
-    #region Read-Only Properties
-
-    public OkCancelFeedbackViewModel OkCancelFeedbackViewModel { get; private set; } = new();
-
-    public bool HasSelection
-    {
-        get => _hasSelection;
-        private set => this.RaiseAndSetIfChanged(ref _hasSelection, value);
-    }
-
-    #endregion
 
     #region Output Properties
 
@@ -97,4 +69,32 @@ public class ShapeSelectionViewModel(ShapeSelector service) : ViewModelBase
             .BindTo(this, x => x.HasSelection)
             .DisposeWith(d);
     }
+
+    #region Read-Write Properties
+
+    public SelectionType SelectionType
+    {
+        get => _selectionType;
+        set => this.RaiseAndSetIfChanged(ref _selectionType, value);
+    }
+
+    public int ShapeId
+    {
+        get => _shapeId;
+        set => this.RaiseAndSetIfChanged(ref _shapeId, value);
+    }
+
+    #endregion
+
+    #region Read-Only Properties
+
+    public OkCancelFeedbackViewModel OkCancelFeedbackViewModel { get; } = new();
+
+    public bool HasSelection
+    {
+        get => _hasSelection;
+        private set => this.RaiseAndSetIfChanged(ref _hasSelection, value);
+    }
+
+    #endregion
 }

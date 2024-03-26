@@ -4,7 +4,7 @@ using System.Windows.Controls;
 namespace AE.PID.Views.Controls;
 
 /// <summary>
-/// Interaction logic for LabeledInput.xaml
+///     Interaction logic for LabeledInput.xaml
 /// </summary>
 public class LabelTextBox : TextBox
 {

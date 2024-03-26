@@ -11,10 +11,21 @@ namespace AE.PID.Models.Configurations;
 
 public class NLogConfiguration
 {
+    public enum LogLevel
+    {
+        Fatal,
+        Error,
+        Warn,
+        Info,
+        Debug,
+        Trace
+    }
+
+    private const string TargetMinLevelAttribute = "minlevel";
+
     private static readonly string NlogConfigFilepath =
         Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "NLog.config");
 
-    private const string TargetMinLevelAttribute = "minlevel";
     private readonly XmlDocument _doc = new();
 
     private XmlElement _logLevelElement;
@@ -94,15 +105,5 @@ public class NLogConfiguration
     public static void Load()
     {
         LogManager.Setup().LoadConfigurationFromFile(NlogConfigFilepath);
-    }
-
-    public enum LogLevel
-    {
-        Fatal,
-        Error,
-        Warn,
-        Info,
-        Debug,
-        Trace
     }
 }

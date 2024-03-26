@@ -20,20 +20,20 @@ public static class DocumentInitializer
     }
 
     /// <summary>
-    /// Start listening to the document initialize button clicked.
-    /// Setup theme font and size, ruler and grid.
+    ///     Start listening to the document initialize button clicked.
+    ///     Setup theme font and size, ruler and grid.
     /// </summary>
     /// <returns></returns>
     public static IDisposable Listen()
     {
-        Logger.Info($"Document Initialize Service started.");
+        Logger.Info("Document Initialize Service started.");
 
         return ManuallyInvokeTrigger.Subscribe(Initialize,
             ex =>
             {
                 ThisAddIn.Alert(ex.Message);
                 Logger.Error(ex,
-                    $"Document Initialize Service terminated accidentally.");
+                    "Document Initialize Service terminated accidentally.");
             },
             () => { Logger.Error("Document Initialize Service should never complete."); });
     }

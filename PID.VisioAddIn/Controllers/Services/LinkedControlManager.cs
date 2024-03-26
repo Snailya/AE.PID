@@ -11,17 +11,16 @@ namespace AE.PID.Controllers.Services;
 
 public abstract class LinkedControlManager
 {
+    public const string FunctionalElementBaseId = "{B28A5C75-E7CB-4700-A060-1A6D0A777A94}";
+    public const string LinkedShapePropertyName = "User.LinkedShapeID";
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     private static string _libraryPath = string.Empty;
     private static readonly BehaviorSubject<Position> PositionSubject = new(new Position(0, 0));
 
-    public const string FunctionalElementBaseId = "{B28A5C75-E7CB-4700-A060-1A6D0A777A94}";
-
     public static List<int> PreviousCopy { get; set; }
-    public const string LinkedShapePropertyName = "User.LinkedShapeID";
 
     /// <summary>
-    /// Listen on right click event to cache the paste location.
+    ///     Listen on right click event to cache the paste location.
     /// </summary>
     /// <returns></returns>
     public static IDisposable Listen()
@@ -38,7 +37,7 @@ public abstract class LinkedControlManager
                     ex =>
                     {
                         Logger.Error(ex,
-                            $"Linked Control Manager ternimated accidently, you may only use limited feature from Linked Control Manager");
+                            "Linked Control Manager ternimated accidently, you may only use limited feature from Linked Control Manager");
                     },
                     () => { Logger.Error("Document Update Service should never complete."); });
     }

@@ -11,7 +11,6 @@ using AE.PID.Models.Exceptions;
 using AE.PID.Models.VisProps;
 using AE.PID.Properties;
 using AE.PID.ViewModels;
-using AE.PID.Views;
 using AE.PID.Views.Pages;
 using DynamicData;
 using Microsoft.Office.Interop.Visio;
@@ -26,11 +25,10 @@ namespace AE.PID.Controllers.Services;
 public class DocumentExporter
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    private static Subject<Unit> ManuallyInvokeTrigger { get; } = new();
-
-    private readonly IList<string> _validLayers;
     private readonly SourceCache<Element, int> _elements = new(t => t.Id);
     private readonly Page _page;
+
+    private readonly IList<string> _validLayers;
 
     public DocumentExporter(Page page)
     {
@@ -44,6 +42,10 @@ public class DocumentExporter
             _elements.AddOrUpdate(elements);
     }
 
+    private static Subject<Unit> ManuallyInvokeTrigger { get; } = new();
+
+    public IObservableCache<Element, int> Elements => _elements.AsObservableCache();
+
     /// <summary>
     ///     Emit a value manually
     /// </summary>
@@ -53,8 +55,8 @@ public class DocumentExporter
     }
 
     /// <summary>
-    /// Start listening for export button click event and display a view to accept user operation.
-    /// The view prompt user to input extra information for project and the subsequent is called in ViewModel. 
+    ///     Start listening for export button click event and display a view to accept user operation.
+    ///     The view prompt user to input extra information for project and the subsequent is called in ViewModel.
     /// </summary>
     /// <returns></returns>
     public static IDisposable Listen()
@@ -86,8 +88,6 @@ public class DocumentExporter
                 () => { Logger.Error("Export Service should never complete."); }
             );
     }
-
-    public IObservableCache<Element, int> Elements => _elements.AsObservableCache();
 
     /// <summary>
     ///     extract data from shapes on layers defined in config and group them as BOM items.
@@ -123,7 +123,7 @@ public class DocumentExporter
                     item.FunctionalElement = $"{parent.FunctionalElement}-{item.FunctionalElement}";
             }
 
-            var materials = orderedElements.Select(AE.PID.Models.BOM.Material.FromElement).ToList();
+            var materials = orderedElements.Select(Models.BOM.Material.FromElement).ToList();
 
             // append aggregated properties
             var totalDic = materials
@@ -149,13 +149,13 @@ public class DocumentExporter
                 new
                 {
                     Parts = materials,
-                    CustomerName = documentInfo.CustomerName,
-                    DocumentNo = documentInfo.DocumentNo,
-                    ProjectNo = documentInfo.ProjectNo,
-                    VersionNo = documentInfo.VersionNo
+                    documentInfo.CustomerName,
+                    documentInfo.DocumentNo,
+                    documentInfo.ProjectNo,
+                    documentInfo.VersionNo
                 });
 
-            ThisAddIn.Alert($"执行成功");
+            ThisAddIn.Alert("执行成功");
         }
         catch (Exception ex)
         {
@@ -165,9 +165,9 @@ public class DocumentExporter
     }
 
     /// <summary>
-    /// Listen on the shape modification, addition and delete from the page to make element dynamic.
+    ///     Listen on the shape modification, addition and delete from the page to make element dynamic.
     /// </summary>
-    /// <returns>A <see cref="Disposable"/> to unsubscribe from these change events</returns>
+    /// <returns>A <see cref="Disposable" /> to unsubscribe from these change events</returns>
     public CompositeDisposable MonitorChange()
     {
         var subscription = new CompositeDisposable();
@@ -213,7 +213,7 @@ public class DocumentExporter
     }
 
     /// <summary>
-    /// Convert all shapes in BOM layers to elements. elements reflects only the raw data on the page. 
+    ///     Convert all shapes in BOM layers to elements. elements reflects only the raw data on the page.
     /// </summary>
     /// <returns>A collection of elements from page</returns>
     private IEnumerable<Element> GetElementsFromPage(IVPage page)
@@ -248,7 +248,8 @@ public class DocumentExporter
         // write related properties
         foreach (var propertyData in from property in material.Properties
                  let rowName = $"D_Attribute{material.Properties.IndexOf(property) + 1}"
-                 select new ShapeData(rowName, $"\"{property.Name}\"", "", $"\"{property.Value.Replace("\"", "\"\"")}\""))
+                 select new ShapeData(rowName, $"\"{property.Name}\"", "",
+                     $"\"{property.Value.Replace("\"", "\"\"")}\""))
             shape.AddOrUpdate(propertyData);
     }
 }

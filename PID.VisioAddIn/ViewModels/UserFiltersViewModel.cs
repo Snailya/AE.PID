@@ -4,11 +4,11 @@ namespace AE.PID.ViewModels;
 
 public class UserFiltersViewModel : ViewModelBase
 {
-    private string _name = string.Empty;
     private string _brand = string.Empty;
-    private string _specifications = string.Empty;
-    private string _model = string.Empty;
     private string _manufacturer = string.Empty;
+    private string _model = string.Empty;
+    private string _name = string.Empty;
+    private string _specifications = string.Empty;
 
     #region Read-Write Properties
 

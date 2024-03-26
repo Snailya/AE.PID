@@ -4,12 +4,6 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using AE.PID.Models;
-using AE.PID.Models.BOM;
-using AE.PID.Models.VisProps;
-using AE.PID.ViewModels;
-using AE.PID.Views;
-using AE.PID.Views.Controls;
 using AE.PID.Views.Pages;
 using DynamicData;
 using Microsoft.Office.Interop.Visio;
@@ -18,15 +12,14 @@ using NLog;
 namespace AE.PID.Controllers.Services;
 
 /// <summary>
-/// A selection service used for enhance user selection.
+///     A selection service used for enhance user selection.
 /// </summary>
 public class ShapeSelector
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    private static Subject<IVDocument> ManuallyInvokeTrigger { get; } = new();
+    private readonly Document _document;
 
     private readonly SourceCache<IVMaster, int> _masters = new(t => t.ID);
-    private readonly Document _document;
 
     public ShapeSelector(Document document)
     {
@@ -38,6 +31,10 @@ public class ShapeSelector
             _masters.AddOrUpdate(masters);
     }
 
+    private static Subject<IVDocument> ManuallyInvokeTrigger { get; } = new();
+
+    public IObservableCache<IVMaster, int> Masters => _masters.AsObservableCache();
+
     /// <summary>
     ///     Emit a value manually
     /// </summary>
@@ -48,13 +45,13 @@ public class ShapeSelector
     }
 
     /// <summary>
-    /// Start listening for select button click event and display a view to accept user operation.
-    /// The view prompt user to switch between select by id and by type, the subsequent is called in ViewModel.
+    ///     Start listening for select button click event and display a view to accept user operation.
+    ///     The view prompt user to switch between select by id and by type, the subsequent is called in ViewModel.
     /// </summary>
     /// <returns></returns>
     public static IDisposable Listen()
     {
-        Logger.Info($"Select Service started.");
+        Logger.Info("Select Service started.");
 
         return ManuallyInvokeTrigger
             .Throttle(TimeSpan.FromMilliseconds(300))
@@ -68,21 +65,19 @@ public class ShapeSelector
                     }
                     catch (Exception ex)
                     {
-                        Logger.Error(ex, $"Failed to display selection window.");
+                        Logger.Error(ex, "Failed to display selection window.");
                         ThisAddIn.Alert($"加载失败：{ex.Message}");
                     }
                 },
-                ex => { Logger.Error(ex, $"Select Service ternimated accidently."); },
+                ex => { Logger.Error(ex, "Select Service ternimated accidently."); },
                 () => { Logger.Error("Select Service should never complete."); }
             );
     }
 
-    public IObservableCache<IVMaster, int> Masters => _masters.AsObservableCache();
-
     /// <summary>
-    /// Listen on the document master change
+    ///     Listen on the document master change
     /// </summary>
-    /// <returns>A <see cref="Disposable"/> to unsubscribe from these change events</returns>
+    /// <returns>A <see cref="Disposable" /> to unsubscribe from these change events</returns>
     public CompositeDisposable MonitorChange()
     {
         var subscription = new CompositeDisposable();
@@ -147,7 +142,7 @@ public class ShapeSelector
     }
 
     /// <summary>
-    /// Get all masters from document stencil.
+    ///     Get all masters from document stencil.
     /// </summary>
     /// <returns>A collection of elements from page</returns>
     private static IEnumerable<IVMaster> GetMastersFromDocument(IVDocument document)

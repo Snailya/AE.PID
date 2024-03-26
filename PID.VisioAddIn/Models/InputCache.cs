@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Text;
-using System.Text.Encodings.Web;
 using Newtonsoft.Json;
 using NLog;
 
@@ -31,7 +30,7 @@ public class InputCache
         catch (JsonException jsonException)
         {
             Logger.Error(jsonException,
-                $"Failed to log input cache.");
+                "Failed to log input cache.");
         }
 
         return cache;

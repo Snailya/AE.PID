@@ -9,9 +9,11 @@ namespace AE.PID.Models.Configurations;
 public class ExportSettings : INotifyPropertyChanged
 {
     /// <summary>
-    /// Layers to filter shapes for BOM table.
+    ///     Layers to filter shapes for BOM table.
     /// </summary>
-    public IList<string> BomLayers { get; set; } = new List<string> { };
+    public IList<string> BomLayers { get; set; } = new List<string>();
+
+    public event PropertyChangedEventHandler PropertyChanged;
 
     protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {
@@ -25,6 +27,4 @@ public class ExportSettings : INotifyPropertyChanged
         OnPropertyChanged(propertyName);
         return true;
     }
-
-    public event PropertyChangedEventHandler PropertyChanged;
 }

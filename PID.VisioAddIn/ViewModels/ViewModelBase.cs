@@ -5,8 +5,6 @@ namespace AE.PID.ViewModels;
 
 public abstract class ViewModelBase : ReactiveObject, IActivatableViewModel
 {
-    public ViewModelActivator Activator { get; }
-
     protected ViewModelBase()
     {
         Activator = new ViewModelActivator();
@@ -20,6 +18,8 @@ public abstract class ViewModelBase : ReactiveObject, IActivatableViewModel
             SetupStart();
         });
     }
+
+    public ViewModelActivator Activator { get; }
 
     protected virtual void SetupCommands()
     {

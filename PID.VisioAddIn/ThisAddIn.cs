@@ -18,19 +18,16 @@ using AE.PID.Properties;
 using AE.PID.ViewModels;
 using AE.PID.Views;
 using AE.PID.Views.Windows;
+using Microsoft.Office.Interop.Visio;
 using NLog;
 using MessageBox = System.Windows.Forms.MessageBox;
 using Path = System.IO.Path;
+using Window = System.Windows.Window;
 
 namespace AE.PID;
 
 public partial class ThisAddIn
 {
-    private Logger _logger;
-    private Ribbon _ribbon;
-
-    private readonly CompositeDisposable _compositeDisposable = new();
-
     /// <summary>
     ///     The data folder path in Application Data.
     /// </summary>
@@ -47,28 +44,32 @@ public partial class ThisAddIn
     ///     The tmp folder to store updated file.
     /// </summary>
     public static readonly string LibraryCheatSheet = Path.Combine(LibraryFolder, ".cheatsheet");
-    
+
     /// <summary>
     ///     The tmp folder to store updated file.
     /// </summary>
     public static readonly string TmpFolder = Path.Combine(AppDataFolder, "Tmp");
 
-    /// <summary>
-    /// Manges window and side window, make all windows reusable to reduce memory usage.
-    /// </summary>
-    public WindowManager WindowManager;
+    private readonly CompositeDisposable _compositeDisposable = new();
+    private Logger _logger;
+    private Ribbon _ribbon;
 
     /// <summary>
-    /// Manges all services
+    ///     Manges all services
     /// </summary>
     public ServiceManager ServiceManager;
 
-    public static string Version { get; private set; }
-
     /// <summary>
-    /// The synchronization context for wpf dispatching.
+    ///     The synchronization context for wpf dispatching.
     /// </summary>
     public SynchronizationContext SynchronizationContext;
+
+    /// <summary>
+    ///     Manges window and side window, make all windows reusable to reduce memory usage.
+    /// </summary>
+    public WindowManager WindowManager;
+
+    public static string Version { get; private set; }
 
     /// <summary>
     ///     Configuration has three part: app configuration, library configuration, export settings.
@@ -76,7 +77,7 @@ public partial class ThisAddIn
     public Configuration Configuration { get; private set; }
 
     /// <summary>
-    /// The user input cache of the previous input.
+    ///     The user input cache of the previous input.
     /// </summary>
     public InputCache InputCache { get; private set; }
 
@@ -141,7 +142,7 @@ public partial class ThisAddIn
                     window.Visibility = Visibility.Collapsed;
 
                     _logger.Error(ex,
-                        $"Process failed.");
+                        "Process failed.");
                     Alert(ex.Message);
                 },
                 () => { });
@@ -155,10 +156,10 @@ public partial class ThisAddIn
         // get the current add in version
         var assemblyPath = Assembly.GetExecutingAssembly().Location;
         Version = FileVersionInfo.GetVersionInfo(assemblyPath).FileVersion;
-            
+
         _ribbon = new Ribbon();
         Globals.ThisAddIn.Application.RegisterRibbonX(_ribbon, null,
-            Microsoft.Office.Interop.Visio.VisRibbonXModes.visRXModeDrawing,
+            VisRibbonXModes.visRXModeDrawing,
             "AE PID RIBBON");
 
         // associate the main tread with a synchronization context so that the main thread would be achieved using SynchronizationContext.Current.
@@ -172,7 +173,7 @@ public partial class ThisAddIn
         setupObservable.Subscribe(_ =>
         {
             HttpClient.BaseAddress = new Uri(Configuration.Api);
-            ServiceManager = new ServiceManager(httpClient: HttpClient);
+            ServiceManager = new ServiceManager(HttpClient);
 
             // background service
             AppUpdater.Listen()
@@ -207,7 +208,7 @@ public partial class ThisAddIn
         Configuration.Save();
         InputCache.Save(InputCache);
 
-        _logger.Info($"Configuration and input cache saved on shut down.");
+        _logger.Info("Configuration and input cache saved on shut down.");
 
         _compositeDisposable.Dispose();
     }
@@ -252,6 +253,7 @@ public partial class ThisAddIn
 
         _logger.Info("Setuped.");
     }
+
 
     #region VSTO generated code
 

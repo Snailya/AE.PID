@@ -118,12 +118,12 @@ public class BaseWindowViewModel : INotifyPropertyChanged
     /// <summary>
     ///     The size of the resize border around the window, taking into account the outer margin
     /// </summary>
-    public Thickness ResizeBorderThickness => new Thickness(ResizeBorder + OuterMarginSize);
+    public Thickness ResizeBorderThickness => new(ResizeBorder + OuterMarginSize);
 
     /// <summary>
     ///     The padding of the inner content of the main window
     /// </summary>
-    public Thickness InnerContentPadding { get; set; } = new Thickness(0);
+    public Thickness InnerContentPadding { get; set; } = new(0);
 
     /// <summary>
     ///     The margin around the window to allow for a drop shadow
@@ -138,7 +138,7 @@ public class BaseWindowViewModel : INotifyPropertyChanged
     /// <summary>
     ///     The margin around the window to allow for a drop shadow
     /// </summary>
-    public Thickness OuterMarginSizeThickness => new Thickness(OuterMarginSize);
+    public Thickness OuterMarginSizeThickness => new(OuterMarginSize);
 
     /// <summary>
     ///     The radius of the edges of the window
@@ -153,11 +153,10 @@ public class BaseWindowViewModel : INotifyPropertyChanged
     /// <summary>
     ///     The radius of the edges of the window
     /// </summary>
-    public CornerRadius WindowCornerRadius => new CornerRadius(WindowRadius);
-    
+    public CornerRadius WindowCornerRadius => new(WindowRadius);
 
     #endregion
-    
+
     #region Private Helpers
 
     /// <summary>
@@ -193,8 +192,3 @@ public class BaseWindowViewModel : INotifyPropertyChanged
 
     #endregion
 }
-
-
-
-
-

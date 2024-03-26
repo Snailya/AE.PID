@@ -4,7 +4,7 @@ using ReactiveUI;
 namespace AE.PID.Views.Components;
 
 /// <summary>
-/// Interaction logic for DesignMaterialsSelectionControl.xaml
+///     Interaction logic for DesignMaterialsSelectionControl.xaml
 /// </summary>
 public partial class UserFiltersForm
 {

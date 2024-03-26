@@ -1,15 +1,15 @@
-﻿using AE.PID.Controllers.Services;
-using Microsoft.Office.Core;
-using Microsoft.Office.Interop.Visio;
-using NLog;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Xml.Linq;
+using AE.PID.Controllers.Services;
+using AE.PID.Properties;
+using Microsoft.Office.Core;
+using Microsoft.Office.Interop.Visio;
+using NLog;
 
 // TODO:   按照以下步骤启用功能区(XML)项:
 
@@ -34,9 +34,9 @@ namespace AE.PID;
 [ComVisible(true)]
 public class Ribbon : IRibbonExtensibility
 {
-    private IRibbonUI _ribbon;
-    private Logger _logger = LogManager.GetCurrentClassLogger();
     private Dictionary<string, Bitmap> _buttonImages = new();
+    private Logger _logger = LogManager.GetCurrentClassLogger();
+    private IRibbonUI _ribbon;
 
     #region IRibbonExtensibility 成员
 
@@ -52,6 +52,36 @@ public class Ribbon : IRibbonExtensibility
         _ribbon = ribbonUi;
     }
 
+    #region Commands
+
+    public void CopyOverride(IRibbonControl control, ref bool cancel)
+    {
+        Globals.ThisAddIn.Application.ActiveWindow.Selection.GetIDs(out var ids);
+        LinkedControlManager.PreviousCopy = ids.OfType<int>().ToList();
+
+        cancel = false;
+    }
+
+    #endregion
+
+    #region 帮助器
+
+    private static string GetResourceText(string resourceName)
+    {
+        var asm = Assembly.GetExecutingAssembly();
+        var resourceNames = asm.GetManifestResourceNames();
+        foreach (var t in resourceNames)
+        {
+            if (string.Compare(resourceName, t, StringComparison.OrdinalIgnoreCase) != 0) continue;
+            using var resourceReader = new StreamReader(asm.GetManifestResourceStream(t));
+            return resourceReader.ReadToEnd();
+        }
+
+        return null;
+    }
+
+    #endregion
+
     #region Ribbon
 
     public Bitmap GetButtonImage(IRibbonControl control)
@@ -59,7 +89,7 @@ public class Ribbon : IRibbonExtensibility
         var buttonId = control.Id;
         if (_buttonImages.TryGetValue(buttonId, out var image)) return image;
 
-        _buttonImages[buttonId] = ((Icon)Properties.Resources.ResourceManager.GetObject(buttonId))?.ToBitmap();
+        _buttonImages[buttonId] = ((Icon)Resources.ResourceManager.GetObject(buttonId))?.ToBitmap();
         return _buttonImages[buttonId];
     }
 
@@ -115,19 +145,6 @@ public class Ribbon : IRibbonExtensibility
 
     public void Debug(IRibbonControl control)
     {
-
-    }
-
-    #endregion
-
-    #region Commands
-
-    public void CopyOverride(IRibbonControl control, ref bool cancel)
-    {
-        Globals.ThisAddIn.Application.ActiveWindow.Selection.GetIDs(out var ids);
-        LinkedControlManager.PreviousCopy = ids.OfType<int>().ToList();
-
-        cancel = false;
     }
 
     #endregion
@@ -172,24 +189,6 @@ public class Ribbon : IRibbonExtensibility
     public bool CanPaste(IRibbonControl control)
     {
         return LinkedControlManager.CanPaste();
-    }
-
-    #endregion
-
-    #region 帮助器
-
-    private static string GetResourceText(string resourceName)
-    {
-        var asm = Assembly.GetExecutingAssembly();
-        var resourceNames = asm.GetManifestResourceNames();
-        foreach (var t in resourceNames)
-        {
-            if (string.Compare(resourceName, t, StringComparison.OrdinalIgnoreCase) != 0) continue;
-            using var resourceReader = new StreamReader(asm.GetManifestResourceStream(t));
-            return resourceReader.ReadToEnd();
-        }
-
-        return null;
     }
 
     #endregion

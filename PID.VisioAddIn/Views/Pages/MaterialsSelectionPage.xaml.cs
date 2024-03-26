@@ -12,7 +12,7 @@ using ReactiveUI;
 namespace AE.PID.Views.Pages;
 
 /// <summary>
-/// Interaction logic for DesignMaterialsSelectionControl.xaml
+///     Interaction logic for DesignMaterialsSelectionControl.xaml
 /// </summary>
 public partial class MaterialsSelectionPage
 {

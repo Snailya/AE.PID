@@ -1,7 +1,6 @@
 ﻿using AE.PID.Models;
-using ReactiveUI;
-using System;
 using Microsoft.Office.Interop.Visio;
+using ReactiveUI;
 
 namespace AE.PID.ViewModels;
 

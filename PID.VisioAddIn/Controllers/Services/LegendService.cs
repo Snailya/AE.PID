@@ -13,11 +13,10 @@ namespace AE.PID.Controllers.Services;
 
 public static class LegendService
 {
-    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    private static Subject<IVPage> ManuallyInvokeTrigger { get; } = new();
-
     private const int Columns = 3;
     private const int RowSpacing = 10;
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+    private static Subject<IVPage> ManuallyInvokeTrigger { get; } = new();
 
     /// <summary>
     ///     Emit a value manually
@@ -29,18 +28,18 @@ public static class LegendService
     }
 
     /// <summary>
-    /// Listen to both document open event and user click event to monitor if a document master update is needed.
-    /// The update process is done on a background thread using OpenXML, so it is extremely fast.
-    /// However, a progress bar still provided in case a long time run needed in the future.
+    ///     Listen to both document open event and user click event to monitor if a document master update is needed.
+    ///     The update process is done on a background thread using OpenXML, so it is extremely fast.
+    ///     However, a progress bar still provided in case a long time run needed in the future.
     /// </summary>
     public static IDisposable Listen()
     {
-        Logger.Info($"Document Update Service started.");
+        Logger.Info("Document Update Service started.");
 
         return
             ManuallyInvokeTrigger
                 .Throttle(TimeSpan.FromMilliseconds(300))
-                .Do(_ => Logger.Info($"Legend Service started. {{Initiated by: User}}"))
+                .Do(_ => Logger.Info("Legend Service started. {Initiated by: User}"))
                 .Subscribe(
                     page =>
                     {
@@ -51,7 +50,7 @@ public static class LegendService
                                 ex => { ThisAddIn.Alert(ex.Message); }
                             );
                     },
-                    ex => { Logger.Error(ex, $"Legend Service ternimated accidently."); },
+                    ex => { Logger.Error(ex, "Legend Service ternimated accidently."); },
                     () => { Logger.Error("Legend Service should never complete."); });
     }
 

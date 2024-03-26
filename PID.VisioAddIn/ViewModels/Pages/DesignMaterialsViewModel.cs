@@ -15,64 +15,15 @@ namespace AE.PID.ViewModels.Pages;
 
 public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
 {
-    private string _elementName = string.Empty;
-
     private ReadOnlyObservableCollection<DesignMaterialCategoryViewModel> _categories = new([]);
-    private DesignMaterialCategoryViewModel? _selectedCategory;
-
-    private int _pageNumber = 1;
+    private string _elementName = string.Empty;
 
     private ReadOnlyObservableCollection<DesignMaterial> _lastUsed = new([]);
 
+    private int _pageNumber = 1;
+    private DesignMaterialCategoryViewModel? _selectedCategory;
+
     private ReadOnlyObservableCollection<DesignMaterial>? _validMaterials;
-
-    #region Read-Write Properties
-
-    /// <summary>
-    /// The name is the seed for the this view model. The name is mapped to a category and then all girds on populated by this category.
-    /// </summary>
-    public string ElementName
-    {
-        get => _elementName;
-        set => this.RaiseAndSetIfChanged(ref _elementName, value);
-    }
-
-    /// <summary>
-    /// SelectedCategory determines materials from which category should be load.
-    /// </summary>
-    public DesignMaterialCategoryViewModel? SelectedCategory
-    {
-        get => _selectedCategory;
-        set => this.RaiseAndSetIfChanged(ref _selectedCategory, value);
-    }
-
-    /// <summary>
-    /// The current page indicator, which controls materials load and request.
-    /// </summary>
-    public int PageNumber
-    {
-        get => _pageNumber;
-        set => _pageNumber = this.RaiseAndSetIfChanged(ref _pageNumber, value);
-    }
-
-    #endregion
-
-    #region Read-Only Properties
-
-    public ReactiveCommand<Unit, Unit>? Load { get; private set; }
-    public ReactiveCommand<DesignMaterial, Unit>? Select { get; set; }
-    public ReactiveCommand<Unit, Unit>? Close { get; set; }
-
-    #endregion
-
-    #region Output Proeprties
-
-    public ReadOnlyObservableCollection<DesignMaterialCategoryViewModel> Categories => _categories;
-    public ReadOnlyObservableCollection<DesignMaterial> LastUsed => _lastUsed;
-    public ReadOnlyObservableCollection<DesignMaterial>? ValidMaterials => _validMaterials;
-    public UserFiltersViewModel UserFiltersViewModel { get; set; } = new();
-
-    #endregion
 
     protected override void SetupCommands()
     {
@@ -168,7 +119,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
     }
 
     /// <summary>
-    /// Add design material to last used list.
+    ///     Add design material to last used list.
     /// </summary>
     /// <param name="item"></param>
     /// <param name="selectedName"></param>
@@ -195,4 +146,53 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
         return m => m.Name.Contains(name) && m.Brand.Contains(brand) && m.Specifications.Contains(specifications) &&
                     m.Model.Contains(model) && m.Manufacturer.Contains(manufacturer);
     }
+
+    #region Read-Write Properties
+
+    /// <summary>
+    ///     The name is the seed for the this view model. The name is mapped to a category and then all girds on populated by
+    ///     this category.
+    /// </summary>
+    public string ElementName
+    {
+        get => _elementName;
+        set => this.RaiseAndSetIfChanged(ref _elementName, value);
+    }
+
+    /// <summary>
+    ///     SelectedCategory determines materials from which category should be load.
+    /// </summary>
+    public DesignMaterialCategoryViewModel? SelectedCategory
+    {
+        get => _selectedCategory;
+        set => this.RaiseAndSetIfChanged(ref _selectedCategory, value);
+    }
+
+    /// <summary>
+    ///     The current page indicator, which controls materials load and request.
+    /// </summary>
+    public int PageNumber
+    {
+        get => _pageNumber;
+        set => _pageNumber = this.RaiseAndSetIfChanged(ref _pageNumber, value);
+    }
+
+    #endregion
+
+    #region Read-Only Properties
+
+    public ReactiveCommand<Unit, Unit>? Load { get; private set; }
+    public ReactiveCommand<DesignMaterial, Unit>? Select { get; set; }
+    public ReactiveCommand<Unit, Unit>? Close { get; set; }
+
+    #endregion
+
+    #region Output Proeprties
+
+    public ReadOnlyObservableCollection<DesignMaterialCategoryViewModel> Categories => _categories;
+    public ReadOnlyObservableCollection<DesignMaterial> LastUsed => _lastUsed;
+    public ReadOnlyObservableCollection<DesignMaterial>? ValidMaterials => _validMaterials;
+    public UserFiltersViewModel UserFiltersViewModel { get; set; } = new();
+
+    #endregion
 }

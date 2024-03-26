@@ -6,6 +6,8 @@ using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Security;
+using System.Security.Policy;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -88,9 +90,18 @@ public class DocumentUpdater
                         {
                             var progress = new Progress<int>();
                             var token = new CancellationTokenSource().Token;
+
+                            var evidence = new Evidence();
+                            evidence.AddHostEvidence(new Zone(SecurityZone.MyComputer));
+
                             var updater = new DocumentUpdater(data.FilePath);
                             updater.DoUpdatesByOpenXml(progress, token);
 
+                            // todo: for large file, there is issue with evidence
+
+                            // var domain = AppDomain.CreateDomain("Test", new Evidence());
+                            // var updater =  (IOpenXmlService)domain.CreateInstanceAndUnwrap(typeof(OpenXmlService).Assembly.FullName, typeof(OpenXmlService).FullName, new object[]{data.FilePath});
+                            // updater.DoUpdates(progress, token);
                             return data.FilePath;
                         })
                         .Subscribe(
@@ -225,19 +236,21 @@ public class DocumentUpdater
                 oldMasterElement.ReplaceWith(masterElement);
 
                 // then handle master{i} part
-                // we should replace the LineStyle, FillStyle, TextStyle of the First Shape node with correct id in style tables.
+                // we should replace the LineStyle, FillStyle, TextStyle of the Shape node with correct id in style tables.
                 var oldMasterPart = VisioXmlWrapper.GetMasterPartById(package, int.Parse(id))!;
-                var shapeElement = masterDocument.XPathSelectElement("/main:MasterContents/main:Shapes/main:Shape",
-                    VisioXmlWrapper.NamespaceManager)!;
-                var lineStyleId = styleTable.SingleOrDefault(x => x.Name == master.LineStyleName)?.Id;
-                if (lineStyleId != null)
-                    shapeElement.Attribute("LineStyle")?.SetValue(lineStyleId);
-                var fillStyleId = styleTable.SingleOrDefault(x => x.Name == master.FillStyleName)?.Id;
-                if (fillStyleId != null)
-                    shapeElement.Attribute("FillStyle")?.SetValue(fillStyleId);
-                var textStyleId = styleTable.SingleOrDefault(x => x.Name == master.TextStyleName)?.Id;
-                if (textStyleId != null)
-                    shapeElement.Attribute("TextStyle")?.SetValue(textStyleId);
+                foreach (var shapeElement in masterDocument.XPathSelectElements("//main:Shape",
+                             VisioXmlWrapper.NamespaceManager))
+                {
+                    var lineStyleId = styleTable.SingleOrDefault(x => x.Name == master.LineStyleName)?.Id;
+                    if (lineStyleId != null)
+                        shapeElement.Attribute("LineStyle")?.SetValue(lineStyleId);
+                    var fillStyleId = styleTable.SingleOrDefault(x => x.Name == master.FillStyleName)?.Id;
+                    if (fillStyleId != null)
+                        shapeElement.Attribute("FillStyle")?.SetValue(fillStyleId);
+                    var textStyleId = styleTable.SingleOrDefault(x => x.Name == master.TextStyleName)?.Id;
+                    if (textStyleId != null)
+                        shapeElement.Attribute("TextStyle")?.SetValue(textStyleId);
+                }
 
                 XmlHelper.SaveXDocumentToPart(oldMasterPart, masterDocument);
 
@@ -246,7 +259,7 @@ public class DocumentUpdater
             }
 
             XmlHelper.SaveXDocumentToPart(mastersPart, mastersDocument);
-            
+
             // recalculate formula in shape sheet
             XmlHelper.RecalculateDocument(package);
         }

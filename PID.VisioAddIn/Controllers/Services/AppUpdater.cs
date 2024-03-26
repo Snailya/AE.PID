@@ -10,17 +10,15 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using NLog;
 using Microsoft.Win32;
-using ReactiveUI;
 using Newtonsoft.Json.Linq;
-using System.Reflection;
+using NLog;
 
 namespace AE.PID.Controllers.Services;
 
 /// <summary>
-/// This class handles app update related event, such as app version check and installer persist.
-/// Also, it provide a trigger to allow user to invoke update manually.
+///     This class handles app update related event, such as app version check and installer persist.
+///     Also, it provide a trigger to allow user to invoke update manually.
 /// </summary>
 public abstract class AppUpdater
 {
@@ -36,10 +34,10 @@ public abstract class AppUpdater
     }
 
     /// <summary>
-    /// Staring a background service to request the server on period to check if there is a valid update.
-    /// If so, prompt a MessageBox to let user decide whether to update right now.
-    /// As automatic update not implemented, only open the explorer window to let user know there's a update installer.
-    /// This should called after configuration loaded.
+    ///     Staring a background service to request the server on period to check if there is a valid update.
+    ///     If so, prompt a MessageBox to let user decide whether to update right now.
+    ///     As automatic update not implemented, only open the explorer window to let user know there's a update installer.
+    ///     This should called after configuration loaded.
     /// </summary>
     public static IDisposable Listen()
     {
@@ -48,7 +46,7 @@ public abstract class AppUpdater
         var userInvokeObservable = ManuallyInvokeTrigger
             .Throttle(TimeSpan.FromMilliseconds(300))
             .Select(_ => Constants.ManuallyInvokeMagicNumber)
-            .Do(_ => Logger.Info($"App Update started. {{Initiated by: User}}"));
+            .Do(_ => Logger.Info("App Update started. {Initiated by: User}"));
 
         var autoInvokeObservable = Globals.ThisAddIn.Configuration.CheckIntervalSubject // auto check
             .Select(Observable.Interval)
@@ -58,17 +56,17 @@ public abstract class AppUpdater
                     long>(-1)) // add a immediately value as the interval method emits only after the interval collapse.
             .Where(_ => DateTime.Now >
                         Globals.ThisAddIn.Configuration.NextTime) // ignore if it not till the next check time
-            .Do(_ => Logger.Info($"App Update started. {{Initiated by: Auto-Run}}"));
+            .Do(_ => Logger.Info("App Update started. {Initiated by: Auto-Run}"));
 
         return autoInvokeObservable
             .Merge(userInvokeObservable)
             .Subscribe(InvokeUpdate,
-                ex => { Logger.Error(ex, $"App update listener ternimated accidently."); },
+                ex => { Logger.Error(ex, "App update listener ternimated accidently."); },
                 () => { Logger.Error("App update listener should never complete."); });
     }
 
     /// <summary>
-    /// Invoke a app update process.
+    ///     Invoke a app update process.
     /// </summary>
     /// <param name="seed"></param>
     private static void InvokeUpdate(long seed)
@@ -102,9 +100,12 @@ public abstract class AppUpdater
     }
 
     /// <summary>
-    /// Request the server with current version of the app to check if there's a available update.
+    ///     Request the server with current version of the app to check if there's a available update.
     /// </summary>
-    /// <returns>The check result, if there's an available version, return with the lasted version download url, otherwise with message.</returns>
+    /// <returns>
+    ///     The check result, if there's an available version, return with the lasted version download url, otherwise with
+    ///     message.
+    /// </returns>
     private static async Task<AppCheckVersionResult> GetUpdateAsync()
     {
         var configuration = Globals.ThisAddIn.Configuration;
@@ -142,19 +143,19 @@ public abstract class AppUpdater
         catch (HttpRequestException httpRequestException)
         {
             Logger.Error(httpRequestException,
-                $"Failed to check update from server. Firstly, check if you are able to ping to the api. If not, connect administrator.");
+                "Failed to check update from server. Firstly, check if you are able to ping to the api. If not, connect administrator.");
             throw;
         }
         catch (KeyNotFoundException keyNotFoundException)
         {
             Logger.Error(keyNotFoundException,
-                $"Some of the keys [isUpdateAvailable, latestVersion, downloadUrl, releaseNotes] not found in the response. Please check if the api response body is out of time.");
+                "Some of the keys [isUpdateAvailable, latestVersion, downloadUrl, releaseNotes] not found in the response. Please check if the api response body is out of time.");
             throw;
         }
     }
 
     /// <summary>
-    /// Prompt user the get update result to let user decide whether to perform a update right now.
+    ///     Prompt user the get update result to let user decide whether to perform a update right now.
     /// </summary>
     /// <param name="invokeType"></param>
     /// <param name="checkResult"></param>
@@ -180,7 +181,7 @@ public abstract class AppUpdater
     }
 
     /// <summary>
-    /// Download the installer zip and persist in a local path.
+    ///     Download the installer zip and persist in a local path.
     /// </summary>
     /// <param name="downloadUrl"></param>
     /// <returns>The path of the zip installer.</returns>
@@ -216,19 +217,19 @@ public abstract class AppUpdater
         catch (HttpRequestException httpRequestException)
         {
             Logger.Error(httpRequestException,
-                $"Failed to get installer zip from server. Firstly, check if you are able to ping to the api. If not, connect administrator.");
+                "Failed to get installer zip from server. Firstly, check if you are able to ping to the api. If not, connect administrator.");
             throw;
         }
         catch (DirectoryNotFoundException directoryNotFoundException)
         {
             Logger.Error(directoryNotFoundException,
-                $"Failed to cache installer to local storage. Please check if the directory exist, if not create it manully, or it should be created next time app starts.");
+                "Failed to cache installer to local storage. Please check if the directory exist, if not create it manully, or it should be created next time app starts.");
             throw;
         }
     }
 
     /// <summary>
-    /// Get the filename from content disposition from an response.
+    ///     Get the filename from content disposition from an response.
     /// </summary>
     /// <param name="contentDisposition"></param>
     /// <returns></returns>
@@ -244,7 +245,7 @@ public abstract class AppUpdater
     }
 
     /// <summary>
-    /// Execute .msi file in a new process. Need restart Visio to apply changes.
+    ///     Execute .msi file in a new process. Need restart Visio to apply changes.
     /// </summary>
     /// <param name="source"></param>
     private static void Install(string source)
@@ -286,7 +287,7 @@ public abstract class AppUpdater
     }
 
     /// <summary>
-    /// Find the WinRar.exe by regedit and extract .rar file using WinRar in new process.
+    ///     Find the WinRar.exe by regedit and extract .rar file using WinRar in new process.
     /// </summary>
     /// <param name="sourceArchiveFileName"></param>
     /// <param name="destinationDirectoryName"></param>

@@ -10,15 +10,16 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using AE.PID.Core.DTOs;
-using AE.PID.Models;
 using AE.PID.Models.Configurations;
+using Microsoft.Office.Interop.Visio;
 using Newtonsoft.Json;
 using NLog;
+using Path = System.IO.Path;
 
 namespace AE.PID.Controllers.Services;
 
 /// <summary>
-/// Compare local library configuration with the server, and download newest if exist.
+///     Compare local library configuration with the server, and download newest if exist.
 /// </summary>
 public abstract class LibraryUpdater
 {
@@ -34,13 +35,13 @@ public abstract class LibraryUpdater
     }
 
     /// <summary>
-    ///  Automatically check the server for library updates and done in silent.
-    /// The check interval is control by configuration.
+    ///     Automatically check the server for library updates and done in silent.
+    ///     The check interval is control by configuration.
     /// </summary>
     /// <returns></returns>
     public static IDisposable Listen()
     {
-        Logger.Info($"Library Update Service started.");
+        Logger.Info("Library Update Service started.");
 
         return Globals.ThisAddIn.Configuration.LibraryConfiguration.CheckIntervalSubject // auto check observable
             .Select(Observable.Interval)
@@ -48,15 +49,15 @@ public abstract class LibraryUpdater
             .Merge(Observable.Return<long>(-1))
             .Where(_ =>
                 DateTime.Now > Globals.ThisAddIn.Configuration.LibraryConfiguration.NextTime)
-            .Do(_ => Logger.Info($"Library Update started. {{Initiated by: Auto-Run}}"))
+            .Do(_ => Logger.Info("Library Update started. {Initiated by: Auto-Run}"))
             // merge with user manually invoke observable
             .Merge(
                 ManuallyInvokeTrigger.Throttle(TimeSpan.FromMilliseconds(300))
                     .Select(_ => Constants.ManuallyInvokeMagicNumber)
-                    .Do(_ => Logger.Info($"Library Update started. {{Initiated by: User}}"))
+                    .Do(_ => Logger.Info("Library Update started. {Initiated by: User}"))
             ).Subscribe(
                 DoUpdate,
-                ex => { Logger.Error(ex, $"Library Update Service ternimated accidently."); },
+                ex => { Logger.Error(ex, "Library Update Service ternimated accidently."); },
                 () => { Logger.Error("Library Update Service should never completed."); });
     }
 
@@ -64,12 +65,12 @@ public abstract class LibraryUpdater
     {
         var client = Globals.ThisAddIn.HttpClient;
 
-        #if DEBUG
-            var response = await client.GetStringAsync("/libraries?involvePrerelease=true");
-        #else
+#if DEBUG
+        var response = await client.GetStringAsync("/libraries?involvePrerelease=true");
+#else
             var response = await client.GetStringAsync("/libraries");
-        #endif
-        
+#endif
+
         return JsonConvert.DeserializeObject<IEnumerable<LibraryDto>>(response)?.ToList();
     }
 
@@ -84,8 +85,8 @@ public abstract class LibraryUpdater
             .Select(data =>
             {
                 var dockedStencils = Globals.ThisAddIn.Application.Documents
-                    .OfType<Microsoft.Office.Interop.Visio.IVDocument>()
-                    .Where(x => x.Type == Microsoft.Office.Interop.Visio.VisDocumentTypes.visTypeStencil)
+                    .OfType<IVDocument>()
+                    .Where(x => x.Type == VisDocumentTypes.visTypeStencil)
                     .ToList();
                 var paths = dockedStencils.Select(x => x.FullName).ToList();
 
@@ -106,8 +107,8 @@ public abstract class LibraryUpdater
                     Result = result
                 }
             )
-            .Do(_ => { Logger.Info($"Libraries are up to date."); })
-            .Do(_=>DownloadCheatSheet())
+            .Do(_ => { Logger.Info("Libraries are up to date."); })
+            .Do(_ => DownloadCheatSheet())
             // notify user if need
             .Where(x => x.InvokeType == Constants.ManuallyInvokeMagicNumber)
             .ObserveOn(Globals.ThisAddIn.SynchronizationContext)
@@ -115,7 +116,7 @@ public abstract class LibraryUpdater
             {
                 foreach (var item in data.StencilsToRestore)
                     Globals.ThisAddIn.Application.Documents.OpenEx(item,
-                        (short)Microsoft.Office.Interop.Visio.VisOpenSaveArgs.visOpenDocked);
+                        (short)VisOpenSaveArgs.visOpenDocked);
 
                 ThisAddIn.Alert("更新完毕");
                 return Unit.Default;
@@ -140,15 +141,16 @@ public abstract class LibraryUpdater
                 });
     }
 
-    private static async  Task DownloadCheatSheet()
+    private static async Task DownloadCheatSheet()
     {
-        #if DEBUG
+#if DEBUG
         var responseString =
-            await Globals.ThisAddIn.ServiceManager.Client.GetStringAsync("/libraries/cheatsheet?involvePrerelease=true");
-        #else 
+            await Globals.ThisAddIn.ServiceManager.Client.GetStringAsync(
+                "/libraries/cheatsheet?involvePrerelease=true");
+#else
                     await Globals.ThisAddIn.ServiceManager.Client.GetStringAsync("/libraries/cheatsheets");
-        #endif
-        
+#endif
+
         if (string.IsNullOrEmpty(responseString)) return;
         var responseResult = JsonConvert.DeserializeObject<IEnumerable<DetailedLibraryItemDto>>(responseString);
         Debug.Assert(responseResult != null);
@@ -156,7 +158,7 @@ public abstract class LibraryUpdater
         using var writer = new StreamWriter(ThisAddIn.LibraryCheatSheet);
         await writer.WriteLineAsync(responseString);
     }
-    
+
 
     private static async Task<List<Library>> UpdateLibrariesAsync()
     {

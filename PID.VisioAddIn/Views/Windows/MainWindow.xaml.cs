@@ -1,13 +1,11 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 
 namespace AE.PID.Views.Windows;
 
 /// <summary>
-/// Interaction logic for MainWindow.xaml
+///     Interaction logic for MainWindow.xaml
 /// </summary>
 public partial class MainWindow
 {
@@ -30,7 +28,6 @@ public partial class MainWindow
     private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
     {
         if (e.OriginalSource is Button button)
-        {
             switch (button.Name)
             {
                 case "PART_Minimize":
@@ -43,6 +40,5 @@ public partial class MainWindow
                     Close();
                     break;
             }
-        }
     }
 }

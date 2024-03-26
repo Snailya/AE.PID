@@ -15,10 +15,10 @@ public class MaterialsService : IDisposable
 {
     private const int PageSize = 20;
 
-    private readonly HttpClient _client;
+    private readonly SourceCache<MaterialCategoryDto, int> _categories = new(t => t.Id);
     private readonly IDisposable _cleanUp;
 
-    private readonly SourceCache<MaterialCategoryDto, int> _categories = new(t => t.Id);
+    private readonly HttpClient _client;
     private readonly SourceCache<LastUsedDesignMaterial, string> _lastUsed = new(t => t.Source.Code);
 
     private readonly SourceCache<MaterialsRequestResult, DesignMaterialsQueryTerms> _requestResults =
@@ -44,6 +44,11 @@ public class MaterialsService : IDisposable
     public IObservableCache<MaterialsRequestResult, DesignMaterialsQueryTerms> Materials =>
         _requestResults.AsObservableCache();
 
+    public void Dispose()
+    {
+        _cleanUp.Dispose();
+    }
+
     public async Task PopulateMaterials(DesignMaterialsQueryTerms query)
     {
         if (_requestResults.Lookup(query).HasValue) return;
@@ -61,8 +66,8 @@ public class MaterialsService : IDisposable
     }
 
     /// <summary>
-    /// If a design material already exists in last used, update its last used time.
-    /// Otherwise, add to lists.
+    ///     If a design material already exists in last used, update its last used time.
+    ///     Otherwise, add to lists.
     /// </summary>
     /// <param name="designMaterial"></param>
     /// <param name="elementName"></param>
@@ -86,15 +91,10 @@ public class MaterialsService : IDisposable
         if (categories != null)
             _categories.AddOrUpdate(categories);
     }
-
-    public void Dispose()
-    {
-        _cleanUp.Dispose();
-    }
 }
 
 public class MaterialsRequestResult
 {
-    public DesignMaterialsQueryTerms QueryTerms;
     public IEnumerable<DesignMaterial> Materials;
+    public DesignMaterialsQueryTerms QueryTerms;
 }
