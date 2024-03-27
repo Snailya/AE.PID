@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
@@ -7,6 +8,7 @@ using System.Reactive.Linq;
 using AE.PID.Controllers.Services;
 using AE.PID.Core.DTOs;
 using AE.PID.Models.BOM;
+using AE.PID.Models.EventArgs;
 using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
@@ -17,6 +19,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
 {
     private ReadOnlyObservableCollection<DesignMaterialCategoryViewModel> _categories = new([]);
     private string _elementName = string.Empty;
+    private ObservableAsPropertyHelper<ReadOnlyCollection<DesignMaterialCategoryViewModel>> _filterdCategories;
 
     private ReadOnlyObservableCollection<DesignMaterial> _lastUsed = new([]);
 
@@ -25,15 +28,36 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
 
     private ReadOnlyObservableCollection<DesignMaterial>? _validMaterials;
 
+
     protected override void SetupCommands()
     {
-        Select = ReactiveCommand.Create<DesignMaterial>(material => AddToLastUsed(material, _elementName));
+        // when an item is selected, it should be add to the last used grid for future use
+        Select = ReactiveCommand.Create<DesignMaterial, DesignMaterial>(material =>
+        {
+            AddToLastUsed(material, _elementName);
+            return material;
+        });
+
+        // create a hack command so that other class could observe this action
+        // this is used to trigger load more action of the lazy load data grid in view class
         Load = ReactiveCommand.Create(() => { });
     }
 
     protected override void SetupSubscriptions(CompositeDisposable d)
     {
-        // covert category items from service to a tree structure and output as categories
+        // listen for element selected event in Export page, when the selected element changed, it is used as the seed for this page
+        MessageBus.Current.Listen<ElementSelectedEventArgs>()
+            .DistinctUntilChanged()
+            .Subscribe(x => ElementName = x.Name)
+            .DisposeWith(d);
+
+        // when an item is selected by user, notify Export page for selection.
+        MessageBus.Current.RegisterMessageSource(Select!.Select(x => new DesignMaterialSelectedEventArgs(x)))
+            .DisposeWith(d);
+
+        // when the category if fetched from server, it is originally a flatten list
+        // convert it into a tree structure using dynamic data
+        // however, to enhance user select efficiency, this tree is not used directly but as the source for a filtered tree that matches the current element
         service.Categories
             .Connect()
             .TransformToTree(x => x.ParentId, Observable.Return(DefaultPredicate))
@@ -42,6 +66,23 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
             .Bind(out _categories)
             .DisposeMany()
             .Subscribe()
+            .DisposeWith(d);
+
+        // filter category on element name change, each element name is matched to one or more node in the category
+        this.WhenAnyValue(x => x.ElementName)
+            .Merge(_categories.ObserveCollectionChanges().Select(_ => ElementName))
+            .Select(x =>
+            {
+                if (service.CategoryMap.TryGetValue(x, out var ids))
+                    return new ReadOnlyCollection<DesignMaterialCategoryViewModel>(
+                        _categories
+                            .SelectMany(i => FilterNodeByCode(i, ids)).Where(i => i != null)
+                            .ToList()
+                    );
+
+                return _categories;
+            })
+            .ToProperty(this, x => x.FilteredCategories, out _filterdCategories)
             .DisposeWith(d);
 
         // whenever the category changed, reset to page number to 1 to make sure the first page is loaded
@@ -118,27 +159,63 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
         }
     }
 
+
     /// <summary>
     ///     Add design material to last used list.
     /// </summary>
     /// <param name="item"></param>
     /// <param name="selectedName"></param>
-    public void AddToLastUsed(DesignMaterial item, string selectedName)
+    private DesignMaterial AddToLastUsed(DesignMaterial item, string selectedName)
     {
         service.AddToLastUsed(item, selectedName);
+        return item;
     }
 
+    /// <summary>
+    ///     Filter the subtree by code
+    /// </summary>
+    /// <param name="node"></param>
+    /// <param name="codes"></param>
+    /// <returns></returns>
+    private static IEnumerable<DesignMaterialCategoryViewModel> FilterNodeByCode(DesignMaterialCategoryViewModel node,
+        string[] codes)
+    {
+        var result = new List<DesignMaterialCategoryViewModel>();
+        if (codes.Contains(node.Code)) return [node];
+
+        foreach (var child in node.Inferiors)
+            if (FilterNodeByCode(child, codes) is { } founded)
+                result.AddRange(founded);
+
+        return result;
+    }
+
+    /// <summary>
+    ///     Filter the last used items by category
+    /// </summary>
+    /// <param name="categoryId"></param>
+    /// <returns></returns>
     private static Func<LastUsedDesignMaterial, bool> BuildLastUsedFilter(int categoryId)
     {
         return m => m.Source.Categories.Contains(categoryId);
     }
 
+    /// <summary>
+    ///     Filter the design materials by cateogry
+    /// </summary>
+    /// <param name="query"></param>
+    /// <returns></returns>
     private static Func<MaterialsRequestResult, bool> BuildCategoryFilter(DesignMaterialsQueryTerms query)
     {
         return m => m.QueryTerms.CategoryId == query.CategoryId &&
                     m.QueryTerms.PageNumber <= query.PageNumber;
     }
 
+    /// <summary>
+    ///     Filter the design materials by user conditions
+    /// </summary>
+    /// <param name="arg"></param>
+    /// <returns></returns>
     private static Func<DesignMaterial, bool> BuildUserFilter((string, string, string, string, string) arg)
     {
         var (name, brand, specifications, model, manufacturer) = arg;
@@ -182,7 +259,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
     #region Read-Only Properties
 
     public ReactiveCommand<Unit, Unit>? Load { get; private set; }
-    public ReactiveCommand<DesignMaterial, Unit>? Select { get; set; }
+    public ReactiveCommand<DesignMaterial, DesignMaterial>? Select { get; set; }
     public ReactiveCommand<Unit, Unit>? Close { get; set; }
 
     #endregion
@@ -193,6 +270,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
     public ReadOnlyObservableCollection<DesignMaterial> LastUsed => _lastUsed;
     public ReadOnlyObservableCollection<DesignMaterial>? ValidMaterials => _validMaterials;
     public UserFiltersViewModel UserFiltersViewModel { get; set; } = new();
+    public ReadOnlyCollection<DesignMaterialCategoryViewModel> FilteredCategories => _filterdCategories.Value;
 
     #endregion
 }

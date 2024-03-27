@@ -22,6 +22,7 @@ public class DesignMaterialCategoryViewModel : ViewModelBase, IDisposable
         Source = node.Item;
 
         Name = node.Item.Name;
+        Code = node.Item.Code;
 
         // todo: maybe should use lazy loading
         var childrenLoader = node.Children.Connect()
@@ -67,6 +68,11 @@ public class DesignMaterialCategoryViewModel : ViewModelBase, IDisposable
     ///     The display name of the category.
     /// </summary>
     public string Name { get; set; }
+
+    /// <summary>
+    ///     The user toward identifier
+    /// </summary>
+    public string Code { get; set; }
 
     public void Dispose()
     {

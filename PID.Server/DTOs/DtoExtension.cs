@@ -11,7 +11,7 @@ public static class DtoExtension
         {
             Id = Convert.ToInt32(dto.MainTable.Id),
             Name = dto.MainTable.CategoryName,
-            Code = dto.MainTable.CategoryCode,
+            Code = dto.MainTable.Code,
             ParentId = int.TryParse(dto.MainTable.ParentId, out var parentId) ? parentId : default
         };
     }

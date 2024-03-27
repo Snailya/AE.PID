@@ -8,7 +8,7 @@ public class ShapeData(
     string format,
     string value,
     int type = 0,
-    int sortKey = 0,
+    string sortKey = "",
     bool invisible = false)
     : ValueProp(name, "Prop", value), IShapeData
 {

@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using AE.PID.Core.DTOs;
 using AE.PID.Models.BOM;
 using DynamicData;
 using Newtonsoft.Json;
+using ReactiveUI;
 
 namespace AE.PID.Controllers.Services;
 
@@ -16,7 +19,7 @@ public class MaterialsService : IDisposable
     private const int PageSize = 20;
 
     private readonly SourceCache<MaterialCategoryDto, int> _categories = new(t => t.Id);
-    private readonly IDisposable _cleanUp;
+    private readonly CompositeDisposable _cleanUp = new();
 
     private readonly HttpClient _client;
     private readonly SourceCache<LastUsedDesignMaterial, string> _lastUsed = new(t => t.Source.Code);
@@ -28,17 +31,30 @@ public class MaterialsService : IDisposable
     {
         _client = client;
 
-        // auto clear request cache after 1 hour
-        _cleanUp = _requestResults
+        // make the request result auto clear after 1 hour to improve accuracy
+        _requestResults
             .ExpireAfter(_ => TimeSpan.FromHours(1), (IScheduler?)null)
-            .Subscribe();
+            .Subscribe()
+            .DisposeWith(_cleanUp);
 
-        // initialize categories
-        // todo: cache
-        _ = InitializeCategories();
+        // initialize category items
+        Observable.FromAsync(() => client.GetStringAsync("categories"))
+            .Select(JsonConvert.DeserializeObject<IEnumerable<MaterialCategoryDto>>)
+            .WhereNotNull()
+            .Subscribe(
+                x => { _categories.AddOrUpdate(x); })
+            .DisposeWith(_cleanUp);
+
+        // initialize category maps
+        Observable.FromAsync(() => client.GetStringAsync("categories/map"))
+            .Select(JsonConvert.DeserializeObject<Dictionary<string, string[]>>)
+            .WhereNotNull()
+            .Subscribe(x => CategoryMap = x)
+            .DisposeWith(_cleanUp);
     }
 
     public IObservableCache<MaterialCategoryDto, int> Categories => _categories.AsObservableCache();
+    public Dictionary<string, string[]> CategoryMap { get; private set; } = new();
     public IObservableCache<LastUsedDesignMaterial, string> LastUsed => _lastUsed.AsObservableCache();
 
     public IObservableCache<MaterialsRequestResult, DesignMaterialsQueryTerms> Materials =>
@@ -49,6 +65,10 @@ public class MaterialsService : IDisposable
         _cleanUp.Dispose();
     }
 
+    /// <summary>
+    ///     Request server for the query items if it is not exist yet.
+    /// </summary>
+    /// <param name="query"></param>
     public async Task PopulateMaterials(DesignMaterialsQueryTerms query)
     {
         if (_requestResults.Lookup(query).HasValue) return;
@@ -81,15 +101,6 @@ public class MaterialsService : IDisposable
 
         lastUsed.UsedBy.Add(elementName);
         _lastUsed.AddOrUpdate(lastUsed);
-    }
-
-    private async Task InitializeCategories()
-    {
-        var response = await _client.GetStringAsync("categories");
-        var categories = JsonConvert.DeserializeObject<IEnumerable<MaterialCategoryDto>>(response);
-
-        if (categories != null)
-            _categories.AddOrUpdate(categories);
     }
 }
 

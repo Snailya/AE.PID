@@ -1,3 +1,8 @@
-﻿namespace AE.PID.Server.DTOs.PDMS;
+﻿using System.Text.Json.Serialization;
 
-public class SelectDesignMaterialCategoryResponseItemDto : ResponseItem<DesignMaterialCategoryDto>;
+namespace AE.PID.Server.DTOs.PDMS;
+
+public class SelectDesignMaterialCategoryResponseItemDto : ResponseItem<DesignMaterialCategoryDto>
+{
+
+}

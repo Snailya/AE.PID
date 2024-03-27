@@ -5,6 +5,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using AE.PID.Controllers.Services;
 using AE.PID.Models.BOM;
+using AE.PID.Models.EventArgs;
 using DynamicData;
 using ReactiveUI;
 
@@ -22,11 +23,14 @@ public class ExportViewModel(DocumentExporter service) : ViewModelBase
 
     #endregion
 
+    #region Read-Only Properties
+
+    public OkCancelFeedbackViewModel OkCancelFeedbackViewModel { get; } = new();
+
+    #endregion
+
     protected override void SetupCommands()
     {
-        DesignMaterialsViewModel.Select = ReactiveCommand.Create<DesignMaterial>(WriteDesignMaterialIntoShape);
-        DesignMaterialsViewModel.Close = ReactiveCommand.Create(() => { });
-
         OkCancelFeedbackViewModel.Ok = ReactiveCommand.Create(ExportAsBOMTable);
         OkCancelFeedbackViewModel.Cancel = ReactiveCommand.Create(() => { });
     }
@@ -47,14 +51,23 @@ public class ExportViewModel(DocumentExporter service) : ViewModelBase
         service.MonitorChange()
             .DisposeWith(d);
 
-        this.WhenAnyValue(x => x.Selected)
+        // whenever there is a selected element, notify the View to show the side page
+        var selectedItem = this.WhenAnyValue(x => x.Selected)
             .WhereNotNull()
             .Select(x => _items.SingleOrDefault(i => i.Id == x.Id))
             .WhereNotNull()
             .Select(x => x.Name)
             .DistinctUntilChanged()
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(x => { DesignMaterialsViewModel.ElementName = x; })
+            .ObserveOn(RxApp.MainThreadScheduler);
+        selectedItem.Subscribe()
+            .DisposeWith(d);
+
+        // notify the side view model for seeding
+        MessageBus.Current.RegisterMessageSource(selectedItem.Select(x => new ElementSelectedEventArgs(x)));
+
+        // when user select the material from selection page, write this into element
+        MessageBus.Current.Listen<DesignMaterialSelectedEventArgs>()
+            .Subscribe(x => WriteDesignMaterialIntoElement(x.DesignMaterial))
             .DisposeWith(d);
 
         return;
@@ -70,7 +83,7 @@ public class ExportViewModel(DocumentExporter service) : ViewModelBase
         _documentInfo = new DocumentInfoViewModel(Globals.ThisAddIn.Application.ActivePage);
     }
 
-    private void WriteDesignMaterialIntoShape(DesignMaterial? material)
+    private void WriteDesignMaterialIntoElement(DesignMaterial? material)
     {
         if (material == null || _selected?.Id == null) return;
 
@@ -96,15 +109,6 @@ public class ExportViewModel(DocumentExporter service) : ViewModelBase
         get => _selected;
         set => this.RaiseAndSetIfChanged(ref _selected, value);
     }
-
-    #endregion
-
-    #region Read-Only Properties
-
-    public DesignMaterialsViewModel DesignMaterialsViewModel { get; } =
-        new(Globals.ThisAddIn.ServiceManager.MaterialsService);
-
-    public OkCancelFeedbackViewModel OkCancelFeedbackViewModel { get; } = new();
 
     #endregion
 }

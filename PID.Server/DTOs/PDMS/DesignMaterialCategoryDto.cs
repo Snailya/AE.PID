@@ -13,7 +13,13 @@ public class DesignMaterialCategoryDto
     public string CategoryName { get; set; }
 
     /// <summary>
-    ///     分类编码
+    /// 分类编码
+    /// </summary>
+    [JsonPropertyName("code")]
+    public string Code { get; set; }
+    
+    /// <summary>
+    ///    当前级别的编码
     /// </summary>
     [JsonPropertyName("categoryCode")]
     public string CategoryCode { get; set; }

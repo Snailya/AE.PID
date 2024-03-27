@@ -211,6 +211,8 @@
         <Compile Include="Models\Configurations\LibraryItem.cs"/>
         <Compile Include="Models\Configurations\ConfigurationBase.cs"/>
         <Compile Include="Models\Configurations\NLogConfiguration.cs"/>
+        <Compile Include="Models\EventArgs\DesignMaterialSelectedEventArgs.cs"/>
+        <Compile Include="Models\EventArgs\ElementSelectedEventArgs.cs"/>
         <Compile Include="Models\Exceptions\BOMLayersNullException.cs"/>
         <Compile Include="Models\Exceptions\FormatValueInvalidException.cs"/>
         <Compile Include="Models\Exceptions\MasterNotFoundException.cs"/>

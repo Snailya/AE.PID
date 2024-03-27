@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -7,6 +8,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using AE.PID.Models.BOM;
 using AE.PID.Tools;
+using AE.PID.ViewModels.Pages;
 using ReactiveUI;
 
 namespace AE.PID.Views.Pages;
@@ -19,11 +21,12 @@ public partial class MaterialsSelectionPage
     public MaterialsSelectionPage()
     {
         InitializeComponent();
+        ViewModel = new DesignMaterialsViewModel(Globals.ThisAddIn.ServiceManager.MaterialsService);
 
         this.WhenActivated(d =>
         {
             this.OneWayBind(ViewModel,
-                    vm => vm.Categories,
+                    vm => vm.FilteredCategories,
                     v => v.CategoryTree.ItemsSource)
                 .DisposeWith(d);
             this.WhenAnyValue(x => x.CategoryTree.SelectedItem)
@@ -71,6 +74,10 @@ public partial class MaterialsSelectionPage
                 .Select(row => row.Item)
                 .Cast<DesignMaterial>()
                 .InvokeCommand(ViewModel?.Select)
+                .DisposeWith(d);
+
+            ViewModel.WhenAnyObservable(x => x.Select)
+                .Subscribe(_ => Debug.WriteLine($"Response from {GetType()} "))
                 .DisposeWith(d);
         });
     }

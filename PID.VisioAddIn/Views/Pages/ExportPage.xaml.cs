@@ -28,10 +28,9 @@ public partial class ExportPage
                     vm => vm.Items,
                     v => v.Elements.ItemsSource)
                 .DisposeWith(d);
-
             this.Bind(ViewModel,
-                    viewModel => viewModel.OkCancelFeedbackViewModel,
-                    view => view.Feedback.ViewModel)
+                    vm => vm.OkCancelFeedbackViewModel,
+                    v => v.Feedback.ViewModel)
                 .DisposeWith(d);
 
             // after selecting d_bom for selected element, a new instance of element will be create as the d_bom property updated.
@@ -42,14 +41,10 @@ public partial class ExportPage
                 .Subscribe(x => ViewModel.Selected = (ElementViewModel)x)
                 .DisposeWith(d);
 
+            // when user click any of the item in bom, open the material selection page in side window
             ViewModel.WhenAnyValue(x => x.Selected)
                 .WhereNotNull()
-                .Subscribe(_ =>
-                {
-                    _sidePage.ViewModel = ViewModel.DesignMaterialsViewModel;
-
-                    Globals.ThisAddIn.WindowManager.SideShow(_sidePage);
-                })
+                .Subscribe(_ => { Globals.ThisAddIn.WindowManager.SideShow(_sidePage); })
                 .DisposeWith(d);
         });
     }
