@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
@@ -19,7 +18,6 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
 {
     private ReadOnlyObservableCollection<DesignMaterialCategoryViewModel> _categories = new([]);
     private string _elementName = string.Empty;
-    private ObservableAsPropertyHelper<ReadOnlyCollection<DesignMaterialCategoryViewModel>> _filterdCategories;
 
     private ReadOnlyObservableCollection<DesignMaterial> _lastUsed = new([]);
 
@@ -58,31 +56,16 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
         // when the category if fetched from server, it is originally a flatten list
         // convert it into a tree structure using dynamic data
         // however, to enhance user select efficiency, this tree is not used directly but as the source for a filtered tree that matches the current element
+        var categoryPredicate = this.WhenAnyValue(x => x.ElementName)
+            .Select(BuildCategoryPredicate());
         service.Categories
             .Connect()
-            .TransformToTree(x => x.ParentId, Observable.Return(DefaultPredicate))
+            .TransformToTree(x => x.ParentId, categoryPredicate)
             .Transform(node => new DesignMaterialCategoryViewModel(node))
             .ObserveOn(RxApp.MainThreadScheduler)
             .Bind(out _categories)
             .DisposeMany()
             .Subscribe()
-            .DisposeWith(d);
-
-        // filter category on element name change, each element name is matched to one or more node in the category
-        this.WhenAnyValue(x => x.ElementName)
-            .Merge(_categories.ObserveCollectionChanges().Select(_ => ElementName))
-            .Select(x =>
-            {
-                if (service.CategoryMap.TryGetValue(x, out var ids))
-                    return new ReadOnlyCollection<DesignMaterialCategoryViewModel>(
-                        _categories
-                            .SelectMany(i => FilterNodeByCode(i, ids)).Where(i => i != null)
-                            .ToList()
-                    );
-
-                return _categories;
-            })
-            .ToProperty(this, x => x.FilteredCategories, out _filterdCategories)
             .DisposeWith(d);
 
         // whenever the category changed, reset to page number to 1 to make sure the first page is loaded
@@ -150,13 +133,12 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
             .DisposeMany()
             .Subscribe()
             .DisposeWith(d);
+    }
 
-        return;
-
-        bool DefaultPredicate(Node<MaterialCategoryDto, int> node)
-        {
-            return node.IsRoot;
-        }
+    private Func<string, Func<Node<MaterialCategoryDto, int>, bool>> BuildCategoryPredicate()
+    {
+        return name => node =>
+            service.CategoryMap.TryGetValue(name, out var codes) ? codes.Contains(node.Item.Code) : node.IsRoot;
     }
 
 
@@ -165,29 +147,9 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
     /// </summary>
     /// <param name="item"></param>
     /// <param name="selectedName"></param>
-    private DesignMaterial AddToLastUsed(DesignMaterial item, string selectedName)
+    private void AddToLastUsed(DesignMaterial item, string selectedName)
     {
         service.AddToLastUsed(item, selectedName);
-        return item;
-    }
-
-    /// <summary>
-    ///     Filter the subtree by code
-    /// </summary>
-    /// <param name="node"></param>
-    /// <param name="codes"></param>
-    /// <returns></returns>
-    private static IEnumerable<DesignMaterialCategoryViewModel> FilterNodeByCode(DesignMaterialCategoryViewModel node,
-        string[] codes)
-    {
-        var result = new List<DesignMaterialCategoryViewModel>();
-        if (codes.Contains(node.Code)) return [node];
-
-        foreach (var child in node.Inferiors)
-            if (FilterNodeByCode(child, codes) is { } founded)
-                result.AddRange(founded);
-
-        return result;
     }
 
     /// <summary>
@@ -270,7 +232,6 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
     public ReadOnlyObservableCollection<DesignMaterial> LastUsed => _lastUsed;
     public ReadOnlyObservableCollection<DesignMaterial>? ValidMaterials => _validMaterials;
     public UserFiltersViewModel UserFiltersViewModel { get; set; } = new();
-    public ReadOnlyCollection<DesignMaterialCategoryViewModel> FilteredCategories => _filterdCategories.Value;
 
     #endregion
 }

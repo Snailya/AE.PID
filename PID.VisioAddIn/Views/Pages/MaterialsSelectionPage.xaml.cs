@@ -26,7 +26,7 @@ public partial class MaterialsSelectionPage
         this.WhenActivated(d =>
         {
             this.OneWayBind(ViewModel,
-                    vm => vm.FilteredCategories,
+                    vm => vm.Categories,
                     v => v.CategoryTree.ItemsSource)
                 .DisposeWith(d);
             this.WhenAnyValue(x => x.CategoryTree.SelectedItem)
