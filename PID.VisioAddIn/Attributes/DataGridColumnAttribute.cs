@@ -27,4 +27,4 @@ public class DataGridColumnAttribute(string namePath, string valuePath) : Attrib
 ///     The type argument for this property must has <see cref="DataGridColumnAttribute" />
 /// </summary>
 [AttributeUsage(AttributeTargets.Property)]
-public class DataGridColumnsAttribute : Attribute;
+public class DataGridMultipleColumnsAttribute : Attribute;

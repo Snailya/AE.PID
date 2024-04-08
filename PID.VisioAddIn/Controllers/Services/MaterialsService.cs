@@ -16,10 +16,11 @@ namespace AE.PID.Controllers.Services;
 
 public class MaterialsService : IDisposable
 {
+    private readonly CompositeDisposable _cleanUp = new();
+
     private const int PageSize = 20;
 
     private readonly SourceCache<MaterialCategoryDto, int> _categories = new(t => t.Id);
-    private readonly CompositeDisposable _cleanUp = new();
 
     private readonly HttpClient _client;
     private readonly SourceCache<LastUsedDesignMaterial, string> _lastUsed = new(t => t.Source.Code);

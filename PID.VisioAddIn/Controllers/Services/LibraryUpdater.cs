@@ -65,18 +65,18 @@ public abstract class LibraryUpdater
     {
         var client = Globals.ThisAddIn.HttpClient;
 
+        var requestUrl = "/libraries";
 #if DEBUG
-        var response = await client.GetStringAsync("/libraries?involvePrerelease=true");
-#else
-            var response = await client.GetStringAsync("/libraries");
+        requestUrl = "/libraries?involvePrerelease=true";
 #endif
+        var response = await client.GetStringAsync(requestUrl);
 
         return JsonConvert.DeserializeObject<IEnumerable<LibraryDto>>(response)?.ToList();
     }
 
     private static void DoUpdate(long seed)
     {
-        Observable.Return(seed)
+        _ = Observable.Return(seed)
             // When updating, the new file stream will be write to the origin file if the file exist.
             // However, this origin file might already opened in Visio which leads to busy situation.
             // So, before do updates, first close all that stencils and restore after update.
@@ -143,13 +143,13 @@ public abstract class LibraryUpdater
 
     private static async Task DownloadCheatSheet()
     {
+        var requestUrl = "/libraries/cheatsheet";
+
 #if DEBUG
-        var responseString =
-            await Globals.ThisAddIn.ServiceManager.Client.GetStringAsync(
-                "/libraries/cheatsheet?involvePrerelease=true");
-#else
-                    await Globals.ThisAddIn.ServiceManager.Client.GetStringAsync("/libraries/cheatsheets");
+        requestUrl = "/libraries/cheatsheet?involvePrerelease=true";
 #endif
+
+        var responseString = await Globals.ThisAddIn.ServiceManager.Client.GetStringAsync(        requestUrl);
 
         if (string.IsNullOrEmpty(responseString)) return;
         var responseResult = JsonConvert.DeserializeObject<IEnumerable<DetailedLibraryItemDto>>(responseString);

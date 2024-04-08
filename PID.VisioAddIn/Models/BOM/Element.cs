@@ -82,14 +82,8 @@ public abstract class Element : ReactiveObject, IDisposable, ITreeNode
     /// <param name="material"></param>
     protected void AssignMaterial(DesignMaterial? material)
     {
-        // clear all shape data starts with D_BOM
-        for (var i = Source.RowCount[(short)VisSectionIndices.visSectionProp] - 1; i >= 0; i--)
-        {
-            var cell = Source.CellsSRC[(short)VisSectionIndices.visSectionProp, (short)i,
-                (short)VisCellIndices.visCustPropsValue];
-            if (cell.RowName.StartsWith("D_")) Source.DeleteRow((short)VisSectionIndices.visSectionProp, (short)i);
-        }
-
+        DeleteMaterial();
+        
         // write material id
         if (material == null) return;
 
@@ -102,6 +96,17 @@ public abstract class Element : ReactiveObject, IDisposable, ITreeNode
                  select new ShapeData(rowName, $"\"{property.Name}\"", "",
                      $"\"{property.Value.Replace("\"", "\"\"")}\""))
             Source.AddOrUpdate(propertyData);
+    }
+
+    protected void DeleteMaterial()
+    {
+        // clear all shape data starts with D_BOM
+        for (var i = Source.RowCount[(short)VisSectionIndices.visSectionProp] - 1; i >= 0; i--)
+        {
+            var cell = Source.CellsSRC[(short)VisSectionIndices.visSectionProp, (short)i,
+                (short)VisCellIndices.visCustPropsValue];
+            if (cell.RowName.StartsWith("D_")) Source.DeleteRow((short)VisSectionIndices.visSectionProp, (short)i);
+        }
     }
 
     #region Virtual Methods

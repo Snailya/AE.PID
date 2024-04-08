@@ -92,7 +92,7 @@ public class BaseWindowViewModel : INotifyPropertyChanged
     ///     The current version of the app.
     /// </summary>
     public string Version { get; set; } =
-        FileVersionInfo.GetVersionInfo(Assembly.GetCallingAssembly().Location).FileVersion;
+        FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion;
 
     /// <summary>
     ///     The smallest width the window can go to.

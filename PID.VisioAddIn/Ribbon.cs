@@ -6,10 +6,12 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using AE.PID.Controllers.Services;
+using AE.PID.Models.BOM;
 using AE.PID.Properties;
 using Microsoft.Office.Core;
 using Microsoft.Office.Interop.Visio;
 using NLog;
+using Shape = Microsoft.Office.Interop.Visio.Shape;
 
 // TODO:   按照以下步骤启用功能区(XML)项:
 
@@ -52,17 +54,6 @@ public class Ribbon : IRibbonExtensibility
         _ribbon = ribbonUi;
     }
 
-    #region Commands
-
-    public void CopyOverride(IRibbonControl control, ref bool cancel)
-    {
-        Globals.ThisAddIn.Application.ActiveWindow.Selection.GetIDs(out var ids);
-        LinkedControlManager.PreviousCopy = ids.OfType<int>().ToList();
-
-        cancel = false;
-    }
-
-    #endregion
 
     #region 帮助器
 
@@ -151,45 +142,60 @@ public class Ribbon : IRibbonExtensibility
 
     #region Context Menus
 
-    public void InsertLinked(IRibbonControl control)
+    public void DeleteDesignMaterial(IRibbonControl control)
     {
-        LinkedControlManager.InsertFunctionalElement(Globals.ThisAddIn.Application.ActiveWindow.Selection[1]);
+        foreach (var shape in Globals.ThisAddIn.Application.ActiveWindow.Selection.OfType<Shape>())
+            if (shape.HasCategory("Equipment"))
+            {
+                using var equipment = new Equipment(shape);
+                equipment.DesignMaterial = null;
+            }
+            else if (shape.HasCategory("FunctionalElement"))
+            {
+                using var functionalElement = new FunctionalElement(shape);
+                functionalElement.DesignMaterial = null;
+            }
     }
-
-    public bool CanInsert(IRibbonControl control)
-    {
-        return LinkedControlManager.CanInsert(Globals.ThisAddIn.Application.ActiveWindow.Selection);
-    }
-
-    public void HighlightPrimary(IRibbonControl control)
-    {
-        LinkedControlManager.HighlightPrimary(Globals.ThisAddIn.Application.ActiveWindow.Selection[1]);
-    }
-
-    public bool CanHighlightPrimary(IRibbonControl control)
-    {
-        return LinkedControlManager.CanHighlightPrimary(Globals.ThisAddIn.Application.ActiveWindow.Selection);
-    }
-
-    public void HighlightLinked(IRibbonControl control)
-    {
-        LinkedControlManager.HighlightLinked(Globals.ThisAddIn.Application.ActiveWindow.Selection[1]);
-    }
-
-    public bool CanHighlightLinked(IRibbonControl control)
-    {
-        return LinkedControlManager.CanHighlightLinked(Globals.ThisAddIn.Application.ActiveWindow.Selection);
-    }
-
-    public void PasteWithLinked(IRibbonControl control)
-    {
-        LinkedControlManager.PasteToLocation();
-    }
-
-    public bool CanPaste(IRibbonControl control)
-    {
-        return LinkedControlManager.CanPaste();
-    }
+    
+    // public void InsertLinked(IRibbonControl control)
+    // {
+    //     LinkedControlManager.InsertFunctionalElement(Globals.ThisAddIn.Application.ActiveWindow.Selection[1]);
+    // }
+    //
+    // public bool CanInsert(IRibbonControl control)
+    // {
+    //     return LinkedControlManager.CanInsert(Globals.ThisAddIn.Application.ActiveWindow.Selection);
+    // }
+    //
+    // public void HighlightPrimary(IRibbonControl control)
+    // {
+    //     LinkedControlManager.HighlightPrimary(Globals.ThisAddIn.Application.ActiveWindow.Selection[1]);
+    // }
+    //
+    // public bool CanHighlightPrimary(IRibbonControl control)
+    // {
+    //     return LinkedControlManager.CanHighlightPrimary(Globals.ThisAddIn.Application.ActiveWindow.Selection);
+    // }
+    //
+    // public void HighlightLinked(IRibbonControl control)
+    // {
+    //     LinkedControlManager.HighlightLinked(Globals.ThisAddIn.Application.ActiveWindow.Selection[1]);
+    // }
+    //
+    // public bool CanHighlightLinked(IRibbonControl control)
+    // {
+    //     return LinkedControlManager.CanHighlightLinked(Globals.ThisAddIn.Application.ActiveWindow.Selection);
+    // }
+    //
+    // public void PasteWithLinked(IRibbonControl control)
+    // {
+    //     LinkedControlManager.PasteToLocation();
+    // }
+    //
+    // public bool CanPaste(IRibbonControl control)
+    // {
+    //     return LinkedControlManager.CanPaste();
+    // }
 
     #endregion
 }

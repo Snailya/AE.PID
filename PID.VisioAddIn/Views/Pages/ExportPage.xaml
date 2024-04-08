@@ -56,7 +56,7 @@
                 </controls:TreeListView.ItemTemplate>
                 <controls:TreeListView.View>
                     <GridView>
-                        <GridViewColumn DisplayMemberBinding="{Binding Id}" Header="形状ID" />
+                        <GridViewColumn DisplayMemberBinding="{Binding Id}" Header="形状ID" Width="64" />
                         <GridViewColumn CellTemplate="{StaticResource ExpandCellTemplate}" Header="位号" Width="128" />
                         <GridViewColumn DisplayMemberBinding="{Binding Source.Description}" Header="描述" Width="144" />
                         <GridViewColumn DisplayMemberBinding="{Binding Source.SubClassName}" Header="子类" Width="80" />

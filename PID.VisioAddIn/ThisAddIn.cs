@@ -160,8 +160,6 @@ public partial class ThisAddIn
                 .DisposeWith(_compositeDisposable);
             DocumentUpdater.Listen()
                 .DisposeWith(_compositeDisposable);
-            LinkedControlManager.Listen()
-                .DisposeWith(_compositeDisposable);
 
             // ribbon
             DocumentInitializer.Listen()

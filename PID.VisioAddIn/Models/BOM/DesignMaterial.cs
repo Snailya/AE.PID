@@ -18,6 +18,7 @@ public class DesignMaterial(
     string model,
     string unit,
     string manufacturer,
+    string manufacturerMaterialNumber,
     int[] categories)
 {
     /// <summary>
@@ -29,13 +30,13 @@ public class DesignMaterial(
     /// <summary>
     ///     The extra properties used as technical data
     /// </summary>
-    [DataGridColumns]
+    [DataGridMultipleColumns]
     public List<DesignMaterialProperty> Properties { get; set; } = [];
 
     public static DesignMaterial FromDTO(MaterialDto dto)
     {
-        return new DesignMaterial(dto.Code, dto.Name, dto.Brand, dto.Specifications, dto.Model, dto.Unit,
-            dto.Manufacturer, dto.Categories)
+        return new DesignMaterial(dto.Code, dto.Name, dto.Brand, dto.Specifications, dto.Model, dto.Unit, 
+            dto.Manufacturer,dto.ManufacturerMaterialNumber, dto.Categories)
         {
             Properties = dto.Properties == null ? [] : dto.Properties.Select(DesignMaterialProperty.FromDTO).ToList()
         };
@@ -68,6 +69,7 @@ public class DesignMaterial(
     [DataGridColumnName("单位")] public string Unit { get; set; } = unit;
 
     [DataGridColumnName("制造商")] public string Manufacturer { get; set; } = manufacturer;
+    [DataGridColumnName("制造商物料号")] public string ManufacturerMaterialNumber { get; set; } = manufacturerMaterialNumber;
 
     #endregion
 }

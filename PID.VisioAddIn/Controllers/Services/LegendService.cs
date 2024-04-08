@@ -139,14 +139,8 @@ public static class LegendService
     {
         return
         [
-            .. page.CreateSelection(VisSelectionTypes.visSelTypeByLayer, VisSelectMode.visSelModeSkipSuper,
-                    "Equipments").OfType<IVShape>()
-                .Where(x => !x.IsOnLayers(["Containers", "Container"]))
-                .Where(x => x.Master != null)
-                .Where(x => x.OneD == (short)VBABool.False)
-                .Where(x => x.Master.BaseID != LinkedControlManager.FunctionalElementBaseId)
-                .Where(x => x.CellExistsU["Prop.SubClass", (short)VisExistsFlags.visExistsAnywhere] ==
-                            (short)VBABool.True)
+            .. page.Shapes.OfType<Shape>()
+                .Where(x => !x.HasCategory("Proxy") && (x.HasCategory("Equipment") || x.HasCategory("Instrument")))
                 .Select(x =>
                     new LegendItem(x.CellsU["Prop.Class"].ResultStr[""], x.CellsU["Prop.SubClass"].ResultStr[""], x))
                 .Distinct(new LegendItemComparer()).OrderBy(x => x.Category).ThenBy(x => x.Name)

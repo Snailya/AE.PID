@@ -1,4 +1,6 @@
-﻿namespace AE.PID.Models.BOM;
+﻿using System.Linq;
+
+namespace AE.PID.Models.BOM;
 
 /// <summary>
 ///     POCO to BOM_template.xlsx
@@ -26,9 +28,9 @@ public class PartListTableLineItem
             Count = x.Count,
             Total = x.Count,
             InGroup = x.Count,
-            Units = null,
-            Manufacturer = null,
-            ManufacturerArticleNo = null,
+            Units = x.DesignMaterial?.Unit??string.Empty,
+            Manufacturer = x.DesignMaterial?.Manufacturer??string.Empty,
+            ManufacturerArticleNo = x.DesignMaterial?.ManufacturerMaterialNumber??string.Empty,
             SerialNo = null,
             Classification = null,
             Attachment = null
