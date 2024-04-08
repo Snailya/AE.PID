@@ -14,7 +14,7 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../MyResources.xaml" />
+                <ResourceDictionary Source="../Themes/Generic.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -102,7 +102,7 @@
                         </Style>
                     </DataGrid.Resources>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="名称" Binding="{Binding ElementName}" />
+                        <DataGridTextColumn Header="名称" Binding="{Binding CategoryPredicateSeed}" />
                         <DataGridTextColumn Header="本地版本" Binding="{Binding LocalVersion}" />
                         <DataGridTemplateColumn Header="服务器版本">
                             <DataGridTemplateColumn.CellTemplate>

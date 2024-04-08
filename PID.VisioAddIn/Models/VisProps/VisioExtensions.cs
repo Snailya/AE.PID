@@ -4,9 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using AE.PID.Controllers.Services;
 using AE.PID.Interfaces;
-using AE.PID.Models.BOM;
 using AE.PID.Models.Exceptions;
 using AE.PID.Properties;
 using Microsoft.Office.Interop.Visio;
@@ -233,87 +231,19 @@ internal static class VisioExtension
         return new Position(left + right / 2, (top + bottom) / 2);
     }
 
-    /// <summary>
-    ///     Try convert a shape to line item.
-    /// </summary>
-    /// <param name="shape"></param>
-    /// <returns></returns>
-    public static Element? ToElement(this IVShape shape)
+    private static int GetParentIdByCategory(IVShape shape, string category)
     {
-        try
-        {
-            // general properties
-            var item = new Element
-            {
-                Id = shape.ID,
-                ProcessZone = shape.Cells["Prop.ProcessZone"].ResultStr[VisUnitCodes.visUnitsString],
-                FunctionalGroup = shape.Cells["Prop.FunctionalGroup"].ResultStr[VisUnitCodes.visUnitsString],
-                FunctionalElement = TryGetFormatValue(shape, "Prop.FunctionalElement") ?? string.Empty
-            };
-
-            // get D_BOM if exist
-            if (shape.CellExists["Prop.D_BOM", (short)VisExistsFlags.visExistsLocally] == (short)VBABool.True)
-                item.MaterialNo = shape.Cells["Prop.D_BOM"].ResultStr[VisUnitCodes.visUnitsString];
-
-            // if it is a container, check if it is a unit container
-            if (shape.ContainerProperties != null)
-            {
-                // if it is not a unit but other containers return null
-                if (shape.CellExists["Prop.UnitName", (short)VisExistsFlags.visExistsAnywhere] !=
-                    (short)VBABool.True) return null;
-
-                item.Name = shape.Cells["Prop.UnitName"].ResultStr[VisUnitCodes.visUnitsString];
-                item.Type = ElementType.Unit;
-
-                if (double.TryParse(shape.Cells["Prop.Quantity"].ResultStr[VisUnitCodes.visUnitsString],
-                        out var quantity))
-                    item.Count = quantity;
-
-                return item;
-            }
-
-            // if it is not a unit
-            if (double.TryParse(shape.Cells["Prop.Subtotal"].ResultStr[VisUnitCodes.visUnitsString], out var subtotal))
-                item.Count = subtotal;
-
-            // if it is a single equipment
-            if (shape.CellExists[LinkedControlManager.LinkedShapePropertyName,
-                    (short)VisExistsFlags.visExistsAnywhere] !=
-                (short)VBABool.True)
-            {
-                item.Name = shape.Cells["Prop.SubClass"].ResultStr[VisUnitCodes.visUnitsString];
-                item.Type = ElementType.Single;
-
-                // check if it has a parent
-                var containers = shape.MemberOfContainers;
-                if (containers.Length == 0) return item;
-
-                // loop to find the unit id
-                foreach (int containerId in containers)
-                {
-                    var parent = shape.ContainingPage.Shapes.ItemFromID[containerId];
-                    if (parent.HasCategory("Unit"))
-                        item.ParentId = containerId;
-                }
-
-                return item;
-            }
-
-            // if it is a attached equipment
-            item.Name = shape.Cells["Prop.Name"].ResultStr[VisUnitCodes.visUnitsString];
-            var parentId = (int)shape.CellsU[LinkedControlManager.LinkedShapePropertyName].ResultIU;
-            item.ParentId = parentId;
-            item.Type = ElementType.Attached;
-            return item;
-        }
-        catch (Exception e)
-        {
-            Logger.Warn(e, $"Failed to convert ID:{shape.ID} to an Element, please check if shape is a valid AE item.");
-            return null;
-        }
+        var containers = shape.MemberOfContainers;
+        return containers.Length != 0
+            ? (from int containerId in containers
+                let parent = shape.ContainingPage.Shapes.ItemFromID[containerId]
+                where parent.HasCategory(category)
+                select containerId).FirstOrDefault()
+            : 0;
     }
 
-    private static string? TryGetFormatValue(IVShape shape, string propName)
+
+    public static string? TryGetFormatValue(this IVShape shape, string propName)
     {
         var existsAnywhere = shape.CellExists[propName, (short)VisExistsFlags.visExistsAnywhere] ==
                              (short)VBABool.True;

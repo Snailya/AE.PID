@@ -16,7 +16,8 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../MyResources.xaml" />
+                <ResourceDictionary Source="../Themes/Generic.xaml" />
+                <ResourceDictionary Source="../Themes/TreeListView.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -42,23 +43,27 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
+                <!-- <RowDefinition Height="*" /> -->
             </Grid.RowDefinitions>
             <controls:SectionLabel Header="设备清单" />
+
             <controls:TreeListView x:Name="Elements"
                                    Grid.Row="1"
                                    SelectedValuePath="Id">
                 <controls:TreeListView.ItemTemplate>
                     <HierarchicalDataTemplate ItemsSource="{Binding Inferiors}"
-                                              DataType="{x:Type viewModels:ElementViewModel}">
-                        <Border CornerRadius="0" Margin="1" x:Name="back"
-                                MinWidth="70"
-                                DataContext="{Binding}">
-                            <StackPanel Orientation="Horizontal" Margin="2">
-                                <TextBlock Text="{Binding Text}" Margin="2 0" />
-                            </StackPanel>
-                        </Border>
-                    </HierarchicalDataTemplate>
+                                              DataType="{x:Type viewModels:TreeNodeViewModel`1}" />
                 </controls:TreeListView.ItemTemplate>
+                <controls:TreeListView.View>
+                    <GridView>
+                        <GridViewColumn DisplayMemberBinding="{Binding Id}" Header="形状ID" />
+                        <GridViewColumn CellTemplate="{StaticResource ExpandCellTemplate}" Header="位号" Width="128" />
+                        <GridViewColumn DisplayMemberBinding="{Binding Source.Description}" Header="描述" Width="144" />
+                        <GridViewColumn DisplayMemberBinding="{Binding Source.SubClassName}" Header="子类" Width="80" />
+                        <GridViewColumn DisplayMemberBinding="{Binding Source.MaterialNo}" Header="物料号" Width="144" />
+                        <GridViewColumn DisplayMemberBinding="{Binding Source.Count}" Header="数量" Width="32" />
+                    </GridView>
+                </controls:TreeListView.View>
             </controls:TreeListView>
         </Grid>
         <Separator Grid.Row="3" />

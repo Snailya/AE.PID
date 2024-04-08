@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -74,10 +73,6 @@ public partial class MaterialsSelectionPage
                 .Select(row => row.Item)
                 .Cast<DesignMaterial>()
                 .InvokeCommand(ViewModel?.Select)
-                .DisposeWith(d);
-
-            ViewModel.WhenAnyObservable(x => x.Select)
-                .Subscribe(_ => Debug.WriteLine($"Response from {GetType()} "))
                 .DisposeWith(d);
         });
     }

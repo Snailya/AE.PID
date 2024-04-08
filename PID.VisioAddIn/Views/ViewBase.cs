@@ -10,7 +10,5 @@ public class ViewBase<TViewModel> : ReactiveUserControl<TViewModel> where TViewM
     {
         var window = Window.GetWindow(this);
         window?.Close();
-
-        ViewModel = null;
     }
 }

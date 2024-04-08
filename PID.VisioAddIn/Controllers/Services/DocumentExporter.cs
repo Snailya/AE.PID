@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
@@ -7,12 +8,10 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Windows.Forms;
 using AE.PID.Models.BOM;
-using AE.PID.Models.Exceptions;
-using AE.PID.Models.VisProps;
 using AE.PID.Properties;
 using AE.PID.ViewModels;
 using AE.PID.Views.Pages;
-using DynamicData;
+using DynamicData.Binding;
 using Microsoft.Office.Interop.Visio;
 using MiniExcelLibs;
 using NLog;
@@ -22,29 +21,73 @@ namespace AE.PID.Controllers.Services;
 /// <summary>
 ///     Dealing with extracting data from shape sheet and exporting.
 /// </summary>
-public class DocumentExporter
+public class DocumentExporter : IDisposable
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    private readonly SourceCache<Element, int> _elements = new(t => t.Id);
+    private readonly CompositeDisposable _cleanup = new();
     private readonly Page _page;
 
-    private readonly IList<string> _validLayers;
+    public readonly ObservableCollectionExtended<Element> Elements = [];
 
     public DocumentExporter(Page page)
     {
-        _page = page ?? throw new ArgumentNullException(nameof(page));
-        _validLayers = Globals.ThisAddIn.Configuration.ExportSettings.BomLayers;
+        Contract.Assert(page != null,
+            "Could not initialize exporter on null page.");
 
-        // initialize items by get all items from current page
-        var elements = GetElementsFromPage(_page);
+        _page = page!;
 
-        if (elements != null)
-            _elements.AddOrUpdate(elements);
+        Observable.FromEvent<EPage_ShapeAddedEventHandler, Shape>(
+                handler => _page.ShapeAdded += handler,
+                handler => _page.ShapeAdded -= handler)
+            .Where(ShapePredicate())
+            .Subscribe(shape =>
+            {
+                if (IsFunctionalGroupPredicate().Invoke(shape))
+                    Elements.Add(new FunctionalGroup(shape));
+                else if (IsUnitPredicate().Invoke(shape))
+                    Elements.Add(new EquipmentUnit(shape));
+                else if (IsEquipmentPredicate().Invoke(shape))
+                    Elements.Add(new Equipment(shape));
+                else if (IsFunctionalElementPredicate().Invoke(shape))
+                    Elements.Add(new FunctionalElement(shape));
+            })
+            .DisposeWith(_cleanup);
+
+        // when a shape is deleted from the page, it could be captured by BeforeShapeDelete event
+        Observable.FromEvent<EPage_BeforeShapeDeleteEventHandler, Shape>(
+                handler => _page.BeforeShapeDelete += handler,
+                handler => _page.BeforeShapeDelete -= handler)
+            .Where(ShapePredicate())
+            .Subscribe(shape =>
+            {
+                var toRemove = Elements.Single(x => x.Id == shape.ID);
+                Elements.Remove(toRemove);
+
+                if (toRemove is IDisposable disposable) disposable.Dispose();
+            })
+            .DisposeWith(_cleanup);
+
+        // initialize
+        Elements.AddRange(_page.Shapes.OfType<Shape>()
+            .Where(IsFunctionalGroupPredicate())
+            .Select(x => new FunctionalGroup(x)));
+        Elements.AddRange(_page.Shapes.OfType<Shape>()
+            .Where(IsUnitPredicate())
+            .Select(x => new EquipmentUnit(x)));
+        Elements.AddRange(_page.Shapes.OfType<Shape>()
+            .Where(IsEquipmentPredicate())
+            .Select(x => new Equipment(x)));
+        Elements.AddRange(_page.Shapes.OfType<Shape>()
+            .Where(IsFunctionalElementPredicate())
+            .Select(x => new FunctionalElement(x)));
     }
 
     private static Subject<Unit> ManuallyInvokeTrigger { get; } = new();
 
-    public IObservableCache<Element, int> Elements => _elements.AsObservableCache();
+    public void Dispose()
+    {
+        _cleanup.Dispose();
+    }
 
     /// <summary>
     ///     Emit a value manually
@@ -59,7 +102,7 @@ public class DocumentExporter
     ///     The view prompt user to input extra information for project and the subsequent is called in ViewModel.
     /// </summary>
     /// <returns></returns>
-    public static IDisposable Listen()
+    public static IDisposable Run()
     {
         Logger.Info("Export Service started.");
 
@@ -104,51 +147,11 @@ public class DocumentExporter
 
         try
         {
-            if (_validLayers.Count == 0) throw new BOMLayersNullException();
-
-            // sort the top level elements
-            var orderedElements = _elements.Items.Where(x => x.ParentId == 0).ToList();
-            orderedElements.Sort();
-
-            // append nested elements to it's parent
-            // in order to avoid the parent is not in ordered list, order the elements by type so that the attached element will be treated at last
-            foreach (var item in _elements.Items.Where(x => x.ParentId != 0).OrderBy(x => x.Type).ThenBy(x => x.Name))
-            {
-                var parent = orderedElements.Single(x => x.Id == item.ParentId);
-                var parentIndex = orderedElements.IndexOf(parent);
-                orderedElements.Insert(parentIndex + 1, item);
-
-                // overwrite the function element property if it is a Attached element
-                if (item.Type == ElementType.Attached)
-                    item.FunctionalElement = $"{parent.FunctionalElement}-{item.FunctionalElement}";
-            }
-
-            var materials = orderedElements.Select(Models.BOM.Material.FromElement).ToList();
-
-            // append aggregated properties
-            var totalDic = materials
-                .GroupBy(x => new { x.NameChinese, x.TechnicalDataChinese })
-                .Select(group => new { group.Key, Value = group.Sum(x => x.Count) })
-                .ToDictionary(x => x.Key, x => x.Value);
-            var inGroupDic = materials
-                .GroupBy(x => new { x.FunctionalGroup, x.NameChinese, x.TechnicalDataChinese })
-                .Select(group => new { group.Key, Value = group.Sum(x => x.Count) })
-                .ToDictionary(x => x.Key, x => x.Value);
-
-            for (var index = 0; index < materials.Count; index++)
-            {
-                var material = materials[index];
-                material.Index = index + 1;
-                material.Total = totalDic[new { material.NameChinese, material.TechnicalDataChinese }];
-                material.InGroup =
-                    inGroupDic[new { material.FunctionalGroup, material.NameChinese, material.TechnicalDataChinese }];
-            }
-
-            // write to xlsx
+            var partItems = PopulatePartListTableLineItems();
             MiniExcel.SaveAsByTemplate(dialog.FileName, Resources.BOM_template,
                 new
                 {
-                    Parts = materials,
+                    Parts = partItems,
                     documentInfo.CustomerName,
                     documentInfo.DocumentNo,
                     documentInfo.ProjectNo,
@@ -164,92 +167,128 @@ public class DocumentExporter
         }
     }
 
-    /// <summary>
-    ///     Listen on the shape modification, addition and delete from the page to make element dynamic.
-    /// </summary>
-    /// <returns>A <see cref="Disposable" /> to unsubscribe from these change events</returns>
-    public CompositeDisposable MonitorChange()
-    {
-        var subscription = new CompositeDisposable();
-
-        // when a shape's property is modified, it will raise up FormulaChanged event, so that the modification could be captured to emit as a new value
-        var observeChanged = Observable
-            .FromEvent<EPage_FormulaChangedEventHandler, Cell>(
-                handler => _page.FormulaChanged += handler,
-                handler => _page.FormulaChanged -= handler)
-            .Where(cell => cell.Shape.IsOnLayers(_validLayers))
-            .Do(cell =>
-            {
-                var item = cell.Shape.ToElement();
-                if (item != null) _elements.AddOrUpdate(item);
-            })
-            .Subscribe()
-            .DisposeWith(subscription);
-
-        // when a new shape is add to the page, it could be captured using ShapeAdded event
-        var observeCreated = Observable.FromEvent<EPage_ShapeAddedEventHandler, Shape>(
-                handler => _page.ShapeAdded += handler,
-                handler => _page.ShapeAdded -= handler)
-            .Where(shape => shape.IsOnLayers(_validLayers))
-            .Do(shape =>
-            {
-                var item = shape.ToElement();
-                if (item != null) _elements.AddOrUpdate(item);
-            })
-            .Subscribe()
-            .DisposeWith(subscription);
-
-        // when a shape is deleted from the page, it could be captured by BeforeShapeDelete event
-        var observeDeleted = Observable.FromEvent<EPage_BeforeShapeDeleteEventHandler, Shape>(
-                handler => _page.BeforeShapeDelete += handler,
-                handler => _page.BeforeShapeDelete -= handler)
-            .Where(shape => shape.IsOnLayers(_validLayers))
-            .Do(shape => { _elements.RemoveKey(shape.ID); })
-            .Subscribe()
-            .DisposeWith(subscription);
-
-        // return a disposable to unsubscribe from all these change event
-        return subscription;
-    }
+    #region Part List Table
 
     /// <summary>
-    ///     Convert all shapes in BOM layers to elements. elements reflects only the raw data on the page.
+    /// Populate line items for part list table
     /// </summary>
-    /// <returns>A collection of elements from page</returns>
-    private IEnumerable<Element> GetElementsFromPage(IVPage page)
+    /// <returns></returns>
+    private List<PartListTableLineItem> PopulatePartListTableLineItems()
     {
-        var elements = page.CreateSelection(
-                VisSelectionTypes.visSelTypeByLayer, VisSelectMode.visSelModeSkipSuper, string.Join(";", _validLayers))
-            .OfType<IVShape>()
-            .Select(x => x.ToElement())
-            .Where(x => x is not null)
-            .OfType<Element>().ToList();
+        var realPartListItems = PopulateRealPartItems().ToList();
+        var virtualPartListItems = PopulateVirtualPartListItems(realPartListItems);
+        var partListItems = realPartListItems.Concat(virtualPartListItems).ToList();
 
-        return elements;
-    }
+        var grouped = partListItems
+            .GroupBy(m => new
+            {
+                MaterialNo = string.IsNullOrEmpty(m.AEMaterialNo) ? Guid.NewGuid().ToString() : m.AEMaterialNo,
+                m.FunctionalGroup
+            })
+            .Select(group => new
+            {
+                group.Key.MaterialNo,
+                group.Key.FunctionalGroup,
+                CountInGroup = group.Sum(m => m.Count),
+                Total = partListItems.Where(m => m.AEMaterialNo == group.Key.MaterialNo).Sum(m => m.Count)
+            });
 
-    public void SetDesignMaterial(int id, DesignMaterial? material)
-    {
-        var shape = _page.Shapes.OfType<IVShape>().SingleOrDefault(x => x.ID == id);
-        if (shape == null) return;
-
-        // clear all shape data starts with D_
-        for (var i = shape.RowCount[(short)VisSectionIndices.visSectionProp] - 1; i >= 0; i--)
+        foreach (var group in grouped)
+        foreach (var material in partListItems.Where(m =>
+                     m.AEMaterialNo == group.MaterialNo && m.FunctionalGroup == group.FunctionalGroup))
         {
-            var cell = shape.CellsSRC[(short)VisSectionIndices.visSectionProp, (short)i,
-                (short)VisCellIndices.visCustPropsValue];
-            if (cell.RowName.StartsWith("D_")) shape.DeleteRow((short)VisSectionIndices.visSectionProp, (short)i);
+            material.InGroup = group.CountInGroup;
+            material.Total = group.Total;
         }
 
-        // write material id
-        var shapeData = new ShapeData("D_BOM", "\"设计物料\"", "", $"\"{material.Code}\"");
-        shape.AddOrUpdate(shapeData);
-
-        // write related properties
-        foreach (var propertyData in from property in material.Properties
-                 let rowName = $"D_Attribute{material.Properties.IndexOf(property) + 1}"
-                 select new ShapeData(rowName, $"\"{property.Name}\"", "",
-                     $"\"{property.Value.Replace("\"", "\"\"")}\""))
-            shape.AddOrUpdate(propertyData);
+        return partListItems;
     }
+    
+    /// <summary>
+    ///     Flatten the elements in page and filter out only equipments and functional elements, then convert to exportable
+    ///     items.
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerable<PartListTableLineItem> PopulateRealPartItems()
+    {
+        return Elements.Where(x => x.ParentId == 0).SelectMany(GetChildren).Where(x => x is PartItem).Cast<PartItem>()
+            .Select(PartListTableLineItem.FromPartItem);
+    }
+
+    /// <summary>
+    ///     Create virtual copies of the items for proxy functional group
+    /// </summary>
+    /// <param name="realPartListItems"></param>
+    /// <returns></returns>
+    private IEnumerable<PartListTableLineItem> PopulateVirtualPartListItems(
+        IEnumerable<PartListTableLineItem> realPartListItems)
+    {
+        var virtualPartListItems = new List<PartListTableLineItem>();
+
+        var partListItemsGroupedByFunctionalGroup = realPartListItems.GroupBy(x => x.FunctionalGroup).ToList();
+        foreach (var sourceFunctionalGroup in Elements
+                     .Where(x => x is FunctionalGroup functionalGroup && functionalGroup.Related.Any())
+                     .Cast<FunctionalGroup>())
+        foreach (var targetFunctionalGroup in sourceFunctionalGroup.Related)
+        {
+            var group = partListItemsGroupedByFunctionalGroup
+                .SingleOrDefault(x => x.Key == sourceFunctionalGroup.Designation)?.ToList();
+            if (group == null) continue;
+            var virtualPartListItemsInGroup = group.Select(x => PartListTableLineItem.CopyTo(x, targetFunctionalGroup));
+            virtualPartListItems.AddRange(virtualPartListItemsInGroup);
+        }
+
+        return virtualPartListItems;
+    }
+
+    /// <summary>
+    ///     Hierarchically find out the elements.
+    /// </summary>
+    /// <param name="parent"></param>
+    /// <returns></returns>
+    private IEnumerable<Element> GetChildren(Element parent)
+    {
+        var list = new List<Element> { parent };
+        foreach (var child in Elements.Where(x => x.ParentId == parent.Id))
+        {
+            var children = GetChildren(child);
+            list.AddRange(children);
+        }
+
+        return list;
+    }
+
+    #endregion
+
+
+    #region Predicates
+
+    private static Func<Shape, bool> IsFunctionalElementPredicate()
+    {
+        return x => x.HasCategory("FunctionalElement");
+    }
+
+    private static Func<Shape, bool> IsEquipmentPredicate()
+    {
+        return x => x.HasCategory("Equipment");
+    }
+
+    private static Func<Shape, bool> IsUnitPredicate()
+    {
+        return x => x.HasCategory("Unit");
+    }
+
+    private static Func<Shape, bool> IsFunctionalGroupPredicate()
+    {
+        return x => x.HasCategory("FunctionalGroup") && !x.HasCategory("Proxy");
+    }
+
+    private static Func<Shape, bool> ShapePredicate()
+    {
+        return x =>
+            x.HasCategory("FunctionalElement") || x.HasCategory("Equipment") || x.HasCategory("Instrument") ||
+            x.HasCategory("Unit") || (x.HasCategory("FunctionalGroup") && !x.HasCategory("Proxy"));
+    }
+
+    #endregion
 }

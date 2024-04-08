@@ -1,6 +1,8 @@
-﻿namespace AE.PID.Models.EventArgs;
+﻿using AE.PID.Models.BOM;
 
-public class ElementSelectedEventArgs(string name)
+namespace AE.PID.Models.EventArgs;
+
+public class ElementSelectedEventArgs(Element element)
 {
-    public string Name { get; } = name;
+    public Element Element { get; } = element;
 }

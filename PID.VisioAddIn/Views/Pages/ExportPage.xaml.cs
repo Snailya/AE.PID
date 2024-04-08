@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using AE.PID.Controllers.Services;
+using AE.PID.Models.BOM;
 using AE.PID.ViewModels;
 using AE.PID.ViewModels.Pages;
 using ReactiveUI;
@@ -25,7 +27,7 @@ public partial class ExportPage
                     v => v.DocumentInfo.ViewModel)
                 .DisposeWith(d);
             this.OneWayBind(ViewModel,
-                    vm => vm.Items,
+                    vm => vm.BOMTree,
                     v => v.Elements.ItemsSource)
                 .DisposeWith(d);
             this.Bind(ViewModel,
@@ -37,14 +39,14 @@ public partial class ExportPage
             // so the previous selection will be lost because it point to a address not exist
             // therefore, instead directly two way bind the SelectedItem to the ViewModel.Selected property, only update the viewmodel as the SelectedItem is not null
             this.WhenAnyValue(x => x.Elements.SelectedItem)
-                .WhereNotNull()
-                .Subscribe(x => ViewModel.Selected = (ElementViewModel)x)
+                .Where(x => x is TreeNodeViewModel<Element>)
+                .Select(x => ((TreeNodeViewModel<Element>)x).Source)
+                .BindTo(ViewModel, vm => vm.Selected)
                 .DisposeWith(d);
 
             // when user click any of the item in bom, open the material selection page in side window
             ViewModel.WhenAnyValue(x => x.Selected)
-                .WhereNotNull()
-                .Subscribe(_ => { Globals.ThisAddIn.WindowManager.SideShow(_sidePage); })
+                .Subscribe(selected => { Globals.ThisAddIn.WindowManager.SideShow(_sidePage); })
                 .DisposeWith(d);
         });
     }

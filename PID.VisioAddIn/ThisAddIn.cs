@@ -28,28 +28,6 @@ namespace AE.PID;
 
 public partial class ThisAddIn
 {
-    /// <summary>
-    ///     The data folder path in Application Data.
-    /// </summary>
-    public static readonly string AppDataFolder = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "AE\\PID");
-
-    /// <summary>
-    ///     The tmp folder to store updated file.
-    /// </summary>
-    public static readonly string LibraryFolder = Path.Combine(AppDataFolder, "Libraries");
-
-    /// <summary>
-    ///     The tmp folder to store updated file.
-    /// </summary>
-    public static readonly string LibraryCheatSheet = Path.Combine(LibraryFolder, ".cheatsheet");
-
-    /// <summary>
-    ///     The tmp folder to store updated file.
-    /// </summary>
-    public static readonly string TmpFolder = Path.Combine(AppDataFolder, "Tmp");
-
     private readonly CompositeDisposable _compositeDisposable = new();
     private Logger _logger;
     private Ribbon _ribbon;
@@ -193,7 +171,7 @@ public partial class ThisAddIn
             LegendService.Listen()
                 .DisposeWith(_compositeDisposable);
 
-            DocumentExporter.Listen()
+            DocumentExporter.Run()
                 .DisposeWith(_compositeDisposable);
 
             ConfigurationUpdater.Listen()
@@ -266,6 +244,32 @@ public partial class ThisAddIn
         Startup += ThisAddIn_Startup;
         Shutdown += ThisAddIn_Shutdown;
     }
+
+    #endregion
+
+    #region Paths
+
+    /// <summary>
+    ///     The data folder path in Application Data.
+    /// </summary>
+    public static readonly string AppDataFolder = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "AE\\PID");
+
+    /// <summary>
+    ///     The tmp folder to store updated file.
+    /// </summary>
+    public static readonly string LibraryFolder = Path.Combine(AppDataFolder, "Libraries");
+
+    /// <summary>
+    ///     The tmp folder to store updated file.
+    /// </summary>
+    public static readonly string LibraryCheatSheet = Path.Combine(LibraryFolder, ".cheatsheet");
+
+    /// <summary>
+    ///     The tmp folder to store updated file.
+    /// </summary>
+    public static readonly string TmpFolder = Path.Combine(AppDataFolder, "Tmp");
 
     #endregion
 }

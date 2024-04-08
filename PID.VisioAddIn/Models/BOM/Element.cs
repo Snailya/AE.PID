@@ -1,83 +1,163 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using AE.PID.Interfaces;
+using AE.PID.Models.VisProps;
+using Microsoft.Office.Interop.Visio;
+using ReactiveUI;
 
 namespace AE.PID.Models.BOM;
 
-/// <summary>
-///     An element is an item in BOM table which represents a equipment, a unit or a logical group.
-/// </summary>
-public class Element : IComparable<Element>
-
+public abstract class Element : ReactiveObject, IDisposable, ITreeNode
 {
-    /// <summary>
-    ///     Shape id of the item, used to get extra info from visio.
-    /// </summary>
-    public int Id { get; set; }
+    private readonly CompositeDisposable _cleanUp = new();
+    protected readonly Shape Source;
 
-    /// <summary>
-    ///     A process zone is a group of functional group area in painting such as PT, ED
-    /// </summary>
-    public string ProcessZone { get; set; } = string.Empty;
+    private string _description = string.Empty;
+    private string _designation = string.Empty;
 
-    /// <summary>
-    ///     A functional group is a combination of equipments that targets for the same propose, such as a pre-treatment group.
-    /// </summary>
-    public string FunctionalGroup { get; set; } = string.Empty;
+    private int _parentId;
 
-    /// <summary>
-    ///     A functional element is an indicator used in electric system for a part item.
-    /// </summary>
-    public string FunctionalElement { get; set; } = string.Empty;
 
-    /// <summary>
-    ///     The material number used in the system to get extra information about the part.
-    /// </summary>
-    public string MaterialNo { get; set; } = string.Empty;
+    #region Constructors
 
-    /// <summary>
-    ///     The user friendly name of the part item.
-    /// </summary>
-    public string Name { get; set; } = string.Empty;
-
-    /// <summary>
-    ///     The number of the same part used in the source.
-    /// </summary>
-    public double Count { get; set; }
-
-    /// <summary>
-    ///     If this line item is a functional element, this property represents the equipment it is related.
-    /// </summary>
-    public int ParentId { get; set; }
-
-    /// <summary>
-    ///     The type used to specify if the item is treated as a unit equipment which might have several different equipments
-    ///     inside,
-    ///     or a single equipment that might have some equipments attached to it or not, or a equipment that attached to other
-    ///     single equipment.
-    /// </summary>
-    public ElementType Type { get; set; }
-
-    public int CompareTo(Element other)
+    protected Element(Shape shape)
     {
-        var processZoneComparison = string.Compare(ProcessZone, other.ProcessZone, StringComparison.Ordinal);
-        if (processZoneComparison != 0) return processZoneComparison;
+        Source = shape;
+        Id = shape.ID;
 
-        var functionalGroupComparison =
-            string.Compare(FunctionalGroup, other.FunctionalGroup, StringComparison.Ordinal);
-        if (functionalGroupComparison != 0) return functionalGroupComparison;
+        Observable
+            .FromEvent<EShape_CellChangedEventHandler, Cell>(
+                handler => Source.CellChanged += handler,
+                handler => Source.CellChanged -= handler)
+            .Subscribe(OnCellChanged)
+            .DisposeWith(_cleanUp);
 
-        var nameComparison = string.Compare(Name, other.Name, StringComparison.Ordinal);
-        if (nameComparison != 0) return nameComparison;
-
-        var functionalElement = string.Compare(FunctionalElement, other.FunctionalElement, StringComparison.Ordinal);
-        return functionalElement;
+        // observable on relationship change
+        Observable
+            .FromEvent<EShape_FormulaChangedEventHandler, Cell>(
+                handler => Source.FormulaChanged += handler,
+                handler => Source.FormulaChanged -= handler)
+            .Where(cell => cell.Name == "Relationships")
+            .Subscribe(_ => { OnRelationshipsChanged(); })
+            .DisposeWith(_cleanUp);
     }
-}
 
-public class ElementComparer : IComparer<Element>
-{
-    public int Compare(Element x, Element y)
+    #endregion
+
+    #region Public Methods
+
+    public void Dispose()
     {
-        return x.CompareTo(y);
+        _cleanUp.Dispose();
     }
+
+    #endregion
+
+
+    protected static int? GetContainerIdByCategory(Shape shape, string categoryName)
+    {
+        if (shape.MemberOfContainers.Length == 0) return null;
+
+        var containers = shape.MemberOfContainers.OfType<int>().Select(x => shape.ContainingPage.Shapes.ItemFromID[x])
+            .ToArray();
+
+        // if it has a unit container, set the parent id to the unit's id
+        return containers.SingleOrDefault(x => x.HasCategory(categoryName))?.ID ??
+               null;
+    }
+
+    protected static int? GetAssociate(Shape shape)
+    {
+        var target = shape.CalloutTarget;
+        if (target == null) return null;
+        if (target.HasCategory("Equipment")) return target.ID;
+        return null;
+    }
+
+    /// <summary>
+    ///     Write material to
+    /// </summary>
+    /// <param name="material"></param>
+    protected void AssignMaterial(DesignMaterial? material)
+    {
+        // clear all shape data starts with D_BOM
+        for (var i = Source.RowCount[(short)VisSectionIndices.visSectionProp] - 1; i >= 0; i--)
+        {
+            var cell = Source.CellsSRC[(short)VisSectionIndices.visSectionProp, (short)i,
+                (short)VisCellIndices.visCustPropsValue];
+            if (cell.RowName.StartsWith("D_")) Source.DeleteRow((short)VisSectionIndices.visSectionProp, (short)i);
+        }
+
+        // write material id
+        if (material == null) return;
+
+        var shapeData = new ShapeData("D_BOM", "\"设计物料\"", "", $"\"{material.Code}\"");
+        Source.AddOrUpdate(shapeData);
+
+        // write related properties
+        foreach (var propertyData in from property in material.Properties
+                 let rowName = $"D_Attribute{material.Properties.IndexOf(property) + 1}"
+                 select new ShapeData(rowName, $"\"{property.Name}\"", "",
+                     $"\"{property.Value.Replace("\"", "\"\"")}\""))
+            Source.AddOrUpdate(propertyData);
+    }
+
+    #region Virtual Methods
+
+    protected virtual void OnRelationshipsChanged()
+    {
+    }
+
+    protected virtual void OnCellChanged(Cell cell)
+    {
+        switch (cell.Name)
+        {
+            case "Prop.Description":
+                Description = cell.ResultStr[VisUnitCodes.visUnitsString];
+                break;
+        }
+    }
+
+    protected virtual void Initialize()
+    {
+        Description = Source.CellsU["Prop.Description"].ResultStr[VisUnitCodes.visUnitsString];
+    }
+
+    #endregion
+
+    #region Properties
+
+    public int ParentId
+    {
+        get => _parentId;
+        protected set => this.RaiseAndSetIfChanged(ref _parentId, value);
+    }
+
+    public int Id { get; }
+
+    public ElementType Type { get; protected set; }
+
+    /// <summary>
+    ///     Notice that the property in visio for designation differs for element type
+    /// </summary>
+    public string Designation
+    {
+        get => _designation;
+        protected set => this.RaiseAndSetIfChanged(ref _designation, value);
+    }
+
+    /// <summary>
+    ///     The label is used for binding to TreeListView
+    /// </summary>
+    public string Label => _designation;
+
+    public string Description
+    {
+        get => _description;
+        protected set => this.RaiseAndSetIfChanged(ref _description, value);
+    }
+
+    #endregion
 }

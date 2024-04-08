@@ -64,4 +64,9 @@ public class WindowManager
         _sideWindow.Content = page;
         _sideWindow.Show();
     }
+
+    public void SideHide()
+    {
+        _sideWindow.Close();
+    }
 }

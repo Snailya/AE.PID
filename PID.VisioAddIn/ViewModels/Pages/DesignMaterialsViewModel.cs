@@ -17,7 +17,8 @@ namespace AE.PID.ViewModels.Pages;
 public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
 {
     private ReadOnlyObservableCollection<DesignMaterialCategoryViewModel> _categories = new([]);
-    private string _elementName = string.Empty;
+    private ObservableAsPropertyHelper<string>? _categoryFilterSeed;
+    private Element? _element;
 
     private ReadOnlyObservableCollection<DesignMaterial> _lastUsed = new([]);
 
@@ -26,37 +27,60 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
 
     private ReadOnlyObservableCollection<DesignMaterial>? _validMaterials;
 
+    #region Command Handlers
+
+    private void WriteMaterialAndAddToLastUsed(DesignMaterial material)
+    {
+        if (_element is not PartItem partItem) return;
+
+        partItem.DesignMaterial = material;
+        service.AddToLastUsed(material, CategoryPredicateSeed);
+    }
+
+    #endregion
+
+
+    #region Setups
 
     protected override void SetupCommands()
     {
         // when an item is selected, it should be add to the last used grid for future use
-        Select = ReactiveCommand.Create<DesignMaterial, DesignMaterial>(material =>
-        {
-            AddToLastUsed(material, _elementName);
-            return material;
-        });
+        Select = ReactiveCommand.Create<DesignMaterial>(WriteMaterialAndAddToLastUsed);
 
         // create a hack command so that other class could observe this action
         // this is used to trigger load more action of the lazy load data grid in view class
         Load = ReactiveCommand.Create(() => { });
     }
 
+
     protected override void SetupSubscriptions(CompositeDisposable d)
     {
         // listen for element selected event in Export page, when the selected element changed, it is used as the seed for this page
         MessageBus.Current.Listen<ElementSelectedEventArgs>()
             .DistinctUntilChanged()
-            .Subscribe(x => ElementName = x.Name)
+            .Select(x => x.Element)
+            .Subscribe(x => Element = x)
             .DisposeWith(d);
 
-        // when an item is selected by user, notify Export page for selection.
-        MessageBus.Current.RegisterMessageSource(Select!.Select(x => new DesignMaterialSelectedEventArgs(x)))
+        // build up category predicate seed based on element
+        this.WhenAnyValue(x => x.Element)
+            .Select(x =>
+            {
+                return x switch
+                {
+                    FunctionalGroup or EquipmentUnit => string.Empty,
+                    Equipment equipment => equipment.SubClassName,
+                    FunctionalElement functionalElement => functionalElement.Designation,
+                    _ => string.Empty
+                };
+            })
+            .ToProperty(this, x => x.CategoryPredicateSeed, out _categoryFilterSeed)
             .DisposeWith(d);
 
         // when the category if fetched from server, it is originally a flatten list
         // convert it into a tree structure using dynamic data
         // however, to enhance user select efficiency, this tree is not used directly but as the source for a filtered tree that matches the current element
-        var categoryPredicate = this.WhenAnyValue(x => x.ElementName)
+        var categoryPredicate = this.WhenAnyValue(x => x.CategoryPredicateSeed)
             .Select(BuildCategoryPredicate());
         service.Categories
             .Connect()
@@ -137,19 +161,10 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
 
     private Func<string, Func<Node<MaterialCategoryDto, int>, bool>> BuildCategoryPredicate()
     {
-        return name => node =>
-            service.CategoryMap.TryGetValue(name, out var codes) ? codes.Contains(node.Item.Code) : node.IsRoot;
-    }
-
-
-    /// <summary>
-    ///     Add design material to last used list.
-    /// </summary>
-    /// <param name="item"></param>
-    /// <param name="selectedName"></param>
-    private void AddToLastUsed(DesignMaterial item, string selectedName)
-    {
-        service.AddToLastUsed(item, selectedName);
+        return name => string.IsNullOrEmpty(name)
+            ? _ => false
+            : node =>
+                service.CategoryMap.TryGetValue(name, out var codes) ? codes.Contains(node.Item.Code) : node.IsRoot;
     }
 
     /// <summary>
@@ -186,16 +201,18 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
                     m.Model.Contains(model) && m.Manufacturer.Contains(manufacturer);
     }
 
+    #endregion
+
     #region Read-Write Properties
 
     /// <summary>
     ///     The name is the seed for the this view model. The name is mapped to a category and then all girds on populated by
     ///     this category.
     /// </summary>
-    public string ElementName
+    public Element? Element
     {
-        get => _elementName;
-        set => this.RaiseAndSetIfChanged(ref _elementName, value);
+        get => _element;
+        set => this.RaiseAndSetIfChanged(ref _element, value);
     }
 
     /// <summary>
@@ -221,13 +238,14 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
     #region Read-Only Properties
 
     public ReactiveCommand<Unit, Unit>? Load { get; private set; }
-    public ReactiveCommand<DesignMaterial, DesignMaterial>? Select { get; set; }
+    public ReactiveCommand<DesignMaterial, Unit>? Select { get; set; }
     public ReactiveCommand<Unit, Unit>? Close { get; set; }
 
     #endregion
 
     #region Output Proeprties
 
+    public string CategoryPredicateSeed => _categoryFilterSeed.Value;
     public ReadOnlyObservableCollection<DesignMaterialCategoryViewModel> Categories => _categories;
     public ReadOnlyObservableCollection<DesignMaterial> LastUsed => _lastUsed;
     public ReadOnlyObservableCollection<DesignMaterial>? ValidMaterials => _validMaterials;
