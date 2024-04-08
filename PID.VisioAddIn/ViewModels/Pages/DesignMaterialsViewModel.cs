@@ -50,6 +50,8 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
         // create a hack command so that other class could observe this action
         // this is used to trigger load more action of the lazy load data grid in view class
         Load = ReactiveCommand.Create(() => { });
+
+        Close = ReactiveCommand.Create(() => { });
     }
 
 
