@@ -1,22 +1,22 @@
 ﻿<Project ToolsVersion="17.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <!--
-                                                                      This section defines project-level properties.
-                                                                  
-                                                                      AssemblyName
-                                                                        Name of the output assembly.
-                                                                      Configuration
-                                                                        Specifies a default value for debug.
-                                                                      OutputType
-                                                                        Must be "Library" for VSTO.
-                                                                      Platform
-                                                                        Specifies what CPU the output of this project can run on.
-                                                                      NoStandardLibraries
-                                                                        Set to "false" for VSTO.
-                                                                      RootNamespace
-                                                                        In C#, this specifies the namespace given to new files. In VB, all objects are
-                                                                        wrapped in this namespace at runtime.
-                                                                    -->
+                                                                        This section defines project-level properties.
+                                                                    
+                                                                        AssemblyName
+                                                                          Name of the output assembly.
+                                                                        Configuration
+                                                                          Specifies a default value for debug.
+                                                                        OutputType
+                                                                          Must be "Library" for VSTO.
+                                                                        Platform
+                                                                          Specifies what CPU the output of this project can run on.
+                                                                        NoStandardLibraries
+                                                                          Set to "false" for VSTO.
+                                                                        RootNamespace
+                                                                          In C#, this specifies the namespace given to new files. In VB, all objects are
+                                                                          wrapped in this namespace at runtime.
+                                                                      -->
   <PropertyGroup>
     <ProjectTypeGuids>{BAA0C2D2-18E2-41B9-852F-F413020CAA33};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -66,27 +66,27 @@
   </ItemGroup>
   <PropertyGroup>
     <!--
-                                                                                                                                          OfficeApplication
-                                                                                                                                            Add-in host application
-                                                                                                                                        -->
+                                                                                                                                              OfficeApplication
+                                                                                                                                                Add-in host application
+                                                                                                                                            -->
     <OfficeApplication>Visio</OfficeApplication>
   </PropertyGroup>
   <!--
-                                                                      This section defines properties that are set when the "Debug" configuration is selected.
-                                                                  
-                                                                      DebugSymbols
-                                                                        If "true", create symbols (.pdb). If "false", do not create symbols.
-                                                                      DefineConstants
-                                                                        Constants defined for the preprocessor.
-                                                                      EnableUnmanagedDebugging
-                                                                        If "true", starting the debugger will attach both managed and unmanaged debuggers.
-                                                                      Optimize
-                                                                        If "true", optimize the build output. If "false", do not optimize.
-                                                                      OutputPath
-                                                                        Output path of project relative to the project file.
-                                                                      WarningLevel
-                                                                        Warning level for the compiler.
-                                                                    -->
+                                                                        This section defines properties that are set when the "Debug" configuration is selected.
+                                                                    
+                                                                        DebugSymbols
+                                                                          If "true", create symbols (.pdb). If "false", do not create symbols.
+                                                                        DefineConstants
+                                                                          Constants defined for the preprocessor.
+                                                                        EnableUnmanagedDebugging
+                                                                          If "true", starting the debugger will attach both managed and unmanaged debuggers.
+                                                                        Optimize
+                                                                          If "true", optimize the build output. If "false", do not optimize.
+                                                                        OutputPath
+                                                                          Output path of project relative to the project file.
+                                                                        WarningLevel
+                                                                          Warning level for the compiler.
+                                                                      -->
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
@@ -97,21 +97,21 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <!--
-                                                                      This section defines properties that are set when the "Release" configuration is selected.
-                                                                  
-                                                                      DebugSymbols
-                                                                        If "true", create symbols (.pdb). If "false", do not create symbols.
-                                                                      DefineConstants
-                                                                        Constants defined for the preprocessor.
-                                                                      EnableUnmanagedDebugging
-                                                                        If "true", starting the debugger will attach both managed and unmanaged debuggers.
-                                                                      Optimize
-                                                                        If "true", optimize the build output. If "false", do not optimize.
-                                                                      OutputPath
-                                                                        Output path of project relative to the project file.
-                                                                      WarningLevel
-                                                                        Warning level for the compiler.
-                                                                    -->
+                                                                        This section defines properties that are set when the "Release" configuration is selected.
+                                                                    
+                                                                        DebugSymbols
+                                                                          If "true", create symbols (.pdb). If "false", do not create symbols.
+                                                                        DefineConstants
+                                                                          Constants defined for the preprocessor.
+                                                                        EnableUnmanagedDebugging
+                                                                          If "true", starting the debugger will attach both managed and unmanaged debuggers.
+                                                                        Optimize
+                                                                          If "true", optimize the build output. If "false", do not optimize.
+                                                                        OutputPath
+                                                                          Output path of project relative to the project file.
+                                                                        WarningLevel
+                                                                          Warning level for the compiler.
+                                                                      -->
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
@@ -123,8 +123,8 @@
     </DocumentationFile>
   </PropertyGroup>
   <!--
-                                                                      This section specifies references for the project.
-                                                                    -->
+                                                                        This section specifies references for the project.
+                                                                      -->
   <ItemGroup>
     <Reference Include="Accessibility" />
     <Reference Include="mscorlib" />
@@ -174,15 +174,15 @@
     </Reference>
   </ItemGroup>
   <!--
-                                                                      This section defines the user source files that are part of the project.
-                                                                       
-                                                                      A "Compile" element specifies a source file to compile.
-                                                                      An "EmbeddedResource" element specifies an .resx file for embedded resources.
-                                                                      A "None" element specifies a file that is not to be passed to the compiler (for instance, 
-                                                                      a text file or XML file).
-                                                                      The "AppDesigner" element specifies the directory where the application properties files
-                                                                      can be found.
-                                                                    -->
+                                                                        This section defines the user source files that are part of the project.
+                                                                         
+                                                                        A "Compile" element specifies a source file to compile.
+                                                                        An "EmbeddedResource" element specifies an .resx file for embedded resources.
+                                                                        A "None" element specifies a file that is not to be passed to the compiler (for instance, 
+                                                                        a text file or XML file).
+                                                                        The "AppDesigner" element specifies the directory where the application properties files
+                                                                        can be found.
+                                                                      -->
   <ItemGroup>
     <Compile Include="AttachedProperties\AttachedPropertyBase.cs" />
     <Compile Include="AttachedProperties\PopupPlacementTarget.cs" />
@@ -192,10 +192,9 @@
     <Compile Include="Controllers\ServiceManager.cs" />
     <Compile Include="Controllers\Services\AppUpdater.cs" />
     <Compile Include="Controllers\Services\MaterialsService.cs" />
-    <Compile Include="Controllers\Services\DocumentInitializer.cs" />
     <Compile Include="Controllers\Services\DocumentUpdater.cs" />
     <Compile Include="Controllers\Services\DocumentExporter.cs" />
-    <Compile Include="Controllers\Services\LegendService.cs" />
+    <Compile Include="Controllers\Services\LegendGenerator.cs" />
     <Compile Include="Controllers\Services\LibraryUpdater.cs" />
     <Compile Include="Controllers\Services\OpenXmlService.cs" />
     <Compile Include="Controllers\Services\ShapeSelector.cs" />
@@ -253,6 +252,7 @@
     <Compile Include="Ribbon.cs">
       <XmlRibbon>true</XmlRibbon>
     </Compile>
+    <Compile Include="Tools\VisioHelper.cs" />
     <Compile Include="ViewModels\DesignMaterialCategoryViewModel.cs" />
     <Compile Include="ViewModels\DocumentInfoViewModel.cs" />
     <Compile Include="ViewModels\FrequencyOptionViewModel.cs" />
@@ -475,6 +475,9 @@
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <RegisterForComInterop>false</RegisterForComInterop>
   </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+  </PropertyGroup>
   <!-- Include the build rules for a C# project. -->
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- Include additional build rules for an Office application add-in. -->
@@ -490,4 +493,10 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
+  <PropertyGroup>
+    <PostBuildEvent>IF "$(ConfigurationName)" == "Release" (
+  "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "$(ProjectDir)setup.iss"
+  start explorer /select, "$(SolutionDir)publish\"
+)</PostBuildEvent>
+  </PropertyGroup>
 </Project>
