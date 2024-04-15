@@ -1,502 +1,500 @@
 ﻿<Project ToolsVersion="17.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <!--
-                                                                        This section defines project-level properties.
-                                                                    
-                                                                        AssemblyName
-                                                                          Name of the output assembly.
-                                                                        Configuration
-                                                                          Specifies a default value for debug.
-                                                                        OutputType
-                                                                          Must be "Library" for VSTO.
-                                                                        Platform
-                                                                          Specifies what CPU the output of this project can run on.
-                                                                        NoStandardLibraries
-                                                                          Set to "false" for VSTO.
-                                                                        RootNamespace
-                                                                          In C#, this specifies the namespace given to new files. In VB, all objects are
-                                                                          wrapped in this namespace at runtime.
-                                                                      -->
-  <PropertyGroup>
-    <ProjectTypeGuids>{BAA0C2D2-18E2-41B9-852F-F413020CAA33};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{5A986C6F-8D43-46A0-8B3A-50FB44234214}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <NoStandardLibraries>false</NoStandardLibraries>
-    <RootNamespace>AE.PID</RootNamespace>
-    <AssemblyName>AE.PID</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <DefineConstants>VSTO40</DefineConstants>
-    <LangVersion>12</LangVersion>
-    <Nullable>enable</Nullable>
-    <IsWebBootstrapper>False</IsWebBootstrapper>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <PublishUrl>publish\</PublishUrl>
-    <InstallUrl />
-    <TargetCulture>en</TargetCulture>
-    <ApplicationVersion>0.5.0.0</ApplicationVersion>
-    <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
-    <UpdateEnabled>true</UpdateEnabled>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>days</UpdateIntervalUnits>
-    <ProductName>AE PID</ProductName>
-    <PublisherName>JetSnail</PublisherName>
-    <SupportUrl />
-    <FriendlyName>PID.VisioAddIn</FriendlyName>
-    <OfficeApplicationDescription />
-    <LoadBehavior>3</LoadBehavior>
-  </PropertyGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4.7.2 %28x86 and x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.VSTORuntime.4.0">
-      <Visible>False</Visible>
-      <ProductName>Microsoft Visual Studio 2010 Tools for Office Runtime %28x86 and x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <PropertyGroup>
+    <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"/>
     <!--
-                                                                                                                                              OfficeApplication
-                                                                                                                                                Add-in host application
-                                                                                                                                            -->
-    <OfficeApplication>Visio</OfficeApplication>
-  </PropertyGroup>
-  <!--
-                                                                        This section defines properties that are set when the "Debug" configuration is selected.
-                                                                    
-                                                                        DebugSymbols
-                                                                          If "true", create symbols (.pdb). If "false", do not create symbols.
-                                                                        DefineConstants
-                                                                          Constants defined for the preprocessor.
-                                                                        EnableUnmanagedDebugging
-                                                                          If "true", starting the debugger will attach both managed and unmanaged debuggers.
-                                                                        Optimize
-                                                                          If "true", optimize the build output. If "false", do not optimize.
-                                                                        OutputPath
-                                                                          Output path of project relative to the project file.
-                                                                        WarningLevel
-                                                                          Warning level for the compiler.
-                                                                      -->
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
-    <DefineConstants>$(DefineConstants);DEBUG;TRACE</DefineConstants>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <!--
-                                                                        This section defines properties that are set when the "Release" configuration is selected.
-                                                                    
-                                                                        DebugSymbols
-                                                                          If "true", create symbols (.pdb). If "false", do not create symbols.
-                                                                        DefineConstants
-                                                                          Constants defined for the preprocessor.
-                                                                        EnableUnmanagedDebugging
-                                                                          If "true", starting the debugger will attach both managed and unmanaged debuggers.
-                                                                        Optimize
-                                                                          If "true", optimize the build output. If "false", do not optimize.
-                                                                        OutputPath
-                                                                          Output path of project relative to the project file.
-                                                                        WarningLevel
-                                                                          Warning level for the compiler.
-                                                                      -->
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>none</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
-    <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>
-    </DocumentationFile>
-  </PropertyGroup>
-  <!--
-                                                                        This section specifies references for the project.
-                                                                      -->
-  <ItemGroup>
-    <Reference Include="Accessibility" />
-    <Reference Include="mscorlib" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Windows" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xaml" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Core" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="UIAutomationProvider" />
-    <Reference Include="WindowsBase" />
-    <Reference Include="WindowsFormsIntegration" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Microsoft.VisualStudio.Tools.Applications.Runtime, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Office.Tools, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Office.Tools.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Microsoft.Office.Tools.Common.v4.0.Utilities, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <Private>True</Private>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Office, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
-      <Private>False</Private>
-      <EmbedInteropTypes>true</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Microsoft.Office.Interop.Visio, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
-      <Private>False</Private>
-      <EmbedInteropTypes>true</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
-  <!--
-                                                                        This section defines the user source files that are part of the project.
-                                                                         
-                                                                        A "Compile" element specifies a source file to compile.
-                                                                        An "EmbeddedResource" element specifies an .resx file for embedded resources.
-                                                                        A "None" element specifies a file that is not to be passed to the compiler (for instance, 
-                                                                        a text file or XML file).
-                                                                        The "AppDesigner" element specifies the directory where the application properties files
-                                                                        can be found.
-                                                                      -->
-  <ItemGroup>
-    <Compile Include="AttachedProperties\AttachedPropertyBase.cs" />
-    <Compile Include="AttachedProperties\PopupPlacementTarget.cs" />
-    <Compile Include="Attributes\DataGridColumnAttribute.cs" />
-    <Compile Include="Constants.cs" />
-    <Compile Include="Controllers\LoggerExtension.cs" />
-    <Compile Include="Controllers\ServiceManager.cs" />
-    <Compile Include="Controllers\Services\AppUpdater.cs" />
-    <Compile Include="Controllers\Services\MaterialsService.cs" />
-    <Compile Include="Controllers\Services\DocumentUpdater.cs" />
-    <Compile Include="Controllers\Services\DocumentExporter.cs" />
-    <Compile Include="Controllers\Services\LegendGenerator.cs" />
-    <Compile Include="Controllers\Services\LibraryUpdater.cs" />
-    <Compile Include="Controllers\Services\OpenXmlService.cs" />
-    <Compile Include="Controllers\Services\ShapeSelector.cs" />
-    <Compile Include="Controllers\Services\ConfigurationUpdater.cs" />
-    <Compile Include="Controllers\Services\DocumentSimplifier.cs" />
-    <Compile Include="Converters\ConcurrentBagConverter.cs" />
-    <Compile Include="Converters\LevelToIndentConverter.cs" />
-    <Compile Include="Interfaces\IActionData.cs" />
-    <Compile Include="Interfaces\ILabel.cs" />
-    <Compile Include="Interfaces\IPartItem.cs" />
-    <Compile Include="Interfaces\IProp.cs" />
-    <Compile Include="Interfaces\IShapeData.cs" />
-    <Compile Include="Interfaces\ITreeNode.cs" />
-    <Compile Include="Interfaces\IUserData.cs" />
-    <Compile Include="Interfaces\IValueProp.cs" />
-    <Compile Include="Models\BOM\DesignMaterial.cs" />
-    <Compile Include="Models\BOM\DesignMaterialProperty.cs" />
-    <Compile Include="Models\BOM\Element.cs" />
-    <Compile Include="Models\BOM\Equipment.cs" />
-    <Compile Include="Models\BOM\FunctionalElement.cs" />
-    <Compile Include="Models\BOM\FunctionalGroup.cs" />
-    <Compile Include="Models\BOM\LastUsedDesignMaterial.cs" />
-    <Compile Include="Models\BOM\PartItem.cs" />
-    <Compile Include="Models\BOM\PartListTableLineItem.cs" />
-    <Compile Include="Models\BOM\DesignMaterialsQueryTerms.cs" />
-    <Compile Include="Models\BOM\ElementType.cs" />
-    <Compile Include="Models\BOM\EquipmentUnit.cs" />
-    <Compile Include="Models\Configurations\Configuration.cs" />
-    <Compile Include="Models\Configurations\ExportSettings.cs" />
-    <Compile Include="Models\Configurations\Library.cs" />
-    <Compile Include="Models\Configurations\LibraryConfiguration.cs" />
-    <Compile Include="Models\Configurations\LibraryItem.cs" />
-    <Compile Include="Models\Configurations\ConfigurationBase.cs" />
-    <Compile Include="Models\Configurations\NLogConfiguration.cs" />
-    <Compile Include="Models\EventArgs\ElementSelectedEventArgs.cs" />
-    <Compile Include="Models\Exceptions\BOMLayersNullException.cs" />
-    <Compile Include="Models\Exceptions\FormatValueInvalidException.cs" />
-    <Compile Include="Models\Exceptions\MasterNotFoundException.cs" />
-    <Compile Include="Models\InputCache.cs" />
-    <Compile Include="Models\MasterDocumentLibraryMapping.cs" />
-    <Compile Include="Models\Position.cs" />
-    <Compile Include="Models\SelectionType.cs" />
-    <Compile Include="Models\VBABool.cs" />
-    <Compile Include="Models\VisProps\ActionData.cs" />
-    <Compile Include="Models\VisProps\Prop.cs" />
-    <Compile Include="Models\VisProps\ShapeData.cs" />
-    <Compile Include="Models\VisProps\UserData.cs" />
-    <Compile Include="Models\VisProps\ValueProp.cs" />
-    <Compile Include="Models\VisProps\VisioExtensions.cs" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Ribbon.cs">
-      <XmlRibbon>true</XmlRibbon>
-    </Compile>
-    <Compile Include="Tools\VisioHelper.cs" />
-    <Compile Include="ViewModels\DesignMaterialCategoryViewModel.cs" />
-    <Compile Include="ViewModels\DocumentInfoViewModel.cs" />
-    <Compile Include="ViewModels\FrequencyOptionViewModel.cs" />
-    <Compile Include="ViewModels\LibraryInfoViewModel.cs" />
-    <Compile Include="ViewModels\MasterViewModel.cs" />
-    <Compile Include="ViewModels\OkCancelFeedbackViewModel.cs" />
-    <Compile Include="ViewModels\OkCancelViewModel.cs" />
-    <Compile Include="ViewModels\Pages\DesignMaterialsViewModel.cs" />
-    <Compile Include="ViewModels\Pages\ExportViewModel.cs" />
-    <Compile Include="ViewModels\Pages\ShapeSelectionViewModel.cs" />
-    <Compile Include="ViewModels\Pages\UserSettingsViewModel.cs" />
-    <Compile Include="ViewModels\TreeNodeViewModel.cs" />
-    <Compile Include="ViewModels\TreeNodeViewModelBase.cs" />
-    <Compile Include="ViewModels\UserFiltersViewModel.cs" />
-    <Compile Include="ViewModels\TaskProgressViewModel.cs" />
-    <Compile Include="ViewModels\ViewModelBase.cs" />
-    <Compile Include="Views\Components\DocumentInfoTable.xaml.cs">
-      <DependentUpon>DocumentInfoTable.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Components\OkCancelFeedback.xaml.cs">
-      <DependentUpon>OkCancelFeedback.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Components\UserFiltersForm.xaml.cs">
-      <DependentUpon>UserFiltersForm.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Controls\AutoColumnsDataGrid.cs" />
-    <Compile Include="Views\Controls\LabelTextBox.cs" />
-    <Compile Include="Views\Controls\LazyLoadAutoColumnsDataGrid.cs" />
-    <Compile Include="Views\Controls\SectionLabel.cs" />
-    <Compile Include="Views\Controls\TreeListView.cs" />
-    <Compile Include="Views\Controls\TreeListViewItem.cs" />
-    <Compile Include="Views\Pages\ExportPage.xaml.cs">
-      <DependentUpon>ExportPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Pages\MaterialsSelectionPage.xaml.cs">
-      <DependentUpon>MaterialsSelectionPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Pages\PageBase.cs" />
-    <Compile Include="Views\Pages\ShapeSelectionPage.xaml.cs">
-      <DependentUpon>ShapeSelectionPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Pages\UserSettingsPage.xaml.cs">
-      <DependentUpon>UserSettingsPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\TaskProgressView.xaml.cs">
-      <DependentUpon>TaskProgressView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Tools\NativeMethods.cs" />
-    <Compile Include="Tools\UIHelper.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Views\ViewBase.cs" />
-    <Compile Include="Views\Windows\BaseWindowViewModel.cs" />
-    <Compile Include="Views\Windows\MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Windows\SideWindow.xaml.cs">
-      <DependentUpon>SideWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Windows\WindowDockPosition.cs" />
-    <Compile Include="Views\Windows\WindowManager.cs" />
-    <Compile Include="Views\Windows\WindowResizer.cs" />
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <SubType>Designer</SubType>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <None Include="app.config" />
-    <None Include="nlog.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="PID.VisioAddIn_TemporaryKey.pfx" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-    <Compile Include="ThisAddIn.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <None Include="Resources\BOM_template.xlsx" />
-    <None Include="Resources\nlog.config" />
-    <None Include="ThisAddIn.Designer.xml">
-      <DependentUpon>ThisAddIn.cs</DependentUpon>
-    </None>
-    <Compile Include="ThisAddIn.Designer.cs">
-      <DependentUpon>ThisAddIn.Designer.xml</DependentUpon>
-    </Compile>
-    <AppDesigner Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="Views\Components\DocumentInfoTable.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Components\OkCancelFeedback.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\Components\UserFiltersForm.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Pages\ExportPage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Pages\MaterialsSelectionPage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Pages\ShapeSelectionPage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Pages\UserSettingsPage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\TaskProgressView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Themes\Generic.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Windows\MainWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Windows\SideWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\PID.Core\PID.Core.csproj">
-      <Project>{92c0d0f2-f7fd-4342-a80c-37ccf350d2b5}</Project>
-      <Name>PID.Core</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Ribbon.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\edit_configuration.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\load_libraries.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\format_page.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\update_document.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\open_export_tool.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Bogus" Version="35.5.0" />
-    <PackageReference Include="DataGridExtensions" Version="2.6.0" />
-    <PackageReference Include="Material.Icons.WPF" Version="2.1.0" />
-    <PackageReference Include="MiniExcel" Version="1.31.3" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="NLog" Version="5.2.8" />
-    <PackageReference Include="ReactiveUI.WPF" Version="19.5.39" />
-    <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0" />
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
-    <PackageReference Include="System.Xml.Linq" Version="3.5.21022.801" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="Views\Themes\TreeListView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <PropertyGroup>
-    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
-    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignManifests>true</SignManifests>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestKeyFile>PID.VisioAddIn_TemporaryKey.pfx</ManifestKeyFile>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestCertificateThumbprint>8413C8AF0782C8C5CB35625D89CCCEA6EE60BFF5</ManifestCertificateThumbprint>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <PlatformTarget>x86</PlatformTarget>
-    <OutputPath>bin\x86\Debug\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <PlatformTarget>x86</PlatformTarget>
-    <OutputPath>bin\x86\Release\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
-    <DefineConstants>VSTO40;DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <LangVersion>12</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\x64\Release\</OutputPath>
-    <DefineConstants>VSTO40;TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>12</LangVersion>
-    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
-    <RegisterForComInterop>false</RegisterForComInterop>
-  </PropertyGroup>
-  <PropertyGroup>
-    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
-  </PropertyGroup>
-  <!-- Include the build rules for a C# project. -->
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- Include additional build rules for an Office application add-in. -->
-  <Import Project="$(VSToolsPath)\OfficeTools\Microsoft.VisualStudio.Tools.Office.targets" Condition="'$(VSToolsPath)' != ''" />
-  <!-- This section defines VSTO properties that describe the host-changeable project properties. -->
-  <ProjectExtensions>
-    <VisualStudio>
-      <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
-        <ProjectProperties HostName="Visio" HostPackage="{29A7B9D7-A7F1-4328-8EF0-6B2D1A56B2C1}" OfficeVersion="15.0" VstxVersion="4.0" ApplicationType="Visio" Language="cs" TemplatesPath="" DebugInfoExeName="#Software\Microsoft\Office\16.0\Visio\InstallRoot\Path#visio.exe" AddItemTemplatesGuid="{51063C3A-E220-4D12-8922-BDA915ACD783}" />
-        <Host Name="Visio" GeneratedCodeNamespace="PID.VisioAddIn" PublishedHash="69C324AB27932AA2FBF2B7EA72250886FF164DE6" IconIndex="0">
-          <HostItem Name="ThisAddIn" Code="ThisAddIn.cs" CanonicalName="AddIn" PublishedHash="882224AB80B823BA0099F26C9D82FFC01547B547" CanActivate="false" IconIndex="1" Blueprint="ThisAddIn.Designer.xml" GeneratedCode="ThisAddIn.Designer.cs" />
-        </Host>
-      </FlavorProperties>
-    </VisualStudio>
-  </ProjectExtensions>
-  <PropertyGroup>
-    <PostBuildEvent>IF "$(ConfigurationName)" == "Release" (
-  "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "$(ProjectDir)setup.iss"
-  start explorer /select, "$(SolutionDir)publish\"
-)</PostBuildEvent>
-  </PropertyGroup>
+                                                                            This section defines project-level properties.
+                                                                        
+                                                                            AssemblyName
+                                                                              Name of the output assembly.
+                                                                            Configuration
+                                                                              Specifies a default value for debug.
+                                                                            OutputType
+                                                                              Must be "Library" for VSTO.
+                                                                            Platform
+                                                                              Specifies what CPU the output of this project can run on.
+                                                                            NoStandardLibraries
+                                                                              Set to "false" for VSTO.
+                                                                            RootNamespace
+                                                                              In C#, this specifies the namespace given to new files. In VB, all objects are
+                                                                              wrapped in this namespace at runtime.
+                                                                          -->
+    <PropertyGroup>
+        <ProjectTypeGuids>{BAA0C2D2-18E2-41B9-852F-F413020CAA33};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+        <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+        <ProjectGuid>{5A986C6F-8D43-46A0-8B3A-50FB44234214}</ProjectGuid>
+        <OutputType>Library</OutputType>
+        <NoStandardLibraries>false</NoStandardLibraries>
+        <RootNamespace>AE.PID</RootNamespace>
+        <AssemblyName>AE.PID</AssemblyName>
+        <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+        <DefineConstants>VSTO40</DefineConstants>
+        <LangVersion>12</LangVersion>
+        <Nullable>enable</Nullable>
+        <IsWebBootstrapper>False</IsWebBootstrapper>
+        <BootstrapperEnabled>true</BootstrapperEnabled>
+        <PublishUrl>publish\</PublishUrl>
+        <InstallUrl/>
+        <TargetCulture>en</TargetCulture>
+        <ApplicationVersion>0.5.0.0</ApplicationVersion>
+        <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
+        <UpdateEnabled>true</UpdateEnabled>
+        <UpdateInterval>7</UpdateInterval>
+        <UpdateIntervalUnits>days</UpdateIntervalUnits>
+        <ProductName>AE PID</ProductName>
+        <PublisherName>JetSnail</PublisherName>
+        <SupportUrl/>
+        <FriendlyName>PID.VisioAddIn</FriendlyName>
+        <OfficeApplicationDescription/>
+        <LoadBehavior>3</LoadBehavior>
+    </PropertyGroup>
+    <ItemGroup>
+        <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
+            <Visible>False</Visible>
+            <ProductName>Microsoft .NET Framework 4.7.2 %28x86 and x64%29</ProductName>
+            <Install>true</Install>
+        </BootstrapperPackage>
+        <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+            <Visible>False</Visible>
+            <ProductName>.NET Framework 3.5 SP1</ProductName>
+            <Install>false</Install>
+        </BootstrapperPackage>
+        <BootstrapperPackage Include="Microsoft.VSTORuntime.4.0">
+            <Visible>False</Visible>
+            <ProductName>Microsoft Visual Studio 2010 Tools for Office Runtime %28x86 and x64%29</ProductName>
+            <Install>true</Install>
+        </BootstrapperPackage>
+    </ItemGroup>
+    <PropertyGroup>
+        <!--
+                                                                                                                                                      OfficeApplication
+                                                                                                                                                        Add-in host application
+                                                                                                                                                    -->
+        <OfficeApplication>Visio</OfficeApplication>
+    </PropertyGroup>
+    <!--
+                                                                            This section defines properties that are set when the "Debug" configuration is selected.
+                                                                        
+                                                                            DebugSymbols
+                                                                              If "true", create symbols (.pdb). If "false", do not create symbols.
+                                                                            DefineConstants
+                                                                              Constants defined for the preprocessor.
+                                                                            EnableUnmanagedDebugging
+                                                                              If "true", starting the debugger will attach both managed and unmanaged debuggers.
+                                                                            Optimize
+                                                                              If "true", optimize the build output. If "false", do not optimize.
+                                                                            OutputPath
+                                                                              Output path of project relative to the project file.
+                                                                            WarningLevel
+                                                                              Warning level for the compiler.
+                                                                          -->
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>full</DebugType>
+        <Optimize>false</Optimize>
+        <OutputPath>bin\Debug\</OutputPath>
+        <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+        <DefineConstants>$(DefineConstants);DEBUG;TRACE</DefineConstants>
+        <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+    <!--
+                                                                            This section defines properties that are set when the "Release" configuration is selected.
+                                                                        
+                                                                            DebugSymbols
+                                                                              If "true", create symbols (.pdb). If "false", do not create symbols.
+                                                                            DefineConstants
+                                                                              Constants defined for the preprocessor.
+                                                                            EnableUnmanagedDebugging
+                                                                              If "true", starting the debugger will attach both managed and unmanaged debuggers.
+                                                                            Optimize
+                                                                              If "true", optimize the build output. If "false", do not optimize.
+                                                                            OutputPath
+                                                                              Output path of project relative to the project file.
+                                                                            WarningLevel
+                                                                              Warning level for the compiler.
+                                                                          -->
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+        <DebugType>none</DebugType>
+        <Optimize>true</Optimize>
+        <OutputPath>bin\Release\</OutputPath>
+        <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+        <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
+        <WarningLevel>4</WarningLevel>
+        <DocumentationFile>
+        </DocumentationFile>
+    </PropertyGroup>
+    <!--
+                                                                            This section specifies references for the project.
+                                                                          -->
+    <ItemGroup>
+        <Reference Include="Accessibility"/>
+        <Reference Include="mscorlib"/>
+        <Reference Include="PresentationCore"/>
+        <Reference Include="PresentationFramework"/>
+        <Reference Include="System"/>
+        <Reference Include="System.Data"/>
+        <Reference Include="System.Drawing"/>
+        <Reference Include="System.Numerics"/>
+        <Reference Include="System.Windows"/>
+        <Reference Include="System.Windows.Forms"/>
+        <Reference Include="System.Xaml"/>
+        <Reference Include="System.Xml"/>
+        <Reference Include="System.Core"/>
+        <Reference Include="Microsoft.CSharp"/>
+        <Reference Include="UIAutomationProvider"/>
+        <Reference Include="WindowsBase"/>
+        <Reference Include="WindowsFormsIntegration"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.Tools.Applications.Runtime, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="Microsoft.Office.Tools, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="Microsoft.Office.Tools.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+            <Private>False</Private>
+        </Reference>
+    </ItemGroup>
+    <ItemGroup>
+        <Reference Include="Microsoft.Office.Tools.Common.v4.0.Utilities, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+            <Private>True</Private>
+        </Reference>
+    </ItemGroup>
+    <ItemGroup>
+        <Reference Include="Office, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
+            <Private>False</Private>
+            <EmbedInteropTypes>true</EmbedInteropTypes>
+        </Reference>
+        <Reference Include="Microsoft.Office.Interop.Visio, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
+            <Private>False</Private>
+            <EmbedInteropTypes>true</EmbedInteropTypes>
+        </Reference>
+        <Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+            <Private>False</Private>
+        </Reference>
+    </ItemGroup>
+    <!--
+                                                                            This section defines the user source files that are part of the project.
+                                                                             
+                                                                            A "Compile" element specifies a source file to compile.
+                                                                            An "EmbeddedResource" element specifies an .resx file for embedded resources.
+                                                                            A "None" element specifies a file that is not to be passed to the compiler (for instance, 
+                                                                            a text file or XML file).
+                                                                            The "AppDesigner" element specifies the directory where the application properties files
+                                                                            can be found.
+                                                                          -->
+    <ItemGroup>
+        <Compile Include="AttachedProperties\AttachedPropertyBase.cs"/>
+        <Compile Include="AttachedProperties\PopupPlacementTarget.cs"/>
+        <Compile Include="Attributes\DataGridColumnAttribute.cs"/>
+        <Compile Include="Constants.cs"/>
+        <Compile Include="Controllers\LoggerExtension.cs"/>
+        <Compile Include="Controllers\ServiceManager.cs"/>
+        <Compile Include="Controllers\Services\AppUpdater.cs"/>
+        <Compile Include="Controllers\Services\ConfigurationService.cs"/>
+        <Compile Include="Controllers\Services\MaterialsService.cs"/>
+        <Compile Include="Controllers\Services\DocumentMonitor.cs"/>
+        <Compile Include="Controllers\Services\DocumentExporter.cs"/>
+        <Compile Include="Controllers\Services\LegendGenerator.cs"/>
+        <Compile Include="Controllers\Services\LibraryUpdater.cs"/>
+        <Compile Include="Controllers\Services\ShapeSelector.cs"/>
+        <Compile Include="Converters\ConcurrentBagConverter.cs"/>
+        <Compile Include="Converters\LevelToIndentConverter.cs"/>
+        <Compile Include="Interfaces\IActionData.cs"/>
+        <Compile Include="Interfaces\ILabel.cs"/>
+        <Compile Include="Interfaces\IPartItem.cs"/>
+        <Compile Include="Interfaces\IProp.cs"/>
+        <Compile Include="Interfaces\IShapeData.cs"/>
+        <Compile Include="Interfaces\IUserData.cs"/>
+        <Compile Include="Interfaces\IValueProp.cs"/>
+        <Compile Include="Models\BOM\DesignMaterial.cs"/>
+        <Compile Include="Models\BOM\DesignMaterialProperty.cs"/>
+        <Compile Include="Models\BOM\Element.cs"/>
+        <Compile Include="Models\BOM\Equipment.cs"/>
+        <Compile Include="Models\BOM\FunctionalElement.cs"/>
+        <Compile Include="Models\BOM\FunctionalGroup.cs"/>
+        <Compile Include="Models\BOM\Instrument.cs"/>
+        <Compile Include="Models\BOM\LastUsedDesignMaterial.cs"/>
+        <Compile Include="Models\BOM\PartItem.cs"/>
+        <Compile Include="Models\BOM\PartListTableLineItem.cs"/>
+        <Compile Include="Models\BOM\DesignMaterialsQueryTerms.cs"/>
+        <Compile Include="Models\BOM\ElementType.cs"/>
+        <Compile Include="Models\BOM\EquipmentUnit.cs"/>
+        <Compile Include="Models\Configurations\Configuration.cs"/>
+        <Compile Include="Models\Configurations\Library.cs"/>
+        <Compile Include="Models\Configurations\LibraryConfiguration.cs"/>
+        <Compile Include="Models\Configurations\LibraryItem.cs"/>
+        <Compile Include="Models\EventArgs\ElementSelectedEventArgs.cs"/>
+        <Compile Include="Models\InputCache.cs"/>
+        <Compile Include="Models\MasterDocumentLibraryMapping.cs"/>
+        <Compile Include="Models\Position.cs"/>
+        <Compile Include="Models\ReactiveLibrary.cs"/>
+        <Compile Include="Models\SelectionType.cs"/>
+        <Compile Include="Models\VBABool.cs"/>
+        <Compile Include="Models\VisProps\ActionData.cs"/>
+        <Compile Include="Models\VisProps\Prop.cs"/>
+        <Compile Include="Models\VisProps\ShapeData.cs"/>
+        <Compile Include="Models\VisProps\UserData.cs"/>
+        <Compile Include="Models\VisProps\ValueProp.cs"/>
+        <Compile Include="Properties\Resources.Designer.cs">
+            <AutoGen>True</AutoGen>
+            <DesignTime>True</DesignTime>
+            <DependentUpon>Resources.resx</DependentUpon>
+        </Compile>
+        <Compile Include="Ribbon.cs">
+            <XmlRibbon>true</XmlRibbon>
+        </Compile>
+        <Compile Include="Tools\RxExt.cs"/>
+        <Compile Include="Tools\VisioExtensions.cs"/>
+        <Compile Include="Tools\VisioHelper.cs"/>
+        <Compile Include="ViewModels\Components\DocumentInfoViewModel.cs"/>
+        <Compile Include="ViewModels\Components\OkCancelFeedbackViewModel.cs"/>
+        <Compile Include="ViewModels\Components\OkCancelViewModel.cs"/>
+        <Compile Include="ViewModels\Components\UserFiltersViewModel.cs"/>
+        <Compile Include="ViewModels\FrequencyOptionViewModel.cs"/>
+        <Compile Include="ViewModels\LibraryInfoViewModel.cs"/>
+        <Compile Include="ViewModels\MasterOptionViewModel.cs"/>
+        <Compile Include="ViewModels\Pages\DesignMaterialsViewModel.cs"/>
+        <Compile Include="ViewModels\Pages\BomViewModel.cs"/>
+        <Compile Include="ViewModels\Pages\ShapeSelectionViewModel.cs"/>
+        <Compile Include="ViewModels\Pages\UserSettingsViewModel.cs"/>
+        <Compile Include="ViewModels\TreeNodeViewModel.cs"/>
+        <Compile Include="ViewModels\TreeNodeViewModelBase.cs"/>
+        <Compile Include="ViewModels\TaskProgressViewModel.cs"/>
+        <Compile Include="ViewModels\ViewModelBase.cs"/>
+        <Compile Include="Views\Components\DocumentInfoTable.xaml.cs">
+            <DependentUpon>DocumentInfoTable.xaml</DependentUpon>
+        </Compile>
+        <Compile Include="Views\Components\OkCancelFeedback.xaml.cs">
+            <DependentUpon>OkCancelFeedback.xaml</DependentUpon>
+        </Compile>
+        <Compile Include="Views\Components\UserFiltersForm.xaml.cs">
+            <DependentUpon>UserFiltersForm.xaml</DependentUpon>
+        </Compile>
+        <Compile Include="Views\Controls\AutoColumnsDataGrid.cs"/>
+        <Compile Include="Views\Controls\LabelTextBox.cs"/>
+        <Compile Include="Views\Controls\LazyLoadAutoColumnsDataGrid.cs"/>
+        <Compile Include="Views\Controls\SectionLabel.cs"/>
+        <Compile Include="Views\Controls\TreeListView.cs"/>
+        <Compile Include="Views\Controls\TreeListViewItem.cs"/>
+        <Compile Include="Views\Pages\BomPage.xaml.cs">
+            <DependentUpon>BomPage.xaml</DependentUpon>
+        </Compile>
+        <Compile Include="Views\Pages\MaterialsSelectionPage.xaml.cs">
+            <DependentUpon>MaterialsSelectionPage.xaml</DependentUpon>
+        </Compile>
+        <Compile Include="Views\Pages\PageBase.cs"/>
+        <Compile Include="Views\Pages\ShapeSelectionPage.xaml.cs">
+            <DependentUpon>ShapeSelectionPage.xaml</DependentUpon>
+        </Compile>
+        <Compile Include="Views\Pages\UserSettingsPage.xaml.cs">
+            <DependentUpon>UserSettingsPage.xaml</DependentUpon>
+        </Compile>
+        <Compile Include="Views\TaskProgressView.xaml.cs">
+            <DependentUpon>TaskProgressView.xaml</DependentUpon>
+        </Compile>
+        <Compile Include="Tools\NativeMethods.cs"/>
+        <Compile Include="Tools\UIHelper.cs"/>
+        <Compile Include="Properties\AssemblyInfo.cs">
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Include="Views\ViewBase.cs"/>
+        <Compile Include="Views\Windows\BaseWindowViewModel.cs"/>
+        <Compile Include="Views\Windows\MainWindow.xaml.cs">
+            <DependentUpon>MainWindow.xaml</DependentUpon>
+        </Compile>
+        <Compile Include="Views\Windows\SideWindow.xaml.cs">
+            <DependentUpon>SideWindow.xaml</DependentUpon>
+        </Compile>
+        <Compile Include="Views\Windows\WindowDockPosition.cs"/>
+        <Compile Include="Views\Windows\WindowManager.cs"/>
+        <Compile Include="Views\Windows\WindowResizer.cs"/>
+        <EmbeddedResource Include="Properties\Resources.resx">
+            <Generator>PublicResXFileCodeGenerator</Generator>
+            <SubType>Designer</SubType>
+            <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <None Include="app.config"/>
+        <None Include="nlog.config">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="PID.VisioAddIn_TemporaryKey.pfx"/>
+        <None Include="Properties\Settings.settings">
+            <Generator>SettingsSingleFileGenerator</Generator>
+            <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+        </None>
+        <Compile Include="Properties\Settings.Designer.cs">
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Settings.settings</DependentUpon>
+            <DesignTimeSharedInput>True</DesignTimeSharedInput>
+        </Compile>
+        <Compile Include="ThisAddIn.cs">
+            <SubType>Code</SubType>
+        </Compile>
+        <None Include="Resources\BOM_template.xlsx"/>
+        <None Include="Resources\nlog.config"/>
+        <None Include="ThisAddIn.Designer.xml">
+            <DependentUpon>ThisAddIn.cs</DependentUpon>
+        </None>
+        <Compile Include="ThisAddIn.Designer.cs">
+            <DependentUpon>ThisAddIn.Designer.xml</DependentUpon>
+        </Compile>
+        <AppDesigner Include="Properties\"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Page Include="Views\Components\DocumentInfoTable.xaml">
+            <SubType>Designer</SubType>
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Include="Views\Components\OkCancelFeedback.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <SubType>Designer</SubType>
+        </Page>
+        <Page Include="Views\Components\UserFiltersForm.xaml">
+            <SubType>Designer</SubType>
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Include="Views\Pages\BomPage.xaml">
+            <SubType>Designer</SubType>
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Include="Views\Pages\MaterialsSelectionPage.xaml">
+            <SubType>Designer</SubType>
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Include="Views\Pages\ShapeSelectionPage.xaml">
+            <SubType>Designer</SubType>
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Include="Views\Pages\UserSettingsPage.xaml">
+            <SubType>Designer</SubType>
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Include="Views\TaskProgressView.xaml">
+            <SubType>Designer</SubType>
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Include="Views\Themes\Generic.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Include="Views\Windows\MainWindow.xaml">
+            <SubType>Designer</SubType>
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Include="Views\Windows\SideWindow.xaml">
+            <SubType>Designer</SubType>
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\PID.Core\PID.Core.csproj">
+            <Project>{92c0d0f2-f7fd-4342-a80c-37ccf350d2b5}</Project>
+            <Name>PID.Core</Name>
+        </ProjectReference>
+    </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Include="Ribbon.xml"/>
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="Resources\edit_configuration.ico"/>
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="Resources\load_libraries.ico"/>
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="Resources\format_page.ico"/>
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="Resources\update_document.ico"/>
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="Resources\open_export_tool.ico"/>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Bogus" Version="35.5.0"/>
+        <PackageReference Include="DataGridExtensions" Version="2.6.0"/>
+        <PackageReference Include="Material.Icons.WPF" Version="2.1.0"/>
+        <PackageReference Include="MiniExcel" Version="1.31.3"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+        <PackageReference Include="NLog" Version="5.2.8"/>
+        <PackageReference Include="ReactiveUI.WPF" Version="19.5.39"/>
+        <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0"/>
+        <PackageReference Include="System.Net.Http" Version="4.3.4"/>
+        <PackageReference Include="System.Xml.Linq" Version="3.5.21022.801"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Page Include="Views\Themes\TreeListView.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
+    </ItemGroup>
+    <PropertyGroup>
+        <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+        <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    </PropertyGroup>
+    <PropertyGroup>
+        <SignManifests>true</SignManifests>
+    </PropertyGroup>
+    <PropertyGroup>
+        <ManifestKeyFile>PID.VisioAddIn_TemporaryKey.pfx</ManifestKeyFile>
+    </PropertyGroup>
+    <PropertyGroup>
+        <ManifestCertificateThumbprint>8413C8AF0782C8C5CB35625D89CCCEA6EE60BFF5</ManifestCertificateThumbprint>
+    </PropertyGroup>
+    <PropertyGroup>
+        <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+        <PlatformTarget>x86</PlatformTarget>
+        <OutputPath>bin\x86\Debug\</OutputPath>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+        <PlatformTarget>x86</PlatformTarget>
+        <OutputPath>bin\x86\Release\</OutputPath>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+        <DebugSymbols>true</DebugSymbols>
+        <OutputPath>bin\x64\Debug\</OutputPath>
+        <DefineConstants>VSTO40;DEBUG;TRACE</DefineConstants>
+        <DebugType>full</DebugType>
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <LangVersion>12</LangVersion>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+        <OutputPath>bin\x64\Release\</OutputPath>
+        <DefineConstants>VSTO40;TRACE</DefineConstants>
+        <Optimize>true</Optimize>
+        <PlatformTarget>x64</PlatformTarget>
+        <LangVersion>12</LangVersion>
+        <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+        <RegisterForComInterop>false</RegisterForComInterop>
+    </PropertyGroup>
+    <PropertyGroup>
+        <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    </PropertyGroup>
+    <!-- Include the build rules for a C# project. -->
+    <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
+    <!-- Include additional build rules for an Office application add-in. -->
+    <Import Project="$(VSToolsPath)\OfficeTools\Microsoft.VisualStudio.Tools.Office.targets" Condition="'$(VSToolsPath)' != ''"/>
+    <!-- This section defines VSTO properties that describe the host-changeable project properties. -->
+    <ProjectExtensions>
+        <VisualStudio>
+            <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
+                <ProjectProperties HostName="Visio" HostPackage="{29A7B9D7-A7F1-4328-8EF0-6B2D1A56B2C1}" OfficeVersion="15.0" VstxVersion="4.0" ApplicationType="Visio" Language="cs" TemplatesPath="" DebugInfoExeName="#Software\Microsoft\Office\16.0\Visio\InstallRoot\Path#visio.exe" AddItemTemplatesGuid="{51063C3A-E220-4D12-8922-BDA915ACD783}"/>
+                <Host Name="Visio" GeneratedCodeNamespace="PID.VisioAddIn" PublishedHash="69C324AB27932AA2FBF2B7EA72250886FF164DE6" IconIndex="0">
+                    <HostItem Name="ThisAddIn" Code="ThisAddIn.cs" CanonicalName="AddIn" PublishedHash="882224AB80B823BA0099F26C9D82FFC01547B547" CanActivate="false" IconIndex="1" Blueprint="ThisAddIn.Designer.xml" GeneratedCode="ThisAddIn.Designer.cs"/>
+                </Host>
+            </FlavorProperties>
+        </VisualStudio>
+    </ProjectExtensions>
+    <PropertyGroup>
+        <PostBuildEvent>IF NOT EXIST "$(TargetDir)DocumentStencilUpdateTool" MKDIR "$(TargetDir)DocumentStencilUpdateTool"
+
+            xcopy /s /y "$(SolutionDir)PID.DocumentStencilUpdateTool\$(OutDir)netcoreapp3.1\*" "$(TargetDir)DocumentStencilUpdateTool"
+
+            IF "$(ConfigurationName)" == "Release" (
+            "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "$(ProjectDir)setup.iss"
+            start explorer /select, "$(SolutionDir)publish\"
+            )
+        </PostBuildEvent>
+    </PropertyGroup>
 </Project>

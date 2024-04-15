@@ -1,20 +1,21 @@
-﻿using ReactiveUI;
+﻿using Microsoft.Office.Interop.Visio;
+using ReactiveUI;
 
 namespace AE.PID.ViewModels;
 
-public class MasterViewModel : ReactiveObject
+public class MasterOptionViewModel(IVMaster master) : ReactiveObject
 {
     private bool _isChecked;
 
     /// <summary>
     ///     The id of the master that used to get master from document.
     /// </summary>
-    public string BaseId { get; set; }
+    public string BaseId { get; set; } = master.BaseID;
 
     /// <summary>
     ///     The user friendly name for the master.
     /// </summary>
-    public string Name { get; set; }
+    public string Name { get; set; } = master.Name;
 
     /// <summary>
     ///     Indicates whether is selected by user.

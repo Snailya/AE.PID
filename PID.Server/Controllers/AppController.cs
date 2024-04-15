@@ -1,4 +1,5 @@
-﻿using AE.PID.Server.Data;
+﻿using System.Diagnostics;
+using AE.PID.Server.Data;
 using AE.PID.Server.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
@@ -36,33 +37,37 @@ public class AppController(ILogger<AppController> logger, AppDbContext dbContext
         });
     }
 
-    [HttpGet("download/{id:int}")]
-    public IActionResult Download([FromRoute] int id)
+    [HttpGet("download/{id:int?}")]
+    public IActionResult Download([FromRoute] int id = 0)
     {
-        var version = dbContext.AppVersions.Find(id);
+        var version = id == 0
+            ? dbContext.AppVersions.AsEnumerable().MaxBy(v => new Version(v.Version))
+            : dbContext.AppVersions.Find(id);
+
         if (version != null && System.IO.File.Exists(version.FileName))
             // Return the file as a downloadable response
             return PhysicalFile(Path.Combine(Directory.GetCurrentDirectory(), version.FileName),
                 "application/octet-stream", version.FileName, true);
 
+
         return NotFound(); // Or handle the case when the file is not found
     }
-
+    
     [HttpPost("upload")]
     public IActionResult UploadInstaller([FromForm] UploadInstallerDto dto)
     {
-        // Save the uploaded file to a folder
         var filePath = Path.Combine("/opt/pid/data/apps", dto.Installer.FileName);
-
         using (var stream = new FileStream(filePath, FileMode.Create))
         {
             dto.Installer.CopyTo(stream);
         }
 
         // You can process the version and release note as needed
+        var version = FileVersionInfo.GetVersionInfo(filePath).ProductVersion!;
+
         var appVersion = dbContext.Add(new AppVersionEntity
         {
-            Version = dto.Version,
+            Version = version,
             ReleaseNotes = dto.ReleaseNotes,
             FileName = filePath
         });
@@ -74,4 +79,5 @@ public class AppController(ILogger<AppController> logger, AppDbContext dbContext
                 ControllerContext.ActionDescriptor.ControllerName, new { id = appVersion.Entity.Id })
         });
     }
+    
 }

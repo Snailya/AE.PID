@@ -1,79 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using AE.PID.Models;
-using AE.PID.Models.VisProps;
+using AE.PID.Tools;
 using Microsoft.Office.Interop.Visio;
 using NLog;
 
 namespace AE.PID.Controllers.Services;
 
-public static class LegendService
+public class LegendGenerator(IVPage page)
 {
     private const int Columns = 3;
     private const int RowSpacing = 10;
-    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    private static Subject<IVPage> ManuallyInvokeTrigger { get; } = new();
+    private const int ColSpacing = 180 / Columns;
 
-    /// <summary>
-    ///     Emit a value manually
-    /// </summary>
-    /// <param name="page"></param>
-    public static void Invoke(IVPage page)
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
+    public void Insert()
     {
-        ManuallyInvokeTrigger.OnNext(page);
-    }
-
-    /// <summary>
-    ///     Listen to both document open event and user click event to monitor if a document master update is needed.
-    ///     The update process is done on a background thread using OpenXML, so it is extremely fast.
-    ///     However, a progress bar still provided in case a long time run needed in the future.
-    /// </summary>
-    public static IDisposable Listen()
-    {
-        Logger.Info("Document Update Service started.");
-
-        return
-            ManuallyInvokeTrigger
-                .Throttle(TimeSpan.FromMilliseconds(300))
-                .Do(_ => Logger.Info("Legend Service started. {Initiated by: User}"))
-                .Subscribe(
-                    page =>
-                    {
-                        Observable.Return(page)
-                            .SubscribeOn(TaskPoolScheduler.Default)
-                            .Subscribe(
-                                Insert,
-                                ex => { ThisAddIn.Alert(ex.Message); }
-                            );
-                    },
-                    ex => { Logger.Error(ex, "Legend Service ternimated accidently."); },
-                    () => { Logger.Error("Legend Service should never complete."); });
-    }
-
-    private static void Insert(IVPage page)
-    {
-        const int colSpacing = 180 / Columns;
-
-        var undoScope = page.Application.BeginUndoScope("Add Legend");
         Globals.ThisAddIn.Application.ShowChanges = false;
+        var undoScope = page.Application.BeginUndoScope("Insert Legend");
 
         try
         {
+            // open built in stencil to allow callout that used as legend item label
             Globals.ThisAddIn.Application.Documents.OpenEx(
                 Globals.ThisAddIn.Application.GetBuiltInStencilFile(VisBuiltInStencilTypes.visBuiltInStencilCallouts,
                     VisMeasurementSystem.visMSMetric),
                 (short)VisOpenSaveArgs.visOpenDocked + (short)VisOpenSaveArgs.visAddHidden);
 
+            // add new layer if not exist
             var legendsLayer = page.Layers.OfType<IVLayer>().SingleOrDefault(x => x.Name == "Legends") ??
                                page.Layers.Add("Legends");
 
             // loop to get all shapes with different subclass
-            var legendItems = GetLegendItemsOnPage(page);
+            var legendItems = GetLegendItemsOnPage();
 
+            // get the center of the screen as the base point
             page.Application.ActiveWindow.GetViewRect(out var pdLeft, out var pdTop, out var pdWidth, out var pdHeight);
             var centerScreen = new Position((pdWidth / 2 + pdLeft) * 25.4, (pdTop - pdHeight / 2) * 25.4);
 
@@ -95,12 +58,12 @@ public static class LegendService
                 // compute the next insert position
                 // ReSharper disable once PossibleLossOfFraction
                 var (rowIndex, colIndex) = ComputeIndex(i, rows);
-                var xPos = colIndex * colSpacing + basePosition.X + 5;
+                var xPos = colIndex * ColSpacing + basePosition.X + 5;
                 var yPos = rowIndex * RowSpacing + basePosition.Y + 5;
 
                 var shape = page.DropMetric(legendItems[i].Shape, 0, 0);
 
-                CleanUp(shape);
+                RemoveUnnecessaryShapeSheetData(shape);
                 ResizeAtPin(shape);
                 ReLocateToGeometricCenter(shape, xPos, yPos);
 
@@ -117,10 +80,11 @@ public static class LegendService
 
             page.Application.EndUndoScope(undoScope, true);
         }
-        catch
+        catch (Exception ex)
         {
             page.Application.EndUndoScope(undoScope, false);
-            throw;
+
+            _logger.Error(ex);
         }
         finally
         {
@@ -135,7 +99,7 @@ public static class LegendService
         return (rowIndex, colIndex);
     }
 
-    private static List<LegendItem> GetLegendItemsOnPage(IVPage page)
+    private List<LegendItem> GetLegendItemsOnPage()
     {
         return
         [
@@ -186,27 +150,27 @@ public static class LegendService
         shape.CellsU["Height"].Formula = $"GUARD({desiredNominalHeight} mm)";
     }
 
-    private static void CleanUp(IVShape shape)
+    private static void RemoveUnnecessaryShapeSheetData(IVShape shape)
     {
         // rotate back as the stencil
         shape.Cells["Angle"].Formula = "0 deg";
 
         // disable key parameter display
-        if (shape.CellExists["User.ShowKeyParameters", (short)VisExistsFlags.visExistsAnywhere] == (short)VBABool.True)
+        if (shape.CellExists["User.ShowKeyParameters", (short)VisExistsFlags.visExistsAnywhere] == (short)VbaBool.True)
             shape.CellsU["User.ShowKeyParameters"].Formula = "FALSE";
 
         // disable tag display
-        if (shape.CellExists["Prop.Tag", (short)VisExistsFlags.visExistsAnywhere] == (short)VBABool.True)
+        if (shape.CellExists["Prop.Tag", (short)VisExistsFlags.visExistsAnywhere] == (short)VbaBool.True)
             shape.CellsU["Prop.Tag"].FormulaForce = "\"\"";
 
         // make it not count for export
-        if (shape.CellExists["Prop.Quantity", (short)VisExistsFlags.visExistsAnywhere] == (short)VBABool.True)
+        if (shape.CellExists["Prop.Quantity", (short)VisExistsFlags.visExistsAnywhere] == (short)VbaBool.True)
             shape.CellsU["Prop.Quantity"].Formula = "0";
 
-        if (shape.CellExists["User.NumOfShapes", (short)VisExistsFlags.visExistsLocally] == (short)VBABool.True)
+        if (shape.CellExists["User.NumOfShapes", (short)VisExistsFlags.visExistsLocally] == (short)VbaBool.True)
             shape.Cells["User.NumOfShapes"].Formula = "1";
 
-        if (shape.CellExists["Prop.ValveIsAdjustable", (short)VisExistsFlags.visExistsLocally] == (short)VBABool.True)
+        if (shape.CellExists["Prop.ValveIsAdjustable", (short)VisExistsFlags.visExistsLocally] == (short)VbaBool.True)
             shape.Cells["Prop.ValveIsAdjustable"].Formula = "FALSE";
     }
 

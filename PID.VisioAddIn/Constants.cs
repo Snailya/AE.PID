@@ -1,7 +1,17 @@
-﻿namespace AE.PID;
+﻿using System;
+using System.IO;
+
+namespace AE.PID;
 
 public abstract class Constants
 {
-    public const long ManuallyInvokeMagicNumber = -255;
-    public const int NoPrimaryItemMagicIndex = -1;
+    public static readonly string AppDataFolder = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "AE\\PID");
+
+    public static readonly string LibraryFolder = Path.Combine(AppDataFolder, "Libraries");
+
+    public static readonly string LibraryCheatSheetPath = Path.Combine(LibraryFolder, ".cheatsheet");
+
+    public static readonly string TmpFolder = Path.Combine(AppDataFolder, "Tmp");
 }

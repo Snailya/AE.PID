@@ -13,7 +13,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
-    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles; // to involve cycle reference, see https://learn.microsoft.com/zh-cn/ef/core/querying/related-data/serialization
+    options.JsonSerializerOptions.ReferenceHandler =
+        ReferenceHandler
+            .IgnoreCycles; // to involve cycle reference, see https://learn.microsoft.com/zh-cn/ef/core/querying/related-data/serialization
 });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

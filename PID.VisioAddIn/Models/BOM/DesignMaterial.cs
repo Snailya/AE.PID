@@ -35,8 +35,8 @@ public class DesignMaterial(
 
     public static DesignMaterial FromDTO(MaterialDto dto)
     {
-        return new DesignMaterial(dto.Code, dto.Name, dto.Brand, dto.Specifications, dto.Model, dto.Unit, 
-            dto.Manufacturer,dto.ManufacturerMaterialNumber, dto.Categories)
+        return new DesignMaterial(dto.Code, dto.Name, dto.Brand, dto.Specifications, dto.Model, dto.Unit,
+            dto.Manufacturer, dto.ManufacturerMaterialNumber, dto.Categories)
         {
             Properties = dto.Properties == null ? [] : dto.Properties.Select(DesignMaterialProperty.FromDTO).ToList()
         };

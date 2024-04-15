@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using AE.PID.Controllers;
 using AE.PID.Models.BOM;
 using AE.PID.Tools;
 using AE.PID.ViewModels.Pages;
@@ -20,7 +21,8 @@ public partial class MaterialsSelectionPage
     public MaterialsSelectionPage()
     {
         InitializeComponent();
-        ViewModel = new DesignMaterialsViewModel(Globals.ThisAddIn.ServiceManager.MaterialsService);
+
+        ViewModel = new DesignMaterialsViewModel(ServiceManager.GetInstance().MaterialsService);
 
         this.WhenActivated(d =>
         {

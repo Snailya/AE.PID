@@ -1,37 +1,83 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using AE.PID.Controllers.Services;
+using AE.PID.Core.DTOs;
+using AE.PID.ViewModels.Components;
 using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
 
 namespace AE.PID.ViewModels.Pages;
 
-public class UserSettingsViewModel : ViewModelBase
+public class UserSettingsViewModel(
+    ConfigurationService configuration,
+    AppUpdater appUpdater,
+    LibraryUpdater libraryUpdater)
+    : ViewModelBase
 {
-    private readonly ObservableCollectionExtended<LibraryInfoViewModel> _servers = [];
-    private FrequencyOptionViewModel _appNextCheckFrequency;
-    private ObservableAsPropertyHelper<IEnumerable<LibraryInfoViewModel>> _libraries;
-    private FrequencyOptionViewModel _libraryCheckFrequency;
+    private readonly SourceCache<LibraryDto, int> _serverLibraries = new(t => t.Id);
+
+    private FrequencyOptionViewModel _appNextCheckFrequency =
+        FrequencyOptionViewModel.GetMatchedOption(configuration.AppCheckInterval);
+
+    private ReadOnlyObservableCollection<LibraryInfoViewModel> _libraries = new([]);
+
+    private FrequencyOptionViewModel _libraryCheckFrequency =
+        FrequencyOptionViewModel.GetMatchedOption(configuration.LibraryCheckInterval);
 
     #region Output Properties
 
-    public IEnumerable<LibraryInfoViewModel> Libraries => _libraries.Value;
+    public ReadOnlyObservableCollection<LibraryInfoViewModel> Libraries => _libraries;
 
     #endregion
 
+
+    private static void OpenTmlFolder()
+    {
+        Process.Start("explorer.exe", $"\"{Constants.TmpFolder}\"");
+    }
+
+    private static void DeleteFilesInTmpFolder()
+    {
+        if (!Directory.Exists(Constants.TmpFolder)) return;
+
+        var files = Directory.GetFiles(Constants.TmpFolder);
+        foreach (var file in files)
+            File.Delete(file);
+
+        MessageBox.Show("清除成功");
+    }
+
+    private void SaveChanges()
+    {
+        if (configuration.AppCheckInterval != _appNextCheckFrequency.TimeSpan)
+            configuration.AppCheckInterval = _appNextCheckFrequency.TimeSpan;
+
+        if (configuration.LibraryCheckInterval != _libraryCheckFrequency.TimeSpan)
+            configuration.LibraryCheckInterval = _libraryCheckFrequency.TimeSpan;
+    }
+
+    #region Setup
+
     protected override void SetupCommands()
     {
-        CheckForAppUpdate = ReactiveCommand.Create(AppUpdater.Invoke);
-        CheckForLibrariesUpdate = ReactiveCommand.Create(LibraryUpdater.Invoke);
+        CheckForAppUpdate = ReactiveCommand.CreateFromTask(async () =>
+        {
+            var hasUpdate = await appUpdater.CheckUpdateAsync();
+            if (!hasUpdate)
+            {
+                MessageBox.Show("已经是最新版");
+            }
+        });
+        CheckForLibrariesUpdate =
+            ReactiveCommand.CreateRunInBackground(() => libraryUpdater.ManuallyInvokeTrigger.OnNext(Unit.Default));
 
         OpenTmp = ReactiveCommand.Create(OpenTmlFolder);
         ClearCache = ReactiveCommand.CreateRunInBackground(DeleteFilesInTmpFolder);
@@ -42,103 +88,38 @@ public class UserSettingsViewModel : ViewModelBase
 
     protected override void SetupSubscriptions(CompositeDisposable d)
     {
-        var local = Globals.ThisAddIn.Configuration.ConfigurationSubject.Select(x =>
-            new ObservableCollection<LibraryInfoViewModel>(x.LibraryConfiguration.Libraries.Select(i =>
-                new LibraryInfoViewModel
+        configuration.Libraries.Connect().FullJoin(
+                _serverLibraries.Connect(),
+                a => a.Id,
+                (serverKey, local, server) =>
                 {
-                    Name = i.Name,
-                    LocalVersion = new Version(i.Version)
-                })));
-        var server = Observable.Return<ObservableCollectionExtended<LibraryInfoViewModel>>([])
-            .Concat(_servers.ToObservableChangeSet().AutoRefresh().ToCollection());
+                    var library = local.HasValue ? new LibraryInfoViewModel(local.Value) : new LibraryInfoViewModel();
 
-        local
-            .CombineLatest(server)
-            .Select(data =>
-            {
-                foreach (var item in data.First)
-                    item.RemoteVersion = data.Second.SingleOrDefault(i => i.Name == item.Name)?.RemoteVersion;
+                    if (server.HasValue)
+                        library.RemoteVersion = server.Value.Version;
 
-                return data.First;
-            })
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .ToProperty(this, x => x.Libraries, out _libraries)
+                    return library;
+                })
+            .RemoveKey()
+            .Sort(SortExpressionComparer<LibraryInfoViewModel>.Ascending(t => t.Id))
+            .ObserveOnDispatcher()
+            .Bind(out _libraries)
+            .Subscribe()
             .DisposeWith(d);
     }
 
     protected override void SetupStart()
     {
-        LoadCheckIntervals();
-
-        GetUpdateInfoAsync();
-    }
-
-    private FrequencyOptionViewModel GetMatchedOption(TimeSpan timeSpan)
-    {
-        return CheckFrequencyOptions
-            .OrderBy(x => Math.Abs(timeSpan.Ticks - x.TimeSpan.Ticks))
-            .First();
-    }
-
-    private void LoadCheckIntervals()
-    {
-        _appNextCheckFrequency =
-            GetMatchedOption(Globals.ThisAddIn.Configuration.ConfigurationSubject.Value
-                .CheckInterval);
-
-        _libraryCheckFrequency = GetMatchedOption(Globals.ThisAddIn.Configuration
-            .ConfigurationSubject.Value.LibraryConfiguration.CheckInterval);
-    }
-
-    private Task GetUpdateInfoAsync()
-    {
-        return Task.Run(async () =>
+        Task.Run(async () =>
         {
-            var servers = (await LibraryUpdater.GetLibraries()).Select(x => new LibraryInfoViewModel
-            {
-                Name = x.Name,
-                RemoteVersion = new Version(x.Version)
-            });
-
-            _servers.AddRange(servers);
+            var libraries = await libraryUpdater.GetLibraryInfos();
+            _serverLibraries.AddOrUpdate(libraries);
         });
     }
 
-    private void OpenTmlFolder()
-    {
-        Process.Start("explorer.exe", $"\"{TmpPath}\"");
-    }
-
-    private static void DeleteFilesInTmpFolder()
-    {
-        if (!Directory.Exists(ThisAddIn.TmpFolder)) return;
-
-        var files = Directory.GetFiles(ThisAddIn.TmpFolder);
-        foreach (var file in files)
-            File.Delete(file);
-    }
-
-    private void SaveChanges()
-    {
-        if (Globals.ThisAddIn.Configuration.CheckInterval != _appNextCheckFrequency.TimeSpan)
-        {
-            Globals.ThisAddIn.Configuration.CheckInterval = _appNextCheckFrequency.TimeSpan;
-            Globals.ThisAddIn.Configuration.NextTime = DateTime.Now + _appNextCheckFrequency.TimeSpan;
-        }
-
-        if (Globals.ThisAddIn.Configuration.LibraryConfiguration.CheckInterval != _libraryCheckFrequency.TimeSpan)
-        {
-            Globals.ThisAddIn.Configuration.LibraryConfiguration.CheckInterval = _libraryCheckFrequency.TimeSpan;
-            Globals.ThisAddIn.Configuration.LibraryConfiguration.NextTime =
-                DateTime.Now + _libraryCheckFrequency.TimeSpan;
-        }
-
-        Globals.ThisAddIn.Configuration.Save();
-    }
+    #endregion
 
     #region Read-Write Properties
-
-    public OkCancelFeedbackViewModel OkCancelFeedbackViewModel { get; } = new();
 
     public FrequencyOptionViewModel AppNextCheckFrequency
     {
@@ -164,12 +145,11 @@ public class UserSettingsViewModel : ViewModelBase
 
     #region Read-Only Properties
 
-    public IEnumerable<FrequencyOptionViewModel> CheckFrequencyOptions { get; } = FrequencyOptionViewModel.GetOptions();
-    public string TmpPath { get; } = ThisAddIn.TmpFolder;
-    public ReactiveCommand<Unit, Unit> CheckForAppUpdate { get; private set; }
-    public ReactiveCommand<Unit, Unit> CheckForLibrariesUpdate { get; private set; }
-    public ReactiveCommand<Unit, Unit> OpenTmp { get; private set; }
-    public ReactiveCommand<Unit, Unit> ClearCache { get; private set; }
+    public OkCancelFeedbackViewModel OkCancelFeedbackViewModel { get; } = new();
+    public ReactiveCommand<Unit, Unit>? CheckForAppUpdate { get; private set; }
+    public ReactiveCommand<Unit, Unit>? CheckForLibrariesUpdate { get; private set; }
+    public ReactiveCommand<Unit, Unit>? OpenTmp { get; private set; }
+    public ReactiveCommand<Unit, Unit>? ClearCache { get; private set; }
 
     #endregion
 }

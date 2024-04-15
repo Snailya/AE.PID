@@ -2,15 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Windows.Forms;
 using AE.PID.Models.BOM;
 using AE.PID.Properties;
-using AE.PID.ViewModels;
-using AE.PID.Views.Pages;
+using AE.PID.ViewModels.Components;
 using DynamicData.Binding;
 using Microsoft.Office.Interop.Visio;
 using MiniExcelLibs;
@@ -35,10 +33,11 @@ public class DocumentExporter : IDisposable
             "Could not initialize exporter on null page.");
 
         _page = page!;
-
         Observable.FromEvent<EPage_ShapeAddedEventHandler, Shape>(
                 handler => _page.ShapeAdded += handler,
                 handler => _page.ShapeAdded -= handler)
+            // switch to background thread
+            .ObserveOn(ThreadPoolScheduler.Instance)
             .Where(ShapePredicate())
             .Subscribe(shape =>
             {
@@ -57,6 +56,8 @@ public class DocumentExporter : IDisposable
         Observable.FromEvent<EPage_BeforeShapeDeleteEventHandler, Shape>(
                 handler => _page.BeforeShapeDelete += handler,
                 handler => _page.BeforeShapeDelete -= handler)
+            // switch to background thread
+            .ObserveOn(ThreadPoolScheduler.Instance)
             .Where(ShapePredicate())
             .Subscribe(shape =>
             {
@@ -78,59 +79,18 @@ public class DocumentExporter : IDisposable
             .Where(IsEquipmentPredicate())
             .Select(x => new Equipment(x)));
         Elements.AddRange(_page.Shapes.OfType<Shape>()
+            .Where(IsInstrumentPredicate())
+            .Select(x => new Instrument(x)));
+        Elements.AddRange(_page.Shapes.OfType<Shape>()
             .Where(IsFunctionalElementPredicate())
             .Select(x => new FunctionalElement(x)));
     }
-
-    private static Subject<Unit> ManuallyInvokeTrigger { get; } = new();
 
     public void Dispose()
     {
         _cleanup.Dispose();
     }
 
-    /// <summary>
-    ///     Emit a value manually
-    /// </summary>
-    public static void Invoke()
-    {
-        ManuallyInvokeTrigger.OnNext(Unit.Default);
-    }
-
-    /// <summary>
-    ///     Start listening for export button click event and display a view to accept user operation.
-    ///     The view prompt user to input extra information for project and the subsequent is called in ViewModel.
-    /// </summary>
-    /// <returns></returns>
-    public static IDisposable Run()
-    {
-        Logger.Info("Export Service started.");
-
-        return ManuallyInvokeTrigger
-            .Throttle(TimeSpan.FromMilliseconds(300))
-            .ObserveOn(Globals.ThisAddIn.SynchronizationContext)
-            .Subscribe(
-                x =>
-                {
-                    try
-                    {
-                        Globals.ThisAddIn.WindowManager.Show(new ExportPage());
-                    }
-                    catch (Exception ex)
-                    {
-                        ThisAddIn.Alert($"加载失败：{ex.Message}");
-                        Logger.Error(ex,
-                            "Failed to display export window.");
-                    }
-                },
-                ex =>
-                {
-                    Logger.Error(ex,
-                        "Export Service ternimated accidently.");
-                },
-                () => { Logger.Error("Export Service should never complete."); }
-            );
-    }
 
     /// <summary>
     ///     extract data from shapes on layers defined in config and group them as BOM items.
@@ -170,7 +130,7 @@ public class DocumentExporter : IDisposable
     #region Part List Table
 
     /// <summary>
-    /// Populate line items for part list table
+    ///     Populate line items for part list table
     /// </summary>
     /// <returns></returns>
     private List<PartListTableLineItem> PopulatePartListTableLineItems()
@@ -203,7 +163,7 @@ public class DocumentExporter : IDisposable
 
         return partListItems;
     }
-    
+
     /// <summary>
     ///     Flatten the elements in page and filter out only equipments and functional elements, then convert to exportable
     ///     items.
@@ -266,6 +226,11 @@ public class DocumentExporter : IDisposable
     private static Func<Shape, bool> IsFunctionalElementPredicate()
     {
         return x => x.HasCategory("FunctionalElement");
+    }
+
+    private static Func<Shape, bool> IsInstrumentPredicate()
+    {
+        return x => x.HasCategory("Instrument");
     }
 
     private static Func<Shape, bool> IsEquipmentPredicate()

@@ -8,12 +8,12 @@ namespace AE.PID.Models;
 public class InputCache
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    private static readonly string FilePath = Path.Combine(ThisAddIn.AppDataFolder, ".cache");
+    private static readonly string FilePath = Path.Combine(Constants.AppDataFolder, ".cache");
 
-    public string CustomerName { get; set; }
-    public string DocumentNo { get; set; }
-    public string ProjectNo { get; set; }
-    public string VersionNo { get; set; }
+    public string CustomerName { get; set; } = string.Empty;
+    public string DocumentNo { get; set; } = string.Empty;
+    public string ProjectNo { get; set; } = string.Empty;
+    public string VersionNo { get; set; } = string.Empty;
 
     public static InputCache Load()
     {

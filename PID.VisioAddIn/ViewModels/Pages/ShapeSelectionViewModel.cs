@@ -5,6 +5,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using AE.PID.Controllers.Services;
 using AE.PID.Models;
+using AE.PID.ViewModels.Components;
 using DynamicData;
 using DynamicData.Aggregation;
 using DynamicData.Binding;
@@ -15,15 +16,17 @@ namespace AE.PID.ViewModels.Pages;
 public class ShapeSelectionViewModel(ShapeSelector service) : ViewModelBase
 {
     private bool _hasSelection;
-    private ReadOnlyObservableCollection<MasterViewModel> _masters;
+    private ReadOnlyObservableCollection<MasterOptionViewModel> _masters = new([]);
     private SelectionType _selectionType = SelectionType.ById;
     private int _shapeId;
 
     #region Output Properties
 
-    public ReadOnlyObservableCollection<MasterViewModel> Masters => _masters;
+    public ReadOnlyObservableCollection<MasterOptionViewModel> Masters => _masters;
 
     #endregion
+
+    #region Setups
 
     protected override void SetupCommands()
     {
@@ -40,7 +43,7 @@ public class ShapeSelectionViewModel(ShapeSelector service) : ViewModelBase
         OkCancelFeedbackViewModel.Ok = ReactiveCommand.Create(() =>
             {
                 if (SelectionType == SelectionType.ById)
-                    ShapeSelector.SelectShapeById(_shapeId);
+                    service.SelectShapeById(_shapeId);
                 else
                     ShapeSelector.SelectShapesByMasters(_masters.Where(x => x.IsChecked).Select(x => x.BaseId));
             },
@@ -54,21 +57,24 @@ public class ShapeSelectionViewModel(ShapeSelector service) : ViewModelBase
     {
         service.Masters
             .Connect()
-            .Transform(x => new MasterViewModel { BaseId = x.BaseID, Name = x.Name })
+            .Transform(x => new MasterOptionViewModel(x))
+            .Sort(SortExpressionComparer<MasterOptionViewModel>.Ascending(t => t.Name))
             .Bind(out _masters)
             .DisposeMany()
             .Subscribe()
             .DisposeWith(d);
 
-        service.MonitorChange()
-            .DisposeWith(d);
-
         Masters.ToObservableChangeSet()
-            .FilterOnObservable(static item => item.WhenPropertyChanged(x => x.IsChecked).Select(x => x.Value))
+            .FilterOnObservable(static item =>
+                item.WhenPropertyChanged(x => x.IsChecked)
+                    .Select(x => x.Value)
+            )
             .IsNotEmpty()
             .BindTo(this, x => x.HasSelection)
             .DisposeWith(d);
     }
+
+    #endregion
 
     #region Read-Write Properties
 

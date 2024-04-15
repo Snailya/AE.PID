@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Packaging;
-using System.Linq;
+﻿using System.IO.Packaging;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
@@ -41,7 +37,7 @@ public abstract class XmlHelper
         return part;
     }
 
-    public static IEnumerable<PackagePart>? GetPackageParts(Package filePackage,
+    public static IEnumerable<PackagePart> GetPackageParts(Package filePackage,
         PackagePart sourcePart, string relationship)
     {
         // This gets only the first PackagePart that shares the relationship
@@ -52,7 +48,8 @@ public abstract class XmlHelper
             return packageRel.Select(x => filePackage.GetPart(PackUriHelper.ResolvePartUri(
                 sourcePart.Uri, x.TargetUri)));
 
-        return null;
+        // Members that return a sequence should never return null. Return an empty sequence instead
+        return [];
     }
 
     public static XElement? GetXElementByAttribute(IEnumerable<XElement> elements,

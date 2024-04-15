@@ -11,6 +11,7 @@ datajson = {
     "mainTable":{
         "showOrder":"",
         "id":"",
+        "code":"",
         "categoryCode":"",
         "categoryName":"卧式离心泵",
         "parentId":""
@@ -20,8 +21,8 @@ datajson = {
     },
     "header": {
       "systemid": "visioVault",
-      "currentDateTime": "20240318095212",
-      "Md5": "0458e1758331968661d85136b7b7c719"
+      "currentDateTime": "20240326164307",
+      "Md5": "095c64460e522ca980641f94c750d6c6"
     }
 }
 

@@ -2,7 +2,7 @@
 using Microsoft.Office.Interop.Visio;
 using ReactiveUI;
 
-namespace AE.PID.ViewModels;
+namespace AE.PID.ViewModels.Components;
 
 public class DocumentInfoViewModel : ViewModelBase
 {
@@ -67,7 +67,7 @@ public class DocumentInfoViewModel : ViewModelBase
     private static string? GetValueIfExist(IVShape shape, string propName)
     {
         string? value = null;
-        if (shape.CellExists[propName, (short)VisExistsFlags.visExistsLocally] == (short)VBABool.True) return value;
+        if (shape.CellExists[propName, (short)VisExistsFlags.visExistsLocally] == (short)VbaBool.True) return value;
 
         var valueFromShape = shape.Cells[propName].ResultStr[VisUnitCodes.visUnitsString];
         if (!string.IsNullOrEmpty(valueFromShape)) value = valueFromShape;

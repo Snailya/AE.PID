@@ -5,5 +5,6 @@ public enum ElementType
     FunctionalGroup,
     Unit,
     Equipment,
+    Instrument,
     FunctionalElement
 }

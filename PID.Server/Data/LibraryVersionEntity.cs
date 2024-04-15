@@ -21,7 +21,7 @@ public class LibraryVersionEntity
     public string ReleaseNotes { get; set; } = string.Empty;
 
     /// <summary>
-    /// Indicates whether this library has been released
+    ///     Indicates whether this library has been released
     /// </summary>
     public bool IsReleased { get; set; } = false;
 

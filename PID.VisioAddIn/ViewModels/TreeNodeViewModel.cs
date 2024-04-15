@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Reactive.Disposables;
-using AE.PID.Interfaces;
+using AE.PID.Core.Interfaces;
 using DynamicData;
 using DynamicData.Kernel;
 using ReactiveUI;
@@ -30,7 +30,7 @@ public class TreeNodeViewModel<TSource> : TreeNodeViewModelBase,
             .Subscribe()
             .DisposeWith(CleanUp);
     }
-    
+
     public TSource? Source
     {
         get => _source;

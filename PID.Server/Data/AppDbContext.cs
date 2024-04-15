@@ -6,6 +6,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     public DbSet<AppVersionEntity> AppVersions { get; set; }
     public DbSet<LibraryEntity> Libraries { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<LibraryEntity>()

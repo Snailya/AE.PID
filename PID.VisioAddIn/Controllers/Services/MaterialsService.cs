@@ -16,17 +16,18 @@ namespace AE.PID.Controllers.Services;
 
 public class MaterialsService : IDisposable
 {
-    private readonly CompositeDisposable _cleanUp = new();
-
     private const int PageSize = 20;
 
     private readonly SourceCache<MaterialCategoryDto, int> _categories = new(t => t.Id);
+    private readonly CompositeDisposable _cleanUp = new();
 
     private readonly HttpClient _client;
     private readonly SourceCache<LastUsedDesignMaterial, string> _lastUsed = new(t => t.Source.Code);
 
     private readonly SourceCache<MaterialsRequestResult, DesignMaterialsQueryTerms> _requestResults =
-        new(t => t.QueryTerms);
+        new(t => t.QueryTerms!);
+
+    #region Constructors
 
     public MaterialsService(HttpClient client)
     {
@@ -54,12 +55,13 @@ public class MaterialsService : IDisposable
             .DisposeWith(_cleanUp);
     }
 
-    public IObservableCache<MaterialCategoryDto, int> Categories => _categories.AsObservableCache();
-    public Dictionary<string, string[]> CategoryMap { get; private set; } = new();
-    public IObservableCache<LastUsedDesignMaterial, string> LastUsed => _lastUsed.AsObservableCache();
+    #endregion
 
-    public IObservableCache<MaterialsRequestResult, DesignMaterialsQueryTerms> Materials =>
-        _requestResults.AsObservableCache();
+    #region Read-Only Properties
+
+    public Dictionary<string, string[]> CategoryMap { get; private set; } = new();
+
+    #endregion
 
     public void Dispose()
     {
@@ -103,10 +105,20 @@ public class MaterialsService : IDisposable
         lastUsed.UsedBy.Add(elementName);
         _lastUsed.AddOrUpdate(lastUsed);
     }
+
+    #region Output Properties
+
+    public IObservableCache<MaterialCategoryDto, int> Categories => _categories.AsObservableCache();
+    public IObservableCache<LastUsedDesignMaterial, string> LastUsed => _lastUsed.AsObservableCache();
+
+    public IObservableCache<MaterialsRequestResult, DesignMaterialsQueryTerms> Materials =>
+        _requestResults.AsObservableCache();
+
+    #endregion
 }
 
 public class MaterialsRequestResult
 {
-    public IEnumerable<DesignMaterial> Materials;
-    public DesignMaterialsQueryTerms QueryTerms;
+    public IEnumerable<DesignMaterial> Materials = [];
+    public DesignMaterialsQueryTerms? QueryTerms;
 }

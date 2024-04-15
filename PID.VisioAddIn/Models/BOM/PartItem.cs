@@ -1,5 +1,5 @@
 ﻿using AE.PID.Interfaces;
-using AE.PID.Models.VisProps;
+using AE.PID.Tools;
 using Microsoft.Office.Interop.Visio;
 using ReactiveUI;
 

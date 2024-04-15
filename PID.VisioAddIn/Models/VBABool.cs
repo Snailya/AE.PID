@@ -1,6 +1,6 @@
 ﻿namespace AE.PID.Models;
 
-public enum VBABool : short
+public enum VbaBool : short
 {
     True = -1,
     False = 0

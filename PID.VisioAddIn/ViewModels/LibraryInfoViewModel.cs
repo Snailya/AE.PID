@@ -1,40 +1,59 @@
 using System;
+using System.Reactive.Disposables;
+using AE.PID.Models;
 using ReactiveUI;
 
 namespace AE.PID.ViewModels;
 
-public class LibraryInfoViewModel : ReactiveObject
+public class LibraryInfoViewModel : ReactiveObject, IDisposable
 {
-    private Version? _localVersion;
-    private string _name = string.Empty;
-    private Version? _remoteVersion;
+    private readonly CompositeDisposable _cleanUp = new();
+    private readonly ObservableAsPropertyHelper<bool> _needUpdate;
+    private string _localVersion = string.Empty;
+
+    private string _remoteVersion = string.Empty;
 
     public LibraryInfoViewModel()
     {
+    }
+
+    public LibraryInfoViewModel(ReactiveLibrary library)
+    {
+        Id = library.Id;
+        Name = library.Name;
+
+        library.WhenAnyValue(x => x.Version)
+            .BindTo(this, x => x.LocalVersion)
+            .DisposeWith(_cleanUp);
+
         this.WhenAnyValue(
                 x => x.LocalVersion,
-                x => x.RemoteVersion
-            )
-            .Subscribe(_ => this.RaisePropertyChanged(nameof(NeedUpdate)));
+                x => x.RemoteVersion,
+                (local, server) => !string.IsNullOrEmpty(server) &&
+                                   (string.IsNullOrEmpty(local) || new Version(local) < new Version(server)))
+            .ToProperty(this, x => x.NeedUpdate, out _needUpdate)
+            .DisposeWith(_cleanUp);
     }
 
-    public string Name
-    {
-        get => _name;
-        set => this.RaiseAndSetIfChanged(ref _name, value);
-    }
+    public string Name { get; set; }
 
-    public Version? LocalVersion
+    public string LocalVersion
     {
         get => _localVersion;
         set => this.RaiseAndSetIfChanged(ref _localVersion, value);
     }
 
-    public Version? RemoteVersion
+    public string RemoteVersion
     {
         get => _remoteVersion;
         set => this.RaiseAndSetIfChanged(ref _remoteVersion, value);
     }
 
-    public bool NeedUpdate => _localVersion != null && _remoteVersion != null && _remoteVersion > _localVersion;
+    public bool NeedUpdate => _needUpdate.Value;
+    public int Id { get; private set; }
+
+    public void Dispose()
+    {
+        _cleanUp.Dispose();
+    }
 }

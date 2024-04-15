@@ -121,7 +121,8 @@ internal static class UiHelper
         }
 
         // add property with DataGridColumnsAttribute
-        foreach (var property in properties.Where(x => x.GetCustomAttribute<DataGridMultipleColumnsAttribute>() != null))
+        foreach (var property in
+                 properties.Where(x => x.GetCustomAttribute<DataGridMultipleColumnsAttribute>() != null))
         {
             Debug.Assert(property.PropertyType.IsGenericType);
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Windows;
 using ReactiveUI;
 
@@ -16,6 +17,9 @@ public partial class OkCancelFeedback
     public static readonly DependencyProperty CancelTextProperty = DependencyProperty.Register(
         nameof(CancelText), typeof(string), typeof(OkCancelFeedback), new PropertyMetadata("取消"));
 
+    public static readonly DependencyProperty CloseOnOkProperty = DependencyProperty.Register(
+        nameof(CloseOnOk), typeof(bool), typeof(OkCancelFeedback), new PropertyMetadata(true));
+
     public OkCancelFeedback()
     {
         InitializeComponent();
@@ -30,10 +34,20 @@ public partial class OkCancelFeedback
             this.BindCommand(ViewModel, vm => vm.Cancel, v => v.CancelButton)
                 .DisposeWith(d);
 
-            ViewModel.WhenAnyObservable(x => x.Ok, x => x.Cancel)
+            ViewModel.WhenAnyObservable(x => x.Cancel)
+                .Merge(
+                    ViewModel.WhenAnyObservable(x => x.Ok)
+                        .Where(_ => CloseOnOk)
+                )
                 .Subscribe(_ => Close())
                 .DisposeWith(d);
         });
+    }
+
+    public bool CloseOnOk
+    {
+        get => (bool)GetValue(CloseOnOkProperty);
+        set => SetValue(CloseOnOkProperty, value);
     }
 
     public string OkText

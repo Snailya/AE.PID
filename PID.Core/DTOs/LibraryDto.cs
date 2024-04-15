@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace AE.PID.Core.DTOs;
+﻿namespace AE.PID.Core.DTOs;
 
 /// <summary>
 ///     The response dto used for get /libraries
@@ -8,7 +6,7 @@ namespace AE.PID.Core.DTOs;
 public class LibraryDto
 {
     /// <summary>
-    ///     The id of the library that can used for download the latested file.
+    ///     The id of the library that can used for download the latest file.
     /// </summary>
     public int Id { get; set; }
 
@@ -30,5 +28,5 @@ public class LibraryDto
     /// <summary>
     ///     The items inside the library.
     /// </summary>
-    public IEnumerable<LibraryItemDto>? Items { get; set; }
+    public IEnumerable<LibraryItemDto> Items { get; set; } = [];
 }

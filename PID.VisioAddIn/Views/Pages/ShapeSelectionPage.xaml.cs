@@ -16,7 +16,9 @@ public partial class ShapeSelectionPage
     public ShapeSelectionPage()
     {
         InitializeComponent();
-        ViewModel = new ShapeSelectionViewModel(new ShapeSelector(Globals.ThisAddIn.Application.ActiveDocument));
+
+        using var service = new ShapeSelector(Globals.ThisAddIn.Application.ActivePage);
+        ViewModel = new ShapeSelectionViewModel(service);
 
         this.WhenActivated(d =>
         {

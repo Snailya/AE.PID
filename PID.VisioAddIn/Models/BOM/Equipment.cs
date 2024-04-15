@@ -1,11 +1,11 @@
 ﻿using System.Diagnostics.Contracts;
-using AE.PID.Models.VisProps;
+using AE.PID.Tools;
 using Microsoft.Office.Interop.Visio;
 using ReactiveUI;
 
 namespace AE.PID.Models.BOM;
 
-public sealed class Equipment : PartItem
+public class Equipment : PartItem
 {
     private string _subClassName = string.Empty;
 
@@ -13,14 +13,13 @@ public sealed class Equipment : PartItem
 
     public Equipment(Shape shape) : base(shape)
     {
-        Contract.Assert(shape.HasCategory("Equipment"),
-            "Only shape with category Equipment can be construct as Equipment");
+        Contract.Assert(shape.HasCategory("Equipment") || shape.HasCategory("Instrument"),
+            "Only shape with category Equipment or Instrument can be construct as Equipment");
 
         Initialize();
     }
 
     #endregion
-
 
     #region Properties
 

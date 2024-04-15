@@ -5,13 +5,13 @@ VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PID.VisioAddIn", "PID.VisioAddIn\PID.VisioAddIn.csproj", "{5A986C6F-8D43-46A0-8B3A-50FB44234214}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "PID.Installer", "PID.Installer\PID.Installer.vdproj", "{C646C71C-0E45-454B-9C14-D927EA483BB8}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PID.Core", "PID.Core\PID.Core.csproj", "{63D883E6-9FB9-4D7A-A57A-157173C0D998}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PID.Server", "PID.Server\PID.Server.csproj", "{FA179E85-C1AD-451C-85A1-D0F916C7347E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PID.Server.Test", "PID.Server.Test\PID.Server.Test.csproj", "{4A018E47-461D-471E-9B2C-23DC7A736287}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PID.Server.Test", "PID.Server.Test\PID.Server.Test.csproj", "{4A018E47-461D-471E-9B2C-23DC7A736287}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PID.DocumentStencilUpdateTool", "PID.DocumentStencilUpdateTool\PID.DocumentStencilUpdateTool.csproj", "{DFF70DF2-093A-464A-89E1-AAC2116403EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,16 +35,6 @@ Global
 		{5A986C6F-8D43-46A0-8B3A-50FB44234214}.Release|x64.Build.0 = Release|x64
 		{5A986C6F-8D43-46A0-8B3A-50FB44234214}.Release|x86.ActiveCfg = Release|x86
 		{5A986C6F-8D43-46A0-8B3A-50FB44234214}.Release|x86.Build.0 = Release|x86
-		{C646C71C-0E45-454B-9C14-D927EA483BB8}.Debug|Any CPU.ActiveCfg = Debug
-		{C646C71C-0E45-454B-9C14-D927EA483BB8}.Debug|x64.ActiveCfg = Debug
-		{C646C71C-0E45-454B-9C14-D927EA483BB8}.Debug|x64.Build.0 = Debug
-		{C646C71C-0E45-454B-9C14-D927EA483BB8}.Debug|x86.ActiveCfg = Debug
-		{C646C71C-0E45-454B-9C14-D927EA483BB8}.Debug|x86.Build.0 = Debug
-		{C646C71C-0E45-454B-9C14-D927EA483BB8}.Release|Any CPU.ActiveCfg = Release
-		{C646C71C-0E45-454B-9C14-D927EA483BB8}.Release|x64.ActiveCfg = Release
-		{C646C71C-0E45-454B-9C14-D927EA483BB8}.Release|x64.Build.0 = Release
-		{C646C71C-0E45-454B-9C14-D927EA483BB8}.Release|x86.ActiveCfg = Release
-		{C646C71C-0E45-454B-9C14-D927EA483BB8}.Release|x86.Build.0 = Release
 		{63D883E6-9FB9-4D7A-A57A-157173C0D998}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{63D883E6-9FB9-4D7A-A57A-157173C0D998}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{63D883E6-9FB9-4D7A-A57A-157173C0D998}.Debug|x64.ActiveCfg = Debug|x64
@@ -81,6 +71,18 @@ Global
 		{4A018E47-461D-471E-9B2C-23DC7A736287}.Release|x64.Build.0 = Release|Any CPU
 		{4A018E47-461D-471E-9B2C-23DC7A736287}.Release|x86.ActiveCfg = Release|Any CPU
 		{4A018E47-461D-471E-9B2C-23DC7A736287}.Release|x86.Build.0 = Release|Any CPU
+		{DFF70DF2-093A-464A-89E1-AAC2116403EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFF70DF2-093A-464A-89E1-AAC2116403EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFF70DF2-093A-464A-89E1-AAC2116403EC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DFF70DF2-093A-464A-89E1-AAC2116403EC}.Debug|x64.Build.0 = Debug|Any CPU
+		{DFF70DF2-093A-464A-89E1-AAC2116403EC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DFF70DF2-093A-464A-89E1-AAC2116403EC}.Debug|x86.Build.0 = Debug|Any CPU
+		{DFF70DF2-093A-464A-89E1-AAC2116403EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFF70DF2-093A-464A-89E1-AAC2116403EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFF70DF2-093A-464A-89E1-AAC2116403EC}.Release|x64.ActiveCfg = Release|Any CPU
+		{DFF70DF2-093A-464A-89E1-AAC2116403EC}.Release|x64.Build.0 = Release|Any CPU
+		{DFF70DF2-093A-464A-89E1-AAC2116403EC}.Release|x86.ActiveCfg = Release|Any CPU
+		{DFF70DF2-093A-464A-89E1-AAC2116403EC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,25 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using AE.PID.Interfaces;
-using AE.PID.Models.Exceptions;
+using AE.PID.Models;
 using AE.PID.Properties;
 using Microsoft.Office.Interop.Visio;
 using NLog;
 
-namespace AE.PID.Models.VisProps;
+namespace AE.PID.Tools;
 
 internal static class VisioExtension
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public static Row GetOrAdd(this IVShape shape, IProp prop)
+    private static Row GetOrAdd(this IVShape shape, IProp prop)
     {
         var existsAnywhere = shape.CellExists[prop.FullName, (short)VisExistsFlags.visExistsAnywhere] ==
-                             (short)VBABool.True;
+                             (short)VbaBool.True;
         if (existsAnywhere) return shape.Cells[prop.FullName].ContainingRow;
 
         // if not exist, check if the section exist
@@ -103,7 +101,7 @@ internal static class VisioExtension
     {
         var result = false;
         if (shape.CellExists[fullName, (short)VisExistsFlags.visExistsLocally] !=
-            (short)VBABool.True)
+            (short)VbaBool.True)
             return false;
 
         var cell = shape.Cells[fullName];
@@ -119,13 +117,7 @@ internal static class VisioExtension
         return result;
     }
 
-    /// <summary>
-    ///     Get formatted value from Shape Data.
-    /// </summary>
-    /// <param name="row"></param>
-    /// <returns></returns>
-    /// <exception cref="FormatValueInvalidException"></exception>
-    public static string? GetFormatValue(this IVRow row)
+    private static string? GetFormatValue(this IVRow row)
     {
         try
         {
@@ -156,27 +148,8 @@ internal static class VisioExtension
         catch (COMException comException)
         {
             Logger.Error(comException, $"Failed to get value form {row.Shape.ID}!{row.Name}.");
-            throw new FormatValueInvalidException(row.Shape.ID, row.Name);
+            return null;
         }
-    }
-
-    /// <summary>
-    ///     Check if the shape is on specified layer.
-    /// </summary>
-    /// <param name="shape"></param>
-    /// <param name="layerNames"></param>
-    /// <returns></returns>
-    public static bool IsOnLayers(this IVShape shape, IEnumerable<string> layerNames)
-    {
-        var enumerable = layerNames as string[] ?? layerNames.ToArray();
-
-        for (short i = 1; i < shape.LayerCount + 1; i++)
-        {
-            var layer = shape.Layer[i];
-            if (enumerable.Contains(layer.Name)) return true;
-        }
-
-        return false;
     }
 
     /// <summary>
@@ -231,22 +204,16 @@ internal static class VisioExtension
         return new Position(left + right / 2, (top + bottom) / 2);
     }
 
-    private static int GetParentIdByCategory(IVShape shape, string category)
-    {
-        var containers = shape.MemberOfContainers;
-        return containers.Length != 0
-            ? (from int containerId in containers
-                let parent = shape.ContainingPage.Shapes.ItemFromID[containerId]
-                where parent.HasCategory(category)
-                select containerId).FirstOrDefault()
-            : 0;
-    }
-
-
+    /// <summary>
+    ///     Get formatted value of the property in shape sheet.
+    /// </summary>
+    /// <param name="shape"></param>
+    /// <param name="propName"></param>
+    /// <returns></returns>
     public static string? TryGetFormatValue(this IVShape shape, string propName)
     {
         var existsAnywhere = shape.CellExists[propName, (short)VisExistsFlags.visExistsAnywhere] ==
-                             (short)VBABool.True;
+                             (short)VbaBool.True;
         if (!existsAnywhere) return null;
         var row = shape.Cells[propName].ContainingRow;
 

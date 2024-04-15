@@ -188,15 +188,15 @@ public class LibrariesController(
         var version = library.Versions.SingleOrDefault(x => x.Id == versionId);
         if (version == null)
             return NoContent();
-        
+
         library.Versions.Remove(version);
         dbContext.Libraries.Update(library);
         dbContext.SaveChanges();
-        
+
         // update the cheat sheet, this should be refactored to speed up if in need.
         CreateCheatSheet(true);
         CreateCheatSheet();
-        
+
         return NoContent();
     }
 
@@ -249,7 +249,7 @@ public class LibrariesController(
     }
 
     /// <summary>
-    /// Get the latest items from library.
+    ///     Get the latest items from library.
     /// </summary>
     /// <param name="involvePreRelease"></param>
     /// <returns></returns>
@@ -272,7 +272,7 @@ public class LibrariesController(
     }
 
     /// <summary>
-    /// Persist latest items into a local file.
+    ///     Persist latest items into a local file.
     /// </summary>
     /// <param name="involvePrerelease"></param>
     private void CreateCheatSheet(bool involvePrerelease = false)

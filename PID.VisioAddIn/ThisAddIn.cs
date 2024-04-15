@@ -1,19 +1,14 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
-using System.Net.Http;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Threading;
 using AE.PID.Controllers;
-using AE.PID.Controllers.Services;
 using AE.PID.Models;
-using AE.PID.Models.Configurations;
 using AE.PID.Properties;
 using AE.PID.ViewModels;
 using AE.PID.Views;
@@ -21,7 +16,6 @@ using AE.PID.Views.Windows;
 using Microsoft.Office.Interop.Visio;
 using NLog;
 using MessageBox = System.Windows.Forms.MessageBox;
-using Path = System.IO.Path;
 using Window = System.Windows.Window;
 
 namespace AE.PID;
@@ -33,11 +27,6 @@ public partial class ThisAddIn
     private Ribbon _ribbon;
 
     /// <summary>
-    ///     Manges all services
-    /// </summary>
-    public ServiceManager ServiceManager;
-
-    /// <summary>
     ///     The synchronization context for wpf dispatching.
     /// </summary>
     public SynchronizationContext SynchronizationContext;
@@ -47,24 +36,12 @@ public partial class ThisAddIn
     /// </summary>
     public WindowManager WindowManager;
 
-    public static string Version { get; private set; }
-
-    /// <summary>
-    ///     Configuration has three part: app configuration, library configuration, export settings.
-    /// </summary>
-    public Configuration Configuration { get; private set; }
 
     /// <summary>
     ///     The user input cache of the previous input.
     /// </summary>
     public InputCache InputCache { get; private set; }
 
-    /// <summary>
-    ///     HttpClient should generally be used as a singleton within an application, especially in scenarios where you are
-    ///     making multiple HTTP requests. Creating and disposing of multiple instances of HttpClient for each request is not
-    ///     recommended, as it can lead to problems such as socket exhaustion and DNS resolution issues.
-    /// </summary>
-    public HttpClient HttpClient { get; } = new();
 
     public static DialogResult AskForUpdate(string description, string caption = "")
     {
@@ -131,10 +108,6 @@ public partial class ThisAddIn
 
     private void ThisAddIn_Startup(object sender, EventArgs e)
     {
-        // get the current add in version
-        var assemblyPath = Assembly.GetExecutingAssembly().Location;
-        Version = FileVersionInfo.GetVersionInfo(assemblyPath).FileVersion;
-
         _ribbon = new Ribbon();
         Globals.ThisAddIn.Application.RegisterRibbonX(_ribbon, null,
             VisRibbonXModes.visRXModeDrawing,
@@ -146,45 +119,14 @@ public partial class ThisAddIn
 
         WindowManager = new WindowManager();
 
-        // invoke the setup process immediately
-        var setupObservable = Observable.Start(Setup);
-        setupObservable.Subscribe(_ =>
-        {
-            HttpClient.BaseAddress = new Uri(Configuration.Api);
-            ServiceManager = new ServiceManager(HttpClient);
-
-            // background service
-            AppUpdater.Listen()
-                .DisposeWith(_compositeDisposable);
-            LibraryUpdater.Listen()
-                .DisposeWith(_compositeDisposable);
-            DocumentUpdater.Listen()
-                .DisposeWith(_compositeDisposable);
-
-            // ribbon
-            DocumentInitializer.Listen()
-                .DisposeWith(_compositeDisposable);
-            ShapeSelector.Listen()
-                .DisposeWith(_compositeDisposable);
-            LegendService.Listen()
-                .DisposeWith(_compositeDisposable);
-
-            DocumentExporter.Run()
-                .DisposeWith(_compositeDisposable);
-
-            ConfigurationUpdater.Listen()
-                .DisposeWith(_compositeDisposable);
-        });
+        Setup();
     }
 
     private void ThisAddIn_Shutdown(object sender, EventArgs e)
     {
         Globals.ThisAddIn.Application.UnregisterRibbonX(_ribbon, null);
 
-        Configuration.Save();
         InputCache.Save(InputCache);
-
-        _logger.Info("Configuration and input cache saved on shut down.");
 
         _compositeDisposable.Dispose();
     }
@@ -197,21 +139,16 @@ public partial class ThisAddIn
         try
         {
             // initialize the data folder
-            Directory.CreateDirectory(LibraryFolder);
-            Directory.CreateDirectory(TmpFolder);
-
-            // try to load nlog config from file, copy from resource if not exist
-            NLogConfiguration.CreateIfNotExist();
-            NLogConfiguration.Load();
-
-            // try load configuration
-            Configuration = Configuration.Load();
+            Directory.CreateDirectory(Constants.LibraryFolder);
+            Directory.CreateDirectory(Constants.TmpFolder);
 
             // initialize logger
             _logger = LogManager.GetCurrentClassLogger();
 
             // load the input cache
             InputCache = InputCache.Load();
+
+            ServiceManager.GetInstance();
         }
         catch (UnauthorizedAccessException unauthorizedAccessException)
         {
@@ -242,32 +179,6 @@ public partial class ThisAddIn
         Startup += ThisAddIn_Startup;
         Shutdown += ThisAddIn_Shutdown;
     }
-
-    #endregion
-
-    #region Paths
-
-    /// <summary>
-    ///     The data folder path in Application Data.
-    /// </summary>
-    public static readonly string AppDataFolder = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "AE\\PID");
-
-    /// <summary>
-    ///     The tmp folder to store updated file.
-    /// </summary>
-    public static readonly string LibraryFolder = Path.Combine(AppDataFolder, "Libraries");
-
-    /// <summary>
-    ///     The tmp folder to store updated file.
-    /// </summary>
-    public static readonly string LibraryCheatSheet = Path.Combine(LibraryFolder, ".cheatsheet");
-
-    /// <summary>
-    ///     The tmp folder to store updated file.
-    /// </summary>
-    public static readonly string TmpFolder = Path.Combine(AppDataFolder, "Tmp");
 
     #endregion
 }

@@ -1,6 +1,6 @@
 ﻿using ReactiveUI;
 
-namespace AE.PID.ViewModels;
+namespace AE.PID.ViewModels.Components;
 
 public class UserFiltersViewModel : ViewModelBase
 {

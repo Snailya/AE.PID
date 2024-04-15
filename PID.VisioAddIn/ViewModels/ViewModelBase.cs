@@ -9,12 +9,12 @@ public abstract class ViewModelBase : ReactiveObject, IActivatableViewModel
     {
         Activator = new ViewModelActivator();
 
-        this.WhenActivated(disposableRegistration =>
+        this.WhenActivated(d =>
         {
-            Disposable.Create(SetupDeactivate).DisposeWith(disposableRegistration);
+            Disposable.Create(SetupDeactivate).DisposeWith(d);
 
             SetupCommands();
-            SetupSubscriptions(disposableRegistration);
+            SetupSubscriptions(d);
             SetupStart();
         });
     }

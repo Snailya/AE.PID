@@ -41,10 +41,10 @@
                 <TreeView x:Name="CategoryTree"
                           Grid.Row="1">
                     <TreeView.ItemTemplate>
-                        <HierarchicalDataTemplate DataType="{x:Type viewModels:DesignMaterialCategoryViewModel}"
+                        <HierarchicalDataTemplate DataType="{x:Type viewModels:TreeNodeViewModel`1}"
                                                   ItemsSource="{Binding Inferiors}">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding Name}" />
+                                <TextBlock Text="{Binding Source.Name}" />
                             </StackPanel>
                         </HierarchicalDataTemplate>
                     </TreeView.ItemTemplate>

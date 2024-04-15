@@ -44,17 +44,3 @@ public record DesignMaterialsQueryTerms
         return $"CategoryId:{CategoryId}, PageNumber:{PageNumber}";
     }
 }
-
-public record OptionalTerms(
-    string MaterialName,
-    string Brand,
-    string Specifications,
-    string Model,
-    string Manufacturer)
-{
-    public string MaterialName { get; set; } = MaterialName;
-    public string Brand { get; set; } = Brand;
-    public string Specifications { get; set; } = Specifications;
-    public string Model { get; set; } = Model;
-    public string Manufacturer { get; set; } = Manufacturer;
-}

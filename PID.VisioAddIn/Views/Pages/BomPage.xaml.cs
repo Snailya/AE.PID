@@ -9,16 +9,16 @@ using ReactiveUI;
 
 namespace AE.PID.Views.Pages;
 
-public partial class ExportPage
+public partial class BomPage
 {
     private readonly MaterialsSelectionPage _sidePage = new();
 
-    public ExportPage()
+    public BomPage()
     {
         InitializeComponent();
 
         var service = new DocumentExporter(Globals.ThisAddIn.Application.ActivePage);
-        ViewModel = new ExportViewModel(service);
+        ViewModel = new BomViewModel(service);
 
         this.WhenActivated(d =>
         {

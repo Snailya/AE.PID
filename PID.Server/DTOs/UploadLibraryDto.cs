@@ -13,7 +13,7 @@ public class UploadLibraryDto
     public string ReleaseNote { get; set; } = string.Empty;
 
     /// <summary>
-    /// Indicates whether this is a minor update
+    ///     Indicates whether this is a minor update
     /// </summary>
     public bool IsMinorUpdate { get; set; } = false;
 }

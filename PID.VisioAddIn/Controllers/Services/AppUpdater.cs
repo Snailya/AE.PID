@@ -4,15 +4,17 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Reactive;
 using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Win32;
 using Newtonsoft.Json.Linq;
 using NLog;
+using ReactiveUI;
 
 namespace AE.PID.Controllers.Services;
 
@@ -20,162 +22,102 @@ namespace AE.PID.Controllers.Services;
 ///     This class handles app update related event, such as app version check and installer persist.
 ///     Also, it provide a trigger to allow user to invoke update manually.
 /// </summary>
-public abstract class AppUpdater
+public class AppUpdater
 {
-    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    private static Subject<Unit> ManuallyInvokeTrigger { get; } = new();
+    private readonly CompositeDisposable _cleanUp = new();
+    private readonly HttpClient _client;
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+    private readonly BehaviorSubject<ReleaseInfo?> _updateAvailableTrigger = new(null);
 
-    /// <summary>
-    ///     Emit a value manually.
-    /// </summary>
-    public static void Invoke()
+    public AppUpdater(HttpClient client, ConfigurationService configuration)
     {
-        ManuallyInvokeTrigger.OnNext(Unit.Default);
-    }
+        _client = client;
 
-    /// <summary>
-    ///     Staring a background service to request the server on period to check if there is a valid update.
-    ///     If so, prompt a MessageBox to let user decide whether to update right now.
-    ///     As automatic update not implemented, only open the explorer window to let user know there's a update installer.
-    ///     This should called after configuration loaded.
-    /// </summary>
-    public static IDisposable Listen()
-    {
-        Logger.Info($"App Update Service started. Current version: {ThisAddIn.Version}");
-
-        var userInvokeObservable = ManuallyInvokeTrigger
-            .Throttle(TimeSpan.FromMilliseconds(300))
-            .Select(_ => Constants.ManuallyInvokeMagicNumber)
-            .Do(_ => Logger.Info("App Update started. {Initiated by: User}"));
-
-        var autoInvokeObservable = Globals.ThisAddIn.Configuration.CheckIntervalSubject // auto check
+        // automatically check update by interval if it not meet the user disabled period
+        configuration.WhenAnyValue(x => x.AppCheckInterval)
             .Select(Observable.Interval)
             .Switch()
             .Merge(Observable
                 .Return<
                     long>(-1)) // add a immediately value as the interval method emits only after the interval collapse.
-            .Where(_ => DateTime.Now >
-                        Globals.ThisAddIn.Configuration.NextTime) // ignore if it not till the next check time
-            .Do(_ => Logger.Info("App Update started. {Initiated by: Auto-Run}"));
+            // ignore if it not till the next check time
+            .Where(_ => DateTime.Now > configuration.AppNextTime)
+            .Do(_ => _logger.Info("App Update started. {Initiated by: Auto-Run}"))
+            // switch to background thread
+            .ObserveOn(ThreadPoolScheduler.Instance)
+            .SelectMany(x => CheckUpdateAsync())
+            .Do(_ => { configuration.AppNextTime = DateTime.Now + configuration.AppCheckInterval; })
+            .Subscribe(v => { })
+            .DisposeWith(_cleanUp);
 
-        return autoInvokeObservable
-            .Merge(userInvokeObservable)
-            .Subscribe(InvokeUpdate,
-                ex => { Logger.Error(ex, "App update listener ternimated accidently."); },
-                () => { Logger.Error("App update listener should never complete."); });
-    }
-
-    /// <summary>
-    ///     Invoke a app update process.
-    /// </summary>
-    /// <param name="seed"></param>
-    private static void InvokeUpdate(long seed)
-    {
-        Observable.Return(seed)
-            .SubscribeOn(TaskPoolScheduler.Default)
-            // check for valid update from server
-            .SelectMany(value => Observable.FromAsync(GetUpdateAsync),
-                (value, result) => new { InvokeType = value, Result = result })
-            // notify user if user decision needs to decide whether to continue updating or not.
+        // whenever a update is available, it triggers a subject, so that we could ask user for permission
+        _updateAvailableTrigger
+            .WhereNotNull()
+            // switch to main thread to display ui
             .ObserveOn(Globals.ThisAddIn.SynchronizationContext)
-            .Select(data => NotifyUserIfNeed(data.InvokeType, data.Result) ? data.Result.DownloadUrl : string.Empty)
-            // continue updating
-            .ObserveOn(TaskPoolScheduler.Default)
-            .Where(x => !string.IsNullOrEmpty(x))
-            .SelectMany(CacheAsync)
-            .Subscribe(
-                Install,
-                ex =>
-                {
-                    switch (ex)
-                    {
-                        case HttpRequestException httpRequestException:
-                            Logger.Error(httpRequestException,
-                                "Failed to donwload library from server. Firstly, check if you are able to ping to the api. If not, connect administrator.");
-                            ThisAddIn.Alert("无法连接至服务器，请检查网络。");
-                            break;
-                    }
-                }
-            );
+            .Select(AskForUpdate)
+            // if user choose to update, download the installer and invoke update
+            .Where(x => x)
+            // switch back to thread pool
+            .ObserveOn(ThreadPoolScheduler.Instance)
+            .SelectMany(x => DownloadUpdateAsync())
+            .Subscribe(InstallUpdate)
+            .DisposeWith(_cleanUp);
     }
 
-    /// <summary>
-    ///     Request the server with current version of the app to check if there's a available update.
-    /// </summary>
-    /// <returns>
-    ///     The check result, if there's an available version, return with the lasted version download url, otherwise with
-    ///     message.
-    /// </returns>
-    private static async Task<AppCheckVersionResult> GetUpdateAsync()
+    public async Task<bool> CheckUpdateAsync()
     {
-        var configuration = Globals.ThisAddIn.Configuration;
-        var client = Globals.ThisAddIn.HttpClient;
-
         try
         {
             using var response =
-                await client.GetAsync($"check-version?version={ThisAddIn.Version}");
+                await _client.GetAsync(
+                    $"check-version?version={FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion}");
             response.EnsureSuccessStatusCode();
 
-            // anytime there's a success response from check-version, the check time should update.
-            configuration.NextTime = DateTime.Now + configuration.CheckInterval;
-            configuration.Save();
-
             var responseBody = await response.Content.ReadAsStringAsync();
-
             var jObject = JObject.Parse(responseBody);
 
-            var isUpdate = (bool)jObject["isUpdateAvailable"]!;
+            var isUpdateAvailable = (bool)jObject["isUpdateAvailable"]!;
+            if (!isUpdateAvailable) return false;
+
             var versionToken = jObject["latestVersion"]!;
 
-            Logger.Info(isUpdate ? "New app version available." : "App is up to date.");
+            // whenever there is a valid update, trigger the update process
+            _updateAvailableTrigger.OnNext(new ReleaseInfo
+            {
+                Version = (string)versionToken["version"]!,
+                ReleaseNotes = (string)versionToken["releaseNotes"]!
+            });
 
-            if (isUpdate)
-                return new AppCheckVersionResult
-                {
-                    IsUpdateAvailable = true,
-                    DownloadUrl = (string)versionToken["downloadUrl"]!,
-                    ReleaseNotes = (string)versionToken["releaseNotes"]!
-                };
-
-            return new AppCheckVersionResult { IsUpdateAvailable = false };
+            return true;
         }
         catch (HttpRequestException httpRequestException)
         {
-            Logger.Error(httpRequestException,
+            _logger.Error(httpRequestException,
                 "Failed to check update from server. Firstly, check if you are able to ping to the api. If not, connect administrator.");
             throw;
         }
         catch (KeyNotFoundException keyNotFoundException)
         {
-            Logger.Error(keyNotFoundException,
+            _logger.Error(keyNotFoundException,
                 "Some of the keys [isUpdateAvailable, latestVersion, downloadUrl, releaseNotes] not found in the response. Please check if the api response body is out of time.");
             throw;
         }
     }
 
+
     /// <summary>
     ///     Prompt user the get update result to let user decide whether to perform a update right now.
     /// </summary>
-    /// <param name="invokeType"></param>
-    /// <param name="checkResult"></param>
+    /// <param name="info"></param>
     /// <returns></returns>
-    private static bool NotifyUserIfNeed(long invokeType, AppCheckVersionResult checkResult)
+    private static bool AskForUpdate(ReleaseInfo info)
     {
-        if (!checkResult.IsUpdateAvailable)
-        {
-            // prompt a already updated version message if the check is invoked by user
-            if (invokeType == Constants.ManuallyInvokeMagicNumber)
-                ThisAddIn.Alert("这就是最新版本。");
-
-            return false;
-        }
-
+        // todo: refactor using wpf
         var description = "发现新版本。" +
                           Environment.NewLine +
-                          checkResult.ReleaseNotes +
-                          Environment.NewLine + Environment.NewLine +
-                          "请在安装完成后重启Visio";
+                          info.ReleaseNotes +
+                          Environment.NewLine;
         var result = DialogResult.Yes == ThisAddIn.AskForUpdate(description);
         return result;
     }
@@ -183,46 +125,40 @@ public abstract class AppUpdater
     /// <summary>
     ///     Download the installer zip and persist in a local path.
     /// </summary>
-    /// <param name="downloadUrl"></param>
     /// <returns>The path of the zip installer.</returns>
-    private static async Task<string> CacheAsync(string downloadUrl)
+    private async Task<string> DownloadUpdateAsync()
     {
-        var client = Globals.ThisAddIn.HttpClient;
-
-        // initialize the folder if not exist
-        var installerFolder = Path.Combine(ThisAddIn.TmpFolder);
-        if (!Directory.Exists(installerFolder)) Directory.CreateDirectory(installerFolder);
-
         try
         {
-            using var response = await client.GetAsync(downloadUrl);
+            using var response = await _client.GetAsync("download");
             response.EnsureSuccessStatusCode();
 
             var fileName = Path.GetFileName(
                 GetFilenameFromContentDisposition(response.Content.Headers.ContentDisposition.ToString()) ??
                 Path.GetTempFileName());
 
-            var filePath = Path.GetFullPath(Path.Combine(installerFolder, fileName));
-            if (File.Exists(filePath)) return filePath; // already exist
+            var filePath = Path.GetFullPath(Path.Combine(Constants.TmpFolder, fileName));
+            if (!File.Exists(filePath))
+            {
+                // Otherwise, get the content as a stream
+                using var contentStream = await response.Content.ReadAsStreamAsync();
+                using var fileStream = File.Create(filePath);
+                await contentStream.CopyToAsync(fileStream);
+            }
 
-            // Otherwise, get the content as a stream
-            using var contentStream = await response.Content.ReadAsStreamAsync();
-            using var fileStream = File.Create(filePath);
-            await contentStream.CopyToAsync(fileStream);
-
-            Logger.Info($"New version of app cached at {filePath}.");
+            _logger.Info($"New version of app cached at {filePath}.");
 
             return filePath;
         }
         catch (HttpRequestException httpRequestException)
         {
-            Logger.Error(httpRequestException,
+            _logger.Error(httpRequestException,
                 "Failed to get installer zip from server. Firstly, check if you are able to ping to the api. If not, connect administrator.");
             throw;
         }
         catch (DirectoryNotFoundException directoryNotFoundException)
         {
-            Logger.Error(directoryNotFoundException,
+            _logger.Error(directoryNotFoundException,
                 "Failed to cache installer to local storage. Please check if the directory exist, if not create it manully, or it should be created next time app starts.");
             throw;
         }
@@ -247,20 +183,20 @@ public abstract class AppUpdater
     /// <summary>
     ///     Execute .msi file in a new process. Need restart Visio to apply changes.
     /// </summary>
-    /// <param name="source"></param>
-    private static void Install(string source)
+    /// <param name="filePath"></param>
+    private void InstallUpdate(string filePath)
     {
         string msiPath;
-        if (Path.GetExtension(source) == ".rar")
+        if (Path.GetExtension(filePath) == ".rar")
         {
-            var destination = Path.Combine(ThisAddIn.TmpFolder, Path.GetFileNameWithoutExtension(source));
-            ExtractAndOverWriteRarFile(source, destination);
+            var destination = Path.Combine(Constants.TmpFolder, Path.GetFileNameWithoutExtension(filePath));
+            ExtractAndOverWriteRarFile(filePath, destination);
             var files = Directory.GetFiles(destination);
             msiPath = files.Single(x => Path.GetExtension(x) == ".msi");
         }
         else
         {
-            msiPath = source;
+            msiPath = filePath;
         }
 
         try
@@ -282,7 +218,7 @@ public abstract class AppUpdater
         }
         catch (Exception ex)
         {
-            Logger.Error(ex, "Failed to execute installer.");
+            _logger.Error(ex, "Failed to execute installer.");
         }
     }
 
@@ -291,7 +227,7 @@ public abstract class AppUpdater
     /// </summary>
     /// <param name="sourceArchiveFileName"></param>
     /// <param name="destinationDirectoryName"></param>
-    private static void ExtractAndOverWriteRarFile(string sourceArchiveFileName, string destinationDirectoryName)
+    private void ExtractAndOverWriteRarFile(string sourceArchiveFileName, string destinationDirectoryName)
     {
         try
         {
@@ -322,26 +258,18 @@ public abstract class AppUpdater
         }
         catch (Exception e)
         {
-            Logger.Error(e, "Failed to extract rar file.");
+            _logger.Error(e, "Failed to extract rar file.");
             throw;
         }
     }
 
-    private class AppCheckVersionResult
+    private class ReleaseInfo
     {
-        /// <summary>
-        ///     Indicates whether a update is available at DownloadUrl.
-        /// </summary>
-        public bool IsUpdateAvailable { get; set; }
-
-        /// <summary>
-        ///     The request url to get the latest version app.
-        /// </summary>
-        public string DownloadUrl { get; set; }
+        public string Version { get; set; } = string.Empty;
 
         /// <summary>
         ///     The release information about the latest version.
         /// </summary>
-        public string ReleaseNotes { get; set; }
+        public string ReleaseNotes { get; set; } = string.Empty;
     }
 }

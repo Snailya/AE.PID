@@ -1,7 +1,7 @@
 ﻿using System.Reactive;
 using ReactiveUI;
 
-namespace AE.PID.ViewModels;
+namespace AE.PID.ViewModels.Components;
 
 public class OkCancelViewModel : ViewModelBase
 {

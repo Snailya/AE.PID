@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace AE.PID.Core.DTOs;
+﻿namespace AE.PID.Core.DTOs;
 
 public class Paged<T>
 {
@@ -9,5 +7,5 @@ public class Paged<T>
     public int PagesCount { get; set; }
 
     public int ItemsCount { get; set; }
-    public IEnumerable<T>? Items { get; set; }
+    public IEnumerable<T> Items { get; set; } = [];
 }

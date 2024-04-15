@@ -2,8 +2,9 @@
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using AE.PID.Interfaces;
+using AE.PID.Core.Interfaces;
 using AE.PID.Models.VisProps;
+using AE.PID.Tools;
 using Microsoft.Office.Interop.Visio;
 using ReactiveUI;
 
@@ -18,7 +19,6 @@ public abstract class Element : ReactiveObject, IDisposable, ITreeNode
     private string _designation = string.Empty;
 
     private int _parentId;
-
 
     #region Constructors
 
@@ -55,7 +55,6 @@ public abstract class Element : ReactiveObject, IDisposable, ITreeNode
 
     #endregion
 
-
     protected static int? GetContainerIdByCategory(Shape shape, string categoryName)
     {
         if (shape.MemberOfContainers.Length == 0) return null;
@@ -83,7 +82,7 @@ public abstract class Element : ReactiveObject, IDisposable, ITreeNode
     protected void AssignMaterial(DesignMaterial? material)
     {
         DeleteMaterial();
-        
+
         // write material id
         if (material == null) return;
 

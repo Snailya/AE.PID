@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace AE.PID.Models.Configurations;
 
@@ -8,19 +7,11 @@ namespace AE.PID.Models.Configurations;
 ///     Defines the library info and update check time and update check interval.
 /// </summary>
 [Serializable]
-public class LibraryConfiguration : ConfigurationBase
+public class LibraryConfiguration
 {
-    /// <summary>
-    ///     The config for libraries that defines the library name, version, hash and local path.
-    /// </summary>
-    public List<Library> Libraries { get; set; } = [];
+    public DateTime NextTime { get; set; } = DateTime.Today;
 
-    /// <summary>
-    ///     Get item list of the libraries.
-    /// </summary>
-    /// <returns></returns>
-    public IEnumerable<LibraryItem> GetItems()
-    {
-        return Libraries.SelectMany(x => x.Items);
-    }
+    public TimeSpan CheckInterval { get; set; } = TimeSpan.FromDays(1);
+
+    public IEnumerable<Library> Libraries { get; set; } = [];
 }

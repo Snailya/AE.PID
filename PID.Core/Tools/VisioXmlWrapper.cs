@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Packaging;
-using System.Linq;
+﻿using System.IO.Packaging;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -89,7 +86,7 @@ public abstract class VisioXmlWrapper
     }
 
     /// <summary>
-    /// Get /visio/pages/pages.xml.
+    ///     Get /visio/pages/pages.xml.
     /// </summary>
     /// <param name="package"></param>
     /// <returns></returns>
@@ -97,7 +94,7 @@ public abstract class VisioXmlWrapper
     {
         return package.GetPart(PagesPartUri);
     }
-    
+
     /// <summary>
     ///     Get related part by relationship id.
     /// </summary>
@@ -122,7 +119,7 @@ public abstract class VisioXmlWrapper
             ? element.Attribute(RelNs + "id")?.Value
             : element.Descendants(MainNs + "Rel").FirstOrDefault()?.Attribute(RelNs + "id")?.Value;
     }
-    
+
 
     /// <summary>
     ///     Get style tables from package
@@ -141,6 +138,4 @@ public abstract class VisioXmlWrapper
                 Name = styleSheetElement.Attribute("Name")!.Value
             }).ToList();
     }
-
-
 }

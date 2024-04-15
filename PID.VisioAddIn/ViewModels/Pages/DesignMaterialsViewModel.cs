@@ -8,6 +8,7 @@ using AE.PID.Controllers.Services;
 using AE.PID.Core.DTOs;
 using AE.PID.Models.BOM;
 using AE.PID.Models.EventArgs;
+using AE.PID.ViewModels.Components;
 using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
@@ -16,16 +17,17 @@ namespace AE.PID.ViewModels.Pages;
 
 public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
 {
-    private ReadOnlyObservableCollection<DesignMaterialCategoryViewModel> _categories = new([]);
+    // Members that return a sequence should never return null
+    private ReadOnlyObservableCollection<TreeNodeViewModel<MaterialCategoryDto>> _categories = new([]);
+
     private ObservableAsPropertyHelper<string>? _categoryFilterSeed;
+
     private Element? _element;
-
     private ReadOnlyObservableCollection<DesignMaterial> _lastUsed = new([]);
-
     private int _pageNumber = 1;
-    private DesignMaterialCategoryViewModel? _selectedCategory;
+    private TreeNodeViewModel<MaterialCategoryDto>? _selectedCategory;
+    private ReadOnlyObservableCollection<DesignMaterial> _validMaterials = new([]);
 
-    private ReadOnlyObservableCollection<DesignMaterial>? _validMaterials;
 
     #region Command Handlers
 
@@ -87,7 +89,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
         service.Categories
             .Connect()
             .TransformToTree(x => x.ParentId, categoryPredicate)
-            .Transform(node => new DesignMaterialCategoryViewModel(node))
+            .Transform(node => new TreeNodeViewModel<MaterialCategoryDto>(node))
             .ObserveOn(RxApp.MainThreadScheduler)
             .Bind(out _categories)
             .DisposeMany()
@@ -220,7 +222,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
     /// <summary>
     ///     SelectedCategory determines materials from which category should be load.
     /// </summary>
-    public DesignMaterialCategoryViewModel? SelectedCategory
+    public TreeNodeViewModel<MaterialCategoryDto>? SelectedCategory
     {
         get => _selectedCategory;
         set => this.RaiseAndSetIfChanged(ref _selectedCategory, value);
@@ -248,9 +250,9 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
     #region Output Proeprties
 
     public string CategoryPredicateSeed => _categoryFilterSeed.Value;
-    public ReadOnlyObservableCollection<DesignMaterialCategoryViewModel> Categories => _categories;
+    public ReadOnlyObservableCollection<TreeNodeViewModel<MaterialCategoryDto>> Categories => _categories;
     public ReadOnlyObservableCollection<DesignMaterial> LastUsed => _lastUsed;
-    public ReadOnlyObservableCollection<DesignMaterial>? ValidMaterials => _validMaterials;
+    public ReadOnlyObservableCollection<DesignMaterial> ValidMaterials => _validMaterials;
     public UserFiltersViewModel UserFiltersViewModel { get; set; } = new();
 
     #endregion

@@ -9,11 +9,7 @@ public class UploadInstallerDto
     ///     The zip file for installer
     /// </summary>
     public IFormFile Installer { get; set; } = null!;
-
-    /// <summary>
-    ///     The version string of current uploaded app.
-    /// </summary>
-    public string Version { get; set; } = string.Empty;
+    
 
     /// <summary>
     ///     The description for the current version, might be something added, or updated.

@@ -1,4 +1,5 @@
 ﻿using System.Reactive.Disposables;
+using AE.PID.Controllers;
 using AE.PID.ViewModels.Pages;
 using ReactiveUI;
 
@@ -9,14 +10,16 @@ public partial class UserSettingsPage
     public UserSettingsPage()
     {
         InitializeComponent();
-        ViewModel = new UserSettingsViewModel();
+
+        var serviceManager = ServiceManager.GetInstance();
+        ViewModel = new UserSettingsViewModel(
+            serviceManager.Configuration,
+            serviceManager.AppUpdater,
+            serviceManager.LibraryUpdater
+        );
 
         this.WhenActivated(d =>
         {
-            this.OneWayBind(ViewModel,
-                    vm => vm.CheckFrequencyOptions,
-                    v => v.AppCheckFrequencySelector.ItemsSource)
-                .DisposeWith(d);
             this.Bind(ViewModel,
                     vm => vm.AppNextCheckFrequency,
                     v => v.AppCheckFrequencySelector.SelectedItem)
@@ -26,10 +29,6 @@ public partial class UserSettingsPage
                     v => v.AppCheckUpdateButton)
                 .DisposeWith(d);
 
-            this.OneWayBind(ViewModel,
-                    vm => vm.TmpPath,
-                    v => v.TmpPathInput.Text)
-                .DisposeWith(d);
             this.BindCommand(ViewModel,
                     vm => vm.OpenTmp,
                     v => v.OpenTmpButton)
@@ -39,10 +38,7 @@ public partial class UserSettingsPage
                     v => v.ClearCacheButton)
                 .DisposeWith(d);
 
-            this.OneWayBind(ViewModel,
-                    vm => vm.CheckFrequencyOptions,
-                    v => v.LibraryCheckFrequencySelector.ItemsSource)
-                .DisposeWith(d);
+
             this.Bind(ViewModel,
                     vm => vm.LibraryCheckFrequency,
                     v => v.LibraryCheckFrequencySelector.SelectedItem)

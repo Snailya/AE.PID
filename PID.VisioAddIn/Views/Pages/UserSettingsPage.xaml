@@ -8,6 +8,8 @@
                 xmlns:components="clr-namespace:AE.PID.Views.Components"
                 xmlns:pages="clr-namespace:AE.PID.Views.Pages"
                 xmlns:viewModels1="clr-namespace:AE.PID.ViewModels.Pages"
+                xmlns:pid="clr-namespace:AE.PID"
+                xmlns:viewModels="clr-namespace:AE.PID.ViewModels"
                 MinHeight="480" MinWidth="320"
                 mc:Ignorable="d"
                 d:DesignHeight="320" d:DesignWidth="480">
@@ -46,7 +48,8 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Label Content="更新频率" Margin="4 0 0 0" />
-                    <ComboBox Grid.Column="1" x:Name="AppCheckFrequencySelector" DisplayMemberPath="Label" />
+                    <ComboBox Grid.Column="1" x:Name="AppCheckFrequencySelector" DisplayMemberPath="Label"
+                              ItemsSource="{Binding  Source={x:Static viewModels:FrequencyOptionViewModel.Options}}" />
                     <Button Grid.Column="2" x:Name="AppCheckUpdateButton" Margin="8 0" Content="更新" />
                 </Grid>
                 <Grid Grid.Row="2" Margin="0 4 0 4">
@@ -58,7 +61,7 @@
                     </Grid.ColumnDefinitions>
                     <Label Content="缓存路径" Margin="4 0 0 0" />
                     <TextBox Grid.Column="1" x:Name="TmpPathInput" Margin="0 0 4 0" VerticalContentAlignment="Center"
-                             IsEnabled="False" />
+                             IsEnabled="False" Text="{Binding Source={x:Static pid:Constants.TmpFolder}, Mode=OneWay}" />
                     <Button Grid.Column="2" x:Name="OpenTmpButton" Margin="4 0" Content="打开" />
                     <Button Grid.Column="3" x:Name="ClearCacheButton" Margin="4 0 8 0" Content="清除缓存" />
                 </Grid>
@@ -77,7 +80,8 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Label Content="更新频率" Margin="4 0 0 0" />
-                    <ComboBox Grid.Column="1" x:Name="LibraryCheckFrequencySelector" DisplayMemberPath="Label" />
+                    <ComboBox Grid.Column="1" x:Name="LibraryCheckFrequencySelector" DisplayMemberPath="Label"
+                              ItemsSource="{Binding  Source={x:Static viewModels:FrequencyOptionViewModel.Options}}" />
                     <Button Grid.Column="2" x:Name="LibraryCheckUpdateButton" Margin="8 0" Content="更新" />
                 </Grid>
                 <DataGrid Grid.Row="2" x:Name="LibraryList" Margin="0 4" Padding="8 0" d:Height="120"
@@ -106,7 +110,7 @@
                         <DataGridTextColumn Header="本地版本" Binding="{Binding LocalVersion}" />
                         <DataGridTemplateColumn Header="服务器版本">
                             <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
+                                <DataTemplate DataType="{x:Type viewModels:LibraryInfoViewModel}">
                                     <TextBlock Text="{Binding RemoteVersion}">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">

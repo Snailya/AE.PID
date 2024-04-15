@@ -5,13 +5,14 @@ using System.Reactive.Linq;
 using AE.PID.Controllers.Services;
 using AE.PID.Models.BOM;
 using AE.PID.Models.EventArgs;
+using AE.PID.ViewModels.Components;
 using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
 
 namespace AE.PID.ViewModels.Pages;
 
-public class ExportViewModel(DocumentExporter service) : ViewModelBase
+public class BomViewModel(DocumentExporter service) : ViewModelBase
 {
     private ReadOnlyObservableCollection<TreeNodeViewModel<Element>> _bomTree = new([]);
     private DocumentInfoViewModel _documentInfo;
@@ -58,7 +59,7 @@ public class ExportViewModel(DocumentExporter service) : ViewModelBase
             .DisposeMany()
             .Subscribe()
             .DisposeWith(d);
-        
+
         // whenever there is a selected element, notify the View to show the side page
         var selectedItem = this.WhenAnyValue(x => x.Selected)
             .WhereNotNull()

@@ -48,7 +48,7 @@
             <ListView x:Name="MastersCheckBox" Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Masters}"
                       Margin="16,8,4,8" VerticalAlignment="Stretch">
                 <ListView.ItemTemplate>
-                    <DataTemplate DataType="{x:Type viewModel:MasterViewModel}">
+                    <DataTemplate DataType="{x:Type viewModel:MasterOptionViewModel}">
                         <StackPanel>
                             <CheckBox Content="{Binding Name}" IsChecked="{Binding IsChecked}" />
                         </StackPanel>
@@ -58,6 +58,7 @@
         </Grid>
         <Separator Grid.Row="2" />
         <components:OkCancelFeedback x:Name="Feedback"
+                                     OkText="选择" CloseOnOk="False"
                                      Grid.Row="3" />
     </Grid>
 </pages:PageBase>

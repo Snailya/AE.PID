@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reactive.Subjects;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using AE.PID.Controllers.Services;
 using AE.PID.Models.BOM;
 using AE.PID.Properties;
+using AE.PID.Tools;
+using AE.PID.Views.Pages;
 using Microsoft.Office.Core;
-using Microsoft.Office.Interop.Visio;
 using NLog;
 using Shape = Microsoft.Office.Interop.Visio.Shape;
 
@@ -37,6 +39,7 @@ namespace AE.PID;
 public class Ribbon : IRibbonExtensibility
 {
     private Dictionary<string, Bitmap> _buttonImages = new();
+    private Subject<Command> _commandInvoker = new();
     private Logger _logger = LogManager.GetCurrentClassLogger();
     private IRibbonUI _ribbon;
 
@@ -52,6 +55,39 @@ public class Ribbon : IRibbonExtensibility
     public void Ribbon_Load(IRibbonUI ribbonUi)
     {
         _ribbon = ribbonUi;
+
+        _commandInvoker.Subscribe(command =>
+            {
+                _logger.Info($"{command} [Init by User]");
+
+                switch (command)
+                {
+                    case Command.LoadLibrary:
+                        VisioHelper.OpenLibraries();
+                        break;
+                    case Command.FormatDocument:
+                        VisioHelper.FormatDocument(Globals.ThisAddIn.Application.ActiveDocument);
+                        break;
+                    case Command.UpdateDocument:
+                        VisioHelper.UpdateDocumentStencil(Globals.ThisAddIn.Application.ActiveDocument);
+                        break;
+                    case Command.InsertLegend:
+                        new LegendGenerator(Globals.ThisAddIn.Application.ActivePage).Insert();
+                        break;
+                    case Command.OpenSelectTool:
+                        Globals.ThisAddIn.WindowManager.Show(new ShapeSelectionPage());
+                        break;
+                    case Command.OpenExportTool:
+                        Globals.ThisAddIn.WindowManager.Show(new BomPage());
+                        break;
+                    case Command.OpenSettings:
+                        Globals.ThisAddIn.WindowManager.Show(new UserSettingsPage());
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(command), command, null);
+                }
+            },
+            error => { }, () => { });
     }
 
 
@@ -73,73 +109,6 @@ public class Ribbon : IRibbonExtensibility
 
     #endregion
 
-    #region Ribbon
-
-    public Bitmap GetButtonImage(IRibbonControl control)
-    {
-        var buttonId = control.Id;
-        if (_buttonImages.TryGetValue(buttonId, out var image)) return image;
-
-        _buttonImages[buttonId] = ((Icon)Resources.ResourceManager.GetObject(buttonId))?.ToBitmap();
-        return _buttonImages[buttonId];
-    }
-
-    public void LoadLibraries(IRibbonControl control)
-    {
-        try
-        {
-            foreach (var path in Globals.ThisAddIn.Configuration.LibraryConfiguration.Libraries.Select(x => x.Path))
-                Globals.ThisAddIn.Application.Documents.OpenEx(path,
-                    (short)VisOpenSaveArgs.visOpenDocked);
-
-            _logger.Info($"Opened {Globals.ThisAddIn.Configuration.LibraryConfiguration.Libraries.Count} libraries.");
-        }
-        catch (Exception ex)
-        {
-            _logger.Error(ex);
-        }
-    }
-
-    public void FormatPage(IRibbonControl control)
-    {
-        DocumentInitializer.Invoke(Globals.ThisAddIn.Application.ActiveDocument);
-    }
-
-    public void OpenSelectTool(IRibbonControl control)
-    {
-        ShapeSelector.Invoke(Globals.ThisAddIn.Application.ActiveDocument);
-    }
-
-    public void UpdateDocument(IRibbonControl control)
-    {
-        DocumentUpdater.Invoke(Globals.ThisAddIn.Application.ActiveDocument);
-    }
-
-    public void OpenExportTool(IRibbonControl control)
-    {
-        DocumentExporter.Invoke();
-    }
-
-    public void EditSettings(IRibbonControl control)
-    {
-        ConfigurationUpdater.Invoke();
-    }
-
-    public void InsertLegend(IRibbonControl control)
-    {
-        LegendService.Invoke(Globals.ThisAddIn.Application.ActivePage);
-    }
-
-    public void Help(IRibbonControl control)
-    {
-    }
-
-    public void Debug(IRibbonControl control)
-    {
-    }
-
-    #endregion
-
     #region Context Menus
 
     public void DeleteDesignMaterial(IRibbonControl control)
@@ -156,46 +125,73 @@ public class Ribbon : IRibbonExtensibility
                 functionalElement.DesignMaterial = null;
             }
     }
-    
-    // public void InsertLinked(IRibbonControl control)
-    // {
-    //     LinkedControlManager.InsertFunctionalElement(Globals.ThisAddIn.Application.ActiveWindow.Selection[1]);
-    // }
-    //
-    // public bool CanInsert(IRibbonControl control)
-    // {
-    //     return LinkedControlManager.CanInsert(Globals.ThisAddIn.Application.ActiveWindow.Selection);
-    // }
-    //
-    // public void HighlightPrimary(IRibbonControl control)
-    // {
-    //     LinkedControlManager.HighlightPrimary(Globals.ThisAddIn.Application.ActiveWindow.Selection[1]);
-    // }
-    //
-    // public bool CanHighlightPrimary(IRibbonControl control)
-    // {
-    //     return LinkedControlManager.CanHighlightPrimary(Globals.ThisAddIn.Application.ActiveWindow.Selection);
-    // }
-    //
-    // public void HighlightLinked(IRibbonControl control)
-    // {
-    //     LinkedControlManager.HighlightLinked(Globals.ThisAddIn.Application.ActiveWindow.Selection[1]);
-    // }
-    //
-    // public bool CanHighlightLinked(IRibbonControl control)
-    // {
-    //     return LinkedControlManager.CanHighlightLinked(Globals.ThisAddIn.Application.ActiveWindow.Selection);
-    // }
-    //
-    // public void PasteWithLinked(IRibbonControl control)
-    // {
-    //     LinkedControlManager.PasteToLocation();
-    // }
-    //
-    // public bool CanPaste(IRibbonControl control)
-    // {
-    //     return LinkedControlManager.CanPaste();
-    // }
+
+    #endregion
+
+    private enum Command
+    {
+        LoadLibrary,
+        FormatDocument,
+        UpdateDocument,
+        InsertLegend,
+        OpenSelectTool,
+        OpenExportTool,
+        OpenSettings
+    }
+
+    #region Ribbon
+
+    public Bitmap GetButtonImage(IRibbonControl control)
+    {
+        var buttonId = control.Id;
+        if (_buttonImages.TryGetValue(buttonId, out var image)) return image;
+
+        _buttonImages[buttonId] = ((Icon)Resources.ResourceManager.GetObject(buttonId))?.ToBitmap();
+        return _buttonImages[buttonId];
+    }
+
+    public void LoadLibraries(IRibbonControl control)
+    {
+        _commandInvoker.OnNext(Command.LoadLibrary);
+    }
+
+    public void FormatPage(IRibbonControl control)
+    {
+        _commandInvoker.OnNext(Command.FormatDocument);
+    }
+
+    public void OpenSelectTool(IRibbonControl control)
+    {
+        _commandInvoker.OnNext(Command.OpenSelectTool);
+    }
+
+    public void UpdateDocument(IRibbonControl control)
+    {
+        _commandInvoker.OnNext(Command.UpdateDocument);
+    }
+
+    public void OpenExportTool(IRibbonControl control)
+    {
+        _commandInvoker.OnNext(Command.OpenExportTool);
+    }
+
+    public void EditSettings(IRibbonControl control)
+    {
+        _commandInvoker.OnNext(Command.OpenSettings);
+    }
+
+    public void InsertLegend(IRibbonControl control)
+    {
+        _commandInvoker.OnNext(Command.InsertLegend);
+    }
+
+    public void Help(IRibbonControl control)
+    {
+    }
+
+    public void Debug(IRibbonControl control)
+    {
+    }
 
     #endregion
 }

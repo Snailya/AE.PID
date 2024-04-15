@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace AE.PID.Models.BOM;
+﻿namespace AE.PID.Models.BOM;
 
 /// <summary>
 ///     POCO to BOM_template.xlsx
@@ -28,9 +26,9 @@ public class PartListTableLineItem
             Count = x.Count,
             Total = x.Count,
             InGroup = x.Count,
-            Units = x.DesignMaterial?.Unit??string.Empty,
-            Manufacturer = x.DesignMaterial?.Manufacturer??string.Empty,
-            ManufacturerArticleNo = x.DesignMaterial?.ManufacturerMaterialNumber??string.Empty,
+            Units = x.DesignMaterial?.Unit ?? string.Empty,
+            Manufacturer = x.DesignMaterial?.Manufacturer ?? string.Empty,
+            ManufacturerArticleNo = x.DesignMaterial?.ManufacturerMaterialNumber ?? string.Empty,
             SerialNo = null,
             Classification = null,
             Attachment = null
@@ -89,7 +87,7 @@ public class PartListTableLineItem
     /// <summary>
     ///     The function element mapping.
     /// </summary>
-    public string? FunctionalElement { get; set; } = string.Empty;
+    public string FunctionalElement { get; set; } = string.Empty;
 
     /// <summary>
     ///     The material no mapping.
