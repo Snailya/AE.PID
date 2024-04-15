@@ -168,11 +168,11 @@ public static class UpdateHelper
     ///     Load masters from cheat sheet, this cheat sheet is updated along with library updates.
     /// </summary>
     /// <returns></returns>
-    public static IEnumerable<DetailedLibraryItemDto> LoadReferenceFromDefault()
+    public static IEnumerable<DetailedLibraryItemDto> LoadReferenceFromPath(FileInfo file)
     {
         try
         {
-            var fileContents = File.ReadAllText(DefaultReferencePath);
+            var fileContents = File.ReadAllText(file.FullName);
             var masters = JsonSerializer.Deserialize<IEnumerable<DetailedLibraryItemDto>>(fileContents);
             return masters ?? throw new Exception("No contents found in cheat sheet.");
         }

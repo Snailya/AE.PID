@@ -44,14 +44,13 @@ internal class Program
                     return null;
                 }
 
-                if (Path.GetExtension(filePath) != ".vssx")
-                {
-                    result.ErrorMessage =
-                        "Only a valid Visio stencil document with extension vssx could be used as a reference by this tool.";
-                    return null;
-                }
+                var extension = Path.GetExtension(filePath);
 
-                return new FileInfo(filePath);
+                if (extension is ".vssx" or ".cheatsheet") return new FileInfo(filePath);
+
+                result.ErrorMessage =
+                    "Only a valid Visio stencil document with extension vssx or a cheatsheet file could be used as a reference by this tool.";
+                return null;
             });
 
 
@@ -62,7 +61,7 @@ internal class Program
         rootCommand.SetHandler(file => { Update(file!); }, fileOption);
         rootCommand.SetHandler((file, reference) => { Update(file!, reference!); },
             fileOption, referenceOption);
-        
+
         return await rootCommand.InvokeAsync(args);
     }
 
@@ -81,11 +80,11 @@ internal class Program
         UpdateHelper.ReplaceDuplicateMasters(package);
 
         // replace the master and contents
-        var refMasters = reference != null ? UpdateHelper.LoadReferenceFromDocument(reference) :
-            File.Exists(UpdateHelper.DefaultReferencePath) ? UpdateHelper.LoadReferenceFromDefault() :
-            UpdateHelper.LoadReferenceFromServer().GetAwaiter().GetResult();
+        var refMasters = reference == null ? UpdateHelper.LoadReferenceFromServer().GetAwaiter().GetResult() :
+            reference.Extension == "vssx" ? UpdateHelper.LoadReferenceFromDocument(reference) :
+            UpdateHelper.LoadReferenceFromPath(reference);
         UpdateHelper.ReplaceMasterElementAndMasterContent(package, refMasters);
-        
+
         Console.WriteLine("Update done without error.");
     }
 }
