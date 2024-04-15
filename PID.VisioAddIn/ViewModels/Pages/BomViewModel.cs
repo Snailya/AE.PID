@@ -55,6 +55,8 @@ public class BomViewModel(DocumentExporter service) : ViewModelBase
             .AutoRefresh(t => t.ParentId)
             .TransformToTree(x => x.ParentId)
             .Transform(x => new TreeNodeViewModel<Element>(x))
+            .Sort(SortExpressionComparer<TreeNodeViewModel<Element>>.Ascending(t=>t.Source!.Label))
+            .ObserveOnDispatcher()
             .Bind(out _bomTree)
             .DisposeMany()
             .Subscribe()

@@ -199,6 +199,8 @@
         <Compile Include="Controllers\Services\LibraryUpdater.cs"/>
         <Compile Include="Controllers\Services\ShapeSelector.cs"/>
         <Compile Include="Converters\ConcurrentBagConverter.cs"/>
+        <Compile Include="Converters\ElementTypeToBackgroundColorConverter.cs" />
+        <Compile Include="Converters\ElementTypeToStringConverter.cs" />
         <Compile Include="Converters\LevelToIndentConverter.cs"/>
         <Compile Include="Interfaces\IActionData.cs"/>
         <Compile Include="Interfaces\ILabel.cs"/>

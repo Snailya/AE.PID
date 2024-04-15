@@ -46,9 +46,8 @@
                                 KeyboardNavigation.DirectionalNavigation="Local"
                                 SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                         </DockPanel>
-                        <ScrollBar Grid.Column="1"
-                                   x:Name="PART_HorizontalScrollBar"
-                                   Grid.Row="1"
+                        <ScrollBar x:Name="PART_HorizontalScrollBar"
+                                   Grid.Row="1" Grid.Column="0"
                                    Cursor="Arrow"
                                    Maximum="{TemplateBinding ScrollableWidth}"
                                    Minimum="0.0"
@@ -56,9 +55,8 @@
                                    ViewportSize="{TemplateBinding ViewportWidth}"
                                    Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
                                    Value="{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" />
-                        <ScrollBar Grid.Row="1"
-                                   x:Name="PART_VerticalScrollBar"
-                                   Grid.Column="1"
+                        <ScrollBar x:Name="PART_VerticalScrollBar"
+                                   Grid.Row="0" Grid.Column="1"
                                    Cursor="Arrow"
                                    Maximum="{TemplateBinding ScrollableHeight}"
                                    Minimum="0.0"
@@ -120,7 +118,7 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}">
                             <GridViewRowPresenter
-                                x:Name="PART_Header"
+                                x:Name="PART_Header" 
                                 Columns="{Binding RelativeSource={RelativeSource AncestorType=controls:TreeListView}, Path=View.Columns}"
                                 Content="{TemplateBinding Header}" />
                         </Border>

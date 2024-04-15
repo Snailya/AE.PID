@@ -12,6 +12,8 @@ public partial class MainWindow
     public MainWindow()
     {
         InitializeComponent();
+        MaxHeight = SystemParameters.WorkArea.Height;
+        MaxWidth = SystemParameters.WorkArea.Width;
 
         // bind view partModel
         DataContext = new BaseWindowViewModel(this);
