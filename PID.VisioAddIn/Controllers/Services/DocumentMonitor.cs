@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
@@ -37,6 +36,7 @@ public class DocumentMonitor
                 handler => Globals.ThisAddIn.Application.VisioIsIdle -= handler
             )
             .Select(app => app.ActiveDocument)
+            .Where(document => document.Type == VisDocumentTypes.visTypeDrawing)
             // switch to background thread
             .ObserveOn(ThreadPoolScheduler.Instance)
             .DistinctUntilChanged()
@@ -80,14 +80,7 @@ public class DocumentMonitor
     /// <returns></returns>
     private bool IsMasterOutOfDate(IVDocument document)
     {
-        if (document.Masters == null) return false;
-
-        foreach (var source in document.Masters.OfType<IVMaster>().ToList())
-            if (_configuration.LibraryItems.Items
-                .Any(x => x.BaseId == source.BaseID && x.UniqueId != source.UniqueID))
-                return true;
-            
-
-        return false;
+        return document.Masters != null && document.Masters.OfType<IVMaster>().ToList().Any(source =>
+            _configuration.LibraryItems.Items.Any(x => x.BaseId == source.BaseID && x.UniqueId != source.UniqueID));
     }
 }
