@@ -9,7 +9,7 @@ public class UploadInstallerDto
     ///     The zip file for installer
     /// </summary>
     public IFormFile Installer { get; set; } = null!;
-    
+
 
     /// <summary>
     ///     The description for the current version, might be something added, or updated.

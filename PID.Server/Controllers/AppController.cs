@@ -52,7 +52,7 @@ public class AppController(ILogger<AppController> logger, AppDbContext dbContext
 
         return NotFound(); // Or handle the case when the file is not found
     }
-    
+
     [HttpPost("upload")]
     public IActionResult UploadInstaller([FromForm] UploadInstallerDto dto)
     {
@@ -79,5 +79,4 @@ public class AppController(ILogger<AppController> logger, AppDbContext dbContext
                 ControllerContext.ActionDescriptor.ControllerName, new { id = appVersion.Entity.Id })
         });
     }
-    
 }
