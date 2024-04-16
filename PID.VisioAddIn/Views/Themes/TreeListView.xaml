@@ -118,7 +118,7 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}">
                             <GridViewRowPresenter
-                                x:Name="PART_Header" 
+                                x:Name="PART_Header"
                                 Columns="{Binding RelativeSource={RelativeSource AncestorType=controls:TreeListView}, Path=View.Columns}"
                                 Content="{TemplateBinding Header}" />
                         </Border>

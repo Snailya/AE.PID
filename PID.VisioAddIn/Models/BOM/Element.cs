@@ -3,8 +3,6 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using AE.PID.Core.Interfaces;
-using AE.PID.Models.VisProps;
-using AE.PID.Tools;
 using Microsoft.Office.Interop.Visio;
 using ReactiveUI;
 
@@ -75,38 +73,6 @@ public abstract class Element : ReactiveObject, IDisposable, ITreeNode
         return null;
     }
 
-    /// <summary>
-    ///     Write material to
-    /// </summary>
-    /// <param name="material"></param>
-    protected void AssignMaterial(DesignMaterial? material)
-    {
-        DeleteMaterial();
-
-        // write material id
-        if (material == null) return;
-
-        var shapeData = new ShapeData("D_BOM", "\"设计物料\"", "", $"\"{material.Code}\"");
-        Source.AddOrUpdate(shapeData);
-
-        // write related properties
-        foreach (var propertyData in from property in material.Properties
-                 let rowName = $"D_Attribute{material.Properties.IndexOf(property) + 1}"
-                 select new ShapeData(rowName, $"\"{property.Name}\"", "",
-                     $"\"{property.Value.Replace("\"", "\"\"")}\""))
-            Source.AddOrUpdate(propertyData);
-    }
-
-    protected void DeleteMaterial()
-    {
-        // clear all shape data starts with D_BOM
-        for (var i = Source.RowCount[(short)VisSectionIndices.visSectionProp] - 1; i >= 0; i--)
-        {
-            var cell = Source.CellsSRC[(short)VisSectionIndices.visSectionProp, (short)i,
-                (short)VisCellIndices.visCustPropsValue];
-            if (cell.RowName.StartsWith("D_")) Source.DeleteRow((short)VisSectionIndices.visSectionProp, (short)i);
-        }
-    }
 
     #region Virtual Methods
 
@@ -116,12 +82,11 @@ public abstract class Element : ReactiveObject, IDisposable, ITreeNode
 
     protected virtual void OnCellChanged(Cell cell)
     {
-        switch (cell.Name)
+        Description = cell.Name switch
         {
-            case "Prop.Description":
-                Description = cell.ResultStr[VisUnitCodes.visUnitsString];
-                break;
-        }
+            "Prop.Description" => cell.ResultStr[VisUnitCodes.visUnitsString],
+            _ => Description
+        };
     }
 
     protected virtual void Initialize()

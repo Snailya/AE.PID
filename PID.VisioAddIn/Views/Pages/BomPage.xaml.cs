@@ -1,10 +1,15 @@
 ﻿using System;
+using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Windows.Input;
+using System.Windows.Media;
 using AE.PID.Controllers.Services;
 using AE.PID.Models.BOM;
+using AE.PID.Tools;
 using AE.PID.ViewModels;
 using AE.PID.ViewModels.Pages;
+using AE.PID.Views.Controls;
 using ReactiveUI;
 
 namespace AE.PID.Views.Pages;
@@ -35,6 +40,24 @@ public partial class BomPage
                     v => v.Feedback.ViewModel)
                 .DisposeWith(d);
 
+            this.BindCommand(ViewModel,
+                    vm => vm.CopyMaterial,
+                    v => v.CopyMaterial)
+                .DisposeWith(d);
+            this.BindCommand(ViewModel,
+                    vm => vm.PasteMaterial,
+                    v => v.PasteMaterial)
+                .DisposeWith(d);
+            
+
+
+            // set selected item for right mouse click event, otherwise the context menu not work as expected
+            Observable.FromEventPattern<MouseButtonEventHandler, MouseButtonEventArgs>(
+                    handler => Elements.PreviewMouseRightButtonDown += handler,
+                    handler => Elements.PreviewMouseRightButtonDown -= handler)
+                .Subscribe(SetSelected)
+                .DisposeWith(d);
+
             // after selecting d_bom for selected element, a new instance of element will be create as the d_bom property updated.
             // so the previous selection will be lost because it point to a address not exist
             // therefore, instead directly two way bind the SelectedItem to the ViewModel.Selected property, only update the viewmodel as the SelectedItem is not null
@@ -49,5 +72,15 @@ public partial class BomPage
                 .Subscribe(selected => { Globals.ThisAddIn.WindowManager.SideShow(_sidePage); })
                 .DisposeWith(d);
         });
+    }
+
+    private static void SetSelected(EventPattern<MouseButtonEventArgs> e)
+    {
+        if (e.Sender is not TreeListView container) return;
+
+        var hitTestResult = VisualTreeHelper.HitTest(container, e.EventArgs.GetPosition(container));
+        var item = hitTestResult.VisualHit.FindParent<TreeListViewItem>();
+        if (item != null)
+            item.IsSelected = true;
     }
 }

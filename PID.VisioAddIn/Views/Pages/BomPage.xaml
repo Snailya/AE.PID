@@ -77,6 +77,12 @@
                         <GridViewColumn DisplayMemberBinding="{Binding Source.Count}" Header="数量" Width="32" />
                     </GridView>
                 </controls:TreeListView.View>
+                <controls:TreeListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="复制物料" x:Name="CopyMaterial" />
+                        <MenuItem Header="粘贴物料" x:Name="PasteMaterial" />
+                    </ContextMenu>
+                </controls:TreeListView.ContextMenu>
             </controls:TreeListView>
         </Grid>
         <Separator Grid.Row="3" />
