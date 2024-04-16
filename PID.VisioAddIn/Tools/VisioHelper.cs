@@ -7,6 +7,7 @@ using System.Security.Cryptography.X509Certificates;
 using AE.PID.Controllers;
 using Microsoft.Office.Interop.Visio;
 using NLog;
+using Path = System.IO.Path;
 
 namespace AE.PID.Tools;
 
@@ -124,7 +125,7 @@ public static class VisioHelper
             var processStartInfo = new ProcessStartInfo
             {
                 Verb = null,
-                Arguments = $"--file {file} --reference {System.IO.Path.Combine(Constants.LibraryFolder, ".cheatsheet")}",
+                Arguments = $"--file {file} --reference {Path.Combine(Constants.LibraryFolder, ".cheatsheet")}",
                 CreateNoWindow = true,
                 RedirectStandardInput = false,
                 RedirectStandardOutput = true,
@@ -133,7 +134,7 @@ public static class VisioHelper
                 Domain = null,
                 LoadUserProfile = false,
                 FileName = "./DocumentStencilUpdateTool/PID.DocumentStencilUpdateTool.exe",
-                ErrorDialog = false,
+                ErrorDialog = false
             };
 
             var process = new Process
@@ -143,22 +144,19 @@ public static class VisioHelper
             };
 
             process.OutputDataReceived += (sender, args) => { Logger.Info(args.Data); };
-            process.ErrorDataReceived += (sender, e) => {
-                if (e.Data!= null)
+            process.ErrorDataReceived += (sender, e) =>
+            {
+                if (e.Data != null)
                     Logger.Error(e.Data);
             };
             process.Exited += (sender, args) =>
             {
                 if (sender is Process { ExitCode: 0 })
-                {
                     ThisAddIn.Alert("更新成功");
-                } else
-                {
+                else
                     ThisAddIn.Alert("更新失败");
-                }
 
                 Globals.ThisAddIn.Application.Documents.OpenEx(file, (short)OpenFlags.ReadWrite);
-
             };
 
             process.Start();

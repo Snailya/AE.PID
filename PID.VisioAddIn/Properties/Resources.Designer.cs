@@ -110,6 +110,16 @@ namespace AE.PID.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        public static System.Drawing.Icon open_select_tool {
+            get {
+                object obj = ResourceManager.GetObject("open_select_tool", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to AE.PID.
         /// </summary>
         public static string Product_name {

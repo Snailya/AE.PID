@@ -48,7 +48,6 @@ public partial class BomPage
                     vm => vm.PasteMaterial,
                     v => v.PasteMaterial)
                 .DisposeWith(d);
-            
 
 
             // set selected item for right mouse click event, otherwise the context menu not work as expected

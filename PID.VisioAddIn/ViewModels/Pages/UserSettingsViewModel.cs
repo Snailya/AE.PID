@@ -71,10 +71,7 @@ public class UserSettingsViewModel(
         CheckForAppUpdate = ReactiveCommand.CreateFromTask(async () =>
         {
             var hasUpdate = await appUpdater.CheckUpdateAsync();
-            if (!hasUpdate)
-            {
-                MessageBox.Show("已经是最新版");
-            }
+            if (!hasUpdate) MessageBox.Show("已经是最新版");
         });
         CheckForLibrariesUpdate =
             ReactiveCommand.CreateRunInBackground(() => libraryUpdater.ManuallyInvokeTrigger.OnNext(Unit.Default));

@@ -8,26 +8,24 @@
 
     <Style x:Key="{x:Static GridView.GridViewScrollViewerStyleKey}" TargetType="{x:Type ScrollViewer}">
         <Setter Property="Focusable" Value="false" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility"
+                Value="Auto" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility"
+                Value="Auto" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ScrollViewer}">
                     <Grid Background="{TemplateBinding Background}" SnapsToDevicePixels="true">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <DockPanel Margin="{TemplateBinding Padding}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
                             <ScrollViewer
-                                DockPanel.Dock="Top"
                                 Focusable="false"
                                 HorizontalScrollBarVisibility="Hidden"
                                 VerticalScrollBarVisibility="Hidden">
                                 <GridViewHeaderRowPresenter
-                                    Margin="2,0,2,0"
                                     AllowsColumnReorder="{Binding TemplatedParent.View.AllowsColumnReorder, RelativeSource={RelativeSource TemplatedParent}}"
                                     ColumnHeaderContainerStyle="{Binding TemplatedParent.View.ColumnHeaderContainerStyle, RelativeSource={RelativeSource TemplatedParent}}"
                                     ColumnHeaderContextMenu="{Binding TemplatedParent.View.ColumnHeaderContextMenu, RelativeSource={RelativeSource TemplatedParent}}"
@@ -38,48 +36,21 @@
                                     Columns="{Binding TemplatedParent.View.Columns, RelativeSource={RelativeSource TemplatedParent}}"
                                     SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                             </ScrollViewer>
-                            <ScrollContentPresenter
-                                x:Name="PART_ScrollContentPresenter"
-                                CanContentScroll="{TemplateBinding CanContentScroll}"
-                                Content="{TemplateBinding Content}"
-                                ContentTemplate="{TemplateBinding ContentTemplate}"
-                                KeyboardNavigation.DirectionalNavigation="Local"
-                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-                        </DockPanel>
-                        <ScrollBar x:Name="PART_HorizontalScrollBar"
-                                   Grid.Row="1" Grid.Column="0"
-                                   Cursor="Arrow"
-                                   Maximum="{TemplateBinding ScrollableWidth}"
-                                   Minimum="0.0"
-                                   Orientation="Horizontal"
-                                   ViewportSize="{TemplateBinding ViewportWidth}"
-                                   Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
-                                   Value="{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" />
-                        <ScrollBar x:Name="PART_VerticalScrollBar"
-                                   Grid.Row="0" Grid.Column="1"
-                                   Cursor="Arrow"
-                                   Maximum="{TemplateBinding ScrollableHeight}"
-                                   Minimum="0.0"
-                                   Orientation="Vertical"
-                                   ViewportSize="{TemplateBinding ViewportHeight}"
-                                   Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"
-                                   Value="{Binding VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" />
-                        <DockPanel
-                            Grid.Row="1"
-                            Grid.Column="1"
-                            Background="{Binding Background, ElementName=PART_VerticalScrollBar}"
-                            LastChildFill="false">
-                            <Rectangle
-                                Width="1"
-                                DockPanel.Dock="Left"
-                                Fill="White"
-                                Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}" />
-                            <Rectangle
-                                Height="1"
-                                DockPanel.Dock="Top"
-                                Fill="White"
-                                Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}" />
-                        </DockPanel>
+                            <ScrollViewer
+                                Grid.Row="1"
+                                HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                Focusable="false"
+                                CanContentScroll="false">
+                                <ScrollContentPresenter
+                                    x:Name="PART_ScrollContentPresenter"
+                                    CanContentScroll="{TemplateBinding CanContentScroll}"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    KeyboardNavigation.DirectionalNavigation="Local"
+                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                            </ScrollViewer>
+                        </Grid>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

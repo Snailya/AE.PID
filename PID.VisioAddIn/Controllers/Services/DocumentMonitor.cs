@@ -35,15 +35,13 @@ public class DocumentMonitor
                 handler => Globals.ThisAddIn.Application.VisioIsIdle += handler,
                 handler => Globals.ThisAddIn.Application.VisioIsIdle -= handler
             )
-            .Select(app => app.ActiveDocument)
-            .Where(document => document.Type == VisDocumentTypes.visTypeDrawing)
             // switch to background thread
             .ObserveOn(ThreadPoolScheduler.Instance)
+            .Select(app => app.ActiveDocument)
             .DistinctUntilChanged()
             .WhereNotNull()
-            .Where(document => document.Stat == 0)
+            .Where(document => document.Type == VisDocumentTypes.visTypeDrawing && document.Stat == 0)
             .Where(x => _checked.All(i => i.ID != x.ID) && IsMasterOutOfDate(x))
-            .WhereNotNull()
             // switch back to main thread to prompt user
             .ObserveOn(Globals.ThisAddIn.SynchronizationContext)
             .Subscribe(document =>

@@ -17,7 +17,10 @@ public partial class MainWindow
 
         // bind view partModel
         DataContext = new BaseWindowViewModel(this);
+
+        Loaded += (sender, e) => { SizeToContent = SizeToContent.Manual; };
     }
+
 
     protected override void OnClosing(CancelEventArgs e)
     {
@@ -25,6 +28,8 @@ public partial class MainWindow
 
         Hide();
         e.Cancel = true;
+
+        SizeToContent = SizeToContent.WidthAndHeight;
     }
 
     private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
