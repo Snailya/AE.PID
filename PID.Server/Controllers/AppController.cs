@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text.RegularExpressions;
 using AE.PID.Server.Data;
 using AE.PID.Server.DTOs;
 using Microsoft.AspNetCore.Mvc;
@@ -61,9 +62,10 @@ public class AppController(ILogger<AppController> logger, AppDbContext dbContext
         {
             dto.Installer.CopyTo(stream);
         }
-
+        
         // You can process the version and release note as needed
-        var version = FileVersionInfo.GetVersionInfo(filePath).ProductVersion!;
+        var version = new Regex("[\\d.]+").Match(Path.GetFileNameWithoutExtension(dto.Installer.FileName)).Value;
+        logger.LogInformation("Uploaded installer version {Version}", version);
 
         var appVersion = dbContext.Add(new AppVersionEntity
         {
