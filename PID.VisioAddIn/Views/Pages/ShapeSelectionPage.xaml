@@ -10,6 +10,7 @@
                 xmlns:viewModel1="clr-namespace:AE.PID.ViewModels.Pages"
                 MinHeight="320" MinWidth="320"
                 mc:Ignorable="d"
+                d:DataContext="{d:DesignInstance viewModel1:ShapeSelectionViewModel}"
                 d:DesignHeight="320" d:DesignWidth="320">
     <UserControl.Resources>
         <ResourceDictionary>

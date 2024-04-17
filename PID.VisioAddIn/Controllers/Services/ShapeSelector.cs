@@ -98,7 +98,10 @@ public class ShapeSelector : IDisposable
     public void SelectShapeById(int id)
     {
         var shape = _page.Shapes.OfType<Shape>().SingleOrDefault(x => x.ID == id);
-        if (shape != null)
-            _page.Application.ActiveWindow.Select(shape, (short)VisSelectArgs.visSelect);
+        if (shape == null) return;
+        
+        // select and center screen
+        _page.Application.ActiveWindow.Select(shape, (short)VisSelectArgs.visSelect);
+        _page.Application.ActiveWindow.CenterViewOnShape(shape, VisCenterViewFlags.visCenterViewSelectShape);
     }
 }
