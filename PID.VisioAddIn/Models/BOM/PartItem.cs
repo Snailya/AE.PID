@@ -7,23 +7,16 @@ using ReactiveUI;
 
 namespace AE.PID.Models.BOM;
 
-public abstract class PartItem : Element, IPartItem
+public abstract class PartItem(Shape shape) : Element(shape), IPartItem
 {
     private double _count;
     private DesignMaterial? _designMaterial;
     private string _functionalGroup = string.Empty;
     private string _materialNo = string.Empty;
-
-    #region Constructors
-
-    protected PartItem(Shape shape) : base(shape)
-    {
-    }
-
-    #endregion
-
+    private string _keyParameters = string.Empty;
+    
     /// <summary>
-    ///     Write material to
+    ///     Write material to the shape sheet.
     /// </summary>
     /// <param name="material"></param>
     private void AssignMaterial(DesignMaterial? material)
@@ -45,6 +38,9 @@ public abstract class PartItem : Element, IPartItem
     }
 
 
+    /// <summary>
+    /// Remove all property that start with D_ from shape sheet.
+    /// </summary>
     private void DeleteMaterial()
     {
         // clear all shape data starts with D_BOM
@@ -119,6 +115,7 @@ public abstract class PartItem : Element, IPartItem
 
         FunctionalGroup = Source.TryGetFormatValue("Prop.FunctionalGroup") ?? string.Empty;
         MaterialNo = Source.TryGetFormatValue("Prop.D_BOM") ?? string.Empty;
+        KeyParameters = Source.Cells["User.KeyParameters"].ResultStr[VisUnitCodes.visUnitsString];
         if (double.TryParse(Source.Cells["Prop.Subtotal"].ResultStr[VisUnitCodes.visUnitsString],
                 out var value))
             Count = value;
@@ -149,12 +146,21 @@ public abstract class PartItem : Element, IPartItem
             case "Prop.D_BOM":
                 MaterialNo = Source.TryGetFormatValue("Prop.D_BOM") ?? string.Empty;
                 break;
+            case "User.KeyParameters":
+                KeyParameters = Source.Cells["User.KeyParameters"].ResultStr[VisUnitCodes.visUnitsString];
+                break;
         }
     }
 
     #endregion
 
     #region Properties
+
+    public string KeyParameters
+    {
+        get => _keyParameters;
+        set => this.RaiseAndSetIfChanged(ref _keyParameters, value);
+    }
 
     public DesignMaterial? DesignMaterial
     {
@@ -175,13 +181,13 @@ public abstract class PartItem : Element, IPartItem
     public string MaterialNo
     {
         get => _materialNo;
-        set => this.RaiseAndSetIfChanged(ref _materialNo, value);
+        protected set => this.RaiseAndSetIfChanged(ref _materialNo, value);
     }
 
     public double Count
     {
         get => _count;
-        set => this.RaiseAndSetIfChanged(ref _count, value);
+        protected set => this.RaiseAndSetIfChanged(ref _count, value);
     }
 
     #endregion

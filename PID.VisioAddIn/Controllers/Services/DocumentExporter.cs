@@ -171,7 +171,10 @@ public class DocumentExporter : IDisposable
     /// <returns></returns>
     private IEnumerable<PartListTableLineItem> PopulateRealPartItems()
     {
-        return Elements.Where(x => x.ParentId == 0).SelectMany(GetChildren).Where(x => x is PartItem).Cast<PartItem>()
+        return Elements.Where(x => x.ParentId == 0)
+            .OrderBy(x => x.Label)
+            .SelectMany(GetChildren)
+            .Where(x => x is PartItem).Cast<PartItem>()
             .Select(PartListTableLineItem.FromPartItem);
     }
 
@@ -212,7 +215,7 @@ public class DocumentExporter : IDisposable
         foreach (var child in Elements.Where(x => x.ParentId == parent.Id))
         {
             var children = GetChildren(child);
-            list.AddRange(children);
+            list.AddRange(children.OrderBy(x => x.Label));
         }
 
         return list;

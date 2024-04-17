@@ -40,6 +40,8 @@ public sealed class FunctionalGroup : Element
 
     private List<string> GetRelated()
     {
+        // todo: related need as an reactive object so that if the related proxy property changed, the label could update
+        
         var relatedSources = Source.ContainingPage.Shapes.OfType<Shape>()
             .Where(x => x.HasCategory("Proxy") && x.HasCategory("FunctionalGroup")).Where(x => x.CalloutTarget.ID == Id)
             .ToList();
