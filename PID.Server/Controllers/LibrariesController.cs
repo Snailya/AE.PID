@@ -25,19 +25,37 @@ public class LibrariesController(
     [HttpGet]
     public IActionResult GetLibraries([FromQuery] bool involvePrerelease = false)
     {
-        var libraries = dbContext.Libraries.Include(x => x.Versions).ThenInclude(x => x.Items).AsEnumerable()
+        var libraries = dbContext.Libraries
+            .Include(x => x.Versions.OrderByDescending(v => v.Version))
+            .ThenInclude(x => x.Items)
+            .AsEnumerable()
             .Select(
                 x =>
-                    new LibraryDto
+                {
+                    var dto = new LibraryDto
                     {
-                        Id = x.Id, Name = x.Name,
-                        Version = x.GetLatestVersion(involvePrerelease)?.Version ?? string.Empty, Items = x
-                            .GetLatestVersion(involvePrerelease)?
-                            .Items.Select(i => new LibraryItemDto
-                            {
-                                Name = i.Name, BaseId = i.BaseId, UniqueId = i.UniqueId
-                            }).ToList()
+                        Id = x.Id,
+                        Name = x.Name,
+                        Version = string.Empty,
+                        Items = []
+                    };
+
+                    // if it is an empty library
+                    var latestVersion = x.GetLatestVersion(involvePrerelease);
+                    if (latestVersion == null) return dto;
+
+                    // if it is not
+                    dto.Version = latestVersion.Version;
+                    dto.Items = latestVersion.Items.Select(i => new LibraryItemDto
+                    {
+                        Name = i.Name,
+                        BaseId = i.BaseId,
+                        UniqueId = i.UniqueId
                     }).ToList();
+
+                    return dto;
+                }
+            ).ToList();
 
         foreach (var library in libraries)
         {
@@ -57,7 +75,9 @@ public class LibrariesController(
     [HttpGet("{id:int}")]
     public IActionResult GetLibrary([FromRoute] int id)
     {
-        var library = dbContext.Libraries.Include(x => x.Versions).SingleOrDefault(x => x.Id == id);
+        var library = dbContext.Libraries
+            .Include(x => x.Versions.OrderByDescending(v => v.Version))
+            .SingleOrDefault(x => x.Id == id);
         if (library == null)
             return NoContent();
         return Ok(library);
@@ -77,7 +97,9 @@ public class LibrariesController(
 
         var name = Path.GetFileNameWithoutExtension(dto.File.FileName);
 
-        var library = dbContext.Libraries.Include(x => x.Versions).SingleOrDefault(x => x.Name == name) ??
+        var library = dbContext.Libraries
+                          .Include(x => x.Versions)
+                          .SingleOrDefault(x => x.Name == name) ??
                       new LibraryEntity { Name = name };
         var currentVersion = new Version(0, 1, 0, 0);
 
