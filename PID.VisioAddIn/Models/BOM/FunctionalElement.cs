@@ -14,8 +14,6 @@ public sealed class FunctionalElement : PartItem
     {
         Contract.Assert(shape.HasCategory("FunctionalElement"),
             "Only shape with category FunctionalElement can be construct as FunctionalElement");
-
-        Initialize();
     }
 
     #endregion
@@ -52,13 +50,20 @@ public sealed class FunctionalElement : PartItem
         }
     }
 
-    protected override void OnRelationshipsChanged()
+    protected override void OnRelationshipsChanged(Cell cell)
     {
-        base.OnRelationshipsChanged();
+        base.OnRelationshipsChanged(cell);
 
-        ParentId = GetAssociate(Source) ?? 0;
+        ParentId = GetAssociatedEquipment(Source) ?? 0;
     }
 
+    private static int? GetAssociatedEquipment(IVShape shape)
+    {
+        var target = shape.CalloutTarget;
+        if (target == null) return null;
+        if (target.HasCategory("Equipment")) return target.ID;
+        return null;
+    }
 
     public override string GetFunctionalElement()
     {
@@ -74,12 +79,12 @@ public sealed class FunctionalElement : PartItem
         return string.Empty;
     }
 
-    protected override void Initialize()
+    protected override void OnInitialized()
     {
-        base.Initialize();
+        base.OnInitialized();
 
         Type = ElementType.FunctionalElement;
-        ParentId = GetAssociate(Source) ?? 0;
+        ParentId = GetAssociatedEquipment(Source) ?? 0;
         Designation = Source.CellsU["Prop.FunctionalElement"].ResultStr[VisUnitCodes.visUnitsString];
         Description = Source.CellsU["Prop.Description"].ResultStr[VisUnitCodes.visUnitsString];
     }

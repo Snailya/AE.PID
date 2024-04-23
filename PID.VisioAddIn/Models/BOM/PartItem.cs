@@ -12,9 +12,9 @@ public abstract class PartItem(Shape shape) : Element(shape), IPartItem
     private double _count;
     private DesignMaterial? _designMaterial;
     private string _functionalGroup = string.Empty;
-    private string _materialNo = string.Empty;
     private string _keyParameters = string.Empty;
-    
+    private string _materialNo = string.Empty;
+
     /// <summary>
     ///     Write material to the shape sheet.
     /// </summary>
@@ -39,7 +39,7 @@ public abstract class PartItem(Shape shape) : Element(shape), IPartItem
 
 
     /// <summary>
-    /// Remove all property that start with D_ from shape sheet.
+    ///     Remove all property that start with D_ from shape sheet.
     /// </summary>
     private void DeleteMaterial()
     {
@@ -109,13 +109,13 @@ public abstract class PartItem(Shape shape) : Element(shape), IPartItem
 
     #region Methods Overrides
 
-    protected override void Initialize()
+    protected override void OnInitialized()
     {
-        base.Initialize();
+        base.OnInitialized();
 
         FunctionalGroup = Source.TryGetFormatValue("Prop.FunctionalGroup") ?? string.Empty;
         MaterialNo = Source.TryGetFormatValue("Prop.D_BOM") ?? string.Empty;
-        KeyParameters = Source.Cells["User.KeyParameters"].ResultStr[VisUnitCodes.visUnitsString];
+        KeyParameters = Source.TryGetValue("User.KeyParameters") ?? string.Empty;
         if (double.TryParse(Source.Cells["Prop.Subtotal"].ResultStr[VisUnitCodes.visUnitsString],
                 out var value))
             Count = value;
@@ -147,7 +147,7 @@ public abstract class PartItem(Shape shape) : Element(shape), IPartItem
                 MaterialNo = Source.TryGetFormatValue("Prop.D_BOM") ?? string.Empty;
                 break;
             case "User.KeyParameters":
-                KeyParameters = Source.Cells["User.KeyParameters"].ResultStr[VisUnitCodes.visUnitsString];
+                KeyParameters = Source.TryGetValue("User.KeyParameters") ?? string.Empty;
                 break;
         }
     }

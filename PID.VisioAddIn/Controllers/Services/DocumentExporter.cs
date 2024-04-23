@@ -197,7 +197,8 @@ public class DocumentExporter : IDisposable
             var group = partListItemsGroupedByFunctionalGroup
                 .SingleOrDefault(x => x.Key == sourceFunctionalGroup.Designation)?.ToList();
             if (group == null) continue;
-            var virtualPartListItemsInGroup = group.Select(x => PartListTableLineItem.CopyTo(x, targetFunctionalGroup));
+            var virtualPartListItemsInGroup =
+                group.Select(x => PartListTableLineItem.CopyTo(x, targetFunctionalGroup.Designation));
             virtualPartListItems.AddRange(virtualPartListItemsInGroup);
         }
 

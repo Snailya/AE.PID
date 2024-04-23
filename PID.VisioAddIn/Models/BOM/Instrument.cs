@@ -7,7 +7,7 @@ namespace AE.PID.Models.BOM;
 
 public sealed class Instrument : Equipment
 {
-    private string _processVariableAndControlFunctions;
+    private string _processVariableAndControlFunctions = string.Empty;
 
     #region Constructors
 
@@ -15,8 +15,6 @@ public sealed class Instrument : Equipment
     {
         Contract.Assert(shape.HasCategory("Instrument"),
             "Only shape with category Instrument can be construct as Instrument");
-
-        Initialize();
     }
 
     #endregion
@@ -33,9 +31,9 @@ public sealed class Instrument : Equipment
 
     #region Methods Overrides
 
-    protected override void Initialize()
+    protected override void OnInitialized()
     {
-        base.Initialize();
+        base.OnInitialized();
 
         Type = ElementType.Instrument;
         ProcessVariableAndControlFunctions =

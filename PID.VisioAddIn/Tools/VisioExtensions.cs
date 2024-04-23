@@ -204,6 +204,15 @@ internal static class VisioExtension
         return new Position(left + right / 2, (top + bottom) / 2);
     }
 
+    public static string? TryGetValue(this IVShape shape, string propName)
+    {
+        var existsAnywhere = shape.CellExists[propName, (short)VisExistsFlags.visExistsAnywhere] ==
+                             (short)VbaBool.True;
+        if (!existsAnywhere) return null;
+        var cell = shape.Cells[propName];
+        return cell.ResultStr[VisUnitCodes.visUnitsString];
+    }
+
     /// <summary>
     ///     Get formatted value of the property in shape sheet.
     /// </summary>

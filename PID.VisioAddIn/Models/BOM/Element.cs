@@ -10,13 +10,46 @@ namespace AE.PID.Models.BOM;
 
 public abstract class Element : ReactiveObject, IDisposable, ITreeNode
 {
-    private readonly CompositeDisposable _cleanUp = new();
+    protected readonly CompositeDisposable CleanUp = new();
     protected readonly Shape Source;
 
     private string _description = string.Empty;
     private string _designation = string.Empty;
 
     private int _parentId;
+
+    protected static int? GetContainerIdByCategory(Shape shape, string categoryName)
+    {
+        if (shape.MemberOfContainers.Length == 0) return null;
+
+        var containers = shape.MemberOfContainers
+            .OfType<int>()
+            .Select(x => shape.ContainingPage.Shapes.ItemFromID[x])
+            .ToArray();
+
+        // if it has a unit container, set the parent id to the unit's id
+        return containers.SingleOrDefault(x => x.HasCategory(categoryName))?.ID ??
+               null;
+    }
+
+    #region Public Methods
+
+    /// <summary>
+    ///     Highlight the source on page
+    /// </summary>
+    public void HighlightOnPage()
+    {
+        Source.ContainingPage.Application.ActiveWindow.Select(Source, (short)VisSelectArgs.visSelect);
+        Source.ContainingPage.Application.ActiveWindow.CenterViewOnShape(Source,
+            VisCenterViewFlags.visCenterViewSelectShape);
+    }
+
+    public virtual void Dispose()
+    {
+        CleanUp.Dispose();
+    }
+
+    #endregion
 
     #region Constructors
 
@@ -30,7 +63,7 @@ public abstract class Element : ReactiveObject, IDisposable, ITreeNode
                 handler => Source.CellChanged += handler,
                 handler => Source.CellChanged -= handler)
             .Subscribe(OnCellChanged)
-            .DisposeWith(_cleanUp);
+            .DisposeWith(CleanUp);
 
         // observable on relationship change
         Observable
@@ -38,45 +71,23 @@ public abstract class Element : ReactiveObject, IDisposable, ITreeNode
                 handler => Source.FormulaChanged += handler,
                 handler => Source.FormulaChanged -= handler)
             .Where(cell => cell.Name == "Relationships")
-            .Subscribe(_ => { OnRelationshipsChanged(); })
-            .DisposeWith(_cleanUp);
+            .Subscribe(OnRelationshipsChanged)
+            .DisposeWith(CleanUp);
+
+        Initialize();
+    }
+
+    private void Initialize()
+    {
+        OnInitialized();
     }
 
     #endregion
-
-    #region Public Methods
-
-    public void Dispose()
-    {
-        _cleanUp.Dispose();
-    }
-
-    #endregion
-
-    protected static int? GetContainerIdByCategory(Shape shape, string categoryName)
-    {
-        if (shape.MemberOfContainers.Length == 0) return null;
-
-        var containers = shape.MemberOfContainers.OfType<int>().Select(x => shape.ContainingPage.Shapes.ItemFromID[x])
-            .ToArray();
-
-        // if it has a unit container, set the parent id to the unit's id
-        return containers.SingleOrDefault(x => x.HasCategory(categoryName))?.ID ??
-               null;
-    }
-
-    protected static int? GetAssociate(Shape shape)
-    {
-        var target = shape.CalloutTarget;
-        if (target == null) return null;
-        if (target.HasCategory("Equipment")) return target.ID;
-        return null;
-    }
 
 
     #region Virtual Methods
 
-    protected virtual void OnRelationshipsChanged()
+    protected virtual void OnRelationshipsChanged(Cell cell)
     {
     }
 
@@ -89,7 +100,7 @@ public abstract class Element : ReactiveObject, IDisposable, ITreeNode
         };
     }
 
-    protected virtual void Initialize()
+    protected virtual void OnInitialized()
     {
         Description = Source.CellsU["Prop.Description"].ResultStr[VisUnitCodes.visUnitsString];
     }

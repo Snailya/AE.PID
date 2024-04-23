@@ -15,8 +15,6 @@ public sealed class EquipmentUnit : Element
     {
         Contract.Assert(shape.HasCategory("Unit"),
             "Only shape with category Unit can be construct as EquipmentUnit");
-
-        Initialize();
     }
 
     #endregion
@@ -33,9 +31,9 @@ public sealed class EquipmentUnit : Element
 
     #region Methods Overrides
 
-    protected override void OnRelationshipsChanged()
+    protected override void OnRelationshipsChanged(Cell cell)
     {
-        base.OnRelationshipsChanged();
+        base.OnRelationshipsChanged(cell);
 
         // update parent id
         var containerIds = Source.MemberOfContainers.OfType<int>().ToArray();
@@ -67,9 +65,9 @@ public sealed class EquipmentUnit : Element
     }
 
 
-    protected override void Initialize()
+    protected override void OnInitialized()
     {
-        base.Initialize();
+        base.OnInitialized();
 
         Type = ElementType.Unit;
         ParentId = GetContainerIdByCategory(Source, "FunctionalGroup") ?? 0;

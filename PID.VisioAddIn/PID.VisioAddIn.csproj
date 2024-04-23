@@ -215,6 +215,7 @@
         <Compile Include="Models\BOM\Equipment.cs"/>
         <Compile Include="Models\BOM\FunctionalElement.cs"/>
         <Compile Include="Models\BOM\FunctionalGroup.cs"/>
+        <Compile Include="Models\BOM\FunctionalGroupBase.cs"/>
         <Compile Include="Models\BOM\Instrument.cs"/>
         <Compile Include="Models\BOM\LastUsedDesignMaterial.cs"/>
         <Compile Include="Models\BOM\PartItem.cs"/>
@@ -222,6 +223,7 @@
         <Compile Include="Models\BOM\DesignMaterialsQueryTerms.cs"/>
         <Compile Include="Models\BOM\ElementType.cs"/>
         <Compile Include="Models\BOM\EquipmentUnit.cs"/>
+        <Compile Include="Models\BOM\ProxyFunctionalGroup.cs"/>
         <Compile Include="Models\Configurations\Configuration.cs"/>
         <Compile Include="Models\Configurations\Library.cs"/>
         <Compile Include="Models\Configurations\LibraryConfiguration.cs"/>

@@ -1,96 +1,75 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
-using AE.PID.Tools;
+using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using DynamicData;
+using DynamicData.Binding;
 using Microsoft.Office.Interop.Visio;
 using ReactiveUI;
 
 namespace AE.PID.Models.BOM;
 
-public sealed class FunctionalGroup : Element
+public sealed class FunctionalGroup : FunctionalGroupBase
 {
-    private IEnumerable<string> _related = [];
-
-    #region Constructors
-
     public FunctionalGroup(Shape shape) : base(shape)
     {
-        Contract.Assert(shape.HasCategory("FunctionalGroup"),
-            "Only shape with category FunctionalGroup can be construct as FunctionalGroup");
-
-        Initialize();
+        this.WhenAnyValue(x => x.Designation)
+            .Select(_ => Unit.Default)
+            .Merge(
+                Related.ToObservableChangeSet().WhenPropertyChanged(x => x.Designation).Select(_ => Unit.Default)
+            )
+            .Subscribe(_ => this.RaisePropertyChanged(nameof(Label))).DisposeWith(CleanUp);
     }
 
-    #endregion
-
-    #region Properties
-
-    public IEnumerable<string> Related
-    {
-        get => _related;
-        private set => this.RaiseAndSetIfChanged(ref _related, value);
-    }
-
-    #endregion
+    /// <summary>
+    ///     The related proxy functional group.
+    /// </summary>
+    public ObservableCollection<ProxyFunctionalGroup> Related { get; set; } = [];
 
     /// <summary>
     ///     Redefine label;
     /// </summary>
-    public new string Label => string.Join(",", [Designation, ..Related]);
+    public new string Label => string.Join(",", [Designation, ..Related.Select(x => x.Designation).OrderBy(x => x)]);
 
-    private List<string> GetRelated()
+    private void UpdateRelatedGroups()
     {
-        // todo: related need as an reactive object so that if the related proxy property changed, the label could update
-        
-        var relatedSources = Source.ContainingPage.Shapes.OfType<Shape>()
-            .Where(x => x.HasCategory("Proxy") && x.HasCategory("FunctionalGroup")).Where(x => x.CalloutTarget.ID == Id)
+        var current = Source.ContainingPage.Shapes.OfType<Shape>()
+            .Where(x => x.HasCategory("Proxy") && x.HasCategory("FunctionalGroup"))
+            .Where(x => x.CalloutTarget.ID == Id)
             .ToList();
-        if (!relatedSources.Any()) return [];
 
-        var related = relatedSources.Select(x => x.TryGetFormatValue("Prop.FunctionalGroup") ?? string.Empty)
-            .OrderBy(x => x).ToList();
-        return related;
+        var toRemove = Related.Select(x => x.Id).Except(current.Select(x => x.ID)).ToList();
+        var toAdd = current.Select(x => x.ID).Except(Related.Select(x => x.Id)).ToList();
+
+        foreach (var proxy in toRemove.Select(remove => Related.Single(x => x.Id == remove)))
+        {
+            Related.Remove(proxy);
+            proxy.Dispose();
+        }
+
+        foreach (var add in toAdd) Related.Add(new ProxyFunctionalGroup(current.Single(x => x.ID == add)));
+
+        if (toRemove.Count + toAdd.Count > 0)
+            this.RaisePropertyChanged(nameof(Label));
     }
 
     #region Methods Overrides
 
-    protected override void OnRelationshipsChanged()
+    protected override void OnRelationshipsChanged(Cell cell)
     {
-        base.OnRelationshipsChanged();
+        base.OnRelationshipsChanged(cell);
 
-        var related = GetRelated();
-        if (related.SequenceEqual(Related)) return;
-
-        Related = related;
-        this.RaisePropertyChanged(nameof(Label));
+        UpdateRelatedGroups();
     }
 
-    protected override void OnCellChanged(Cell cell)
-    {
-        base.OnCellChanged(cell);
 
-        switch (cell.Name)
-        {
-            // bind No to Prop.FunctionalGroup
-            case "Prop.FunctionalGroup":
-                Designation = cell.ResultStr[VisUnitCodes.visUnitsString];
-                this.RaisePropertyChanged(nameof(Label));
-                break;
-            // bind Description to Prop.FunctionalGroup
-            case "Prop.FunctionalGroupDescription":
-                Description = cell.ResultStr[VisUnitCodes.visUnitsString];
-                break;
-        }
-    }
-
-    protected override void Initialize()
+    protected override void OnInitialized()
     {
-        Type = ElementType.FunctionalGroup;
-        ParentId = 0;
-        Designation = Source.CellsU["Prop.FunctionalGroup"].ResultStr[VisUnitCodes.visUnitsString];
-        Description = Source.CellsU["Prop.FunctionalGroupDescription"].ResultStr[VisUnitCodes.visUnitsString];
-        var related = GetRelated();
-        if (!related.SequenceEqual(Related)) Related = related;
+        base.OnInitialized();
+
+        UpdateRelatedGroups();
     }
 
     #endregion

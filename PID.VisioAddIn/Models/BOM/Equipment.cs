@@ -15,8 +15,6 @@ public class Equipment : PartItem
     {
         Contract.Assert(shape.HasCategory("Equipment") || shape.HasCategory("Instrument"),
             "Only shape with category Equipment or Instrument can be construct as Equipment");
-
-        Initialize();
     }
 
     #endregion
@@ -33,9 +31,9 @@ public class Equipment : PartItem
 
     #region Methods Overrides
 
-    protected override void OnRelationshipsChanged()
+    protected override void OnRelationshipsChanged(Cell cell)
     {
-        base.OnRelationshipsChanged();
+        base.OnRelationshipsChanged(cell);
 
         ParentId = GetContainerIdByCategory(Source, "Unit") ??
                    GetContainerIdByCategory(Source, "FunctionalGroup") ?? 0;
@@ -82,9 +80,9 @@ public class Equipment : PartItem
         return SubClassName;
     }
 
-    protected override void Initialize()
+    protected override void OnInitialized()
     {
-        base.Initialize();
+        base.OnInitialized();
 
         Type = ElementType.Equipment;
         ParentId = GetContainerIdByCategory(Source, "Unit") ??
