@@ -64,35 +64,16 @@
     <!--This section defines custom context menu controls.-->
     <contextMenus>
         <contextMenu idMso="ContextMenuShape">
+            <button id="select_design_material"
+                    label="选择物料"
+                    onAction="SelectDesignMaterial"
+                    getVisible="IsMaterialButtonVisible"
+            />
             <button id="delete_design_material"
                     label="删除物料"
                     onAction="DeleteDesignMaterial"
+                    getVisible="IsMaterialButtonVisible"
             />
         </contextMenu>
-        <!--        <contextMenu idMso="ContextMenuShape">-->
-        <!--            <button id="insert_linked"-->
-        <!--                    label="添加关联件"-->
-        <!--                    onAction="InsertLinked"-->
-        <!--                    getVisible="CanInsert"-->
-        <!--            />-->
-        <!--            <button id="highlight_primary"-->
-        <!--                    label="高亮主件"-->
-        <!--                    onAction="HighlightPrimary"-->
-        <!--                    getVisible="CanHighlightPrimary"-->
-        <!--            />-->
-        <!--            <button id="highlight_linked"-->
-        <!--                    label="高亮关联件"-->
-        <!--                    onAction="HighlightLinked"-->
-        <!--                    getVisible="CanHighlightLinked"-->
-        <!--            />-->
-        <!--        </contextMenu>-->
-        <!--        <contextMenu idMso="ContextMenuDrawingPage">-->
-        <!--            <button id="paste_with_linked"-->
-        <!--                    insertAfterMso="PasteSpecialDialog"-->
-        <!--                    label="带关联件粘贴"-->
-        <!--                    onAction="PasteWithLinked"-->
-        <!--                    getVisible="CanPaste"-->
-        <!--            />-->
-        <!--        </contextMenu>-->
     </contextMenus>
 </customUI>

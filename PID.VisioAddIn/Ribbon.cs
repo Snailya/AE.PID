@@ -12,6 +12,7 @@ using AE.PID.Properties;
 using AE.PID.Tools;
 using AE.PID.Views.Pages;
 using Microsoft.Office.Core;
+using Microsoft.Office.Interop.Visio;
 using NLog;
 using Shape = Microsoft.Office.Interop.Visio.Shape;
 
@@ -111,6 +112,11 @@ public class Ribbon : IRibbonExtensibility
 
     #region Context Menus
 
+    public void SelectDesignMaterial(IRibbonControl control)
+    {
+        throw new NotImplementedException();
+    }
+    
     public void DeleteDesignMaterial(IRibbonControl control)
     {
         foreach (var shape in Globals.ThisAddIn.Application.ActiveWindow.Selection.OfType<Shape>())
@@ -124,6 +130,13 @@ public class Ribbon : IRibbonExtensibility
                 using var functionalElement = new FunctionalElement(shape);
                 functionalElement.DesignMaterial = null;
             }
+    }
+
+    public bool IsMaterialButtonVisible(IRibbonControl control)
+    {
+        var window = Globals.ThisAddIn.Application.ActiveWindow;
+        return window.Document.Type == VisDocumentTypes.visTypeDrawing && window.Selection.OfType<IVShape>()
+            .All(x => x.HasCategory("Equipment") || x.HasCategory("Instrument"));
     }
 
     #endregion
