@@ -33,6 +33,8 @@ public class DocumentExporter : IDisposable
             "Could not initialize exporter on null page.");
 
         _page = page!;
+
+        // observe the shape added event
         Observable.FromEvent<EPage_ShapeAddedEventHandler, Shape>(
                 handler => _page.ShapeAdded += handler,
                 handler => _page.ShapeAdded -= handler)
@@ -68,6 +70,7 @@ public class DocumentExporter : IDisposable
             })
             .DisposeWith(_cleanup);
 
+        // todo: maybe load in background?
         // initialize
         Elements.AddRange(_page.Shapes.OfType<Shape>()
             .Where(IsFunctionalGroupPredicate())
@@ -90,7 +93,6 @@ public class DocumentExporter : IDisposable
     {
         _cleanup.Dispose();
     }
-
 
     /// <summary>
     ///     extract data from shapes on layers defined in config and group them as BOM items.

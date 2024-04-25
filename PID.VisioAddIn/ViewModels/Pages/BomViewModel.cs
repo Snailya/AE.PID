@@ -19,8 +19,7 @@ public class BomViewModel(DocumentExporter service) : ViewModelBase
     private PartItem? _copySource;
     private DocumentInfoViewModel _documentInfo;
     private Element? _selected;
-
-
+    
     #region Output Properties
 
     public ReadOnlyObservableCollection<TreeNodeViewModel<Element>> BOMTree => _bomTree;
@@ -99,8 +98,7 @@ public class BomViewModel(DocumentExporter service) : ViewModelBase
     }
 
     #endregion
-
-
+    
     #region Read-Write Properties
 
     public DocumentInfoViewModel DocumentInfo
