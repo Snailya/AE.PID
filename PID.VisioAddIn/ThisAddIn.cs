@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Net.Http;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
@@ -7,14 +8,16 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Threading;
-using AE.PID.Controllers;
+using AE.PID.Controllers.Services;
 using AE.PID.Models;
 using AE.PID.Properties;
 using AE.PID.ViewModels;
+using AE.PID.ViewModels.Pages;
 using AE.PID.Views;
 using AE.PID.Views.Windows;
 using Microsoft.Office.Interop.Visio;
 using NLog;
+using Splat;
 using MessageBox = System.Windows.Forms.MessageBox;
 using Window = System.Windows.Window;
 
@@ -148,7 +151,23 @@ public partial class ThisAddIn
             // load the input cache
             InputCache = InputCache.Load();
 
-            ServiceManager.GetInstance();
+
+            Locator.CurrentMutable.RegisterLazySingleton(() => new ConfigurationService(),
+                typeof(ConfigurationService));
+
+            var configuration = Locator.Current.GetService<ConfigurationService>();
+            Locator.CurrentMutable.RegisterLazySingleton(() => new HttpClient { BaseAddress = configuration!.Api },
+                typeof(HttpClient));
+
+            var httpclient = Locator.Current.GetService<HttpClient>();
+            Locator.CurrentMutable.RegisterLazySingleton(() => new MaterialsService(httpclient!),
+                typeof(MaterialsService));
+            Locator.CurrentMutable.RegisterLazySingleton(() => new DocumentMonitor(configuration!),
+                typeof(DocumentMonitor));
+            Locator.CurrentMutable.RegisterLazySingleton(() => new AppUpdater(httpclient!, configuration!),
+                typeof(AppUpdater));
+            Locator.CurrentMutable.RegisterLazySingleton(() => new LibraryUpdater(httpclient!, configuration!),
+                typeof(LibraryUpdater));
         }
         catch (UnauthorizedAccessException unauthorizedAccessException)
         {

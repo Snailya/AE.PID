@@ -18,13 +18,8 @@ public class BomViewModel(DocumentExporter service) : ViewModelBase
     private ReadOnlyObservableCollection<TreeNodeViewModel<Element>> _bomTree = new([]);
     private PartItem? _copySource;
     private DocumentInfoViewModel _documentInfo;
+    private ReadOnlyObservableCollection<PartItem> _partListItems = new([]);
     private Element? _selected;
-    
-    #region Output Properties
-
-    public ReadOnlyObservableCollection<TreeNodeViewModel<Element>> BOMTree => _bomTree;
-
-    #endregion
 
     #region Command Handlers
 
@@ -32,6 +27,13 @@ public class BomViewModel(DocumentExporter service) : ViewModelBase
     {
         service.ExportToExcel(_documentInfo);
     }
+
+    #endregion
+
+    #region Output Properties
+
+    public ReadOnlyObservableCollection<TreeNodeViewModel<Element>> BOMTree => _bomTree;
+    public ReadOnlyObservableCollection<PartItem> PartListItems => _partListItems;
 
     #endregion
 
@@ -90,6 +92,15 @@ public class BomViewModel(DocumentExporter service) : ViewModelBase
         // notify the side view model for seeding
         MessageBus.Current.RegisterMessageSource(selectedItem.Select(x =>
             new ElementSelectedEventArgs(x)));
+
+        service.Elements
+            .ToObservableChangeSet(t => t.Id)
+            .Filter(x => x is PartItem)
+            .Transform(x => (PartItem)x)
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Bind(out _partListItems)
+            .Subscribe()
+            .DisposeWith(d);
     }
 
     protected override void SetupStart()
@@ -98,7 +109,7 @@ public class BomViewModel(DocumentExporter service) : ViewModelBase
     }
 
     #endregion
-    
+
     #region Read-Write Properties
 
     public DocumentInfoViewModel DocumentInfo

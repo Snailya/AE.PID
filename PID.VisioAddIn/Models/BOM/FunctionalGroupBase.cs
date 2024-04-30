@@ -1,4 +1,8 @@
-﻿using System.Diagnostics.Contracts;
+﻿using System;
+using System.Diagnostics.Contracts;
+using System.Reactive.Disposables;
+using AE.PID.Tools;
+using DynamicData.Binding;
 using Microsoft.Office.Interop.Visio;
 using ReactiveUI;
 
@@ -6,33 +10,32 @@ namespace AE.PID.Models.BOM;
 
 public abstract class FunctionalGroupBase : Element
 {
+    #region Constructors
+
     protected FunctionalGroupBase(Shape shape) : base(shape)
     {
         Contract.Assert(shape.HasCategory("FunctionalGroup"),
             "Only shape with category FunctionalGroup can be construct as FunctionalGroup");
     }
 
+    #endregion
+
+    #region Methods Overrides
+
     protected override void OnInitialized()
     {
         Type = ElementType.FunctionalGroup;
         ParentId = 0;
-        Designation = Source.CellsU["Prop.FunctionalGroup"].ResultStr[VisUnitCodes.visUnitsString];
-        Description = Source.CellsU["Prop.FunctionalGroupDescription"].ResultStr[VisUnitCodes.visUnitsString];
+
+        Source.Bind(this, x => x.Designation, "Prop.FunctionalGroup")
+            .DisposeWith(CleanUp);
+        Source.Bind(this, x => x.Description, "Prop.FunctionalGroupDescription")
+            .DisposeWith(CleanUp);
+        
+        this.WhenPropertyChanged(x => x.Description)
+            .Subscribe(_ => this.RaisePropertyChanged(nameof(Label)))
+            .DisposeWith(CleanUp);
     }
 
-    protected override void OnCellChanged(Cell cell)
-    {
-        switch (cell.Name)
-        {
-            // bind No to Prop.FunctionalGroup
-            case "Prop.FunctionalGroup":
-                Designation = cell.ResultStr[VisUnitCodes.visUnitsString];
-                this.RaisePropertyChanged(nameof(Label));
-                break;
-            // bind Description to Prop.FunctionalGroup
-            case "Prop.FunctionalGroupDescription":
-                Description = cell.ResultStr[VisUnitCodes.visUnitsString];
-                break;
-        }
-    }
+    #endregion
 }

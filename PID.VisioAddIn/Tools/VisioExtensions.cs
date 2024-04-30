@@ -1,12 +1,18 @@
 ﻿using System;
-using System.Runtime.InteropServices;
+using System.ComponentModel;
+using System.Configuration;
+using System.Linq.Expressions;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using AE.PID.Interfaces;
 using AE.PID.Models;
 using AE.PID.Properties;
+using DynamicData.Binding;
 using Microsoft.Office.Interop.Visio;
 using NLog;
+using ReactiveUI;
 
 namespace AE.PID.Tools;
 
@@ -28,67 +34,6 @@ internal static class VisioExtension
 
         //ThisAddIn.Logger.Information("[Row创建]{ShapeName}：{RowName}", shape.Name, prop.FullName);
         return row;
-    }
-
-    public static Row AddOrUpdate(this IVShape shape, IActionData data)
-    {
-        var row = shape.GetOrAdd(data);
-
-        row.CellU[VisCellIndices.visActionAction].Update(data.Action);
-        row.CellU[VisCellIndices.visActionMenu].Update(data.Menu);
-        row.CellU[VisCellIndices.visActionChecked].Update(data.Checked);
-        row.CellU[VisCellIndices.visActionFlyoutChild].Update(data.FlyoutChild);
-
-        return row;
-    }
-
-    public static Row AddOrUpdate(this IVShape shape, IUserData data)
-    {
-        var row = shape.GetOrAdd(data);
-
-        row.CellU[VisCellIndices.visUserPrompt].Update(data.Prompt);
-        row.CellU[VisCellIndices.visUserValue].Update(data.DefaultValue);
-
-        return row;
-    }
-
-    public static Row AddOrUpdate(this IVShape shape, IShapeData data)
-    {
-        var row = shape.GetOrAdd(data);
-
-        row.CellU[VisCellIndices.visCustPropsLabel].Update(data.Label);
-        row.CellU[VisCellIndices.visCustPropsFormat].Update(data.Format);
-        row.CellU[VisCellIndices.visCustPropsType].Update(data.Type);
-        row.CellU[VisCellIndices.visCustPropsSortKey].Update(data.SortKey);
-        row.CellU[VisCellIndices.visCustPropsInvis].Update(data.Invisible);
-        row.CellU[VisCellIndices.visCustPropsValue].Update(data.DefaultValue);
-
-        return row;
-    }
-
-    /// <summary>
-    ///     Update a cell's value with new one. Prompt a dialog to let user choose whether to keep or discard the old one if
-    ///     old one is not default value.
-    /// </summary>
-    /// <param name="cell"></param>
-    /// <param name="newValue"></param>
-    /// <param name="force"></param>
-    /// <returns></returns>
-    public static bool Update(this IVCell cell, string newValue, bool force = false)
-    {
-        var oldValue = cell.FormulaU;
-        if (string.IsNullOrEmpty(newValue) || oldValue == newValue) return false;
-
-        // if cell value already exist
-        if (!force && oldValue != "0" && oldValue != "\"\"")
-            if (MessageBox.Show(string.Format(Resources.Property_Value_Override_Confirmation, cell.Name,
-                        cell.Shape.Name,
-                        oldValue, newValue, Environment.NewLine + Environment.NewLine), @"属性值覆盖确认",
-                    MessageBoxButtons.YesNo) == DialogResult.No)
-                return false;
-        cell.FormulaForceU = newValue;
-
-        return true;
     }
 
     /// <summary>
@@ -117,40 +62,202 @@ internal static class VisioExtension
         return result;
     }
 
-    private static string? GetFormatValue(this IVRow row)
+
+    #region Binding Mixins
+
+    public static IDisposable OneWayBind<TModel, TMProperty>(this Shape shape, TModel model,
+        Expression<Func<TModel, TMProperty>> mProperty, string visioPropertyName,
+        Func<string, TMProperty?>? visioToModelConverterOverride = null)
     {
-        try
-        {
-            var value = row.CellU[VisCellIndices.visCustPropsValue].ResultStr[VisUnitCodes.visUnitsString];
-            if (string.IsNullOrEmpty(value)) return value;
+        var visioPropertyToPropertyConverter =
+            visioToModelConverterOverride ?? (value => (TMProperty)Convert.ChangeType(value, typeof(TMProperty)));
 
-            var type = row.CellU[VisCellIndices.visCustPropsType].ResultStr[VisUnitCodes.visNoCast];
+        var vmExpression = Reflection.Rewrite(mProperty.Body);
 
-            if (type != "0" && type != "2") return value;
-            var format = row.CellU[VisCellIndices.visCustPropsFormat].ResultStr[VisUnitCodes.visUnitsString];
-            if (string.IsNullOrEmpty(format)) return value;
-
-            var result = Regex.Replace(format, @"(\\.)|(@)|(0\.[#0]+|#)", match =>
+        return (shape.CellExists[visioPropertyName, (short)VisExistsFlags.visExistsAnywhere] == (short)VbaBool.True
+                ? Observable.Return(shape.Cells[visioPropertyName])
+                : Observable.Empty<Cell>())
+            .Merge(Observable.FromEvent<EShape_CellChangedEventHandler, Cell>(
+                    handler => shape.CellChanged += handler,
+                    handler => shape.CellChanged -= handler)
+                .Where(x => x.Name == visioPropertyName))
+            .Select(x => x.TryGetFormatValue() ?? string.Empty)
+            .Select(visioPropertyToPropertyConverter)
+            .Subscribe(value =>
             {
-                if (match.Groups[1].Success)
-                    return match.Groups[1].Value.Substring(1); // Replace \\char with char
-
-                if (match.Groups[2].Success)
-                    return value; // Replace @ with the original string
-
-                if (match.Groups[3].Success)
-                    return Truncate(value, match.Value); // Handle other numeric patterns
-
-                return match.Value;
+                Reflection.TrySetValueToPropertyChain(model, vmExpression.GetExpressionChain(), value!);
             });
-            return result;
-        }
-        catch (COMException comException)
-        {
-            Logger.Error(comException, $"Failed to get value form {row.Shape.ID}!{row.Name}.");
-            return null;
-        }
     }
+
+    public static IDisposable Bind<TModel, TMProperty>(this Shape shape, TModel model,
+        Expression<Func<TModel, TMProperty>> mProperty, string visioPropertyName,
+        Func<string, TMProperty?>? visioToModelConverterOverride = null,
+        Func<TMProperty, string?>? modelToVisioConverterOverride = null) where TModel : INotifyPropertyChanged
+    {
+        var visioToModelConverter =
+            visioToModelConverterOverride ?? (value => (TMProperty)Convert.ChangeType(value, typeof(TMProperty)));
+        var modelToVisioConverter =
+            modelToVisioConverterOverride ?? (value => (string)Convert.ChangeType(value, typeof(string)));
+
+        var vmExpression = Reflection.Rewrite(mProperty.Body);
+
+        var d = new CompositeDisposable();
+
+        (shape.CellExists[visioPropertyName, (short)VisExistsFlags.visExistsAnywhere] == (short)VbaBool.True
+                ? Observable.Return(shape.Cells[visioPropertyName])
+                : Observable.Empty<Cell>())
+            .Merge(Observable.FromEvent<EShape_CellChangedEventHandler, Cell>(
+                    handler => shape.CellChanged += handler,
+                    handler => shape.CellChanged -= handler)
+                .Where(x => x.Name == visioPropertyName))
+            .Select(x => x.TryGetFormatValue() ?? string.Empty)
+            .Select(visioToModelConverter)
+            .DistinctUntilChanged()
+            .Subscribe(value =>
+            {
+                Reflection.TrySetValueToPropertyChain(model, vmExpression.GetExpressionChain(), value!);
+            })
+            .DisposeWith(d);
+
+        // observe the model property change to synchronize from model to visio
+        model.WhenValueChanged(mProperty)
+            .DistinctUntilChanged()
+            .WhereNotNull()
+            .Select(modelToVisioConverter)
+            .Where(_ => shape.CellExists[visioPropertyName, (short)VisExistsFlags.visExistsAnywhere] ==
+                        (short)VbaBool.True)
+            .Select(x => x?.ClearFormat(shape, visioPropertyName) ?? string.Empty)
+            .Subscribe(value => { shape.Cells[visioPropertyName].UpdateIfChanged(value); })
+            .DisposeWith(d);
+
+        return d;
+    }
+
+    #endregion
+
+    #region Get Methods
+
+    private static string Truncate(string originalString, string formatPattern)
+    {
+        if (string.IsNullOrEmpty(originalString)) return originalString;
+
+        var number = double.Parse(originalString);
+        var decimalPlaces = formatPattern.Length - formatPattern.IndexOf('.') - 1;
+        return number.ToString($"F{decimalPlaces}");
+    }
+
+    /// <summary>
+    ///     Get formatted value of the property in shape sheet.
+    /// </summary>
+    /// <param name="cell"></param>
+    /// <returns></returns>
+    private static string? TryGetFormatValue(this IVCell cell)
+    {
+        var row = cell.ContainingRow;
+        return row.GetFormatString();
+    }
+
+    /// <summary>
+    ///     Clear the format return the origin string.
+    /// </summary>
+    /// <param name="formatValue"></param>
+    /// <param name="shape"></param>
+    /// <param name="propName"></param>
+    /// <returns></returns>
+    private static string ClearFormat(this string formatValue, IVShape shape, string propName)
+    {
+        var format = shape.Cells[propName].ContainingRow.CellU[VisCellIndices.visCustPropsFormat]
+            .ResultStr[VisUnitCodes.visUnitsString];
+        if (string.IsNullOrEmpty(format)) return formatValue;
+
+        var pattern = Regex.Replace(format, @"(\\.)|(@)|(0\.[#0]+)|(#\\)", match =>
+        {
+            if (match.Groups[1].Success)
+                return match.Groups[1].Value.Substring(1); // Replace \\char with char
+
+            if (match.Groups[2].Success)
+                return @"(\w+)"; // Replace @ with the \w+
+
+            if (match.Groups[3].Success)
+                return @"(\d+\.\d+)"; // Handle other numeric patterns
+
+            if (match.Groups[4].Success)
+                return @"(\d+)";
+
+            return match.Value;
+        });
+
+        var result = Regex.Match(formatValue, pattern).Groups[1].Value;
+        return result;
+    }
+
+    /// <summary>
+    ///     Get the value of the row and return value mix format. if the row is not a Shape Data row, return origin value
+    ///     instead.
+    /// </summary>
+    /// <param name="row"></param>
+    /// <returns></returns>
+    private static string GetFormatString(this IVRow row)
+    {
+        // get string value of the row
+        var value = row.CellU[VisCellIndices.visCustPropsValue].ResultStr[VisUnitCodes.visUnitsString]!;
+        // if the row is not the Shape Data section row, it will not contain any format, so return it directly.
+        if (row.ContainingSection.Index != (short)VisSectionIndices.visSectionProp) return value;
+
+        // if it is the Shape Data section row, need to check if it need format
+        var type = row.CellU[VisCellIndices.visCustPropsType].ResultStr[VisUnitCodes.visNoCast];
+        var format = row.CellU[VisCellIndices.visCustPropsFormat].ResultStr[VisUnitCodes.visUnitsString];
+
+        // if the row is a list or variable list, or it format is empty, return it directly
+        if ((type != "0" && type != "2") || string.IsNullOrEmpty(format)) return value;
+
+        var result = Regex.Replace(format, @"(\\.)|(@)|(0\.[#0]+)|(#\\)", match =>
+        {
+            if (match.Groups[1].Success)
+                return match.Groups[1].Value.Substring(1); // Replace \\char with char
+
+            if (match.Groups[2].Success)
+                return value; // Replace @ with the original string
+
+            if (match.Groups[3].Success)
+                return Truncate(value, match.Value); // Handle other numeric patterns
+
+            if (match.Groups[4].Success)
+                return double.TryParse(value, out var number) ? number.ToString("F") : "0";
+
+            return match.Value;
+        });
+        return result;
+    }
+
+    public static string? TryGetValue(this IVShape shape, string propName)
+    {
+        var existsAnywhere = shape.CellExists[propName, (short)VisExistsFlags.visExistsAnywhere] ==
+                             (short)VbaBool.True;
+        if (!existsAnywhere) return null;
+        var cell = shape.Cells[propName];
+        return cell.ResultStr[VisUnitCodes.visUnitsString];
+    }
+
+    /// <summary>
+    ///     Get formatted value of the property in shape sheet.
+    /// </summary>
+    /// <param name="shape"></param>
+    /// <param name="propName"></param>
+    /// <returns></returns>
+    public static string? TryGetFormatValue(this IVShape shape, string propName)
+    {
+        var existsAnywhere = shape.CellExists[propName, (short)VisExistsFlags.visExistsAnywhere] ==
+                             (short)VbaBool.True;
+        if (!existsAnywhere) return null;
+        var row = shape.Cells[propName].ContainingRow;
+
+        return row.GetFormatString();
+    }
+
+    #endregion
+
+    #region Geo Helper
 
     /// <summary>
     ///     Drop an object using mm unit.
@@ -204,35 +311,79 @@ internal static class VisioExtension
         return new Position(left + right / 2, (top + bottom) / 2);
     }
 
-    public static string? TryGetValue(this IVShape shape, string propName)
+    #endregion
+
+    #region Update Methods
+
+    public static Row CreateOrUpdate(this IVShape shape, IActionData data, bool ask = false)
     {
-        var existsAnywhere = shape.CellExists[propName, (short)VisExistsFlags.visExistsAnywhere] ==
-                             (short)VbaBool.True;
-        if (!existsAnywhere) return null;
-        var cell = shape.Cells[propName];
-        return cell.ResultStr[VisUnitCodes.visUnitsString];
+        var row = shape.GetOrAdd(data);
+
+        row.CellU[VisCellIndices.visActionAction].UpdateIfChanged(data.Action, ask);
+        row.CellU[VisCellIndices.visActionMenu].UpdateIfChanged(data.Menu, ask);
+        row.CellU[VisCellIndices.visActionChecked].UpdateIfChanged(data.Checked, ask);
+        row.CellU[VisCellIndices.visActionFlyoutChild].UpdateIfChanged(data.FlyoutChild, ask);
+
+        return row;
+    }
+
+    public static Row CreateOrUpdate(this IVShape shape, IUserData data, bool ask = false)
+    {
+        var row = shape.GetOrAdd(data);
+
+        row.CellU[VisCellIndices.visUserPrompt].UpdateIfChanged(data.Prompt, ask);
+        row.CellU[VisCellIndices.visUserValue].UpdateIfChanged(data.DefaultValue, ask);
+
+        return row;
+    }
+
+    public static Row CreateOrUpdate(this IVShape shape, IShapeData data, bool ask = false)
+    {
+        var row = shape.GetOrAdd(data);
+
+        row.CellU[VisCellIndices.visCustPropsLabel].UpdateIfChanged(data.Label, ask);
+        row.CellU[VisCellIndices.visCustPropsFormat].UpdateIfChanged(data.Format, ask);
+        row.CellU[VisCellIndices.visCustPropsType].UpdateIfChanged(data.Type, ask);
+        row.CellU[VisCellIndices.visCustPropsSortKey].UpdateIfChanged(data.SortKey, ask);
+        row.CellU[VisCellIndices.visCustPropsInvis].UpdateIfChanged(data.Invisible, ask);
+        row.CellU[VisCellIndices.visCustPropsValue].UpdateIfChanged(data.DefaultValue, ask);
+
+        return row;
     }
 
     /// <summary>
-    ///     Get formatted value of the property in shape sheet.
+    ///     Update a cell's value with new one. Prompt a dialog to let user choose whether to keep or discard the old one if
+    ///     old one is not default value.
     /// </summary>
-    /// <param name="shape"></param>
-    /// <param name="propName"></param>
+    /// <param name="cell"></param>
+    /// <param name="newValue"></param>
+    /// <param name="ask"></param>
     /// <returns></returns>
-    public static string? TryGetFormatValue(this IVShape shape, string propName)
+    public static bool UpdateIfChanged(this IVCell cell, string newValue, bool ask = false)
     {
-        var existsAnywhere = shape.CellExists[propName, (short)VisExistsFlags.visExistsAnywhere] ==
-                             (short)VbaBool.True;
-        if (!existsAnywhere) return null;
-        var row = shape.Cells[propName].ContainingRow;
+        var oldFormula = cell.FormulaU;
+        var newFormula = $"\"{newValue}\"";
 
-        return row.GetFormatValue();
+        if (cell.Section == (short)VisSectionIndices.visSectionProp)
+        {
+            var format = cell.ContainingRow.CellU[VisCellIndices.visCustPropsType]
+                .ResultStr[VisUnitCodes.visUnitsString];
+            if (format == "2") newFormula = $"{newValue}";
+        }
+
+        if (oldFormula == newFormula) return false;
+
+        // if cell value already exist
+        if (ask && oldFormula != "0" && oldFormula != "\"\"")
+            if (MessageBox.Show(string.Format(Resources.Property_Value_Override_Confirmation, cell.Name,
+                        cell.Shape.Name,
+                        oldFormula, newValue, Environment.NewLine + Environment.NewLine), @"属性值覆盖确认",
+                    MessageBoxButtons.YesNo) == DialogResult.No)
+                return false;
+        cell.FormulaU = newFormula;
+
+        return true;
     }
 
-    private static string? Truncate(string? originalString, string formatPattern)
-    {
-        if (!formatPattern.Contains(".") || !char.IsDigit(originalString[0])) return originalString;
-        var decimalIndex = originalString.IndexOf('.');
-        return originalString.Substring(0, decimalIndex);
-    }
+    #endregion
 }

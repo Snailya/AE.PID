@@ -13,15 +13,21 @@ namespace AE.PID.Models.BOM;
 
 public sealed class FunctionalGroup : FunctionalGroupBase
 {
+    #region Constructors
+
     public FunctionalGroup(Shape shape) : base(shape)
     {
         this.WhenAnyValue(x => x.Designation)
             .Select(_ => Unit.Default)
             .Merge(
-                Related.ToObservableChangeSet().WhenPropertyChanged(x => x.Designation).Select(_ => Unit.Default)
+                Related.ToObservableChangeSet().WhenPropertyChanged(x => x.Designation)
+                    .Select(_ => Unit.Default)
             )
-            .Subscribe(_ => this.RaisePropertyChanged(nameof(Label))).DisposeWith(CleanUp);
+            .Subscribe(_ => this.RaisePropertyChanged(nameof(Label)))
+            .DisposeWith(CleanUp);
     }
+
+    #endregion
 
     /// <summary>
     ///     The related proxy functional group.

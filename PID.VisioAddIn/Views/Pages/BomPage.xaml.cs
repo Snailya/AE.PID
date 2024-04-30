@@ -35,6 +35,10 @@ public partial class BomPage
                     vm => vm.BOMTree,
                     v => v.Elements.ItemsSource)
                 .DisposeWith(d);
+            this.OneWayBind(ViewModel,
+                    vm => vm.PartListItems,
+                    v => v.PartItems.ItemsSource)
+                .DisposeWith(d);
             this.Bind(ViewModel,
                     vm => vm.OkCancelFeedbackViewModel,
                     v => v.Feedback.ViewModel)
@@ -65,7 +69,18 @@ public partial class BomPage
                 .Select(x => ((TreeNodeViewModel<Element>)x).Source)
                 .BindTo(ViewModel, vm => vm.Selected)
                 .DisposeWith(d);
+            this.WhenAnyValue(x => x.PartItems.SelectedItem)
+                .Where(x => x is PartItem)
+                .Select(x => (PartItem)x)
+                .BindTo(ViewModel, vm => vm.Selected)
+                .DisposeWith(d);
 
+            // highlight the item on page
+            ViewModel.WhenAnyValue(x => x.Selected)
+                .WhereNotNull()
+                .Subscribe(x => x.Select())
+                .DisposeWith(d);
+            
             // when user click any of the item in bom, open the material selection page in side window
             ViewModel.WhenAnyValue(x => x.Selected)
                 .Subscribe(selected => { Globals.ThisAddIn.WindowManager.SideShow(_sidePage); })

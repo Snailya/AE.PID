@@ -38,7 +38,7 @@ public class DesignMaterial(
         return new DesignMaterial(dto.Code, dto.Name, dto.Brand, dto.Specifications, dto.Model, dto.Unit,
             dto.Manufacturer, dto.ManufacturerMaterialNumber, dto.Categories)
         {
-            Properties = dto.Properties == null ? [] : dto.Properties.Select(DesignMaterialProperty.FromDTO).ToList()
+            Properties = dto.Properties.Any() ? dto.Properties.Select(DesignMaterialProperty.FromDTO).ToList() : []
         };
     }
 
@@ -63,11 +63,8 @@ public class DesignMaterial(
     public string Brand { get; set; } = brand;
 
     [DataGridColumnName("规格")] public string Specifications { get; set; } = specifications;
-
     [DataGridColumnName("型号")] public string Model { get; set; } = model;
-
     [DataGridColumnName("单位")] public string Unit { get; set; } = unit;
-
     [DataGridColumnName("制造商")] public string Manufacturer { get; set; } = manufacturer;
     [DataGridColumnName("制造商物料号")] public string ManufacturerMaterialNumber { get; set; } = manufacturerMaterialNumber;
 

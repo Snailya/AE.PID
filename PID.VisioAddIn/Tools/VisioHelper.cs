@@ -5,8 +5,10 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using AE.PID.Controllers;
+using AE.PID.Controllers.Services;
 using Microsoft.Office.Interop.Visio;
 using NLog;
+using Splat;
 using Path = System.IO.Path;
 
 namespace AE.PID.Tools;
@@ -22,9 +24,9 @@ public static class VisioHelper
     {
         try
         {
-            var configuration = ServiceManager.GetInstance().Configuration;
+            var configuration = Locator.Current.GetService<ConfigurationService>();
 
-            foreach (var path in configuration.Libraries.Items.Select(x => x.Path))
+            foreach (var path in configuration!.Libraries.Items.Select(x => x.Path))
                 Globals.ThisAddIn.Application.Documents.OpenEx(path, (short)VisOpenSaveArgs.visOpenDocked);
 
             Logger.Info($"Opened {configuration.Libraries.Count} libraries.");

@@ -6,10 +6,12 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using AE.PID.Controllers;
+using AE.PID.Controllers.Services;
 using AE.PID.Models.BOM;
 using AE.PID.Tools;
 using AE.PID.ViewModels.Pages;
 using ReactiveUI;
+using Splat;
 
 namespace AE.PID.Views.Pages;
 
@@ -22,7 +24,8 @@ public partial class MaterialsSelectionPage
     {
         InitializeComponent();
 
-        ViewModel = new DesignMaterialsViewModel(ServiceManager.GetInstance().MaterialsService);
+        var materialService = Locator.Current.GetService<MaterialsService>();
+        ViewModel = new DesignMaterialsViewModel(materialService);
 
         this.WhenActivated(d =>
         {

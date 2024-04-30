@@ -10,10 +10,14 @@ using AE.PID.Controllers.Services;
 using AE.PID.Models.BOM;
 using AE.PID.Properties;
 using AE.PID.Tools;
+using AE.PID.Views;
 using AE.PID.Views.Pages;
+using AE.PID.Views.Windows;
 using Microsoft.Office.Core;
 using Microsoft.Office.Interop.Visio;
 using NLog;
+using ReactiveUI;
+using Splat;
 using Shape = Microsoft.Office.Interop.Visio.Shape;
 
 // TODO:   按照以下步骤启用功能区(XML)项:
@@ -204,6 +208,7 @@ public class Ribbon : IRibbonExtensibility
 
     public void Debug(IRibbonControl control)
     {
+
     }
 
     #endregion

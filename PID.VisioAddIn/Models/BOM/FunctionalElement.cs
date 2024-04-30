@@ -2,7 +2,6 @@
 using System.Linq;
 using AE.PID.Tools;
 using Microsoft.Office.Interop.Visio;
-using ReactiveUI;
 
 namespace AE.PID.Models.BOM;
 
@@ -19,36 +18,6 @@ public sealed class FunctionalElement : PartItem
     #endregion
 
     #region Methods Overrides
-
-    protected override void OnCellChanged(Cell cell)
-    {
-        base.OnCellChanged(cell);
-
-        switch (cell.Name)
-        {
-            // bind FunctionalGroup to Prop.FunctionalGroup
-            case "Prop.FunctionalGroup":
-                FunctionalGroup = Source.TryGetFormatValue("Prop.FunctionalGroup") ?? string.Empty;
-                break;
-            // bind Description to Prop.Description
-            case "Prop.FunctionalElement":
-                Designation = cell.ResultStr[VisUnitCodes.visUnitsString];
-                this.RaisePropertyChanged(nameof(Label));
-                break;
-            // bind Description to Prop.Description
-            case "Prop.Description":
-                Description = cell.ResultStr[VisUnitCodes.visUnitsString];
-                break;
-            case "Prop.Subtotal":
-                if (double.TryParse(Source.Cells["Prop.Subtotal"].ResultStr[VisUnitCodes.visUnitsString],
-                        out var subtotal))
-                    Count = subtotal;
-                break;
-            case "Prop.D_BOM":
-                MaterialNo = Source.TryGetFormatValue("Prop.D_BOM") ?? string.Empty;
-                break;
-        }
-    }
 
     protected override void OnRelationshipsChanged(Cell cell)
     {
@@ -85,8 +54,6 @@ public sealed class FunctionalElement : PartItem
 
         Type = ElementType.FunctionalElement;
         ParentId = GetAssociatedEquipment(Source) ?? 0;
-        Designation = Source.CellsU["Prop.FunctionalElement"].ResultStr[VisUnitCodes.visUnitsString];
-        Description = Source.CellsU["Prop.Description"].ResultStr[VisUnitCodes.visUnitsString];
     }
 
     #endregion

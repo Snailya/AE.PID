@@ -56,6 +56,13 @@
                             size="large"
                             getImage="GetButtonImage"
                     />
+<!--                    <button id="debug"-->
+<!--                            label="调试"-->
+<!--                            onAction="Debug"-->
+<!--                            screentip="调试"-->
+<!--                            size="large"-->
+<!--                            getImage="GetButtonImage"-->
+<!--                    />-->
                 </group>
             </tab>
         </tabs>

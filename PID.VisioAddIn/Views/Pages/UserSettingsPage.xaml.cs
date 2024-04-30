@@ -1,7 +1,8 @@
 ﻿using System.Reactive.Disposables;
-using AE.PID.Controllers;
+using AE.PID.Controllers.Services;
 using AE.PID.ViewModels.Pages;
 using ReactiveUI;
+using Splat;
 
 namespace AE.PID.Views.Pages;
 
@@ -11,12 +12,10 @@ public partial class UserSettingsPage
     {
         InitializeComponent();
 
-        var serviceManager = ServiceManager.GetInstance();
-        ViewModel = new UserSettingsViewModel(
-            serviceManager.Configuration,
-            serviceManager.AppUpdater,
-            serviceManager.LibraryUpdater
-        );
+        var configuration = Locator.Current.GetService<ConfigurationService>();
+        var appUpdater = Locator.Current.GetService<AppUpdater>();
+        var libraryUpdater = Locator.Current.GetService<LibraryUpdater>();
+        ViewModel = new UserSettingsViewModel(configuration!, appUpdater!, libraryUpdater!);
 
         this.WhenActivated(d =>
         {
@@ -37,7 +36,6 @@ public partial class UserSettingsPage
                     vm => vm.ClearCache,
                     v => v.ClearCacheButton)
                 .DisposeWith(d);
-
 
             this.Bind(ViewModel,
                     vm => vm.LibraryCheckFrequency,

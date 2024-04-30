@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
 using System.Reactive.Concurrency;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 using AE.PID.Core.DTOs;
 using AE.PID.Models.BOM;
 using DynamicData;
+using DynamicData.Binding;
 using Newtonsoft.Json;
 using ReactiveUI;
 
@@ -26,6 +28,8 @@ public class MaterialsService : IDisposable
 
     private readonly SourceCache<MaterialsRequestResult, DesignMaterialsQueryTerms> _requestResults =
         new(t => t.QueryTerms!);
+
+    private ReadOnlyObservableCollection<DesignMaterial> _materials;
 
     #region Constructors
 
@@ -53,6 +57,16 @@ public class MaterialsService : IDisposable
             .WhereNotNull()
             .Subscribe(x => CategoryMap = x)
             .DisposeWith(_cleanUp);
+
+       _requestResults.Connect()
+            .RemoveKey()
+            .TransformMany(x => x.Materials)
+            .Bind(out _materials)
+            .DisposeMany()
+            .Subscribe()
+            .DisposeWith(_cleanUp);
+
+
     }
 
     #endregion
@@ -111,8 +125,10 @@ public class MaterialsService : IDisposable
     public IObservableCache<MaterialCategoryDto, int> Categories => _categories.AsObservableCache();
     public IObservableCache<LastUsedDesignMaterial, string> LastUsed => _lastUsed.AsObservableCache();
 
-    public IObservableCache<MaterialsRequestResult, DesignMaterialsQueryTerms> Materials =>
+    public IObservableCache<MaterialsRequestResult, DesignMaterialsQueryTerms> MaterialsGroupByCategory =>
         _requestResults.AsObservableCache();
+
+    public ReadOnlyObservableCollection<DesignMaterial> Materials => _materials;
 
     #endregion
 }

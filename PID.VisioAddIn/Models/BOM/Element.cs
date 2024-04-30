@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -18,6 +19,29 @@ public abstract class Element : ReactiveObject, IDisposable, ITreeNode
 
     private int _parentId;
 
+    #region Constructors
+
+    protected Element(Shape shape)
+    {
+        Source = shape;
+        Id = shape.ID;
+
+        // setup initial value
+        Initialize();
+
+
+        // observe on relationship change
+        Observable
+            .FromEvent<EShape_FormulaChangedEventHandler, Cell>(
+                handler => Source.FormulaChanged += handler,
+                handler => Source.FormulaChanged -= handler)
+            .Where(cell => cell.Name == "Relationships")
+            .Subscribe(OnRelationshipsChanged)
+            .DisposeWith(CleanUp);
+    }
+
+    #endregion
+
     protected static int? GetContainerIdByCategory(Shape shape, string categoryName)
     {
         if (shape.MemberOfContainers.Length == 0) return null;
@@ -35,13 +59,32 @@ public abstract class Element : ReactiveObject, IDisposable, ITreeNode
     #region Public Methods
 
     /// <summary>
-    ///     Highlight the source on page
+    ///     Select and make it view center.
     /// </summary>
-    public void HighlightOnPage()
+    public void Select()
     {
         Source.ContainingPage.Application.ActiveWindow.Select(Source, (short)VisSelectArgs.visSelect);
         Source.ContainingPage.Application.ActiveWindow.CenterViewOnShape(Source,
             VisCenterViewFlags.visCenterViewSelectShape);
+    }
+
+    #endregion
+
+    private void Initialize()
+    {
+        OnInitialized();
+    }
+    
+    #region Virtual Methods
+
+    protected virtual void OnRelationshipsChanged(Cell cell)
+    {
+        throw new NotImplementedException();
+    }
+
+    protected virtual void OnInitialized()
+    {
+        throw new NotImplementedException();
     }
 
     public virtual void Dispose()
@@ -51,81 +94,31 @@ public abstract class Element : ReactiveObject, IDisposable, ITreeNode
 
     #endregion
 
-    #region Constructors
-
-    protected Element(Shape shape)
-    {
-        Source = shape;
-        Id = shape.ID;
-
-        Observable
-            .FromEvent<EShape_CellChangedEventHandler, Cell>(
-                handler => Source.CellChanged += handler,
-                handler => Source.CellChanged -= handler)
-            .Subscribe(OnCellChanged)
-            .DisposeWith(CleanUp);
-
-        // observable on relationship change
-        Observable
-            .FromEvent<EShape_FormulaChangedEventHandler, Cell>(
-                handler => Source.FormulaChanged += handler,
-                handler => Source.FormulaChanged -= handler)
-            .Where(cell => cell.Name == "Relationships")
-            .Subscribe(OnRelationshipsChanged)
-            .DisposeWith(CleanUp);
-
-        Initialize();
-    }
-
-    private void Initialize()
-    {
-        OnInitialized();
-    }
-
-    #endregion
-
-
-    #region Virtual Methods
-
-    protected virtual void OnRelationshipsChanged(Cell cell)
-    {
-    }
-
-    protected virtual void OnCellChanged(Cell cell)
-    {
-        Description = cell.Name switch
-        {
-            "Prop.Description" => cell.ResultStr[VisUnitCodes.visUnitsString],
-            _ => Description
-        };
-    }
-
-    protected virtual void OnInitialized()
-    {
-        Description = Source.CellsU["Prop.Description"].ResultStr[VisUnitCodes.visUnitsString];
-    }
-
-    #endregion
-
     #region Properties
 
+    /// <summary>
+    ///     The shape id of the logical parent.
+    /// </summary>
     public int ParentId
     {
         get => _parentId;
         protected set => this.RaiseAndSetIfChanged(ref _parentId, value);
     }
 
+    /// <summary>
+    ///     The shape id of the source shape.
+    /// </summary>
     public int Id { get; }
 
     public ElementType Type { get; protected set; }
 
     /// <summary>
-    ///     Notice that the property in visio for designation differs for element type
+    ///     Notice that the property in visio for designation differs for element type.
     /// </summary>
     public string Designation
     {
         get => _designation;
-        protected set => this.RaiseAndSetIfChanged(ref _designation, value);
+        set => this.RaiseAndSetIfChanged(ref _designation, value);
     }
 
     /// <summary>
@@ -133,10 +126,14 @@ public abstract class Element : ReactiveObject, IDisposable, ITreeNode
     /// </summary>
     public string Label => _designation;
 
+    /// <summary>
+    ///     The description of this element. For part item, it maps from Prop.Description. For functional group, it maps from
+    ///     Prop.FunctionalGroupDescription.
+    /// </summary>
     public string Description
     {
         get => _description;
-        protected set => this.RaiseAndSetIfChanged(ref _description, value);
+        set => this.RaiseAndSetIfChanged(ref _description, value);
     }
 
     #endregion

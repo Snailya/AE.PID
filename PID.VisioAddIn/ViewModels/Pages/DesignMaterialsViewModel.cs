@@ -35,7 +35,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
     {
         if (_element is not PartItem partItem) return;
 
-        partItem.DesignMaterial = material;
+        partItem.MaterialNo = material.Code;
         service.AddToLastUsed(material, CategoryPredicateSeed);
     }
 
@@ -55,7 +55,6 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
 
         Close = ReactiveCommand.Create(() => { });
     }
-
 
     protected override void SetupSubscriptions(CompositeDisposable d)
     {
@@ -133,7 +132,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
                 t => t.UserFiltersViewModel.Manufacturer
             )
             .Select(BuildUserFilter);
-        service.Materials
+        service.MaterialsGroupByCategory
             .Connect()
             .Filter(queryFilter)
             .RemoveKey()
@@ -188,7 +187,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
     /// <returns></returns>
     private static Func<MaterialsRequestResult, bool> BuildCategoryFilter(DesignMaterialsQueryTerms query)
     {
-        return m => m.QueryTerms.CategoryId == query.CategoryId &&
+        return m => m.QueryTerms?.CategoryId == query.CategoryId &&
                     m.QueryTerms.PageNumber <= query.PageNumber;
     }
 

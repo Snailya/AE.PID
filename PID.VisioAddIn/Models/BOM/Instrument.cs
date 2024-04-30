@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.Contracts;
+using System.Reactive.Disposables;
 using AE.PID.Tools;
 using Microsoft.Office.Interop.Visio;
 using ReactiveUI;
@@ -36,22 +37,9 @@ public sealed class Instrument : Equipment
         base.OnInitialized();
 
         Type = ElementType.Instrument;
-        ProcessVariableAndControlFunctions =
-            Source.TryGetFormatValue("Prop.ProcessVariableAndControlFunctions") ?? string.Empty;
-    }
 
-    protected override void OnCellChanged(Cell cell)
-    {
-        base.OnCellChanged(cell);
-
-        switch (cell.Name)
-        {
-            // bind Description to Prop.Description
-            case "Prop.ProcessVariableAndControlFunctions":
-                ProcessVariableAndControlFunctions =
-                    Source.TryGetFormatValue("Prop.ProcessVariableAndControlFunctions") ?? string.Empty;
-                break;
-        }
+        Source.Bind(this, x => x.ProcessVariableAndControlFunctions, "Prop.ProcessVariableAndControlFunctions")
+            .DisposeWith(CleanUp);
     }
 
     #endregion

@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Reactive.Disposables;
+using AE.PID.Tools;
 using Microsoft.Office.Interop.Visio;
 using ReactiveUI;
 
@@ -7,7 +9,7 @@ namespace AE.PID.Models.BOM;
 
 public sealed class EquipmentUnit : Element
 {
-    private double _count;
+    private double _quantity;
 
     #region Constructors
 
@@ -21,10 +23,10 @@ public sealed class EquipmentUnit : Element
 
     #region Properties
 
-    public double Count
+    public double Quantity
     {
-        get => _count;
-        private set => this.RaiseAndSetIfChanged(ref _count, value);
+        get => _quantity;
+        set => this.RaiseAndSetIfChanged(ref _quantity, value);
     }
 
     #endregion
@@ -33,8 +35,6 @@ public sealed class EquipmentUnit : Element
 
     protected override void OnRelationshipsChanged(Cell cell)
     {
-        base.OnRelationshipsChanged(cell);
-
         // update parent id
         var containerIds = Source.MemberOfContainers.OfType<int>().ToArray();
         if (!containerIds.Any())
@@ -48,32 +48,13 @@ public sealed class EquipmentUnit : Element
         }
     }
 
-    protected override void OnCellChanged(Cell cell)
-    {
-        base.OnCellChanged(cell);
-
-        switch (cell.Name)
-        {
-            case "Prop.Quantity":
-            {
-                if (double.TryParse(Source.Cells["Prop.Quantity"].ResultStr[VisUnitCodes.visUnitsString],
-                        out var quantity))
-                    Count = quantity;
-                break;
-            }
-        }
-    }
-
-
     protected override void OnInitialized()
     {
-        base.OnInitialized();
-
         Type = ElementType.Unit;
         ParentId = GetContainerIdByCategory(Source, "FunctionalGroup") ?? 0;
-        if (double.TryParse(Source.Cells["Prop.Quantity"].ResultStr[VisUnitCodes.visUnitsString],
-                out var value))
-            Count = value;
+
+        Source.Bind(this, x => x.Quantity, "Prop.Quantity")
+            .DisposeWith(CleanUp);
     }
 
     #endregion

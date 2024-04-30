@@ -10,8 +10,10 @@
                 xmlns:pages="clr-namespace:AE.PID.Views.Pages"
                 xmlns:viewModels1="clr-namespace:AE.PID.ViewModels.Pages"
                 xmlns:converters="clr-namespace:AE.PID.Converters"
+                xmlns:bom="clr-namespace:AE.PID.Models.BOM"
+                xmlns:filterDataGrid="http://filterdatagrid.control.com/2021"
                 mc:Ignorable="d"
-                MinHeight="320" MinWidth="800"
+                MinHeight="640" MinWidth="800"
                 d:DataContext="{d:DesignInstance Type=viewModels1:BomViewModel}"
                 d:DesignHeight="320" d:DesignWidth="800">
     <UserControl.Resources>
@@ -46,45 +48,80 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <controls:SectionLabel Header="设备清单" />
-
-            <controls:TreeListView x:Name="Elements"
-                                   Grid.Row="1"
-                                   SelectedValuePath="Id">
-                <controls:TreeListView.Resources>
-                    <converters:ElementTypeToBackgroundColorConverter x:Key="ElementTypeToBackgroundColorConverter" />
-                    <converters:ElementTypeToStringConverter x:Key="ElementTypeToStringConverter" />
-                    <DataTemplate x:Key="TypeCellTemplate" DataType="{x:Type viewModels:TreeNodeViewModel`1}">
-                        <Border DataContext="{Binding Source}"
-                                Background="{Binding Path =Type, Converter={StaticResource ElementTypeToBackgroundColorConverter}}"
-                                CornerRadius="2">
-                            <TextBlock TextAlignment="Center"
-                                       Text="{Binding Path = Type, Converter={StaticResource ElementTypeToStringConverter }}" />
-                        </Border>
-                    </DataTemplate>
-                </controls:TreeListView.Resources>
-                <controls:TreeListView.ItemTemplate>
-                    <HierarchicalDataTemplate ItemsSource="{Binding Inferiors}"
-                                              DataType="{x:Type viewModels:TreeNodeViewModel`1}" />
-                </controls:TreeListView.ItemTemplate>
-                <controls:TreeListView.View>
-                    <GridView>
-                        <GridViewColumn DisplayMemberBinding="{Binding Id}" Header="形状ID" Width="64" />
-                        <GridViewColumn CellTemplate="{StaticResource TypeCellTemplate}" Header="类型" />
-                        <GridViewColumn CellTemplate="{StaticResource ExpandCellTemplate}" Header="位号" Width="128" />
-                        <GridViewColumn DisplayMemberBinding="{Binding Source.Description}" Header="描述" Width="144" />
-                        <GridViewColumn DisplayMemberBinding="{Binding Source.SubClassName}" Header="子类" Width="96" />
-                        <GridViewColumn DisplayMemberBinding="{Binding Source.KeyParameters}" Header="关键参数" Width="144" />
-                        <GridViewColumn DisplayMemberBinding="{Binding Source.MaterialNo}" Header="物料号" Width="144" />
-                        <GridViewColumn DisplayMemberBinding="{Binding Source.Count}" Header="数量" Width="32" />
-                    </GridView>
-                </controls:TreeListView.View>
-                <controls:TreeListView.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="复制物料" x:Name="CopyMaterial" />
-                        <MenuItem Header="粘贴物料" x:Name="PasteMaterial" />
-                    </ContextMenu>
-                </controls:TreeListView.ContextMenu>
-            </controls:TreeListView>
+            <TabControl Grid.Row="1">
+                <TabItem Header="结构化">
+                    <controls:TreeListView x:Name="Elements"
+                                           SelectedValuePath="Id">
+                        <controls:TreeListView.Resources>
+                            <converters:ElementTypeToBackgroundColorConverter
+                                x:Key="ElementTypeToBackgroundColorConverter" />
+                            <converters:ElementTypeToStringConverter x:Key="ElementTypeToStringConverter" />
+                            <DataTemplate x:Key="TypeCellTemplate" DataType="{x:Type viewModels:TreeNodeViewModel`1}">
+                                <Border DataContext="{Binding Source}"
+                                        Background="{Binding Path =Type, Converter={StaticResource ElementTypeToBackgroundColorConverter}}"
+                                        CornerRadius="2">
+                                    <TextBlock TextAlignment="Center"
+                                               Text="{Binding Path = Type, Converter={StaticResource ElementTypeToStringConverter }}" />
+                                </Border>
+                            </DataTemplate>
+                        </controls:TreeListView.Resources>
+                        <controls:TreeListView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding Inferiors}"
+                                                      DataType="{x:Type viewModels:TreeNodeViewModel`1}" />
+                        </controls:TreeListView.ItemTemplate>
+                        <controls:TreeListView.View>
+                            <GridView>
+                                <GridViewColumn DisplayMemberBinding="{Binding Id}" Header="形状ID" Width="64" />
+                                <GridViewColumn CellTemplate="{StaticResource TypeCellTemplate}" Header="类型" />
+                                <GridViewColumn CellTemplate="{StaticResource ExpandCellTemplate}" Header="位号"
+                                                Width="128" />
+                                <GridViewColumn DisplayMemberBinding="{Binding Source.MaterialNo}" Header="物料号"
+                                                Width="144" />
+                                <GridViewColumn DisplayMemberBinding="{Binding Source.Description}" Header="描述"
+                                                Width="144" />
+                                <GridViewColumn DisplayMemberBinding="{Binding Source.SubClassName}" Header="子类"
+                                                Width="96" />
+                                <GridViewColumn DisplayMemberBinding="{Binding Source.KeyParameters}" Header="关键参数"
+                                                Width="144" />
+                                <GridViewColumn DisplayMemberBinding="{Binding Source.Quantity}" Header="单位数量"
+                                                Width="64" />
+                                <GridViewColumn DisplayMemberBinding="{Binding Source.SubTotal}" Header="数量" Width="32" />
+                            </GridView>
+                        </controls:TreeListView.View>
+                        <controls:TreeListView.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="复制物料" x:Name="CopyMaterial" />
+                                <MenuItem Header="粘贴物料" x:Name="PasteMaterial" />
+                            </ContextMenu>
+                        </controls:TreeListView.ContextMenu>
+                    </controls:TreeListView>
+                </TabItem>
+                <TabItem Header="展开">
+                    <filterDataGrid:FilterDataGrid x:Name="PartItems"
+                                                   AutoGenerateColumns="False" FilterLanguage="SimplifiedChinese"
+                                                   ShowStatusBar="True"
+                                                   d:DataContext="{d:DesignInstance Type=bom:PartItem}">
+                        <filterDataGrid:FilterDataGrid.Columns>
+                            <filterDataGrid:DataGridTextColumn Header="形状ID" Binding="{Binding Id}" IsReadOnly="True" />
+                            <filterDataGrid:DataGridTextColumn Header="功能组" Binding="{Binding FunctionalGroup}"
+                                                               IsReadOnly="True" IsColumnFiltered="True" />
+                            <filterDataGrid:DataGridTextColumn Header="功能元件" Binding="{Binding Designation}"
+                                                               IsColumnFiltered="True" />
+                            <filterDataGrid:DataGridTextColumn Header="物料编码" Binding="{Binding MaterialNo}"
+                                                               IsColumnFiltered="True" />
+                            <filterDataGrid:DataGridTextColumn Header="描述" Binding="{Binding Description}"
+                                                               IsColumnFiltered="True" />
+                            <filterDataGrid:DataGridTextColumn Header="名称" Binding="{Binding SubClassName}"
+                                                               IsReadOnly="True" IsColumnFiltered="True" />
+                            <filterDataGrid:DataGridTextColumn Header="关键参数" Binding="{Binding KeyParameters}"
+                                                               IsReadOnly="True" IsColumnFiltered="True" />
+                            <filterDataGrid:DataGridTextColumn Header="单位数量" Binding="{Binding Quantity}" />
+                            <filterDataGrid:DataGridTextColumn Header="数量" Binding="{Binding SubTotal}"
+                                                               IsReadOnly="True" />
+                        </filterDataGrid:FilterDataGrid.Columns>
+                    </filterDataGrid:FilterDataGrid>
+                </TabItem>
+            </TabControl>
         </Grid>
         <Separator Grid.Row="3" />
         <components:OkCancelFeedback x:Name="Feedback"
