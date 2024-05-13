@@ -42,12 +42,12 @@ public class AppUpdater : IEnableLogger
             // ignore if it not till the next check time
             .Where(_ => DateTime.Now > configuration.AppNextTime)
             .Do(_ => this.Log().Info("App Update started. {Initiated by: Auto-Run}"))
-            .SelectMany(x => CheckUpdateAsync())
+            .SelectMany(_ => CheckUpdateAsync())
             .Do(_ => { configuration.AppNextTime = DateTime.Now + configuration.AppCheckInterval; })
-            .Subscribe(v => { })
+            .Subscribe(_ => { })
             .DisposeWith(_cleanUp);
 
-        // whenever a update is available, it triggers a subject, so that we could ask user for permission
+        // whenever an update is available, it triggers a subject, so that we could ask user for permission
         _updateAvailableTrigger
             .WhereNotNull()
             // switch to main thread to display ui
@@ -60,10 +60,10 @@ public class AppUpdater : IEnableLogger
                                      Environment.NewLine;
                 return WindowManager.ShowDialog(messageBoxText);
             })
-            .ObserveOn(ThisAddIn.Dispatcher)
+            .ObserveOn(ThisAddIn.Dispatcher!)
             // if user choose to update, download the installer and invoke update
             .Where(result => result is MessageBoxResult.Yes or MessageBoxResult.OK)
-            .SelectMany(x => DownloadUpdateAsync())
+            .SelectMany(_ => DownloadUpdateAsync())
             .Subscribe(InstallUpdate)
             .DisposeWith(_cleanUp);
     }
@@ -151,7 +151,7 @@ public class AppUpdater : IEnableLogger
     }
 
     /// <summary>
-    ///     Get the filename from content disposition from an response.
+    ///     Get the filename from content disposition from a response.
     /// </summary>
     /// <param name="contentDisposition"></param>
     /// <returns></returns>
@@ -230,7 +230,7 @@ public class AppUpdater : IEnableLogger
             {
                 FileName = $"{installPath}",
                 Arguments =
-                    $"x -o+ \"{sourceArchiveFileName}\" \"{destinationDirectoryName}\"", // -o+ means overwirte all
+                    $"x -o+ \"{sourceArchiveFileName}\" \"{destinationDirectoryName}\"", // -o+ means overwrite all
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,

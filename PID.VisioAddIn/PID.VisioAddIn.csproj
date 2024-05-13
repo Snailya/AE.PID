@@ -400,15 +400,14 @@
         <None Include="Resources\open_export_tool.ico" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Bogus" Version="35.5.0" />
         <PackageReference Include="BusyIndicators" Version="2.1.2" />
         <PackageReference Include="DataGridExtensions" Version="2.6.0" />
         <PackageReference Include="FilterDataGrid" Version="1.2.8" />
         <PackageReference Include="Material.Icons.WPF" Version="2.1.0" />
         <PackageReference Include="MiniExcel" Version="1.31.3" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-        <PackageReference Include="NLog" Version="5.2.8" />
         <PackageReference Include="ReactiveUI.WPF" Version="19.5.39" />
+        <PackageReference Include="Splat.NLog" Version="15.0.1" />
         <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0" />
         <PackageReference Include="System.Net.Http" Version="4.3.4" />
         <PackageReference Include="System.Xml.Linq" Version="3.5.21022.801" />

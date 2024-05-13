@@ -6,15 +6,16 @@ using AE.PID.Services;
 using AE.PID.Tools;
 using Microsoft.Office.Interop.Visio;
 using Splat;
+using Splat.NLog;
 
 namespace AE.PID;
 
-public partial class ThisAddIn:IEnableLogger
+public partial class ThisAddIn : IEnableLogger
 {
     private Ribbon _ribbon;
 
     public static Dispatcher? Dispatcher { get; private set; }
-    
+
     private void ThisAddIn_Startup(object sender, System.EventArgs e)
     {
         // setup dispatcher
@@ -26,29 +27,34 @@ public partial class ThisAddIn:IEnableLogger
 
         // configure services
         Locator.CurrentMutable.RegisterConstant(new DebugLogger { Level = LogLevel.Info }, typeof(ILogger));
+        Locator.CurrentMutable.UseNLogWithWrappingFullLogger();
+
         Locator.CurrentMutable.RegisterLazySingleton(() => new ConfigurationService(),
             typeof(ConfigurationService));
-        Locator.CurrentMutable.RegisterLazySingleton(() => new HttpClient { BaseAddress = Locator.Current.GetService<ConfigurationService>()!.Api },
+        Locator.CurrentMutable.RegisterLazySingleton(
+            () => new HttpClient { BaseAddress = Locator.Current.GetService<ConfigurationService>()!.Api },
             typeof(HttpClient));
-        Locator.CurrentMutable.RegisterLazySingleton(() => new MaterialsService(Locator.Current.GetService<HttpClient>()!),
+        Locator.CurrentMutable.RegisterLazySingleton(
+            () => new MaterialsService(Locator.Current.GetService<HttpClient>()!),
             typeof(MaterialsService));
-        Locator.CurrentMutable.RegisterLazySingleton(() => new DocumentMonitor(Locator.Current.GetService<ConfigurationService>()!),
-            typeof(DocumentMonitor));
-        Locator.CurrentMutable.RegisterLazySingleton(() => new AppUpdater(Locator.Current.GetService<HttpClient>()!, Locator.Current.GetService<ConfigurationService>()!),
-            typeof(AppUpdater));
-        Locator.CurrentMutable.RegisterLazySingleton(() => new LibraryUpdater(Locator.Current.GetService<HttpClient>()!, Locator.Current.GetService<ConfigurationService>()!),
-            typeof(LibraryUpdater));
         
         // declare a ui thread to display wpf window
         var uiThread = new Thread(WindowManager.Initialize) { Name = "UI Thread" };
         uiThread.SetApartmentState(ApartmentState.STA);
         uiThread.Start();
-        
+
         // initialize ribbon
         _ribbon = new Ribbon();
         Globals.ThisAddIn.Application.RegisterRibbonX(_ribbon, null,
             VisRibbonXModes.visRXModeDrawing,
             "AE PID RIBBON");
+
+        // initialize the background worker
+        var appUpdater = new AppUpdater(Locator.Current.GetService<HttpClient>()!,
+            Locator.Current.GetService<ConfigurationService>()!);
+        var libraryUpdater = new LibraryUpdater(Locator.Current.GetService<HttpClient>()!,
+            Locator.Current.GetService<ConfigurationService>()!);
+        var documentUpdater = new DocumentMonitor(Locator.Current.GetService<ConfigurationService>()!);
     }
 
     private void ThisAddIn_Shutdown(object sender, System.EventArgs e)
