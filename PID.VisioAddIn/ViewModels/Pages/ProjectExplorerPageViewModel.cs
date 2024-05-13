@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Disposables;
@@ -87,7 +88,7 @@ public class ProjectExplorerPageViewModel(ProjectService service) : ViewModelBas
         service.Elements
             .Connect()
             .Filter(x => x is PartItem)
-            .Transform(x => (PartItem)x)
+            .Transform(x=> (PartItem)x)
             .ObserveOn(WindowManager.Dispatcher!)
             .Bind(out _partListItems)
             .DisposeMany()

@@ -105,7 +105,7 @@
                     <TabItem Header="展开">
                         <filterDataGrid:FilterDataGrid x:Name="PartItems"
                                                        AutoGenerateColumns="False" FilterLanguage="SimplifiedChinese"
-                                                       ShowStatusBar="True"
+                                                       ShowStatusBar="True" SelectionMode="Single"
                                                        d:DataContext="{d:DesignInstance Type=models:PartItem}">
                             <filterDataGrid:FilterDataGrid.Columns>
                                 <filterDataGrid:DataGridTextColumn Header="形状ID" Binding="{Binding Id}"

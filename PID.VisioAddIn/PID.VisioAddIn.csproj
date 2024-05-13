@@ -262,6 +262,7 @@
         <Compile Include="ViewModels\Pages\ProjectExplorerPageViewModel.cs" />
         <Compile Include="ViewModels\Pages\SelectToolPageViewModel.cs" />
         <Compile Include="ViewModels\Pages\SettingsPageViewModel.cs" />
+        <Compile Include="ViewModels\SelectableViewModel.cs" />
         <Compile Include="ViewModels\TreeNodeViewModel.cs" />
         <Compile Include="ViewModels\ViewModelBase.cs" />
         <Compile Include="ViewModels\WindowViewModel.cs" />

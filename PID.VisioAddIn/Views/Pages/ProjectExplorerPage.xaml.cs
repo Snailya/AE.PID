@@ -2,6 +2,7 @@
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using AE.PID.Models;
@@ -31,8 +32,8 @@ public partial class ProjectExplorerPage
                     v => v.DocumentInfo.ViewModel)
                 .DisposeWith(d);
 
-            this.OneWayBind(ViewModel, 
-                    x => x.IsBusy, 
+            this.OneWayBind(ViewModel,
+                    x => x.IsBusy,
                     x => x.BusyIndicator.IsBusy)
                 .DisposeWith(d);
             this.OneWayBind(ViewModel,
@@ -56,7 +57,7 @@ public partial class ProjectExplorerPage
                     vm => vm.PasteMaterial,
                     v => v.PasteMaterial)
                 .DisposeWith(d);
-            
+
             //set selected item for right mouse click event, otherwise the context menu not work as expected
             Observable.FromEventPattern<MouseButtonEventHandler, MouseButtonEventArgs>(
                     handler => Elements.PreviewMouseRightButtonDown += handler,
@@ -70,7 +71,9 @@ public partial class ProjectExplorerPage
             this.WhenAnyValue(x => x.Elements.SelectedItem)
                 .Where(x => x is TreeNodeViewModel<ElementBase>)
                 .Select(x => ((TreeNodeViewModel<ElementBase>)x).Source)
-                .Merge(this.WhenAnyValue(x => x.PartItems.SelectedItem)) // todo: this not work for filterdatagrid
+                .Merge(Observable.FromEventPattern<SelectionChangedEventHandler, SelectionChangedEventArgs>(
+                    handler => PartItems.SelectionChanged += handler,
+                    handler => PartItems.SelectionChanged -= handler).Select(x => PartItems.SelectedItem))
                 .Where(x => x is PartItem)
                 .WhereNotNull()
                 .Cast<PartItem>()
@@ -81,7 +84,6 @@ public partial class ProjectExplorerPage
             // highlight the item on page
             this.WhenAnyValue(x => x.ViewModel!.Selected)
                 .WhereNotNull()
-                // .Delay(TimeSpan.FromMilliseconds(300))
                 .ObserveOn(ThisAddIn.Dispatcher!)
                 .Subscribe(x => x.Select())
                 .DisposeWith(d);
