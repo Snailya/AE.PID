@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reactive.Disposables;
 using AE.PID.Models;
 using ReactiveUI;

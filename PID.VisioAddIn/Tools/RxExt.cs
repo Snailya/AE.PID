@@ -12,14 +12,14 @@ internal static class RxExt
         TimeSpan minimumInactivityPeriod,
         IScheduler scheduler)
     {
-        var onoffs =
+        var onOffs =
             from _ in src
             from delta in
                 Observable.Return(1, scheduler)
                     .Concat(Observable.Return(-1, scheduler)
                         .Delay(minimumInactivityPeriod, scheduler))
             select delta;
-        var outstanding = onoffs.Scan(0, (total, delta) => total + delta);
+        var outstanding = onOffs.Scan(0, (total, delta) => total + delta);
         var zeroCrossings = outstanding.Where(total => total == 0);
         return src.Buffer(zeroCrossings);
     }

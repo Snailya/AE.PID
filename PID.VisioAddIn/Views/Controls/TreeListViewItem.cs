@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 
-namespace AE.PID.Views.Controls;
+namespace AE.PID.Views;
 
 public class TreeListViewItem : TreeViewItem
 {
@@ -25,7 +25,6 @@ public class TreeListViewItem : TreeViewItem
 
     protected override bool IsItemItsOwnContainerOverride(object item)
     {
-        //return item is TreeListViewItem;
         var isItv = item is TreeListViewItem;
         return isItv;
     }

@@ -4,7 +4,7 @@ using System.Reactive.Linq;
 using System.Windows;
 using ReactiveUI;
 
-namespace AE.PID.Views.Components;
+namespace AE.PID.Views;
 
 /// <summary>
 ///     Interaction logic for OkCancelControl.xaml

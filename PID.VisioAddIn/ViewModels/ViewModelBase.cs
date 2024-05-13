@@ -1,9 +1,10 @@
 ﻿using System.Reactive.Disposables;
 using ReactiveUI;
+using Splat;
 
 namespace AE.PID.ViewModels;
 
-public abstract class ViewModelBase : ReactiveObject, IActivatableViewModel
+public abstract class ViewModelBase : ReactiveObject, IActivatableViewModel, IEnableLogger
 {
     protected ViewModelBase()
     {

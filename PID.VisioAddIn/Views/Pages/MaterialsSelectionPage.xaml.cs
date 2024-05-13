@@ -5,18 +5,17 @@ using System.Reactive.Linq;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using AE.PID.Controllers;
-using AE.PID.Controllers.Services;
-using AE.PID.Models.BOM;
+using AE.PID.Models;
+using AE.PID.Services;
 using AE.PID.Tools;
-using AE.PID.ViewModels.Pages;
+using AE.PID.ViewModels;
 using ReactiveUI;
 using Splat;
 
-namespace AE.PID.Views.Pages;
+namespace AE.PID.Views;
 
 /// <summary>
-///     Interaction logic for DesignMaterialsSelectionControl.xaml
+///     Interaction logic for MockPage.xaml
 /// </summary>
 public partial class MaterialsSelectionPage
 {
@@ -25,7 +24,7 @@ public partial class MaterialsSelectionPage
         InitializeComponent();
 
         var materialService = Locator.Current.GetService<MaterialsService>();
-        ViewModel = new DesignMaterialsViewModel(materialService);
+        ViewModel = new DesignMaterialsViewModel(materialService!);
 
         this.WhenActivated(d =>
         {
@@ -34,7 +33,6 @@ public partial class MaterialsSelectionPage
                     v => v.CategoryTree.ItemsSource)
                 .DisposeWith(d);
             this.WhenAnyValue(x => x.CategoryTree.SelectedItem)
-                .ObserveOnDispatcher()
                 .BindTo(ViewModel, vm => vm.SelectedCategory)
                 .DisposeWith(d);
 

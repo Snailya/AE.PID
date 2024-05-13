@@ -4,16 +4,15 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using AE.PID.Controllers.Services;
-using AE.PID.Core.DTOs;
-using AE.PID.Models.BOM;
-using AE.PID.Models.EventArgs;
-using AE.PID.ViewModels.Components;
+using AE.PID.Dtos;
+using AE.PID.EventArgs;
+using AE.PID.Models;
+using AE.PID.Services;
 using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
 
-namespace AE.PID.ViewModels.Pages;
+namespace AE.PID.ViewModels;
 
 public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
 {
@@ -22,7 +21,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
 
     private ObservableAsPropertyHelper<string>? _categoryFilterSeed;
 
-    private Element? _element;
+    private ElementBase? _element;
     private ReadOnlyObservableCollection<DesignMaterial> _lastUsed = new([]);
     private int _pageNumber = 1;
     private TreeNodeViewModel<MaterialCategoryDto>? _selectedCategory;
@@ -61,7 +60,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
         // listen for element selected event in Export page, when the selected element changed, it is used as the seed for this page
         MessageBus.Current.Listen<ElementSelectedEventArgs>()
             .DistinctUntilChanged()
-            .Select(x => x.Element)
+            .Select(x => x.ElementBase)
             .Subscribe(x => Element = x)
             .DisposeWith(d);
 
@@ -89,7 +88,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
             .Connect()
             .TransformToTree(x => x.ParentId, categoryPredicate)
             .Transform(node => new TreeNodeViewModel<MaterialCategoryDto>(node))
-            .ObserveOn(RxApp.MainThreadScheduler)
+            .ObserveOn(WindowManager.Dispatcher!)
             .Bind(out _categories)
             .DisposeMany()
             .Subscribe()
@@ -139,7 +138,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
             .TransformMany(x => x.Materials)
             .WhereNotNull()
             .Filter(userFilter)
-            .ObserveOn(RxApp.MainThreadScheduler)
+            .ObserveOn(WindowManager.Dispatcher!)
             .Bind(out _validMaterials)
             .DisposeMany()
             .Subscribe()
@@ -155,7 +154,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
             .Filter(lastUsedFilter)
             .SortBy(x => x.LastUsed)
             .Transform(x => x.Source)
-            .ObserveOn(RxApp.MainThreadScheduler)
+            .ObserveOn(WindowManager.Dispatcher!)
             .Bind(out _lastUsed)
             .DisposeMany()
             .Subscribe()
@@ -212,7 +211,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
     ///     The name is the seed for the this view model. The name is mapped to a category and then all girds on populated by
     ///     this category.
     /// </summary>
-    public Element? Element
+    public ElementBase? Element
     {
         get => _element;
         set => this.RaiseAndSetIfChanged(ref _element, value);

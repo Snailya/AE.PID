@@ -1,22 +1,22 @@
 ﻿<Project ToolsVersion="17.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"/>
     <!--
-                                                                              This section defines project-level properties.
-                                                                          
-                                                                              AssemblyName
-                                                                                Name of the output assembly.
-                                                                              Configuration
-                                                                                Specifies a default value for debug.
-                                                                              OutputType
-                                                                                Must be "Library" for VSTO.
-                                                                              Platform
-                                                                                Specifies what CPU the output of this project can run on.
-                                                                              NoStandardLibraries
-                                                                                Set to "false" for VSTO.
-                                                                              RootNamespace
-                                                                                In C#, this specifies the namespace given to new files. In VB, all objects are
-                                                                                wrapped in this namespace at runtime.
-                                                                            -->
+                                                                                This section defines project-level properties.
+                                                                            
+                                                                                AssemblyName
+                                                                                  Name of the output assembly.
+                                                                                Configuration
+                                                                                  Specifies a default value for debug.
+                                                                                OutputType
+                                                                                  Must be "Library" for VSTO.
+                                                                                Platform
+                                                                                  Specifies what CPU the output of this project can run on.
+                                                                                NoStandardLibraries
+                                                                                  Set to "false" for VSTO.
+                                                                                RootNamespace
+                                                                                  In C#, this specifies the namespace given to new files. In VB, all objects are
+                                                                                  wrapped in this namespace at runtime.
+                                                                              -->
     <PropertyGroup>
         <ProjectTypeGuids>{BAA0C2D2-18E2-41B9-852F-F413020CAA33};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
         <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -66,27 +66,27 @@
     </ItemGroup>
     <PropertyGroup>
         <!--
-                                                                                                                                                          OfficeApplication
-                                                                                                                                                            Add-in host application
-                                                                                                                                                        -->
+                                                                                                                                                              OfficeApplication
+                                                                                                                                                                Add-in host application
+                                                                                                                                                            -->
         <OfficeApplication>Visio</OfficeApplication>
     </PropertyGroup>
     <!--
-                                                                              This section defines properties that are set when the "Debug" configuration is selected.
-                                                                          
-                                                                              DebugSymbols
-                                                                                If "true", create symbols (.pdb). If "false", do not create symbols.
-                                                                              DefineConstants
-                                                                                Constants defined for the preprocessor.
-                                                                              EnableUnmanagedDebugging
-                                                                                If "true", starting the debugger will attach both managed and unmanaged debuggers.
-                                                                              Optimize
-                                                                                If "true", optimize the build output. If "false", do not optimize.
-                                                                              OutputPath
-                                                                                Output path of project relative to the project file.
-                                                                              WarningLevel
-                                                                                Warning level for the compiler.
-                                                                            -->
+                                                                                This section defines properties that are set when the "Debug" configuration is selected.
+                                                                            
+                                                                                DebugSymbols
+                                                                                  If "true", create symbols (.pdb). If "false", do not create symbols.
+                                                                                DefineConstants
+                                                                                  Constants defined for the preprocessor.
+                                                                                EnableUnmanagedDebugging
+                                                                                  If "true", starting the debugger will attach both managed and unmanaged debuggers.
+                                                                                Optimize
+                                                                                  If "true", optimize the build output. If "false", do not optimize.
+                                                                                OutputPath
+                                                                                  Output path of project relative to the project file.
+                                                                                WarningLevel
+                                                                                  Warning level for the compiler.
+                                                                              -->
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <DebugSymbols>true</DebugSymbols>
         <DebugType>full</DebugType>
@@ -97,21 +97,21 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <!--
-                                                                              This section defines properties that are set when the "Release" configuration is selected.
-                                                                          
-                                                                              DebugSymbols
-                                                                                If "true", create symbols (.pdb). If "false", do not create symbols.
-                                                                              DefineConstants
-                                                                                Constants defined for the preprocessor.
-                                                                              EnableUnmanagedDebugging
-                                                                                If "true", starting the debugger will attach both managed and unmanaged debuggers.
-                                                                              Optimize
-                                                                                If "true", optimize the build output. If "false", do not optimize.
-                                                                              OutputPath
-                                                                                Output path of project relative to the project file.
-                                                                              WarningLevel
-                                                                                Warning level for the compiler.
-                                                                            -->
+                                                                                This section defines properties that are set when the "Release" configuration is selected.
+                                                                            
+                                                                                DebugSymbols
+                                                                                  If "true", create symbols (.pdb). If "false", do not create symbols.
+                                                                                DefineConstants
+                                                                                  Constants defined for the preprocessor.
+                                                                                EnableUnmanagedDebugging
+                                                                                  If "true", starting the debugger will attach both managed and unmanaged debuggers.
+                                                                                Optimize
+                                                                                  If "true", optimize the build output. If "false", do not optimize.
+                                                                                OutputPath
+                                                                                  Output path of project relative to the project file.
+                                                                                WarningLevel
+                                                                                  Warning level for the compiler.
+                                                                              -->
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
         <DebugType>none</DebugType>
         <Optimize>true</Optimize>
@@ -123,8 +123,8 @@
         </DocumentationFile>
     </PropertyGroup>
     <!--
-                                                                              This section specifies references for the project.
-                                                                            -->
+                                                                                This section specifies references for the project.
+                                                                              -->
     <ItemGroup>
         <Reference Include="Accessibility"/>
         <Reference Include="mscorlib"/>
@@ -174,71 +174,58 @@
         </Reference>
     </ItemGroup>
     <!--
-                                                                              This section defines the user source files that are part of the project.
-                                                                               
-                                                                              A "Compile" element specifies a source file to compile.
-                                                                              An "EmbeddedResource" element specifies an .resx file for embedded resources.
-                                                                              A "None" element specifies a file that is not to be passed to the compiler (for instance, 
-                                                                              a text file or XML file).
-                                                                              The "AppDesigner" element specifies the directory where the application properties files
-                                                                              can be found.
-                                                                            -->
+                                                                                This section defines the user source files that are part of the project.
+                                                                                 
+                                                                                A "Compile" element specifies a source file to compile.
+                                                                                An "EmbeddedResource" element specifies an .resx file for embedded resources.
+                                                                                A "None" element specifies a file that is not to be passed to the compiler (for instance, 
+                                                                                a text file or XML file).
+                                                                                The "AppDesigner" element specifies the directory where the application properties files
+                                                                                can be found.
+                                                                              -->
     <ItemGroup>
-        <Compile Include="AttachedProperties\AttachedPropertyBase.cs"/>
-        <Compile Include="AttachedProperties\PopupPlacementTarget.cs"/>
         <Compile Include="Attributes\DataGridColumnAttribute.cs"/>
-        <Compile Include="Constants.cs"/>
-        <Compile Include="Controllers\LoggerExtension.cs"/>
-        <Compile Include="Controllers\Services\AppUpdater.cs"/>
-        <Compile Include="Controllers\Services\ConfigurationService.cs"/>
-        <Compile Include="Controllers\Services\MaterialsService.cs"/>
-        <Compile Include="Controllers\Services\DocumentMonitor.cs"/>
-        <Compile Include="Controllers\Services\DocumentExporter.cs"/>
-        <Compile Include="Controllers\Services\LegendGenerator.cs"/>
-        <Compile Include="Controllers\Services\LibraryUpdater.cs"/>
-        <Compile Include="Controllers\Services\ShapeSelector.cs"/>
-        <Compile Include="Converters\ConcurrentBagConverter.cs"/>
         <Compile Include="Converters\ElementTypeToBackgroundColorConverter.cs"/>
         <Compile Include="Converters\ElementTypeToStringConverter.cs"/>
         <Compile Include="Converters\LevelToIndentConverter.cs"/>
+        <Compile Include="Dtos\DesignMaterialDto.cs"/>
+        <Compile Include="Dtos\DetailedLibraryItemDto.cs"/>
+        <Compile Include="Dtos\LibraryDto.cs"/>
+        <Compile Include="Dtos\LibraryItemDto.cs"/>
+        <Compile Include="Dtos\MaterialCategoryDto.cs"/>
+        <Compile Include="Dtos\MaterialDto.cs"/>
+        <Compile Include="Dtos\MaterialPropertyDto.cs"/>
+        <Compile Include="Dtos\Paged.cs"/>
+        <Compile Include="EventArgs\EleemntEventArgs.cs"/>
         <Compile Include="Interfaces\IActionData.cs"/>
         <Compile Include="Interfaces\ILabel.cs"/>
         <Compile Include="Interfaces\IPartItem.cs"/>
         <Compile Include="Interfaces\IProp.cs"/>
         <Compile Include="Interfaces\IShapeData.cs"/>
+        <Compile Include="Interfaces\ITreeNode.cs"/>
         <Compile Include="Interfaces\IUserData.cs"/>
         <Compile Include="Interfaces\IValueProp.cs"/>
-        <Compile Include="Models\BOM\DesignMaterial.cs"/>
-        <Compile Include="Models\BOM\DesignMaterialProperty.cs"/>
-        <Compile Include="Models\BOM\Element.cs"/>
-        <Compile Include="Models\BOM\Equipment.cs"/>
-        <Compile Include="Models\BOM\FunctionalElement.cs"/>
-        <Compile Include="Models\BOM\FunctionalGroup.cs"/>
-        <Compile Include="Models\BOM\FunctionalGroupBase.cs"/>
-        <Compile Include="Models\BOM\Instrument.cs"/>
-        <Compile Include="Models\BOM\LastUsedDesignMaterial.cs"/>
-        <Compile Include="Models\BOM\PartItem.cs"/>
-        <Compile Include="Models\BOM\PartListTableLineItem.cs"/>
-        <Compile Include="Models\BOM\DesignMaterialsQueryTerms.cs"/>
-        <Compile Include="Models\BOM\ElementType.cs"/>
-        <Compile Include="Models\BOM\EquipmentUnit.cs"/>
-        <Compile Include="Models\BOM\ProxyFunctionalGroup.cs"/>
-        <Compile Include="Models\Configurations\Configuration.cs"/>
-        <Compile Include="Models\Configurations\Library.cs"/>
-        <Compile Include="Models\Configurations\LibraryConfiguration.cs"/>
-        <Compile Include="Models\Configurations\LibraryItem.cs"/>
-        <Compile Include="Models\EventArgs\ElementSelectedEventArgs.cs"/>
-        <Compile Include="Models\InputCache.cs"/>
-        <Compile Include="Models\MasterDocumentLibraryMapping.cs"/>
-        <Compile Include="Models\Position.cs"/>
-        <Compile Include="Models\ReactiveLibrary.cs"/>
-        <Compile Include="Models\SelectionType.cs"/>
-        <Compile Include="Models\VBABool.cs"/>
-        <Compile Include="Models\VisProps\ActionData.cs"/>
-        <Compile Include="Models\VisProps\Prop.cs"/>
-        <Compile Include="Models\VisProps\ShapeData.cs"/>
-        <Compile Include="Models\VisProps\UserData.cs"/>
-        <Compile Include="Models\VisProps\ValueProp.cs"/>
+        <Compile Include="Models\Configuration.cs"/>
+        <Compile Include="Models\DesignMaterial.cs"/>
+        <Compile Include="Models\DesignMaterialProperty.cs"/>
+        <Compile Include="Models\LastUsedDesignMaterial.cs"/>
+        <Compile Include="Models\Masters\ElementBase.cs" />
+        <Compile Include="Models\Masters\Equipment.cs" />
+        <Compile Include="Models\Masters\EquipmentUnit.cs" />
+        <Compile Include="Models\Masters\FunctionalElement.cs" />
+        <Compile Include="Models\Masters\FunctionalGroup.cs" />
+        <Compile Include="Models\Masters\FunctionalGroupBase.cs" />
+        <Compile Include="Models\Masters\Instrument.cs" />
+        <Compile Include="Models\Masters\PartItem.cs" />
+        <Compile Include="Models\Masters\ProxyFunctionalGroup.cs" />
+        <Compile Include="Models\PartListTableLineItem.cs" />
+        <Compile Include="Models\Position.cs" />
+        <Compile Include="Models\ReactiveLibrary.cs" />
+        <Compile Include="Models\VisioProperties\ActionData.cs" />
+        <Compile Include="Models\VisioProperties\Prop.cs" />
+        <Compile Include="Models\VisioProperties\ShapeData.cs" />
+        <Compile Include="Models\VisioProperties\UserData.cs" />
+        <Compile Include="Models\VisioProperties\ValueProp.cs" />
         <Compile Include="Properties\Resources.Designer.cs">
             <AutoGen>True</AutoGen>
             <DesignTime>True</DesignTime>
@@ -247,24 +234,37 @@
         <Compile Include="Ribbon.cs">
             <XmlRibbon>true</XmlRibbon>
         </Compile>
-        <Compile Include="Tools\RxExt.cs"/>
-        <Compile Include="Tools\VisioExtensions.cs"/>
-        <Compile Include="Tools\VisioHelper.cs"/>
-        <Compile Include="ViewModels\Components\DocumentInfoViewModel.cs"/>
-        <Compile Include="ViewModels\Components\OkCancelFeedbackViewModel.cs"/>
-        <Compile Include="ViewModels\Components\OkCancelViewModel.cs"/>
-        <Compile Include="ViewModels\Components\UserFiltersViewModel.cs"/>
-        <Compile Include="ViewModels\FrequencyOptionViewModel.cs"/>
-        <Compile Include="ViewModels\LibraryInfoViewModel.cs"/>
-        <Compile Include="ViewModels\MasterOptionViewModel.cs"/>
-        <Compile Include="ViewModels\Pages\DesignMaterialsViewModel.cs"/>
-        <Compile Include="ViewModels\Pages\BomViewModel.cs"/>
-        <Compile Include="ViewModels\Pages\ShapeSelectionViewModel.cs"/>
-        <Compile Include="ViewModels\Pages\UserSettingsViewModel.cs"/>
-        <Compile Include="ViewModels\TreeNodeViewModel.cs"/>
-        <Compile Include="ViewModels\TreeNodeViewModelBase.cs"/>
-        <Compile Include="ViewModels\TaskProgressViewModel.cs"/>
-        <Compile Include="ViewModels\ViewModelBase.cs"/>
+        <Compile Include="Services\AppUpdater.cs" />
+        <Compile Include="Services\ConfigurationService.cs" />
+        <Compile Include="Services\DesignMaterialsQueryTerms.cs" />
+        <Compile Include="Services\ProjectService.cs" />
+        <Compile Include="Services\DocumentMonitor.cs" />
+        <Compile Include="Services\LegendGenerator.cs" />
+        <Compile Include="Services\LibraryUpdater.cs" />
+        <Compile Include="Services\MaterialService.cs" />
+        <Compile Include="Services\ServiceStatus.cs" />
+        <Compile Include="Services\ShapeSelector.cs" />
+        <Compile Include="Services\WindowManager.cs" />
+        <Compile Include="Tools\BindingMixins.cs" />
+        <Compile Include="Tools\Constants.cs" />
+        <Compile Include="Tools\RxExt.cs" />
+        <Compile Include="Tools\UiExt.cs" />
+        <Compile Include="Tools\VisioExt.cs" />
+        <Compile Include="Tools\VisioHelper.cs" />
+        <Compile Include="Tools\VisioWrapper.cs" />
+        <Compile Include="ViewModels\Components\DocumentInfoViewModel.cs" />
+        <Compile Include="ViewModels\Components\OkCancelViewModel.cs" />
+        <Compile Include="ViewModels\Components\UserFiltersViewModel.cs" />
+        <Compile Include="ViewModels\FrequencyOptionViewModel.cs" />
+        <Compile Include="ViewModels\LibraryInfoViewModel.cs" />
+        <Compile Include="ViewModels\MasterOptionViewModel.cs" />
+        <Compile Include="ViewModels\Pages\DesignMaterialsViewModel.cs" />
+        <Compile Include="ViewModels\Pages\ProjectExplorerPageViewModel.cs" />
+        <Compile Include="ViewModels\Pages\SelectToolPageViewModel.cs" />
+        <Compile Include="ViewModels\Pages\SettingsPageViewModel.cs" />
+        <Compile Include="ViewModels\TreeNodeViewModel.cs" />
+        <Compile Include="ViewModels\ViewModelBase.cs" />
+        <Compile Include="ViewModels\WindowViewModel.cs" />
         <Compile Include="Views\Components\DocumentInfoTable.xaml.cs">
             <DependentUpon>DocumentInfoTable.xaml</DependentUpon>
         </Compile>
@@ -274,54 +274,45 @@
         <Compile Include="Views\Components\UserFiltersForm.xaml.cs">
             <DependentUpon>UserFiltersForm.xaml</DependentUpon>
         </Compile>
-        <Compile Include="Views\Controls\AutoColumnsDataGrid.cs"/>
-        <Compile Include="Views\Controls\LabelTextBox.cs"/>
-        <Compile Include="Views\Controls\LazyLoadAutoColumnsDataGrid.cs"/>
-        <Compile Include="Views\Controls\SectionLabel.cs"/>
-        <Compile Include="Views\Controls\TreeListView.cs"/>
-        <Compile Include="Views\Controls\TreeListViewItem.cs"/>
-        <Compile Include="Views\Pages\BomPage.xaml.cs">
-            <DependentUpon>BomPage.xaml</DependentUpon>
+        <Compile Include="Views\Controls\AutoColumnsDataGrid.cs" />
+        <Compile Include="Views\Controls\LabelTextBox.cs" />
+        <Compile Include="Views\Controls\LazyLoadAutoColumnsDataGrid.cs" />
+        <Compile Include="Views\Controls\SectionLabel.cs" />
+        <Compile Include="Views\Controls\TreeListView.cs" />
+        <Compile Include="Views\Controls\TreeListViewItem.cs" />
+        <Compile Include="Views\Pages\ProjectExplorerPage.xaml.cs">
+            <DependentUpon>ProjectExplorerPage.xaml</DependentUpon>
         </Compile>
         <Compile Include="Views\Pages\MaterialsSelectionPage.xaml.cs">
             <DependentUpon>MaterialsSelectionPage.xaml</DependentUpon>
         </Compile>
-        <Compile Include="Views\Pages\PageBase.cs"/>
-        <Compile Include="Views\Pages\ShapeSelectionPage.xaml.cs">
-            <DependentUpon>ShapeSelectionPage.xaml</DependentUpon>
+        <Compile Include="Views\Pages\PageBase.cs" />
+        <Compile Include="Views\Pages\SettingsPage.xaml.cs">
+            <DependentUpon>SettingsPage.xaml</DependentUpon>
         </Compile>
-        <Compile Include="Views\Pages\UserSettingsPage.xaml.cs">
-            <DependentUpon>UserSettingsPage.xaml</DependentUpon>
+        <Compile Include="Views\Pages\SelectToolPage.xaml.cs">
+            <DependentUpon>SelectToolPage.xaml</DependentUpon>
         </Compile>
-        <Compile Include="Views\TaskProgressView.xaml.cs">
-            <DependentUpon>TaskProgressView.xaml</DependentUpon>
-        </Compile>
-        <Compile Include="Tools\NativeMethods.cs"/>
-        <Compile Include="Tools\UIHelper.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs">
             <SubType>Code</SubType>
         </Compile>
-        <Compile Include="Views\ViewBase.cs"/>
-        <Compile Include="Views\Windows\BaseWindowViewModel.cs"/>
+        <Compile Include="Views\ViewBase.cs" />
         <Compile Include="Views\Windows\MainWindow.xaml.cs">
             <DependentUpon>MainWindow.xaml</DependentUpon>
         </Compile>
-        <Compile Include="Views\Windows\SideWindow.xaml.cs">
-            <DependentUpon>SideWindow.xaml</DependentUpon>
+        <Compile Include="Views\Windows\ChildWindow.xaml.cs">
+            <DependentUpon>ChildWindow.xaml</DependentUpon>
         </Compile>
-        <Compile Include="Views\Windows\WindowDockPosition.cs"/>
-        <Compile Include="Views\Windows\WindowManager.cs"/>
-        <Compile Include="Views\Windows\WindowResizer.cs"/>
         <EmbeddedResource Include="Properties\Resources.resx">
             <Generator>PublicResXFileCodeGenerator</Generator>
             <SubType>Designer</SubType>
             <LastGenOutput>Resources.Designer.cs</LastGenOutput>
         </EmbeddedResource>
-        <None Include="app.config"/>
+        <None Include="app.config" />
         <None Include="nlog.config">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
-        <None Include="PID.VisioAddIn_TemporaryKey.pfx"/>
+        <None Include="PID.VisioAddIn_TemporaryKey.pfx" />
         <None Include="Properties\Settings.settings">
             <Generator>SettingsSingleFileGenerator</Generator>
             <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -334,14 +325,14 @@
         <Compile Include="ThisAddIn.cs">
             <SubType>Code</SubType>
         </Compile>
-        <None Include="Resources\BOM_template.xlsx"/>
+        <None Include="Resources\BOM_template.xlsx" />
         <None Include="ThisAddIn.Designer.xml">
             <DependentUpon>ThisAddIn.cs</DependentUpon>
         </None>
         <Compile Include="ThisAddIn.Designer.cs">
             <DependentUpon>ThisAddIn.Designer.xml</DependentUpon>
         </Compile>
-        <AppDesigner Include="Properties\"/>
+        <AppDesigner Include="Properties\" />
     </ItemGroup>
     <ItemGroup>
         <Page Include="Views\Components\DocumentInfoTable.xaml">
@@ -356,23 +347,19 @@
             <SubType>Designer</SubType>
             <Generator>MSBuild:Compile</Generator>
         </Page>
-        <Page Include="Views\Pages\BomPage.xaml">
-            <SubType>Designer</SubType>
+        <Page Include="Views\Pages\ProjectExplorerPage.xaml">
             <Generator>MSBuild:Compile</Generator>
+            <SubType>Designer</SubType>
         </Page>
         <Page Include="Views\Pages\MaterialsSelectionPage.xaml">
             <SubType>Designer</SubType>
             <Generator>MSBuild:Compile</Generator>
         </Page>
-        <Page Include="Views\Pages\ShapeSelectionPage.xaml">
-            <SubType>Designer</SubType>
+        <Page Include="Views\Pages\SettingsPage.xaml">
             <Generator>MSBuild:Compile</Generator>
-        </Page>
-        <Page Include="Views\Pages\UserSettingsPage.xaml">
             <SubType>Designer</SubType>
-            <Generator>MSBuild:Compile</Generator>
         </Page>
-        <Page Include="Views\TaskProgressView.xaml">
+        <Page Include="Views\Pages\SelectToolPage.xaml">
             <SubType>Designer</SubType>
             <Generator>MSBuild:Compile</Generator>
         </Page>
@@ -383,7 +370,7 @@
             <SubType>Designer</SubType>
             <Generator>MSBuild:Compile</Generator>
         </Page>
-        <Page Include="Views\Windows\SideWindow.xaml">
+        <Page Include="Views\Windows\ChildWindow.xaml">
             <SubType>Designer</SubType>
             <Generator>MSBuild:Compile</Generator>
         </Page>
@@ -395,35 +382,36 @@
         </ProjectReference>
     </ItemGroup>
     <ItemGroup>
-        <EmbeddedResource Include="Ribbon.xml"/>
+        <EmbeddedResource Include="Ribbon.xml" />
     </ItemGroup>
     <ItemGroup>
-        <None Include="Resources\edit_configuration.ico"/>
+        <None Include="Resources\edit_configuration.ico" />
     </ItemGroup>
     <ItemGroup>
-        <None Include="Resources\load_libraries.ico"/>
+        <None Include="Resources\load_libraries.ico" />
     </ItemGroup>
     <ItemGroup>
-        <None Include="Resources\format_page.ico"/>
+        <None Include="Resources\format_page.ico" />
     </ItemGroup>
     <ItemGroup>
-        <None Include="Resources\update_document.ico"/>
+        <None Include="Resources\update_document.ico" />
     </ItemGroup>
     <ItemGroup>
-        <None Include="Resources\open_export_tool.ico"/>
+        <None Include="Resources\open_export_tool.ico" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Bogus" Version="35.5.0"/>
-        <PackageReference Include="DataGridExtensions" Version="2.6.0"/>
+        <PackageReference Include="Bogus" Version="35.5.0" />
+        <PackageReference Include="BusyIndicators" Version="2.1.2" />
+        <PackageReference Include="DataGridExtensions" Version="2.6.0" />
         <PackageReference Include="FilterDataGrid" Version="1.2.8" />
-        <PackageReference Include="Material.Icons.WPF" Version="2.1.0"/>
-        <PackageReference Include="MiniExcel" Version="1.31.3"/>
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
-        <PackageReference Include="NLog" Version="5.2.8"/>
-        <PackageReference Include="ReactiveUI.WPF" Version="19.5.39"/>
-        <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0"/>
-        <PackageReference Include="System.Net.Http" Version="4.3.4"/>
-        <PackageReference Include="System.Xml.Linq" Version="3.5.21022.801"/>
+        <PackageReference Include="Material.Icons.WPF" Version="2.1.0" />
+        <PackageReference Include="MiniExcel" Version="1.31.3" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="NLog" Version="5.2.8" />
+        <PackageReference Include="ReactiveUI.WPF" Version="19.5.39" />
+        <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0" />
+        <PackageReference Include="System.Net.Http" Version="4.3.4" />
+        <PackageReference Include="System.Xml.Linq" Version="3.5.21022.801" />
     </ItemGroup>
     <ItemGroup>
         <Page Include="Views\Themes\TreeListView.xaml">
@@ -431,7 +419,10 @@
         </Page>
     </ItemGroup>
     <ItemGroup>
-        <Content Include="Resources\open_select_tool.ico"/>
+        <Content Include="Resources\open_select_tool.ico" />
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="Models\Article\" />
     </ItemGroup>
     <PropertyGroup>
         <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

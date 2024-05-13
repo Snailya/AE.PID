@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:wpf="clr-namespace:Material.Icons.WPF;assembly=Material.Icons.WPF"
+        xmlns:icons="clr-namespace:Material.Icons.WPF;assembly=Material.Icons.WPF"
         x:Name="ThisWindow"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -53,13 +53,13 @@
                                     </Style>
                                 </StackPanel.Resources>
                                 <Button x:Name="PART_Minimize">
-                                    <wpf:MaterialIcon Kind="Minimize" />
+                                    <icons:MaterialIcon Kind="Minimize" />
                                 </Button>
                                 <Button x:Name="PART_Maximize">
-                                    <wpf:MaterialIcon Kind="Maximize" />
+                                    <icons:MaterialIcon Kind="Maximize" />
                                 </Button>
                                 <Button x:Name="PART_Close">
-                                    <wpf:MaterialIcon Kind="Close" />
+                                    <icons:MaterialIcon Kind="Close" />
                                 </Button>
                             </StackPanel>
                         </Grid>

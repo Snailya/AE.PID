@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using AE.PID.ViewModels;
 
-namespace AE.PID.Views.Pages;
+namespace AE.PID.Views;
 
 public class PageBase<TViewModel> : ViewBase<TViewModel> where TViewModel : ViewModelBase
 {

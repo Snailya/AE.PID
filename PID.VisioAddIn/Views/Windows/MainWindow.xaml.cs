@@ -1,13 +1,14 @@
 ﻿using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using AE.PID.ViewModels;
 
 namespace AE.PID.Views.Windows;
 
 /// <summary>
 ///     Interaction logic for MainWindow.xaml
 /// </summary>
-public partial class MainWindow
+public partial class MainWindow : Window
 {
     public MainWindow()
     {
@@ -16,7 +17,7 @@ public partial class MainWindow
         MaxWidth = SystemParameters.WorkArea.Width;
 
         // bind view partModel
-        DataContext = new BaseWindowViewModel(this);
+        DataContext = new WindowViewModel(this);
 
         Loaded += (sender, e) => { SizeToContent = SizeToContent.Manual; };
     }
@@ -34,18 +35,18 @@ public partial class MainWindow
 
     private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
     {
-        if (e.OriginalSource is Button button)
-            switch (button.Name)
-            {
-                case "PART_Minimize":
-                    WindowState = WindowState.Minimized;
-                    break;
-                case "PART_Maximize":
-                    WindowState = WindowState.Maximized;
-                    break;
-                case "PART_Close":
-                    Close();
-                    break;
-            }
+        if (e.OriginalSource is not Button button) return;
+        switch (button.Name)
+        {
+            case "PART_Minimize":
+                WindowState = WindowState.Minimized;
+                break;
+            case "PART_Maximize":
+                WindowState = WindowState.Maximized;
+                break;
+            case "PART_Close":
+                Close();
+                break;
+        }
     }
 }

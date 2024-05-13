@@ -3,9 +3,9 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using AE.PID.Tools;
+using FilterDataGrid;
 
-namespace AE.PID.Views.Controls;
+namespace AE.PID.Views;
 
 [DefaultEvent("LoadMore")]
 public sealed class LazyLoadAutoColumnsDataGrid : AutoColumnsDataGrid

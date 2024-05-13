@@ -5,7 +5,7 @@ namespace AE.PID.ViewModels;
 
 public class FrequencyOptionViewModel
 {
-    public static FrequencyOptionViewModel[] Options =
+    public static readonly FrequencyOptionViewModel[] Options =
     [
         new FrequencyOptionViewModel
         {
@@ -26,8 +26,7 @@ public class FrequencyOptionViewModel
 
     public string Label { get; set; } = string.Empty;
     public TimeSpan TimeSpan { get; set; }
-
-
+    
     public static FrequencyOptionViewModel GetMatchedOption(TimeSpan timeSpan)
     {
         return Options

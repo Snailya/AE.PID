@@ -6,17 +6,13 @@ using System.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using AE.PID.Controllers.Services;
-using AE.PID.Models.BOM;
+using AE.PID.Models;
 using AE.PID.Properties;
+using AE.PID.Services;
 using AE.PID.Tools;
 using AE.PID.Views;
-using AE.PID.Views.Pages;
-using AE.PID.Views.Windows;
 using Microsoft.Office.Core;
 using Microsoft.Office.Interop.Visio;
-using NLog;
-using ReactiveUI;
 using Splat;
 using Shape = Microsoft.Office.Interop.Visio.Shape;
 
@@ -41,11 +37,10 @@ using Shape = Microsoft.Office.Interop.Visio.Shape;
 namespace AE.PID;
 
 [ComVisible(true)]
-public class Ribbon : IRibbonExtensibility
+public class Ribbon : IRibbonExtensibility, IEnableLogger
 {
-    private Dictionary<string, Bitmap> _buttonImages = new();
-    private Subject<Command> _commandInvoker = new();
-    private Logger _logger = LogManager.GetCurrentClassLogger();
+    private Dictionary<string, Bitmap> _buttonImages = [];
+    private readonly Subject<Command> _commandInvoker = new();
     private IRibbonUI _ribbon;
 
     #region IRibbonExtensibility 成员
@@ -63,12 +58,14 @@ public class Ribbon : IRibbonExtensibility
 
         _commandInvoker.Subscribe(command =>
             {
-                _logger.Info($"{command} [Init by User]");
+                this.Log().Info($"{command} [Init by User]");
 
                 switch (command)
                 {
                     case Command.LoadLibrary:
-                        VisioHelper.OpenLibraries();
+                        var libraryPaths = Locator.Current.GetService<ConfigurationService>()!.Libraries.Items
+                            .Select(x => x.Path).ToList();
+                        VisioHelper.OpenLibraries(libraryPaths);
                         break;
                     case Command.FormatDocument:
                         VisioHelper.FormatDocument(Globals.ThisAddIn.Application.ActiveDocument);
@@ -80,13 +77,25 @@ public class Ribbon : IRibbonExtensibility
                         new LegendGenerator(Globals.ThisAddIn.Application.ActivePage).Insert();
                         break;
                     case Command.OpenSelectTool:
-                        Globals.ThisAddIn.WindowManager.Show(new ShapeSelectionPage());
+                        WindowManager.Dispatcher!.Invoke(() =>
+                        {
+                            WindowManager.GetInstance()!.SetContent(new SelectToolPage());
+                            WindowManager.GetInstance()!.Show();
+                        });
                         break;
-                    case Command.OpenExportTool:
-                        Globals.ThisAddIn.WindowManager.Show(new BomPage());
+                    case Command.OpenProjectExplorer:
+                        WindowManager.Dispatcher!.Invoke(() =>
+                        {
+                            WindowManager.GetInstance()!.SetContent(new ProjectExplorerPage(), new MaterialsSelectionPage());
+                            WindowManager.GetInstance()!.Show();
+                        });
                         break;
                     case Command.OpenSettings:
-                        Globals.ThisAddIn.WindowManager.Show(new UserSettingsPage());
+                        WindowManager.Dispatcher!.Invoke(() =>
+                        {
+                            WindowManager.GetInstance()!.SetContent(new SettingsPage());
+                            WindowManager.GetInstance()!.Show();
+                        });
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(command), command, null);
@@ -114,13 +123,24 @@ public class Ribbon : IRibbonExtensibility
 
     #endregion
 
+    private enum Command
+    {
+        LoadLibrary,
+        FormatDocument,
+        UpdateDocument,
+        InsertLegend,
+        OpenSelectTool,
+        OpenProjectExplorer,
+        OpenSettings
+    }
+
     #region Context Menus
 
     public void SelectDesignMaterial(IRibbonControl control)
     {
         throw new NotImplementedException();
     }
-    
+
     public void DeleteDesignMaterial(IRibbonControl control)
     {
         foreach (var shape in Globals.ThisAddIn.Application.ActiveWindow.Selection.OfType<Shape>())
@@ -144,17 +164,6 @@ public class Ribbon : IRibbonExtensibility
     }
 
     #endregion
-
-    private enum Command
-    {
-        LoadLibrary,
-        FormatDocument,
-        UpdateDocument,
-        InsertLegend,
-        OpenSelectTool,
-        OpenExportTool,
-        OpenSettings
-    }
 
     #region Ribbon
 
@@ -189,7 +198,7 @@ public class Ribbon : IRibbonExtensibility
 
     public void OpenExportTool(IRibbonControl control)
     {
-        _commandInvoker.OnNext(Command.OpenExportTool);
+        _commandInvoker.OnNext(Command.OpenProjectExplorer);
     }
 
     public void EditSettings(IRibbonControl control)
@@ -208,7 +217,6 @@ public class Ribbon : IRibbonExtensibility
 
     public void Debug(IRibbonControl control)
     {
-
     }
 
     #endregion

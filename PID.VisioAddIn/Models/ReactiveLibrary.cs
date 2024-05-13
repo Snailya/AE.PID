@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
-using AE.PID.Core.DTOs;
-using AE.PID.Models.Configurations;
+using AE.PID.Dtos;
+using AE.PID.Tools;
 using ReactiveUI;
 
 namespace AE.PID.Models;

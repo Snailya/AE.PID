@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
-using AE.PID.Models.BOM;
+using AE.PID.Models;
 
 namespace AE.PID.Converters;
 

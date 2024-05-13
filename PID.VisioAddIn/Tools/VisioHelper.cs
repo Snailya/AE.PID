@@ -4,36 +4,31 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
-using AE.PID.Controllers;
-using AE.PID.Controllers.Services;
+using System.Windows;
+using AE.PID.Services;
 using Microsoft.Office.Interop.Visio;
-using NLog;
 using Splat;
 using Path = System.IO.Path;
 
 namespace AE.PID.Tools;
 
-public static class VisioHelper
+internal static class VisioHelper
 {
-    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
     /// <summary>
     ///     Load library's in config into Visio stencils.
     /// </summary>
-    public static void OpenLibraries()
+    public static void OpenLibraries(List<string> paths)
     {
         try
         {
-            var configuration = Locator.Current.GetService<ConfigurationService>();
-
-            foreach (var path in configuration!.Libraries.Items.Select(x => x.Path))
+            foreach (var path in paths)
                 Globals.ThisAddIn.Application.Documents.OpenEx(path, (short)VisOpenSaveArgs.visOpenDocked);
 
-            Logger.Info($"Opened {configuration.Libraries.Count} libraries.");
+            LogHost.Default.Info($"Opened {paths.Count} libraries.");
         }
         catch (Exception ex)
         {
-            Logger.Error(ex, "Failed to open libaries.");
+            LogHost.Default.Error(ex, "Failed to open libraries.");
         }
     }
 
@@ -53,12 +48,12 @@ public static class VisioHelper
 
             document.EndUndoScope(undoScope, true);
 
-            Logger.Info($"Formated {document.Name} successfully.");
+            LogHost.Default.Info($"Formatted {document.Name} successfully.");
         }
         catch (Exception ex)
         {
             document.EndUndoScope(undoScope, false);
-            Logger.Error(ex, "Failed to format document.");
+            LogHost.Default.Error(ex, "Failed to format document.");
         }
     }
 
@@ -69,7 +64,7 @@ public static class VisioHelper
 
         if (font == null)
         {
-            ThisAddIn.Alert("未找到思源黑体，请确认安装完成后重启Visio。");
+            WindowManager.ShowDialog("未找到思源黑体，请确认安装完成后重启Visio。", MessageBoxButton.OK);
             return;
         }
 
@@ -88,7 +83,7 @@ public static class VisioHelper
         var pipelineStyle = document.Styles.OfType<IVStyle>().SingleOrDefault(x => x.Name == pipelineStyleName) ??
                             document.Styles.Add(pipelineStyleName, normalStyleName, 1, 1, 1);
 
-        Logger.Info($"Style setup for {document.Name} finished");
+        LogHost.Default.Info($"Style setup for {document.Name} finished");
     }
 
     private static void SetupGrid(IVPage page)
@@ -102,7 +97,7 @@ public static class VisioHelper
         page.PageSheet.CellsSRC[(short)VisSectionIndices.visSectionObject, (short)VisRowIndices.visRowRulerGrid,
             (short)VisCellIndices.visYGridSpacing].FormulaU = "2.5mm";
 
-        Logger.Info($"Grid setup for {page.Name} finished");
+        LogHost.Default.Info($"Grid setup for {page.Name} finished");
     }
 
     /// <summary>
@@ -145,18 +140,18 @@ public static class VisioHelper
                 EnableRaisingEvents = true
             };
 
-            process.OutputDataReceived += (sender, args) => { Logger.Info(args.Data); };
+            process.OutputDataReceived += (sender, args) => { LogHost.Default.Info(args.Data); };
             process.ErrorDataReceived += (sender, e) =>
             {
                 if (e.Data != null)
-                    Logger.Error(e.Data);
+                    LogHost.Default.Error(e.Data);
             };
             process.Exited += (sender, args) =>
             {
                 if (sender is Process { ExitCode: 0 })
-                    ThisAddIn.Alert("更新成功");
+                    WindowManager.ShowDialog("更新成功", MessageBoxButton.OK);
                 else
-                    ThisAddIn.Alert("更新失败");
+                    WindowManager.ShowDialog("更新失败", MessageBoxButton.OK);
 
                 Globals.ThisAddIn.Application.Documents.OpenEx(file, (short)OpenFlags.ReadWrite);
             };
@@ -167,7 +162,7 @@ public static class VisioHelper
         }
         catch (Exception ex)
         {
-            Logger.Error(ex, "Failed to update document stencil.");
+            LogHost.Default.Error(ex, "Failed to update document stencil.");
         }
     }
 

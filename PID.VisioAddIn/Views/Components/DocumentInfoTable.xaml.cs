@@ -1,7 +1,7 @@
 ﻿using System.Reactive.Disposables;
 using ReactiveUI;
 
-namespace AE.PID.Views.Components;
+namespace AE.PID.Views;
 
 /// <summary>
 ///     Interaction logic for DocumentInfo.xaml

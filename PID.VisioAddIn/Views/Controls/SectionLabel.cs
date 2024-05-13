@@ -1,11 +1,8 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 
-namespace AE.PID.Views.Controls;
+namespace AE.PID.Views;
 
-/// <summary>
-///     Interaction logic for LabeledInput.xaml
-/// </summary>
 public class SectionLabel : UserControl
 {
     public static readonly DependencyProperty HeaderProperty = DependencyProperty.Register(
