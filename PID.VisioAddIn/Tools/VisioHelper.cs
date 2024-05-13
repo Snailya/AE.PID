@@ -44,8 +44,11 @@ internal static class VisioHelper
             SetupStyles(document);
 
             foreach (var page in document.Pages.OfType<IVPage>())
+            {
                 SetupGrid(page);
-
+                InsertFrame(page);
+            }
+            
             document.EndUndoScope(undoScope, true);
 
             LogHost.Default.Info($"Formatted {document.Name} successfully.");
@@ -56,6 +59,7 @@ internal static class VisioHelper
             LogHost.Default.Error(ex, "Failed to format document.");
         }
     }
+
 
     private static void SetupStyles(IVDocument document)
     {
@@ -100,6 +104,22 @@ internal static class VisioHelper
         LogHost.Default.Info($"Grid setup for {page.Name} finished");
     }
 
+    private static void InsertFrame(IVPage page)
+    {
+        // ensure document opened
+        var document = page.Application.Documents.OfType<Document>().SingleOrDefault(x=>x.Name == "AE逻辑.vssx");
+        if (document == null)
+        {
+            var configuration = Locator.Current.GetService<ConfigurationService>()!;
+            var documentPath = configuration.Libraries.Lookup(6).Value.Path;
+            document = page.Application.Documents.OpenEx(documentPath, (short)VisOpenSaveArgs.visOpenDocked);
+        }
+        
+        var frameObject = document.Masters["B{7811D65E-9633-4E98-9FCD-B496A8B823A7}"];
+        if (frameObject != null)
+            page.Drop(frameObject, 0, 0);
+    }
+    
     /// <summary>
     ///     Save and close document, then update the stencil using PID.DocumentStencilUpdateTool.exe.
     /// </summary>

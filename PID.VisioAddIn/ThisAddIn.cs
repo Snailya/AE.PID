@@ -1,5 +1,8 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Net.Http;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Windows.Threading;
 using AE.PID.Services;
@@ -37,8 +40,11 @@ public partial class ThisAddIn : IEnableLogger
         Locator.CurrentMutable.RegisterLazySingleton(
             () => new MaterialsService(Locator.Current.GetService<HttpClient>()!),
             typeof(MaterialsService));
+        Locator.CurrentMutable.RegisterLazySingleton(
+            () => new LibraryUpdater(Locator.Current.GetService<HttpClient>()!, Locator.Current.GetService<ConfigurationService>()!),
+            typeof(LibraryUpdater));
         
-        // declare a ui thread to display wpf window
+        // declare an ui thread to display wpf window
         var uiThread = new Thread(WindowManager.Initialize) { Name = "UI Thread" };
         uiThread.SetApartmentState(ApartmentState.STA);
         uiThread.Start();
@@ -50,16 +56,19 @@ public partial class ThisAddIn : IEnableLogger
             "AE PID RIBBON");
 
         // initialize the background worker
-        var appUpdater = new AppUpdater(Locator.Current.GetService<HttpClient>()!,
-            Locator.Current.GetService<ConfigurationService>()!);
-        var libraryUpdater = new LibraryUpdater(Locator.Current.GetService<HttpClient>()!,
-            Locator.Current.GetService<ConfigurationService>()!);
-        var documentUpdater = new DocumentMonitor(Locator.Current.GetService<ConfigurationService>()!);
+        Observable.Start(() =>
+        {
+            var appUpdater = new AppUpdater(Locator.Current.GetService<HttpClient>()!,
+                Locator.Current.GetService<ConfigurationService>()!);
+            var libraryUpdater = Locator.Current.GetService<LibraryUpdater>();
+            var documentUpdater = new DocumentMonitor(Locator.Current.GetService<ConfigurationService>()!);
+        }).Subscribe();
     }
 
     private void ThisAddIn_Shutdown(object sender, System.EventArgs e)
     {
         Globals.ThisAddIn.Application.UnregisterRibbonX(_ribbon, null);
+        WindowManager.GetInstance()?.Dispose();
     }
 
     #region VSTO generated code

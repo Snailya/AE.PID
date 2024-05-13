@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reactive.Concurrency;
 using System.Reflection;
-using System.Threading;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Interop;
@@ -10,16 +9,15 @@ using AE.PID.ViewModels;
 using AE.PID.Views;
 using AE.PID.Views.Windows;
 using ReactiveUI;
-using Splat;
 
 namespace AE.PID.Services;
 
-public class WindowManager
+public class WindowManager : IDisposable
 {
     private static WindowManager? _instance;
     private readonly ChildWindow _childWindow = new();
     private readonly MainWindow _mainWindow = new();
-
+    
     private WindowManager()
     {
         _mainWindow.Title = Assembly.GetExecutingAssembly().GetName().Name;
@@ -46,6 +44,17 @@ public class WindowManager
     }
 
     public static Dispatcher? Dispatcher { get; private set; }
+
+    public void Dispose()
+    {
+        Dispatcher?.Invoke(() =>
+        {
+            _childWindow.Close();
+            _mainWindow.Close();
+        });
+        
+        Dispatcher?.InvokeShutdown();
+    }
 
     public static WindowManager? GetInstance()
     {
