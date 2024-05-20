@@ -34,6 +34,9 @@ public abstract class ViewModelBase : ReactiveObject, IActivatableViewModel, IEn
     {
     }
 
+    /// <summary>
+    ///     This method invokes when the view model is collected by GC. By default, it is when new view model seted.
+    /// </summary>
     protected virtual void SetupDeactivate()
     {
     }

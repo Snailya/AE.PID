@@ -4,7 +4,7 @@ namespace AE.PID.Dtos;
 
 public class DesignMaterialDto
 {
-    [JsonPropertyName("id")] public string Id { get; set; }
+    [JsonPropertyName("id")] public string Id { get; set; } = string.Empty;
 
     /// <summary>
     ///     物料名称

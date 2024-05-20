@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using AE.PID.Interfaces;
 using AE.PID.Services;
 using AE.PID.Tools;
@@ -25,13 +26,24 @@ public abstract class PartItem(Shape shape) : ElementBase(shape), IPartItem
     /// <param name="material"></param>
     private void AssignMaterial(DesignMaterial? material)
     {
-        DeleteMaterial();
-
         // write material id
-        if (material == null) return;
+        if (material == null)
+        {
+            DeleteMaterial();
+            return;
+        }
 
         var shapeData = new ShapeData("D_BOM", "设计物料", "", $"{material.Code}");
         Source.CreateOrUpdate(shapeData);
+
+        // remove attributes
+        for (var i = Source.RowCount[(short)VisSectionIndices.visSectionProp] - 1; i >= 0; i--)
+        {
+            var cell = Source.CellsSRC[(short)VisSectionIndices.visSectionProp, (short)i,
+                (short)VisCellIndices.visCustPropsValue];
+            if (cell.RowName.StartsWith("D_Attribute"))
+                Source.DeleteRow((short)VisSectionIndices.visSectionProp, (short)i);
+        }
 
         // write related properties
         foreach (var propertyData in from property in material.Properties
@@ -108,6 +120,8 @@ public abstract class PartItem(Shape shape) : ElementBase(shape), IPartItem
             .DisposeWith(CleanUp);
 
         this.WhenAnyValue(x => x.MaterialNo)
+            .DistinctUntilChanged()
+            .ObserveOn(ThisAddIn.Dispatcher)
             .Subscribe(AssignMaterial)
             .DisposeWith(CleanUp);
     }

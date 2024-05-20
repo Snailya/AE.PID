@@ -1,36 +1,29 @@
-﻿using System.ComponentModel;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
-using AE.PID.ViewModels;
+using System.Windows.Interop;
+using AE.PID.Tools;
 
 namespace AE.PID.Views.Windows;
 
 /// <summary>
 ///     Interaction logic for MainWindow.xaml
 /// </summary>
-public partial class MainWindow : Window
+public partial class MainWindow : WindowBase
 {
+    private WindowInteropHelper? _helper;
+
     public MainWindow()
     {
         InitializeComponent();
-        MaxHeight = SystemParameters.WorkArea.Height;
-        MaxWidth = SystemParameters.WorkArea.Width;
 
-        // bind view partModel
-        DataContext = new WindowViewModel(this);
-
-        Loaded += (sender, e) => { SizeToContent = SizeToContent.Manual; };
-    }
-
-
-    protected override void OnClosing(CancelEventArgs e)
-    {
-        foreach (Window ownedWindow in OwnedWindows) ownedWindow.Close();
-
-        Hide();
-        e.Cancel = true;
-
-        SizeToContent = SizeToContent.WidthAndHeight;
+        Loaded += (_, _) =>
+        {
+            _helper = new WindowInteropHelper(this)
+            {
+                Owner = new IntPtr(Globals.ThisAddIn.Application.WindowHandle32)
+            };
+        };
     }
 
     private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
@@ -48,5 +41,20 @@ public partial class MainWindow : Window
                 Close();
                 break;
         }
+    }
+
+    public void CenterOwner()
+    {
+        if (_helper?.Owner == IntPtr.Zero) return;
+
+        Win32Ext.GetWindowRect(_helper!.Owner, out var rect);
+
+        var parentLeft = rect.Left;
+        var parentTop = rect.Top;
+        var parentWidth = rect.Right - rect.Left;
+        var parentHeight = rect.Bottom - rect.Top;
+
+        Left = parentLeft + (parentWidth - ActualWidth) / 2;
+        Top = parentTop + (parentHeight - ActualHeight) / 2;
     }
 }

@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Globalization;
 using System.Reactive.Concurrency;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Data;
-using System.Windows.Interop;
 using System.Windows.Threading;
 using AE.PID.ViewModels;
 using AE.PID.Views;
@@ -17,14 +17,11 @@ public class WindowManager : IDisposable
     private static WindowManager? _instance;
     private readonly ChildWindow _childWindow = new();
     private readonly MainWindow _mainWindow = new();
-    
+
     private WindowManager()
     {
         _mainWindow.Title = Assembly.GetExecutingAssembly().GetName().Name;
-        _ = new WindowInteropHelper(_mainWindow)
-        {
-            Owner = new IntPtr(Globals.ThisAddIn.Application.WindowHandle32)
-        };
+
 
         _mainWindow.LocationChanged += (_, _) =>
         {
@@ -52,7 +49,7 @@ public class WindowManager : IDisposable
             _childWindow.Close();
             _mainWindow.Close();
         });
-        
+
         Dispatcher?.InvokeShutdown();
     }
 
@@ -102,14 +99,52 @@ public class WindowManager : IDisposable
             Source = _mainWindow,
             Mode = BindingMode.OneWay
         };
-        _childWindow.SetBinding(FrameworkElement.HeightProperty, binding);
+        _childWindow.SetBinding(FrameworkElement.MaxHeightProperty, binding);
+        _childWindow.SetBinding(FrameworkElement.MinHeightProperty, binding);
 
+        var multiBinding = new MultiBinding
+        {
+            Converter = new MyConvertor()
+        };
+
+        multiBinding.Bindings.Add(new Binding("ActualWidth") { Source = _mainWindow });
+        multiBinding.Bindings.Add(new Binding("Left") { Source = _mainWindow });
+        _childWindow.SetBinding(FrameworkElement.MaxWidthProperty, multiBinding);
+
+        _childWindow.SizeToContent = SizeToContent.Width;
         _childWindow.Show();
+        _childWindow.SizeToContent = SizeToContent.Manual;
     }
 
     public static MessageBoxResult ShowDialog(string messageBoxText, MessageBoxButton button = MessageBoxButton.YesNo)
     {
         var caption = Assembly.GetExecutingAssembly().GetName().Name;
         return MessageBox.Show(messageBoxText, caption, button);
+    }
+
+    public void ShowProgressBar(ProgressPageViewModel progressPageViewModel)
+    {
+        SetContent(new ProgressPage(progressPageViewModel));
+        _mainWindow.Show();
+    }
+}
+
+public class MyConvertor : IMultiValueConverter
+{
+    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (values.Length == 2 && values[0] is double v1 && values[1] is double v2)
+        {
+            var maxWidth = SystemParameters.WorkArea.Width - v1 - v2;
+            return maxWidth;
+        }
+
+        return SystemParameters.WorkArea.Width;
+    }
+
+
+    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
     }
 }

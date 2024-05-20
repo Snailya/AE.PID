@@ -6,7 +6,9 @@
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 xmlns:viewModels="clr-namespace:AE.PID.ViewModels"
                 xmlns:views="clr-namespace:AE.PID.Views"
+                xmlns:busyIndicator="https://github.com/moh3ngolshani/BusyIndicator"
                 MinHeight="320" MinWidth="320"
+                Height="320" Width="320"
                 mc:Ignorable="d"
                 d:DataContext="{d:DesignInstance viewModels:SelectToolPageViewModel}"
                 d:DesignHeight="320" d:DesignWidth="320">
@@ -14,6 +16,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../Themes/Generic.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/BusyIndicator;component/Theme/Default.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -44,20 +47,28 @@
             <TextBox x:Name="IdTextBox"
                      Grid.Row="0" Grid.Column="1"
                      Margin="16,8,4,8" VerticalAlignment="Top" />
-            <ListView x:Name="MastersCheckBox" Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Masters}"
-                      Margin="16,8,4,8" VerticalAlignment="Stretch">
-                <ListView.ItemTemplate>
-                    <DataTemplate DataType="{x:Type viewModels:MasterOptionViewModel}">
-                        <StackPanel>
-                            <CheckBox Content="{Binding Name}" IsChecked="{Binding IsChecked}" />
-                        </StackPanel>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
+            <busyIndicator:BusyMask x:Name="BusyIndicator"
+                                    Grid.Row="1" Grid.Column="1"
+                                    IndicatorType="Ellipse"
+                                    BusyContent="正在加载..."
+                                    Margin="16,8,4,8"
+                                    IsBusyAtStartup="True">
+                <ListView x:Name="MastersCheckBox"
+                          ItemsSource="{Binding Masters}"
+                          VerticalAlignment="Stretch">
+                    <ListView.ItemTemplate>
+                        <DataTemplate DataType="{x:Type viewModels:MasterOptionViewModel}">
+                            <StackPanel>
+                                <CheckBox Content="{Binding Name}" IsChecked="{Binding IsChecked}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </busyIndicator:BusyMask>
         </Grid>
         <Separator Grid.Row="2" />
         <views:OkCancelFeedback x:Name="Feedback"
-                                     OkText="选择" CloseOnOk="False"
-                                     Grid.Row="3" />
+                                OkText="选择" CloseOnOk="False"
+                                Grid.Row="3" />
     </Grid>
 </views:PageBase>

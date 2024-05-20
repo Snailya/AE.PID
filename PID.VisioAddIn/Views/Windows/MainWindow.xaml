@@ -1,24 +1,24 @@
-﻿<Window x:Class="AE.PID.Views.Windows.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:icons="clr-namespace:Material.Icons.WPF;assembly=Material.Icons.WPF"
-        x:Name="ThisWindow"
-        WindowStyle="None"
-        AllowsTransparency="True"
-        WindowStartupLocation="CenterOwner"
-        SizeToContent="WidthAndHeight"
-        mc:Ignorable="d"
-        d:DesignHeight="450" d:DesignWidth="800">
-    <Window.Resources>
+﻿<windows:WindowBase x:Class="AE.PID.Views.Windows.MainWindow"
+                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:icons="clr-namespace:Material.Icons.WPF;assembly=Material.Icons.WPF"
+                    xmlns:windows="clr-namespace:AE.PID.Views.Windows"
+                    WindowStyle="None"
+                    AllowsTransparency="True"
+                    SizeToContent="WidthAndHeight"
+                    WindowStartupLocation="CenterOwner"
+                    mc:Ignorable="d"
+                    d:DesignHeight="450" d:DesignWidth="800">
+    <windows:WindowBase.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../Themes/Generic.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
-    </Window.Resources>
-    <Window.Template>
+    </windows:WindowBase.Resources>
+    <windows:WindowBase.Template>
         <ControlTemplate TargetType="{x:Type Window}">
             <!-- Outer border with the drop shadow margin -->
             <Border Padding="{Binding  OuterMarginSize, FallbackValue=0}"
@@ -75,7 +75,7 @@
                 </Grid>
             </Border>
         </ControlTemplate>
-    </Window.Template>
+    </windows:WindowBase.Template>
 
     <WindowChrome.WindowChrome>
         <WindowChrome
@@ -84,4 +84,4 @@
             CornerRadius="0"
             GlassFrameThickness="0" />
     </WindowChrome.WindowChrome>
-</Window>
+</windows:WindowBase>

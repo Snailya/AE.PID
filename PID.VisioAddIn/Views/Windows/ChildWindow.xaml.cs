@@ -1,23 +1,16 @@
-﻿using System.ComponentModel;
-using AE.PID.ViewModels;
+﻿using AE.PID.ViewModels;
 
 namespace AE.PID.Views.Windows;
 
 /// <summary>
 ///     Interaction logic for ChildWindow.xaml
 /// </summary>
-public partial class ChildWindow
+public partial class ChildWindow : WindowBase
 {
     public ChildWindow()
     {
         InitializeComponent();
 
         DataContext = new WindowViewModel(this);
-    }
-
-    protected override void OnClosing(CancelEventArgs e)
-    {
-        Hide();
-        e.Cancel = true;
     }
 }

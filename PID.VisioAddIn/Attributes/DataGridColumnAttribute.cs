@@ -13,7 +13,7 @@ public class DataGridColumnNameAttribute(string name) : Attribute
 }
 
 /// <summary>
-///     The column name path and value path used for render Data Grid
+///     The name path of the column and value path used for render Data Grid
 /// </summary>
 [AttributeUsage(AttributeTargets.Class)]
 public class DataGridColumnAttribute(string namePath, string valuePath) : Attribute

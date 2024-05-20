@@ -8,13 +8,13 @@ using Splat;
 
 namespace AE.PID.Services;
 
-public class LegendGenerator(IVPage page) : IEnableLogger
+public class LegendService : IEnableLogger
 {
     private const int Columns = 3;
     private const int RowSpacing = 10;
     private const int ColSpacing = 180 / Columns;
 
-    public void Insert()
+    public static void Insert(IVPage page)
     {
         Globals.ThisAddIn.Application.ShowChanges = false;
         var undoScope = page.Application.BeginUndoScope("Insert Legend");
@@ -32,36 +32,38 @@ public class LegendGenerator(IVPage page) : IEnableLogger
                                page.Layers.Add("Legends");
 
             // loop to get all shapes with different subclass
-            var legendItems = GetLegendItemsOnPage();
+            var legendItems = PopulateLegendItems(page);
 
             // get the center of the screen as the base point
-            page.Application.ActiveWindow.GetViewRect(out var pdLeft, out var pdTop, out var pdWidth, out var pdHeight);
-            var centerScreen = new Position((pdWidth / 2 + pdLeft) * 25.4, (pdTop - pdHeight / 2) * 25.4);
-
+            var basePosition = GetBasePoint(page);
             var rows = (int)Math.Ceiling((double)legendItems.Count / Columns);
-            var basePosition = new Position(centerScreen.X - 90, centerScreen.Y - rows * 5);
 
             var container = page.DrawRectangleMetric(basePosition.X, basePosition.Y, basePosition.X + 180,
                 basePosition.Y + rows * 10);
             container.AddSection((short)VisSectionIndices.visSectionUser);
             container.AddRow((short)VisSectionIndices.visSectionUser, (short)VisRowIndices.visRowLast,
                 (short)VisRowTags.visTagDefault);
+
             container.CellsSRC[(short)VisSectionIndices.visSectionUser, 0, (short)VisCellIndices.visUserValue]
                 .RowName = "msvStructureType";
             container.CellsSRC[(short)VisSectionIndices.visSectionUser, 0, (short)VisCellIndices.visUserValue]
                 .FormulaU = "\"Container\"";
+            container.CellsSRC[(short)VisSectionIndices.visSectionObject, (short)VisRowIndices.visRowLine,
+                (short)VisCellIndices.visLineWeight].FormulaU = "0.6mm";
 
             for (var i = 0; i < legendItems.Count; i++)
             {
+                var item = legendItems[i];
+
                 // compute the next insert position
                 // ReSharper disable once PossibleLossOfFraction
                 var (rowIndex, colIndex) = ComputeIndex(i, rows);
                 var xPos = colIndex * ColSpacing + basePosition.X + 5;
                 var yPos = rowIndex * RowSpacing + basePosition.Y + 5;
 
-                var shape = page.DropMetric(legendItems[i].Shape, 0, 0);
+                var shape = page.DropMetric(item.Master, basePosition.X, basePosition.Y);
+                shape.CellsU["Prop.SubClass"].FormulaForce = $"\"{item.SubclassName}\"";
 
-                RemoveUnnecessaryShapeSheetData(shape);
                 ResizeAtPin(shape);
                 ReLocateToGeometricCenter(shape, xPos, yPos);
 
@@ -82,7 +84,7 @@ public class LegendGenerator(IVPage page) : IEnableLogger
         {
             page.Application.EndUndoScope(undoScope, false);
 
-            this.Log().Error(ex);
+            throw ex;
         }
         finally
         {
@@ -97,15 +99,38 @@ public class LegendGenerator(IVPage page) : IEnableLogger
         return (rowIndex, colIndex);
     }
 
-    private List<LegendItem> GetLegendItemsOnPage()
+    private static Position GetBasePoint(IVPage page)
+    {
+        // if there is a frame, get the top left corner of the block title
+        var frame = page.Shapes.OfType<Shape>()
+            .FirstOrDefault(x => x.Master?.BaseID == Constants.FrameBaseId);
+        if (frame != null)
+        {
+            var (_, bottom, right, _) = frame.BoundingBoxMetric((short)VisBoundingBoxArgs.visBBoxDrawingCoords +
+                                                                (short)VisBoundingBoxArgs.visBBoxExtents);
+            return new Position(right - 190, bottom + 52);
+        }
+
+        // if not, get the center screen
+        page.Application.ActiveWindow.GetViewRect(out var pdLeft, out var pdTop, out var pdWidth, out var pdHeight);
+        return new Position((pdWidth / 2 + pdLeft) * 25.4, (pdTop - pdHeight / 2) * 25.4);
+    }
+
+    private static List<LegendItem> PopulateLegendItems(IVPage page)
     {
         return
         [
             .. page.Shapes.OfType<Shape>()
+                .Where(x => x.Master != null)
                 .Where(x => !x.HasCategory("Proxy") && (x.HasCategory("Equipment") || x.HasCategory("Instrument")))
-                .Select(x =>
-                    new LegendItem(x.CellsU["Prop.Class"].ResultStr[""], x.CellsU["Prop.SubClass"].ResultStr[""], x))
-                .Distinct(new LegendItemComparer()).OrderBy(x => x.Category).ThenBy(x => x.Name)
+                .GroupBy(x => new
+                {
+                    Class = x.CellsU["Prop.Class"].ResultStr[tagVisUnitCodes.visUnitsString],
+                    SubClassName = x.CellsU["Prop.SubClass"].ResultStr[tagVisUnitCodes.visUnitsString]
+                })
+                .Select(x => new LegendItem(x.Key.Class, x.Key.SubClassName, x.First().Master))
+                .OrderBy(x => x.Category)
+                .ThenBy(x => x.SubclassName)
         ];
     }
 
@@ -144,32 +169,8 @@ public class LegendGenerator(IVPage page) : IEnableLogger
             ? nominalWidth / actualWidth * 5
             : nominalWidth / actualHeight * 5);
 
-        shape.CellsU["Width"].Formula = $"GUARD({desiredNominalWidth} mm)";
-        shape.CellsU["Height"].Formula = $"GUARD({desiredNominalHeight} mm)";
-    }
-
-    private static void RemoveUnnecessaryShapeSheetData(IVShape shape)
-    {
-        // rotate back as the stencil
-        shape.Cells["Angle"].Formula = "0 deg";
-
-        // disable key parameter display
-        if (shape.CellExistsN("User.ShowKeyParameters", VisExistsFlags.visExistsAnywhere))
-            shape.CellsU["User.ShowKeyParameters"].Formula = "FALSE";
-
-        // disable tag display
-        if (shape.CellExistsN("Prop.Tag", VisExistsFlags.visExistsAnywhere))
-            shape.CellsU["Prop.Tag"].FormulaForce = "\"\"";
-
-        // make it not count for export
-        if (shape.CellExistsN("Prop.Quantity", VisExistsFlags.visExistsAnywhere))
-            shape.CellsU["Prop.Quantity"].Formula = "0";
-
-        if (shape.CellExistsN("User.NumOfShapes", VisExistsFlags.visExistsLocally))
-            shape.Cells["User.NumOfShapes"].Formula = "1";
-
-        if (shape.CellExistsN("Prop.ValveIsAdjustable", VisExistsFlags.visExistsLocally))
-            shape.Cells["Prop.ValveIsAdjustable"].Formula = "FALSE";
+        shape.CellsU["Width"].FormulaForce = $"GUARD({desiredNominalWidth} mm)";
+        shape.CellsU["Height"].FormulaForce = $"GUARD({desiredNominalHeight} mm)";
     }
 
     private static Shape InsertLabelAsCallout(Shape shape)
@@ -195,31 +196,10 @@ public class LegendGenerator(IVPage page) : IEnableLogger
         return callout;
     }
 
-    private class LegendItem(string category, string name, IVShape shape)
+    private class LegendItem(string category, string subclassName, Master master)
     {
         public string Category { get; } = category;
-        public string Name { get; } = name;
-        public IVShape Shape { get; } = shape;
-    }
-
-    private class LegendItemComparer : IEqualityComparer<LegendItem>
-    {
-        public bool Equals(LegendItem x, LegendItem y)
-        {
-            return string.Equals(x.Category, y.Category, StringComparison.Ordinal) &&
-                   string.Equals(x.Name, y.Name, StringComparison.Ordinal);
-        }
-
-        public int GetHashCode(LegendItem obj)
-        {
-            // Compute a hash code based on first and second names
-            unchecked
-            {
-                var hash = 17;
-                hash = hash * 23 + obj.Category?.GetHashCode() ?? 0;
-                hash = hash * 23 + obj.Name?.GetHashCode() ?? 0;
-                return hash;
-            }
-        }
+        public string SubclassName { get; } = subclassName;
+        public IVMaster Master { get; } = master;
     }
 }

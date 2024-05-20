@@ -56,13 +56,13 @@
                             size="large"
                             getImage="GetButtonImage"
                     />
-                    <!--                    <button id="debug"-->
-                    <!--                            label="调试"-->
-                    <!--                            onAction="Debug"-->
-                    <!--                            screentip="调试"-->
-                    <!--                            size="large"-->
-                    <!--                            getImage="GetButtonImage"-->
-                    <!--                    />-->
+                    <button id="help"
+                            label="帮助"
+                            onAction="Help"
+                            screentip="打开帮助文档"
+                            size="large"
+                            getImage="GetButtonImage"
+                    />
                 </group>
             </tab>
         </tabs>

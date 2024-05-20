@@ -8,13 +8,15 @@ public class LibraryItemDto
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    ///     The Unique id of the item, if the unique id is not equal to the unique id of the item in document stencil,
-    ///     indicates that the item used in document stencil is not the same as the library, which means a update is needed.
+    ///     The Unique id of the master's UniqueID property.
+    ///     The unique id is used as the identifier for the master.
+    ///     Whenever the master is edited in the Visio, the UniqueID property changes. 
     /// </summary>
     public string UniqueId { get; set; } = string.Empty;
 
     /// <summary>
-    ///     The id used for deciding which item in library is of the same origin with the item in document stencil.
+    ///    The BaseID property of a master.
+    ///    When the master is edited, the BaseID property remains unchanged. So it can be used as an unique identifier in the library.
     /// </summary>
     public string BaseId { get; set; } = string.Empty;
 }

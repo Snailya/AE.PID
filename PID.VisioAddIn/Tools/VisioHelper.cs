@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Windows;
 using AE.PID.Services;
+using AE.PID.ViewModels;
 using Microsoft.Office.Interop.Visio;
 using Splat;
 using Path = System.IO.Path;
@@ -47,8 +49,9 @@ internal static class VisioHelper
             {
                 SetupGrid(page);
                 InsertFrame(page);
+                Globals.ThisAddIn.Application.ActiveWindow.ViewFit = (int)VisWindowFit.visFitPage;
             }
-            
+
             document.EndUndoScope(undoScope, true);
 
             LogHost.Default.Info($"Formatted {document.Name} successfully.");
@@ -107,19 +110,21 @@ internal static class VisioHelper
     private static void InsertFrame(IVPage page)
     {
         // ensure document opened
-        var document = page.Application.Documents.OfType<Document>().SingleOrDefault(x=>x.Name == "AE逻辑.vssx");
+        var document = page.Application.Documents.OfType<Document>().SingleOrDefault(x => x.Name == "AE逻辑.vssx");
         if (document == null)
         {
             var configuration = Locator.Current.GetService<ConfigurationService>()!;
             var documentPath = configuration.Libraries.Lookup(6).Value.Path;
             document = page.Application.Documents.OpenEx(documentPath, (short)VisOpenSaveArgs.visOpenDocked);
         }
-        
+
         var frameObject = document.Masters["B{7811D65E-9633-4E98-9FCD-B496A8B823A7}"];
-        if (frameObject != null)
-            page.Drop(frameObject, 0, 0);
+        if (frameObject == null) return;
+
+        page.Drop(frameObject, 0, 0);
+        page.AutoSizeDrawing();
     }
-    
+
     /// <summary>
     ///     Save and close document, then update the stencil using PID.DocumentStencilUpdateTool.exe.
     /// </summary>
@@ -130,12 +135,27 @@ internal static class VisioHelper
         {
             Contract.Assert(document.Type == VisDocumentTypes.visTypeDrawing);
 
+            var progress = new Progress<ProgressValue>();
+
+            WindowManager.Dispatcher!.BeginInvoke(() =>
+            {
+                var progressViewModel = new ProgressPageViewModel { IsIndeterminate = true };
+
+                Observable.FromEventPattern<ProgressValue>(handler => progress.ProgressChanged += handler,
+                        handler => progress.ProgressChanged -= handler)
+                    .Select(x => x.EventArgs)
+                    .ObserveOn(WindowManager.Dispatcher)
+                    .Subscribe(v => { progressViewModel.ProgressValue = v; });
+
+                WindowManager.GetInstance()!.ShowProgressBar(progressViewModel);
+            });
+
             var file = document.FullName;
 
             // save changes if it has unsaved changes
             if (document.Saved == false) document.Save();
 
-            // close document if it is opened
+            // close the document if it is opened
             if (document.Stat != (short)VisStatCodes.visStatClosed) document.Close();
 
             // update using document stencil update tool
@@ -160,7 +180,12 @@ internal static class VisioHelper
                 EnableRaisingEvents = true
             };
 
-            process.OutputDataReceived += (sender, args) => { LogHost.Default.Info(args.Data); };
+            process.OutputDataReceived += (sender, args) =>
+            {
+                ((IProgress<ProgressValue>)progress).Report(new ProgressValue
+                    { Message = args.Data, Status = TaskStatus.Running });
+                LogHost.Default.Info(args.Data);
+            };
             process.ErrorDataReceived += (sender, e) =>
             {
                 if (e.Data != null)
@@ -168,6 +193,9 @@ internal static class VisioHelper
             };
             process.Exited += (sender, args) =>
             {
+                ((IProgress<ProgressValue>)progress).Report(new ProgressValue
+                    { Message = string.Empty, Status = TaskStatus.RanToCompletion });
+
                 if (sender is Process { ExitCode: 0 })
                     WindowManager.ShowDialog("更新成功", MessageBoxButton.OK);
                 else
@@ -183,6 +211,18 @@ internal static class VisioHelper
         catch (Exception ex)
         {
             LogHost.Default.Error(ex, "Failed to update document stencil.");
+        }
+    }
+
+    public static void InsertLegend(IVPage page)
+    {
+        try
+        {
+            LegendService.Insert(page);
+        }
+        catch (Exception ex)
+        {
+            LogHost.Default.Error(ex, "Failed to insert legend.");
         }
     }
 

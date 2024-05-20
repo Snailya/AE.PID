@@ -1,6 +1,6 @@
 ﻿namespace AE.PID.Services;
 
-public enum ServiceStatus
+public enum TaskStatus
 {
     Created,
     Running,

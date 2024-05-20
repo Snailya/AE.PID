@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Net.Http;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Windows.Threading;
@@ -41,9 +40,10 @@ public partial class ThisAddIn : IEnableLogger
             () => new MaterialsService(Locator.Current.GetService<HttpClient>()!),
             typeof(MaterialsService));
         Locator.CurrentMutable.RegisterLazySingleton(
-            () => new LibraryUpdater(Locator.Current.GetService<HttpClient>()!, Locator.Current.GetService<ConfigurationService>()!),
+            () => new LibraryUpdater(Locator.Current.GetService<HttpClient>()!,
+                Locator.Current.GetService<ConfigurationService>()!),
             typeof(LibraryUpdater));
-        
+
         // declare an ui thread to display wpf window
         var uiThread = new Thread(WindowManager.Initialize) { Name = "UI Thread" };
         uiThread.SetApartmentState(ApartmentState.STA);

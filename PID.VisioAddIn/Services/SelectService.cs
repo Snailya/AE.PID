@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using DynamicData;
@@ -13,38 +12,19 @@ namespace AE.PID.Services;
 /// <summary>
 ///     A selection service used for enhance user selection.
 /// </summary>
-public class ShapeSelector : IDisposable
+public class SelectService : ServiceBase
 {
-    private readonly CompositeDisposable _cleanUp = new();
     private readonly SourceCache<IVMaster, int> _masters = new(t => t.ID);
     private readonly Page _page;
 
     #region Constructors
 
-    public ShapeSelector(Page page)
+    public SelectService(Page page)
     {
         Contract.Assert(page.Document.Type == VisDocumentTypes.visTypeDrawing,
             "Selection tool can only be used on drawing");
 
         _page = page;
-
-        // when a shape's property is modified, it will raise up FormulaChanged event, so that the modification could be captured to emit as a new value
-        Observable
-            .FromEvent<EDocument_MasterAddedEventHandler, Master>(
-                handler => page.Document.MasterAdded += handler,
-                handler => page.Document.MasterAdded -= handler)
-            .Subscribe(master =>
-            {
-                if (master != null) _masters.AddOrUpdate(master);
-            })
-            .DisposeWith(_cleanUp);
-
-        // when a new shape is added to the page, it could be captured using ShapeAdded event
-        Observable.FromEvent<EDocument_BeforeMasterDeleteEventHandler, Master>(
-                handler => page.Document.BeforeMasterDelete += handler,
-                handler => page.Document.BeforeMasterDelete -= handler)
-            .Subscribe(master => { _masters.Remove(master); })
-            .DisposeWith(_cleanUp);
     }
 
     #endregion
@@ -55,14 +35,32 @@ public class ShapeSelector : IDisposable
 
     #endregion
 
-    public void Initialize()
+    public override void Start()
+    {
+        if (CleanUp.Any()) return;
+
+        // when a shape's property is modified, it will raise up FormulaChanged event, so that the modification could be captured to emit as a new value
+        Observable
+            .FromEvent<EDocument_MasterAddedEventHandler, Master>(
+                handler => _page.Document.MasterAdded += handler,
+                handler => _page.Document.MasterAdded -= handler)
+            .Subscribe(master =>
+            {
+                if (master != null) _masters.AddOrUpdate(master);
+            })
+            .DisposeWith(CleanUp);
+
+        // when a new shape is added to the page, it could be captured using ShapeAdded event
+        Observable.FromEvent<EDocument_BeforeMasterDeleteEventHandler, Master>(
+                handler => _page.Document.BeforeMasterDelete += handler,
+                handler => _page.Document.BeforeMasterDelete -= handler)
+            .Subscribe(master => { _masters.Remove(master); })
+            .DisposeWith(CleanUp);
+    }
+
+    public void LoadMasters()
     {
         _masters.AddOrUpdate(_page.Document.Masters.OfType<IVMaster>());
-    }
-    
-    public void Dispose()
-    {
-        _cleanUp.Dispose();
     }
 
     /// <summary>

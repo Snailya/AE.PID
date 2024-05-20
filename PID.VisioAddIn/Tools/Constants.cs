@@ -5,6 +5,8 @@ namespace AE.PID.Tools;
 
 internal abstract class Constants
 {
+    public const string FrameBaseId = "{7811D65E-9633-4E98-9FCD-B496A8B823A7}";
+
     public static readonly string AppDataFolder = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "AE\\PID");

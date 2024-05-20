@@ -16,7 +16,7 @@ public partial class SelectToolPage
     {
         InitializeComponent();
 
-        using var service = new ShapeSelector(Globals.ThisAddIn.Application.ActivePage);
+        using var service = new SelectService(Globals.ThisAddIn.Application.ActivePage);
         ViewModel = new SelectToolPageViewModel(service);
 
         this.WhenActivated(d =>
@@ -24,6 +24,11 @@ public partial class SelectToolPage
             this.Bind(ViewModel,
                     viewModel => viewModel.ShapeId,
                     view => view.IdTextBox.Text)
+                .DisposeWith(d);
+
+            this.OneWayBind(ViewModel,
+                    x => x.IsMastersLoading,
+                    x => x.BusyIndicator.IsBusy)
                 .DisposeWith(d);
             this.OneWayBind(ViewModel,
                     viewModel => viewModel.Masters,

@@ -11,9 +11,10 @@ using ReactiveUI;
 
 namespace AE.PID.ViewModels;
 
-public class SelectToolPageViewModel(ShapeSelector service) : ViewModelBase
+public class SelectToolPageViewModel(SelectService service) : ViewModelBase
 {
     private bool _hasSelection;
+    private ObservableAsPropertyHelper<bool> _isMastersLoading = ObservableAsPropertyHelper<bool>.Default();
     private ReadOnlyObservableCollection<MasterOptionViewModel> _masters = new([]);
     private SelectionMode _mode = SelectionMode.ById;
     private int _shapeId;
@@ -21,6 +22,7 @@ public class SelectToolPageViewModel(ShapeSelector service) : ViewModelBase
     #region Output Properties
 
     public ReadOnlyObservableCollection<MasterOptionViewModel> Masters => _masters;
+    public bool IsMastersLoading => _isMastersLoading.Value;
 
     #endregion
 
@@ -43,20 +45,45 @@ public class SelectToolPageViewModel(ShapeSelector service) : ViewModelBase
                 if (Mode == SelectionMode.ById)
                     service.SelectShapeById(_shapeId);
                 else
-                    ShapeSelector.SelectShapesByMasters(_masters.Where(x => x.IsChecked).Select(x => x.BaseId));
+                    SelectService.SelectShapesByMasters(_masters.Where(x => x.IsChecked).Select(x => x.BaseId));
             },
             canSelect);
 
         OkCancelFeedbackViewModel.Cancel = ReactiveCommand.Create(() => { });
     }
 
-
     protected override void SetupSubscriptions(CompositeDisposable d)
     {
+        Observable.Create<TaskStatus>(observer =>
+            {
+                observer.OnNext(TaskStatus.Created);
+
+                try
+                {
+                    observer.OnNext(TaskStatus.Running);
+                    service.LoadMasters();
+                }
+                catch (Exception e)
+                {
+                    observer.OnError(e);
+                }
+
+                observer.OnNext(TaskStatus.RanToCompletion);
+                observer.OnCompleted();
+
+                return () => { };
+            })
+            .SubscribeOn(ThisAddIn.Dispatcher!)
+            .Select(x => x == TaskStatus.Running)
+            .ObserveOn(WindowManager.Dispatcher!)
+            .ToProperty(this, x => x.IsMastersLoading, out _isMastersLoading)
+            .DisposeWith(d);
+
         service.Masters
             .Connect()
             .Transform(x => new MasterOptionViewModel(x))
             .Sort(SortExpressionComparer<MasterOptionViewModel>.Ascending(t => t.Name))
+            .ObserveOn(WindowManager.Dispatcher!)
             .Bind(out _masters)
             .DisposeMany()
             .Subscribe()
@@ -74,7 +101,12 @@ public class SelectToolPageViewModel(ShapeSelector service) : ViewModelBase
 
     protected override void SetupStart()
     {
-        ThisAddIn.Dispatcher!.InvokeAsync(service.Initialize);
+        ThisAddIn.Dispatcher!.InvokeAsync(service.Start);
+    }
+
+    protected override void SetupDeactivate()
+    {
+        ThisAddIn.Dispatcher!.InvokeAsync(service.Stop);
     }
 
     #endregion

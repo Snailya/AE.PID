@@ -1,17 +1,15 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Threading;
 using AE.PID.EventArgs;
 using AE.PID.Models;
 using AE.PID.Services;
 using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
-using Splat;
+using TaskStatus = AE.PID.Services.TaskStatus;
 
 namespace AE.PID.ViewModels;
 
@@ -19,7 +17,7 @@ public class ProjectExplorerPageViewModel(ProjectService service) : ViewModelBas
 {
     private PartItem? _copySource;
     private ReadOnlyObservableCollection<TreeNodeViewModel<ElementBase>> _elementTree = new([]);
-    private ObservableAsPropertyHelper<bool> _isBusy = ObservableAsPropertyHelper<bool>.Default();
+    private ObservableAsPropertyHelper<bool> _isElementsLoading = ObservableAsPropertyHelper<bool>.Default();
     private ReadOnlyObservableCollection<PartItem> _partListItems = new([]);
     private ElementBase? _selected;
 
@@ -28,7 +26,7 @@ public class ProjectExplorerPageViewModel(ProjectService service) : ViewModelBas
     public ReadOnlyObservableCollection<TreeNodeViewModel<ElementBase>> ElementTree => _elementTree;
     public ReadOnlyObservableCollection<PartItem> PartListItems => _partListItems;
 
-    public bool IsBusy => _isBusy.Value;
+    public bool IsElementsLoading => _isElementsLoading.Value;
 
     #endregion
 
@@ -65,16 +63,33 @@ public class ProjectExplorerPageViewModel(ProjectService service) : ViewModelBas
 
     protected override void SetupSubscriptions(CompositeDisposable d)
     {
-        service
-            .Status
-            .Select(x => x != ServiceStatus.RanToCompletion)
+        Observable.Create<TaskStatus>(observer =>
+            {
+                observer.OnNext(TaskStatus.Created);
+
+                try
+                {
+                    observer.OnNext(TaskStatus.Running);
+                    service.LoadElements();
+                }
+                catch (Exception e)
+                {
+                    observer.OnError(e);
+                }
+
+                observer.OnNext(TaskStatus.RanToCompletion);
+                observer.OnCompleted();
+
+                return () => { };
+            })
+            .SubscribeOn(ThisAddIn.Dispatcher!)
             .ObserveOn(WindowManager.Dispatcher!)
-            .ToProperty(this, x => x.IsBusy, out _isBusy)
+            .Select(x => x == TaskStatus.Running)
+            .ToProperty(this, x => x.IsElementsLoading, out _isElementsLoading)
             .DisposeWith(d);
 
         service.Elements
             .Connect()
-            .Do(_ => this.Log().Info($"observe elements on thread {Thread.CurrentThread.ManagedThreadId}"))
             .AutoRefresh(t => t.ParentId)
             .TransformToTree(x => x.ParentId)
             .Transform(x => new TreeNodeViewModel<ElementBase>(x))
@@ -88,7 +103,7 @@ public class ProjectExplorerPageViewModel(ProjectService service) : ViewModelBas
         service.Elements
             .Connect()
             .Filter(x => x is PartItem)
-            .Transform(x=> (PartItem)x)
+            .Transform(x => (PartItem)x)
             .ObserveOn(WindowManager.Dispatcher!)
             .Bind(out _partListItems)
             .DisposeMany()
@@ -111,7 +126,12 @@ public class ProjectExplorerPageViewModel(ProjectService service) : ViewModelBas
 
     protected override void SetupStart()
     {
-        ThisAddIn.Dispatcher!.InvokeAsync(service.LoadElements);
+        ThisAddIn.Dispatcher!.InvokeAsync(service.Start);
+    }
+
+    protected override void SetupDeactivate()
+    {
+        ThisAddIn.Dispatcher!.InvokeAsync(service.Stop);
     }
 
     #endregion

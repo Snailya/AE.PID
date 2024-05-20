@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -39,8 +40,8 @@ namespace AE.PID;
 [ComVisible(true)]
 public class Ribbon : IRibbonExtensibility, IEnableLogger
 {
-    private Dictionary<string, Bitmap> _buttonImages = [];
     private readonly Subject<Command> _commandInvoker = new();
+    private Dictionary<string, Bitmap> _buttonImages = [];
     private IRibbonUI _ribbon;
 
     #region IRibbonExtensibility 成员
@@ -74,7 +75,7 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
                         VisioHelper.UpdateDocumentStencil(Globals.ThisAddIn.Application.ActiveDocument);
                         break;
                     case Command.InsertLegend:
-                        new LegendGenerator(Globals.ThisAddIn.Application.ActivePage).Insert();
+                        VisioHelper.InsertLegend(Globals.ThisAddIn.Application.ActivePage);
                         break;
                     case Command.OpenSelectTool:
                         WindowManager.Dispatcher!.Invoke(() =>
@@ -86,7 +87,8 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
                     case Command.OpenProjectExplorer:
                         WindowManager.Dispatcher!.Invoke(() =>
                         {
-                            WindowManager.GetInstance()!.SetContent(new ProjectExplorerPage(), new MaterialsSelectionPage());
+                            WindowManager.GetInstance()!.SetContent(new ProjectExplorerPage(),
+                                new MaterialsSelectionPage());
                             WindowManager.GetInstance()!.Show();
                         });
                         break;
@@ -96,6 +98,9 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
                             WindowManager.GetInstance()!.SetContent(new SettingsPage());
                             WindowManager.GetInstance()!.Show();
                         });
+                        break;
+                    case Command.Help:
+                        Process.Start("https://snailya.github.io/posts/ae-pid%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/");
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(command), command, null);
@@ -131,7 +136,8 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
         InsertLegend,
         OpenSelectTool,
         OpenProjectExplorer,
-        OpenSettings
+        OpenSettings,
+        Help
     }
 
     #region Context Menus
@@ -213,6 +219,7 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
 
     public void Help(IRibbonControl control)
     {
+        _commandInvoker.OnNext(Command.Help);
     }
 
     public void Debug(IRibbonControl control)

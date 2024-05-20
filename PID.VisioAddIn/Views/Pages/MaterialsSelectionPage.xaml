@@ -61,7 +61,7 @@
                     </Grid.RowDefinitions>
                     <views:SectionLabel Header="搜索" />
                     <views:UserFiltersForm x:Name="Conditions"
-                                                Grid.Row="1" />
+                                           Grid.Row="1" />
                 </Grid>
                 <Grid Grid.Row="1">
                     <Grid.RowDefinitions>
@@ -70,9 +70,9 @@
                     </Grid.RowDefinitions>
                     <views:SectionLabel Header="上次使用" />
                     <views:AutoColumnsDataGrid x:Name="LastUsedGrid"
-                                                  Grid.Row="1"
-                                                  MinHeight="52" MaxHeight="100"
-                                                  IsReadOnly="True" />
+                                               Grid.Row="1"
+                                               MinHeight="52" MaxHeight="100"
+                                               IsReadOnly="True" />
                 </Grid>
                 <Grid Grid.Row="2">
                     <Grid.RowDefinitions>
@@ -81,8 +81,8 @@
                     </Grid.RowDefinitions>
                     <views:SectionLabel Header="库" />
                     <views:LazyLoadAutoColumnsDataGrid x:Name="DesignMaterialsGrid"
-                                                          Grid.Row="1"
-                                                          IsReadOnly="True" />
+                                                       Grid.Row="1"
+                                                       IsReadOnly="True" />
                 </Grid>
             </Grid>
         </Grid>

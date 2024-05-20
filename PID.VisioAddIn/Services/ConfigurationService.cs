@@ -162,7 +162,7 @@ public class ConfigurationService : ReactiveObject, IEnableLogger
         catch (Exception exception)
         {
             LogHost.Default.Error(exception,
-                 $"Failed to log config from {GetPath()}, a default configuration file is used instead.");
+                $"Failed to log config from {GetPath()}, a default configuration file is used instead.");
         }
 
         return new Configuration();

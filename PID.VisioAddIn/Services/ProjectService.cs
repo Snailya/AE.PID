@@ -4,7 +4,6 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Windows;
 using System.Windows.Forms;
 using AE.PID.Models;
@@ -21,12 +20,12 @@ namespace AE.PID.Services;
 /// <summary>
 ///     Dealing with extracting data from shape sheet and exporting.
 /// </summary>
-public class ProjectService : IDisposable, IEnableLogger
+public class ProjectService : ServiceBase
 {
-    private readonly CompositeDisposable _cleanup = new();
-
     private readonly SourceCache<ElementBase, int> _elements = new(t => t.Id);
     private readonly Page _page;
+
+    #region Constructors
 
     public ProjectService(Page page)
     {
@@ -34,6 +33,19 @@ public class ProjectService : IDisposable, IEnableLogger
             "Could not initialize project service on null page.");
 
         _page = page!;
+    }
+
+    #endregion
+
+    #region Output Properties
+
+    public IObservableCache<ElementBase, int> Elements => _elements.AsObservableCache();
+
+    #endregion
+
+    public override void Start()
+    {
+        if (CleanUp.Any()) return;
 
         // observe the shape added event
         Observable.FromEvent<EPage_ShapeAddedEventHandler, Shape>(
@@ -42,7 +54,7 @@ public class ProjectService : IDisposable, IEnableLogger
             .Select(TransformToElement)
             .WhereNotNull()
             .Subscribe(element => { _elements.AddOrUpdate(element); })
-            .DisposeWith(_cleanup);
+            .DisposeWith(CleanUp);
 
         // when a shape is deleted from the page, it could be captured by BeforeShapeDelete event
         Observable.FromEvent<EPage_BeforeShapeDeleteEventHandler, Shape>(
@@ -55,19 +67,18 @@ public class ProjectService : IDisposable, IEnableLogger
                 _elements.Remove(toRemove.Value);
                 if (toRemove.Value is IDisposable disposable) disposable.Dispose();
             })
-            .DisposeWith(_cleanup);
-
-        Status.OnNext(ServiceStatus.Created);
+            .DisposeWith(CleanUp);
     }
 
-    public BehaviorSubject<ServiceStatus> Status { get; } = new(ServiceStatus.Created);
-
-    public IObservableCache<ElementBase, int> Elements => _elements.AsObservableCache();
-
-    public void Dispose()
+    public void LoadElements()
     {
-        _cleanup.Dispose();
+        var elements = _page.Shapes.OfType<Shape>()
+            .Select(TransformToElement)
+            .Where(x => x != null)
+            .Select(x => x!).ToList();
+        _elements.AddOrUpdate(elements);
     }
+
 
     /// <summary>
     ///     extract data from shapes on layers defined in config and group them as BOM items.
@@ -102,22 +113,6 @@ public class ProjectService : IDisposable, IEnableLogger
             this.Log().Error(ex, "Failed to export.");
             WindowManager.ShowDialog($"执行失败。{ex.Message}", MessageBoxButton.OK);
         }
-    }
-
-    public void LoadElements()
-    {
-        if (Status.Value != ServiceStatus.Created) return;
-
-        Status.OnNext(ServiceStatus.Running);
-
-        var elements = _page.Shapes.OfType<Shape>()
-            .Select(TransformToElement)
-            .Where(x => x != null)
-            .Select(x => x!).ToList();
-        _elements.AddOrUpdate(elements);
-
-        Status.OnNext(ServiceStatus.RanToCompletion);
-        Status.OnCompleted();
     }
 
     private static ElementBase? TransformToElement(Shape shape)

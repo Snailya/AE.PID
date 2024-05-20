@@ -50,7 +50,6 @@
                                     Grid.Row="1"
                                     IndicatorType="Ellipse"
                                     BusyContent="正在加载..."
-                                    BusyContentMargin="0,20,0,0"
                                     IsBusyAtStartup="True">
                 <TabControl>
                     <TabItem Header="结构化">
@@ -112,18 +111,24 @@
                                                                    IsReadOnly="True" />
                                 <filterDataGrid:DataGridTextColumn Header="功能组" Binding="{Binding FunctionalGroup}"
                                                                    IsReadOnly="True" IsColumnFiltered="True" />
-                                <filterDataGrid:DataGridTextColumn Header="功能元件" Binding="{Binding Designation}"
+                                <filterDataGrid:DataGridTextColumn Header="功能元件"
+                                                                   Binding="{Binding Designation,PresentationTraceSources.TraceLevel=None}"
                                                                    IsColumnFiltered="True" />
-                                <filterDataGrid:DataGridTextColumn Header="物料编码" Binding="{Binding MaterialNo}"
+                                <filterDataGrid:DataGridTextColumn Header="物料编码"
+                                                                   Binding="{Binding MaterialNo,PresentationTraceSources.TraceLevel=None}"
                                                                    IsColumnFiltered="True" />
                                 <filterDataGrid:DataGridTextColumn Header="描述" Binding="{Binding Description}"
                                                                    IsColumnFiltered="True" />
-                                <filterDataGrid:DataGridTextColumn Header="名称" Binding="{Binding SubClassName}"
+                                <filterDataGrid:DataGridTextColumn Header="名称"
+                                                                   Binding="{Binding SubClassName, PresentationTraceSources.TraceLevel=None}"
                                                                    IsReadOnly="True" IsColumnFiltered="True" />
-                                <filterDataGrid:DataGridTextColumn Header="关键参数" Binding="{Binding KeyParameters}"
+                                <filterDataGrid:DataGridTextColumn Header="关键参数"
+                                                                   Binding="{Binding KeyParameters,PresentationTraceSources.TraceLevel=None}"
                                                                    IsReadOnly="True" IsColumnFiltered="True" />
-                                <filterDataGrid:DataGridTextColumn Header="单位数量" Binding="{Binding Quantity}" />
-                                <filterDataGrid:DataGridTextColumn Header="数量" Binding="{Binding SubTotal}"
+                                <filterDataGrid:DataGridTextColumn Header="单位数量"
+                                                                   Binding="{Binding Quantity,PresentationTraceSources.TraceLevel=None}" />
+                                <filterDataGrid:DataGridTextColumn Header="数量"
+                                                                   Binding="{Binding SubTotal, PresentationTraceSources.TraceLevel=None}"
                                                                    IsReadOnly="True" />
                             </filterDataGrid:FilterDataGrid.Columns>
                         </filterDataGrid:FilterDataGrid>

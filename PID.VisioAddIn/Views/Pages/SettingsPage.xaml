@@ -8,6 +8,7 @@
                 xmlns:viewModels="clr-namespace:AE.PID.ViewModels"
                 xmlns:views="clr-namespace:AE.PID.Views"
                 MinHeight="480" MinWidth="320"
+                Height="480" Width="320"
                 mc:Ignorable="d"
                 d:DesignHeight="320" d:DesignWidth="480">
     <UserControl.Resources>
@@ -130,6 +131,6 @@
         </Grid>
         <Separator Grid.Row="2" />
         <views:OkCancelFeedback x:Name="Feedback"
-                                     Grid.Row="3" />
+                                Grid.Row="3" />
     </Grid>
 </views:PageBase>

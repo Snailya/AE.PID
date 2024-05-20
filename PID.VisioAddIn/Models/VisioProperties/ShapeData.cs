@@ -15,6 +15,6 @@ public class ShapeData(
     public string Label { get; } = label;
     public string Format { get; } = format;
     public string Type { get; set; } = type.ToString();
-    public string SortKey { get; set; } = $"\"{sortKey}\"";
+    public string SortKey { get; set; } = sortKey;
     public string Invisible { get; set; } = invisible.ToString().ToUpper();
 }

@@ -39,7 +39,7 @@ public class AppUpdater : IEnableLogger
             .Merge(Observable
                 .Return<
                     long>(-1)) // add an immediate value as the interval method emits only after the interval collapse.
-            // ignore if it not till the next check time
+            // ignore if it is not till the next check time
             .Where(_ => DateTime.Now > configuration.AppNextTime)
             .Do(_ => this.Log().Info("App Update started. {Initiated by: Auto-Run}"))
             .SelectMany(_ => CheckUpdateAsync())
@@ -50,7 +50,7 @@ public class AppUpdater : IEnableLogger
         // whenever an update is available, it triggers a subject, so that we could ask user for permission
         _updateAvailableTrigger
             .WhereNotNull()
-            // switch to main thread to display ui
+            // switch to the main thread to display ui
             .ObserveOn(WindowManager.Dispatcher!)
             .Select(info =>
             {
@@ -172,31 +172,22 @@ public class AppUpdater : IEnableLogger
     /// <param name="filePath"></param>
     private void InstallUpdate(string filePath)
     {
-        string msiPath;
-        if (Path.GetExtension(filePath) == ".rar")
-        {
-            var destination = Path.Combine(Constants.TmpFolder, Path.GetFileNameWithoutExtension(filePath));
-            ExtractAndOverWriteRarFile(filePath, destination);
-            var files = Directory.GetFiles(destination);
-            msiPath = files.Single(x => Path.GetExtension(x) == ".msi");
-        }
-        else
-        {
-            msiPath = filePath;
-        }
+        //string msiPath;
+        //if (Path.GetExtension(filePath) == ".rar")
+        //{
+        //    var destination = Path.Combine(Constants.TmpFolder, Path.GetFileNameWithoutExtension(filePath));
+        //    ExtractAndOverWriteRarFile(filePath, destination);
+        //    var files = Directory.GetFiles(destination);
+        //    msiPath = files.Single(x => Path.GetExtension(x) == ".msi");
+        //}
+        //else
+        //{
+        //    msiPath = filePath;
+        //}
 
         try
         {
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = "msiexec",
-                Arguments = $"/i \"{msiPath}\"",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
+            var startInfo = BuildProcessInfo(filePath) ?? throw new InvalidProgramException("The file specified is not a valid installer.");
             using var process = new Process();
             process.StartInfo = startInfo;
             process.Start();
@@ -207,6 +198,35 @@ public class AppUpdater : IEnableLogger
             this.Log().Error(ex, "Failed to execute installer.");
         }
     }
+
+    private ProcessStartInfo? BuildProcessInfo(string filePath)
+    {
+        var extension = Path.GetExtension(filePath);
+
+        if (extension == ".msi")
+            return new ProcessStartInfo
+            {
+                FileName = "msiexec",
+                Arguments = $"/i \"{filePath}\"",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+        if (extension == ".exe")
+            return new ProcessStartInfo
+            {
+                FileName = filePath,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+        return null;
+    }
+
 
     /// <summary>
     ///     Find the WinRar.exe by regedit and extract .rar file using WinRar in new process.

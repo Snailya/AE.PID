@@ -33,7 +33,7 @@ public partial class ProjectExplorerPage
                 .DisposeWith(d);
 
             this.OneWayBind(ViewModel,
-                    x => x.IsBusy,
+                    x => x.IsElementsLoading,
                     x => x.BusyIndicator.IsBusy)
                 .DisposeWith(d);
             this.OneWayBind(ViewModel,

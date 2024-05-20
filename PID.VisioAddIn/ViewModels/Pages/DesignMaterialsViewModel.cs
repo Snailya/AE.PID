@@ -45,7 +45,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
 
     protected override void SetupCommands()
     {
-        // when an item is selected, it should be add to the last used grid for future use
+        // when an item is selected, it should be added to the last used grid for future use
         Select = ReactiveCommand.Create<DesignMaterial>(WriteMaterialAndAddToLastUsed);
 
         // create a hack command so that other class could observe this action

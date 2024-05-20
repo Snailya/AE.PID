@@ -209,23 +209,23 @@
         <Compile Include="Models\DesignMaterial.cs"/>
         <Compile Include="Models\DesignMaterialProperty.cs"/>
         <Compile Include="Models\LastUsedDesignMaterial.cs"/>
-        <Compile Include="Models\Masters\ElementBase.cs" />
-        <Compile Include="Models\Masters\Equipment.cs" />
-        <Compile Include="Models\Masters\EquipmentUnit.cs" />
-        <Compile Include="Models\Masters\FunctionalElement.cs" />
-        <Compile Include="Models\Masters\FunctionalGroup.cs" />
-        <Compile Include="Models\Masters\FunctionalGroupBase.cs" />
-        <Compile Include="Models\Masters\Instrument.cs" />
-        <Compile Include="Models\Masters\PartItem.cs" />
-        <Compile Include="Models\Masters\ProxyFunctionalGroup.cs" />
-        <Compile Include="Models\PartListTableLineItem.cs" />
-        <Compile Include="Models\Position.cs" />
-        <Compile Include="Models\ReactiveLibrary.cs" />
-        <Compile Include="Models\VisioProperties\ActionData.cs" />
-        <Compile Include="Models\VisioProperties\Prop.cs" />
-        <Compile Include="Models\VisioProperties\ShapeData.cs" />
-        <Compile Include="Models\VisioProperties\UserData.cs" />
-        <Compile Include="Models\VisioProperties\ValueProp.cs" />
+        <Compile Include="Models\Masters\ElementBase.cs"/>
+        <Compile Include="Models\Masters\Equipment.cs"/>
+        <Compile Include="Models\Masters\EquipmentUnit.cs"/>
+        <Compile Include="Models\Masters\FunctionalElement.cs"/>
+        <Compile Include="Models\Masters\FunctionalGroup.cs"/>
+        <Compile Include="Models\Masters\FunctionalGroupBase.cs"/>
+        <Compile Include="Models\Masters\Instrument.cs"/>
+        <Compile Include="Models\Masters\PartItem.cs"/>
+        <Compile Include="Models\Masters\ProxyFunctionalGroup.cs"/>
+        <Compile Include="Models\PartListTableLineItem.cs"/>
+        <Compile Include="Models\Position.cs"/>
+        <Compile Include="Models\ReactiveLibrary.cs"/>
+        <Compile Include="Models\VisioProperties\ActionData.cs"/>
+        <Compile Include="Models\VisioProperties\Prop.cs"/>
+        <Compile Include="Models\VisioProperties\ShapeData.cs"/>
+        <Compile Include="Models\VisioProperties\UserData.cs"/>
+        <Compile Include="Models\VisioProperties\ValueProp.cs"/>
         <Compile Include="Properties\Resources.Designer.cs">
             <AutoGen>True</AutoGen>
             <DesignTime>True</DesignTime>
@@ -234,38 +234,42 @@
         <Compile Include="Ribbon.cs">
             <XmlRibbon>true</XmlRibbon>
         </Compile>
-        <Compile Include="Services\AppUpdater.cs" />
-        <Compile Include="Services\ConfigurationService.cs" />
-        <Compile Include="Services\DesignMaterialsQueryTerms.cs" />
-        <Compile Include="Services\ProjectService.cs" />
-        <Compile Include="Services\DocumentMonitor.cs" />
-        <Compile Include="Services\LegendGenerator.cs" />
-        <Compile Include="Services\LibraryUpdater.cs" />
-        <Compile Include="Services\MaterialService.cs" />
-        <Compile Include="Services\ServiceStatus.cs" />
-        <Compile Include="Services\ShapeSelector.cs" />
-        <Compile Include="Services\WindowManager.cs" />
-        <Compile Include="Tools\BindingMixins.cs" />
-        <Compile Include="Tools\Constants.cs" />
-        <Compile Include="Tools\RxExt.cs" />
-        <Compile Include="Tools\UiExt.cs" />
-        <Compile Include="Tools\VisioExt.cs" />
-        <Compile Include="Tools\VisioHelper.cs" />
-        <Compile Include="Tools\VisioWrapper.cs" />
-        <Compile Include="ViewModels\Components\DocumentInfoViewModel.cs" />
-        <Compile Include="ViewModels\Components\OkCancelViewModel.cs" />
-        <Compile Include="ViewModels\Components\UserFiltersViewModel.cs" />
-        <Compile Include="ViewModels\FrequencyOptionViewModel.cs" />
-        <Compile Include="ViewModels\LibraryInfoViewModel.cs" />
-        <Compile Include="ViewModels\MasterOptionViewModel.cs" />
-        <Compile Include="ViewModels\Pages\DesignMaterialsViewModel.cs" />
-        <Compile Include="ViewModels\Pages\ProjectExplorerPageViewModel.cs" />
-        <Compile Include="ViewModels\Pages\SelectToolPageViewModel.cs" />
-        <Compile Include="ViewModels\Pages\SettingsPageViewModel.cs" />
-        <Compile Include="ViewModels\SelectableViewModel.cs" />
-        <Compile Include="ViewModels\TreeNodeViewModel.cs" />
-        <Compile Include="ViewModels\ViewModelBase.cs" />
-        <Compile Include="ViewModels\WindowViewModel.cs" />
+        <Compile Include="Services\AppUpdater.cs"/>
+        <Compile Include="Services\ConfigurationService.cs"/>
+        <Compile Include="Services\DesignMaterialsQueryTerms.cs"/>
+        <Compile Include="Services\ProjectService.cs"/>
+        <Compile Include="Services\DocumentMonitor.cs"/>
+        <Compile Include="Services\LegendService.cs"/>
+        <Compile Include="Services\LibraryUpdater.cs"/>
+        <Compile Include="Services\MaterialService.cs"/>
+        <Compile Include="Services\ServiceBase.cs"/>
+        <Compile Include="Services\TaskStatus.cs"/>
+        <Compile Include="Services\SelectService.cs"/>
+        <Compile Include="Services\WindowManager.cs"/>
+        <Compile Include="Tools\BindingMixins.cs"/>
+        <Compile Include="Tools\Constants.cs"/>
+        <Compile Include="Tools\RxExt.cs"/>
+        <Compile Include="Tools\UiExt.cs"/>
+        <Compile Include="Tools\VisioExt.cs"/>
+        <Compile Include="Tools\VisioHelper.cs"/>
+        <Compile Include="Tools\VisioWrapper.cs"/>
+        <Compile Include="Tools\Win32Ext.cs"/>
+        <Compile Include="ViewModels\Components\DocumentInfoViewModel.cs"/>
+        <Compile Include="ViewModels\Components\OkCancelViewModel.cs"/>
+        <Compile Include="ViewModels\Components\UserFiltersViewModel.cs"/>
+        <Compile Include="ViewModels\FrequencyOptionViewModel.cs"/>
+        <Compile Include="ViewModels\LibraryInfoViewModel.cs"/>
+        <Compile Include="ViewModels\MasterOptionViewModel.cs"/>
+        <Compile Include="ViewModels\Pages\DesignMaterialsViewModel.cs"/>
+        <Compile Include="ViewModels\Pages\ProgressPageViewModel.cs"/>
+        <Compile Include="ViewModels\Pages\ProjectExplorerPageViewModel.cs"/>
+        <Compile Include="ViewModels\Pages\SelectToolPageViewModel.cs"/>
+        <Compile Include="ViewModels\Pages\SettingsPageViewModel.cs"/>
+        <Compile Include="ViewModels\ProgressValue.cs"/>
+        <Compile Include="ViewModels\SelectableViewModel.cs"/>
+        <Compile Include="ViewModels\TreeNodeViewModel.cs"/>
+        <Compile Include="ViewModels\ViewModelBase.cs"/>
+        <Compile Include="ViewModels\WindowViewModel.cs"/>
         <Compile Include="Views\Components\DocumentInfoTable.xaml.cs">
             <DependentUpon>DocumentInfoTable.xaml</DependentUpon>
         </Compile>
@@ -275,19 +279,22 @@
         <Compile Include="Views\Components\UserFiltersForm.xaml.cs">
             <DependentUpon>UserFiltersForm.xaml</DependentUpon>
         </Compile>
-        <Compile Include="Views\Controls\AutoColumnsDataGrid.cs" />
-        <Compile Include="Views\Controls\LabelTextBox.cs" />
-        <Compile Include="Views\Controls\LazyLoadAutoColumnsDataGrid.cs" />
-        <Compile Include="Views\Controls\SectionLabel.cs" />
-        <Compile Include="Views\Controls\TreeListView.cs" />
-        <Compile Include="Views\Controls\TreeListViewItem.cs" />
+        <Compile Include="Views\Controls\AutoColumnsDataGrid.cs"/>
+        <Compile Include="Views\Controls\LabelTextBox.cs"/>
+        <Compile Include="Views\Controls\LazyLoadAutoColumnsDataGrid.cs"/>
+        <Compile Include="Views\Controls\SectionLabel.cs"/>
+        <Compile Include="Views\Controls\TreeListView.cs"/>
+        <Compile Include="Views\Controls\TreeListViewItem.cs"/>
+        <Compile Include="Views\Pages\ProgressPage.xaml.cs">
+            <DependentUpon>ProgressPage.xaml</DependentUpon>
+        </Compile>
         <Compile Include="Views\Pages\ProjectExplorerPage.xaml.cs">
             <DependentUpon>ProjectExplorerPage.xaml</DependentUpon>
         </Compile>
         <Compile Include="Views\Pages\MaterialsSelectionPage.xaml.cs">
             <DependentUpon>MaterialsSelectionPage.xaml</DependentUpon>
         </Compile>
-        <Compile Include="Views\Pages\PageBase.cs" />
+        <Compile Include="Views\Pages\PageBase.cs"/>
         <Compile Include="Views\Pages\SettingsPage.xaml.cs">
             <DependentUpon>SettingsPage.xaml</DependentUpon>
         </Compile>
@@ -297,23 +304,24 @@
         <Compile Include="Properties\AssemblyInfo.cs">
             <SubType>Code</SubType>
         </Compile>
-        <Compile Include="Views\ViewBase.cs" />
+        <Compile Include="Views\ViewBase.cs"/>
         <Compile Include="Views\Windows\MainWindow.xaml.cs">
             <DependentUpon>MainWindow.xaml</DependentUpon>
         </Compile>
         <Compile Include="Views\Windows\ChildWindow.xaml.cs">
             <DependentUpon>ChildWindow.xaml</DependentUpon>
         </Compile>
+        <Compile Include="Views\Windows\WindowBase.cs"/>
         <EmbeddedResource Include="Properties\Resources.resx">
             <Generator>PublicResXFileCodeGenerator</Generator>
             <SubType>Designer</SubType>
             <LastGenOutput>Resources.Designer.cs</LastGenOutput>
         </EmbeddedResource>
-        <None Include="app.config" />
+        <None Include="app.config"/>
         <None Include="nlog.config">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
-        <None Include="PID.VisioAddIn_TemporaryKey.pfx" />
+        <None Include="PID.VisioAddIn_TemporaryKey.pfx"/>
         <None Include="Properties\Settings.settings">
             <Generator>SettingsSingleFileGenerator</Generator>
             <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -326,14 +334,15 @@
         <Compile Include="ThisAddIn.cs">
             <SubType>Code</SubType>
         </Compile>
-        <None Include="Resources\BOM_template.xlsx" />
+        <None Include="Resources\BOM_template.xlsx"/>
+        <Content Include="Resources\help.ico"/>
         <None Include="ThisAddIn.Designer.xml">
             <DependentUpon>ThisAddIn.cs</DependentUpon>
         </None>
         <Compile Include="ThisAddIn.Designer.cs">
             <DependentUpon>ThisAddIn.Designer.xml</DependentUpon>
         </Compile>
-        <AppDesigner Include="Properties\" />
+        <AppDesigner Include="Properties\"/>
     </ItemGroup>
     <ItemGroup>
         <Page Include="Views\Components\DocumentInfoTable.xaml">
@@ -347,6 +356,10 @@
         <Page Include="Views\Components\UserFiltersForm.xaml">
             <SubType>Designer</SubType>
             <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Include="Views\Pages\ProgressPage.xaml">
+            <Generator>MSBuild:Compile</Generator>
+            <SubType>Designer</SubType>
         </Page>
         <Page Include="Views\Pages\ProjectExplorerPage.xaml">
             <Generator>MSBuild:Compile</Generator>
@@ -383,36 +396,36 @@
         </ProjectReference>
     </ItemGroup>
     <ItemGroup>
-        <EmbeddedResource Include="Ribbon.xml" />
+        <EmbeddedResource Include="Ribbon.xml"/>
     </ItemGroup>
     <ItemGroup>
-        <None Include="Resources\edit_configuration.ico" />
+        <None Include="Resources\edit_configuration.ico"/>
     </ItemGroup>
     <ItemGroup>
-        <None Include="Resources\load_libraries.ico" />
+        <None Include="Resources\load_libraries.ico"/>
     </ItemGroup>
     <ItemGroup>
-        <None Include="Resources\format_page.ico" />
+        <None Include="Resources\format_page.ico"/>
     </ItemGroup>
     <ItemGroup>
-        <None Include="Resources\update_document.ico" />
+        <None Include="Resources\update_document.ico"/>
     </ItemGroup>
     <ItemGroup>
-        <None Include="Resources\open_export_tool.ico" />
+        <None Include="Resources\open_export_tool.ico"/>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="BusyIndicators" Version="2.1.2" />
-        <PackageReference Include="DataGridExtensions" Version="2.6.0" />
-        <PackageReference Include="FilterDataGrid" Version="1.2.8" />
-        <PackageReference Include="Material.Icons.WPF" Version="2.1.0" />
-        <PackageReference Include="MiniExcel" Version="1.31.3" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-        <PackageReference Include="ReactiveUI.WPF" Version="19.5.39" />
-        <PackageReference Include="Splat" Version="15.0.1" />
-        <PackageReference Include="Splat.NLog" Version="15.0.1" />
-        <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0" />
-        <PackageReference Include="System.Net.Http" Version="4.3.4" />
-        <PackageReference Include="System.Xml.Linq" Version="3.5.21022.801" />
+        <PackageReference Include="BusyIndicators" Version="2.1.2"/>
+        <PackageReference Include="DataGridExtensions" Version="2.6.0"/>
+        <PackageReference Include="FilterDataGrid" Version="1.2.8"/>
+        <PackageReference Include="Material.Icons.WPF" Version="2.1.0"/>
+        <PackageReference Include="MiniExcel" Version="1.31.3"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+        <PackageReference Include="ReactiveUI.WPF" Version="19.5.39"/>
+        <PackageReference Include="Splat" Version="15.0.1"/>
+        <PackageReference Include="Splat.NLog" Version="15.0.1"/>
+        <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0"/>
+        <PackageReference Include="System.Net.Http" Version="4.3.4"/>
+        <PackageReference Include="System.Xml.Linq" Version="3.5.21022.801"/>
     </ItemGroup>
     <ItemGroup>
         <Page Include="Views\Themes\TreeListView.xaml">
@@ -420,10 +433,8 @@
         </Page>
     </ItemGroup>
     <ItemGroup>
-        <Content Include="Resources\open_select_tool.ico" />
-    </ItemGroup>
-    <ItemGroup>
-      <Folder Include="Models\Article\" />
+        <Content Include="Resources\insert_legend.ico"/>
+        <Content Include="Resources\open_select_tool.ico"/>
     </ItemGroup>
     <PropertyGroup>
         <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

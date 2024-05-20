@@ -4,9 +4,8 @@ namespace AE.PID.ViewModels;
 
 public class SelectableViewModel<T>(T source) : ReactiveObject
 {
-    public T Source { get; set; } = source;
-
     private bool _isSelected;
+    public T Source { get; set; } = source;
 
     public bool IsSelected
     {
