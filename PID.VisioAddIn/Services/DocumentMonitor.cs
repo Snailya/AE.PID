@@ -26,7 +26,7 @@ public class DocumentMonitor : IEnableLogger
         _configuration = configuration;
         this.Log().Info("Document Monitor Service started.");
 
-        // check update when visio is idle, however if the document has been checked, skip it
+        // check update when visio is idle, however, if the document has been checked, skip it
         Observable.FromEvent<EApplication_VisioIsIdleEventHandler, Application>(
                 handler => Globals.ThisAddIn.Application.VisioIsIdle += handler,
                 handler => Globals.ThisAddIn.Application.VisioIsIdle -= handler
@@ -43,7 +43,7 @@ public class DocumentMonitor : IEnableLogger
                     // ask for update
                     var result = WindowManager.ShowDialog("检测到文档模具与库中模具不一致，是否立即更新文档模具？");
 
-                    if (result is MessageBoxResult.No or MessageBoxResult.Cancel) 
+                    if (result is MessageBoxResult.No or MessageBoxResult.Cancel)
                         _checked.Add(document);
                     else
                         VisioHelper.UpdateDocumentStencil(document);

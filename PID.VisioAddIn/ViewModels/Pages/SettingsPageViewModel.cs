@@ -5,6 +5,7 @@ using System.IO;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using AE.PID.Dtos;
@@ -37,7 +38,6 @@ public class SettingsPageViewModel(
     public ReadOnlyObservableCollection<LibraryInfoViewModel> Libraries => _libraries;
 
     #endregion
-
 
     private static void OpenTmlFolder()
     {
@@ -85,7 +85,9 @@ public class SettingsPageViewModel(
 
     protected override void SetupSubscriptions(CompositeDisposable d)
     {
-        configuration.Libraries.Connect().FullJoin(
+        configuration.Libraries
+            .Connect()
+            .FullJoin(
                 _serverLibraries.Connect(),
                 a => a.Id,
                 (serverKey, local, server) =>

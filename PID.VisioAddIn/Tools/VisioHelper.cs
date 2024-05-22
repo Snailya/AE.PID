@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Windows;
 using AE.PID.Services;
 using AE.PID.ViewModels;
 using Microsoft.Office.Interop.Visio;
+using Microsoft.Win32;
 using Splat;
 using Path = System.IO.Path;
 
@@ -125,6 +128,38 @@ internal static class VisioHelper
         page.AutoSizeDrawing();
     }
 
+    private static string? GetUpdateTool()
+    {
+        // Specify the registry key path
+        const string registryKeyPath = @"Software\Microsoft\Visio\Addins\AE.PID";
+
+        // Specify the value name you want to read
+        const string valueName = "Manifest";
+
+        try
+        {
+            using var registryKey = Registry.CurrentUser.OpenSubKey(registryKeyPath);
+            var value = registryKey?.GetValue(valueName) as string;
+
+            var index = value?.IndexOf('|');
+            if (index >= 0) value = value.Substring(0, index.Value);
+
+            var fileUri = new Uri(value);
+            var filePath = fileUri.LocalPath;
+            var folderPath = Path.GetDirectoryName(filePath);
+
+            return Path.Combine(folderPath,
+                "DocumentStencilUpdateTool/PID.DocumentStencilUpdateTool.exe");
+        }
+        catch (Exception ex)
+        {
+            // Handle any exceptions that may occur
+            LogHost.Default.Error(ex.Message);
+        }
+
+        return null;
+    }
+
     /// <summary>
     ///     Save and close document, then update the stencil using PID.DocumentStencilUpdateTool.exe.
     /// </summary>
@@ -134,6 +169,10 @@ internal static class VisioHelper
         try
         {
             Contract.Assert(document.Type == VisDocumentTypes.visTypeDrawing);
+
+            // ensure update tool exist
+            var updateToolPath = GetUpdateTool();
+            if (!File.Exists(updateToolPath)) throw new InvalidOperationException("Could not find the update tool");
 
             var progress = new Progress<ProgressValue>();
 
@@ -151,6 +190,8 @@ internal static class VisioHelper
             });
 
             var file = document.FullName;
+
+            LogHost.Default.Info(Assembly.GetExecutingAssembly().Location);
 
             // save changes if it has unsaved changes
             if (document.Saved == false) document.Save();
@@ -170,9 +211,12 @@ internal static class VisioHelper
                 UseShellExecute = false,
                 Domain = null,
                 LoadUserProfile = false,
-                FileName = "./DocumentStencilUpdateTool/PID.DocumentStencilUpdateTool.exe",
+                FileName = updateToolPath!,
                 ErrorDialog = false
             };
+
+            LogHost.Default.Info(
+                $"Update document through command line: {processStartInfo.FileName} {processStartInfo.Arguments}");
 
             var process = new Process
             {
@@ -180,27 +224,23 @@ internal static class VisioHelper
                 EnableRaisingEvents = true
             };
 
-            process.OutputDataReceived += (sender, args) =>
+            process.OutputDataReceived += (_, args) =>
             {
                 ((IProgress<ProgressValue>)progress).Report(new ProgressValue
                     { Message = args.Data, Status = TaskStatus.Running });
                 LogHost.Default.Info(args.Data);
             };
-            process.ErrorDataReceived += (sender, e) =>
+            process.ErrorDataReceived += (_, e) =>
             {
                 if (e.Data != null)
                     LogHost.Default.Error(e.Data);
             };
-            process.Exited += (sender, args) =>
+            process.Exited += (sender, _) =>
             {
                 ((IProgress<ProgressValue>)progress).Report(new ProgressValue
                     { Message = string.Empty, Status = TaskStatus.RanToCompletion });
 
-                if (sender is Process { ExitCode: 0 })
-                    WindowManager.ShowDialog("更新成功", MessageBoxButton.OK);
-                else
-                    WindowManager.ShowDialog("更新失败", MessageBoxButton.OK);
-
+                WindowManager.ShowDialog(sender is Process { ExitCode: 0 } ? "更新成功" : "更新失败", MessageBoxButton.OK);
                 Globals.ThisAddIn.Application.Documents.OpenEx(file, (short)OpenFlags.ReadWrite);
             };
 
@@ -210,6 +250,7 @@ internal static class VisioHelper
         }
         catch (Exception ex)
         {
+            WindowManager.ShowDialog($"更新失败：{ex.Message}", MessageBoxButton.OK);
             LogHost.Default.Error(ex, "Failed to update document stencil.");
         }
     }

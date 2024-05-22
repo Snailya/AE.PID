@@ -235,6 +235,7 @@
             <XmlRibbon>true</XmlRibbon>
         </Compile>
         <Compile Include="Services\AppUpdater.cs"/>
+        <Compile Include="Services\BackgroundManager.cs"/>
         <Compile Include="Services\ConfigurationService.cs"/>
         <Compile Include="Services\DesignMaterialsQueryTerms.cs"/>
         <Compile Include="Services\ProjectService.cs"/>
@@ -420,7 +421,7 @@
         <PackageReference Include="Material.Icons.WPF" Version="2.1.0"/>
         <PackageReference Include="MiniExcel" Version="1.31.3"/>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
-        <PackageReference Include="ReactiveUI.WPF" Version="19.5.39"/>
+        <PackageReference Include="ReactiveUI.WPF" Version="20.1.1" />
         <PackageReference Include="Splat" Version="15.0.1"/>
         <PackageReference Include="Splat.NLog" Version="15.0.1"/>
         <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0"/>

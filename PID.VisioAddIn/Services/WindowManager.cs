@@ -64,7 +64,7 @@ public class WindowManager : IDisposable
 
         // initialize dispatcher
         Dispatcher = Dispatcher.CurrentDispatcher;
-        RxApp.MainThreadScheduler = CurrentThreadScheduler.Instance;
+        RxApp.MainThreadScheduler = DispatcherScheduler.Current;
 
         Dispatcher.Run();
     }
@@ -85,8 +85,10 @@ public class WindowManager : IDisposable
 
     public void Show()
     {
+        _mainWindow.SizeToContent = SizeToContent.WidthAndHeight;
         _mainWindow.Show();
-
+        _mainWindow.SizeToContent = SizeToContent.Manual;
+            
         if (_childWindow.Content == null) return;
 
         _childWindow.Owner = _mainWindow;

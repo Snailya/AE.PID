@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using AE.PID.Tools;
@@ -32,7 +31,7 @@ public class AppUpdater : IEnableLogger
     {
         _client = client;
 
-        // automatically check update by interval if it not meet the user disabled period
+        // automatically check update by interval if it not meets the user disabled period
         configuration.WhenAnyValue(x => x.AppCheckInterval)
             .Select(Observable.Interval)
             .Switch()
@@ -41,7 +40,7 @@ public class AppUpdater : IEnableLogger
                     long>(-1)) // add an immediate value as the interval method emits only after the interval collapse.
             // ignore if it is not till the next check time
             .Where(_ => DateTime.Now > configuration.AppNextTime)
-            .Do(_ => this.Log().Info("App Update started. {Initiated by: Auto-Run}"))
+            .Do(_ => this.Log().Info("App update started. {Initiated by: Auto-Run}"))
             .SelectMany(_ => CheckUpdateAsync())
             .Do(_ => { configuration.AppNextTime = DateTime.Now + configuration.AppCheckInterval; })
             .Subscribe(_ => { })
@@ -61,7 +60,7 @@ public class AppUpdater : IEnableLogger
                 return WindowManager.ShowDialog(messageBoxText);
             })
             .ObserveOn(ThisAddIn.Dispatcher!)
-            // if user choose to update, download the installer and invoke update
+            // if a user chooses to update, download the installer and invoke update
             .Where(result => result is MessageBoxResult.Yes or MessageBoxResult.OK)
             .SelectMany(_ => DownloadUpdateAsync())
             .Subscribe(InstallUpdate)
@@ -72,15 +71,22 @@ public class AppUpdater : IEnableLogger
     {
         try
         {
+#if DEBUG
+            using var response =
+                await _client.GetAsync(
+                    "check-version?version=0.0.0.0");
+#else
             using var response =
                 await _client.GetAsync(
                     $"check-version?version={FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion}");
+#endif
             if (!response.IsSuccessStatusCode) return false;
 
             var responseBody = await response.Content.ReadAsStringAsync();
             var jObject = JObject.Parse(responseBody);
 
             var isUpdateAvailable = (bool)jObject["isUpdateAvailable"]!;
+
             if (!isUpdateAvailable) return false;
 
             var versionToken = jObject["latestVersion"]!;
@@ -91,6 +97,8 @@ public class AppUpdater : IEnableLogger
                 Version = (string)versionToken["version"]!,
                 ReleaseNotes = (string)versionToken["releaseNotes"]!
             });
+
+            this.Log().Info($"New app version detected: {versionToken["version"]}");
 
             return true;
         }
@@ -116,7 +124,7 @@ public class AppUpdater : IEnableLogger
     {
         try
         {
-            using var response = await _client.GetAsync("download");
+            using var response = await _client.GetAsync("download/0");
             response.EnsureSuccessStatusCode();
 
             var fileName = Path.GetFileName(
@@ -172,22 +180,10 @@ public class AppUpdater : IEnableLogger
     /// <param name="filePath"></param>
     private void InstallUpdate(string filePath)
     {
-        //string msiPath;
-        //if (Path.GetExtension(filePath) == ".rar")
-        //{
-        //    var destination = Path.Combine(Constants.TmpFolder, Path.GetFileNameWithoutExtension(filePath));
-        //    ExtractAndOverWriteRarFile(filePath, destination);
-        //    var files = Directory.GetFiles(destination);
-        //    msiPath = files.Single(x => Path.GetExtension(x) == ".msi");
-        //}
-        //else
-        //{
-        //    msiPath = filePath;
-        //}
-
         try
         {
-            var startInfo = BuildProcessInfo(filePath) ?? throw new InvalidProgramException("The file specified is not a valid installer.");
+            var startInfo = BuildProcessInfo(filePath) ??
+                            throw new InvalidProgramException("The file specified is not a valid installer.");
             using var process = new Process();
             process.StartInfo = startInfo;
             process.Start();
@@ -203,8 +199,9 @@ public class AppUpdater : IEnableLogger
     {
         var extension = Path.GetExtension(filePath);
 
-        if (extension == ".msi")
-            return new ProcessStartInfo
+        return extension switch
+        {
+            ".msi" => new ProcessStartInfo
             {
                 FileName = "msiexec",
                 Arguments = $"/i \"{filePath}\"",
@@ -212,19 +209,17 @@ public class AppUpdater : IEnableLogger
                 RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true
-            };
-
-        if (extension == ".exe")
-            return new ProcessStartInfo
+            },
+            ".exe" => new ProcessStartInfo
             {
                 FileName = filePath,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true
-            };
-
-        return null;
+            },
+            _ => null
+        };
     }
 
 
