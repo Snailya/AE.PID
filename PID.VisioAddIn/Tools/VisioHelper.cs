@@ -5,7 +5,6 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Windows;
 using AE.PID.Services;
@@ -13,6 +12,7 @@ using AE.PID.ViewModels;
 using Microsoft.Office.Interop.Visio;
 using Microsoft.Win32;
 using Splat;
+using Font = Microsoft.Office.Interop.Visio.Font;
 using Path = System.IO.Path;
 
 namespace AE.PID.Tools;
@@ -160,6 +160,33 @@ internal static class VisioHelper
         return null;
     }
 
+    private static string Decrypt(Document document)
+    {
+        // open the document in the background if it is in close status
+        if (document.Stat != (short)VisStatCodes.visStatNormal)
+            Globals.ThisAddIn.Application.Documents.OpenEx(document.FullName, (short)tagVisOpenSaveArgs.visOpenHidden);
+
+        // save the document before create copy
+        if (document.Saved == false) document.Save();
+
+        // copy the document to work around over the encryption system
+        var filePath = document.FullName;
+        var temp = Path.Combine(Path.GetDirectoryName(filePath)!, Guid.NewGuid()+ ".vsdx");
+        File.Copy(filePath, temp);
+
+        // close the current document
+        document.Close();
+
+        // swamp the file names
+        File.Move(filePath, filePath + ".tmp");
+        File.Move(temp, filePath);
+
+        // remove the temp file
+        File.Delete(temp);
+
+        return filePath;
+    }
+
     /// <summary>
     ///     Save and close document, then update the stencil using PID.DocumentStencilUpdateTool.exe.
     /// </summary>
@@ -189,15 +216,7 @@ internal static class VisioHelper
                 WindowManager.GetInstance()!.ShowProgressBar(progressViewModel);
             });
 
-            var file = document.FullName;
-
-            LogHost.Default.Info(Assembly.GetExecutingAssembly().Location);
-
-            // save changes if it has unsaved changes
-            if (document.Saved == false) document.Save();
-
-            // close the document if it is opened
-            if (document.Stat != (short)VisStatCodes.visStatClosed) document.Close();
+            var file = Decrypt(document);
 
             // update using document stencil update tool
             var processStartInfo = new ProcessStartInfo
