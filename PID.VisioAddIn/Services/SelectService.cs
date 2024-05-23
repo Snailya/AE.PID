@@ -67,11 +67,11 @@ public class SelectService : ServiceBase
     ///     Create selection in active page for shapes of specified masters, it not work maybe to use layer instead.
     /// </summary>
     /// <param name="baseIds"></param>
-    public static void SelectShapesByMasters(IEnumerable<string> baseIds)
+    public static bool SelectShapesByMasters(IEnumerable<string> baseIds)
     {
         var masters = Globals.ThisAddIn.Application.ActiveDocument.Masters.OfType<IVMaster>()
             .Where(x => baseIds.Contains(x.BaseID));
-
+        
         var shapeIds = new List<int>();
         foreach (var master in masters)
         {
@@ -85,19 +85,22 @@ public class SelectService : ServiceBase
             selection.Select(Globals.ThisAddIn.Application.ActivePage.Shapes.ItemFromID[id],
                 (short)VisSelectArgs.visSelect);
         Globals.ThisAddIn.Application.ActiveWindow.Selection = selection;
+
+        return selection.Count != 0;
     }
 
     /// <summary>
     ///     Create a selection in active page by specified shape id.
     /// </summary>
     /// <param name="id"></param>
-    public void SelectShapeById(int id)
+    public bool SelectShapeById(int id)
     {
         var shape = _page.Shapes.OfType<Shape>().SingleOrDefault(x => x.ID == id);
-        if (shape == null) return;
+        if (shape == null) return false;
 
         // select and center screen
         _page.Application.ActiveWindow.Select(shape, (short)VisSelectArgs.visSelect);
         _page.Application.ActiveWindow.CenterViewOnShape(shape, VisCenterViewFlags.visCenterViewSelectShape);
+        return true;
     }
 }

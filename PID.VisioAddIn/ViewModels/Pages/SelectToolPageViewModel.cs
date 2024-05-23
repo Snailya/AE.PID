@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Windows;
 using AE.PID.Services;
 using DynamicData;
 using DynamicData.Aggregation;
@@ -42,10 +43,12 @@ public class SelectToolPageViewModel(SelectService service) : ViewModelBase
 
         OkCancelFeedbackViewModel.Ok = ReactiveCommand.Create(() =>
             {
-                if (Mode == SelectionMode.ById)
-                    service.SelectShapeById(_shapeId);
-                else
-                    SelectService.SelectShapesByMasters(_masters.Where(x => x.IsChecked).Select(x => x.BaseId));
+                var dispatcherOperation = ThisAddIn.Dispatcher!.InvokeAsync(() =>
+                {
+                    return Mode == SelectionMode.ById ? service.SelectShapeById(_shapeId) : SelectService.SelectShapesByMasters(_masters.Where(x => x.IsChecked).Select(x => x.BaseId));
+                });
+
+                if (dispatcherOperation.Result == false) WindowManager.ShowDialog("没有找到", MessageBoxButton.OK);
             },
             canSelect);
 
@@ -97,6 +100,7 @@ public class SelectToolPageViewModel(SelectService service) : ViewModelBase
             .IsNotEmpty()
             .BindTo(this, x => x.HasSelection)
             .DisposeWith(d);
+        
     }
 
     protected override void SetupStart()
