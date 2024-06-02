@@ -24,7 +24,6 @@ public class DocumentMonitor : IEnableLogger
     public DocumentMonitor(ConfigurationService configuration)
     {
         _configuration = configuration;
-        this.Log().Info("Document Monitor Service started.");
 
         // check update when visio is idle, however, if the document has been checked, skip it
         Observable.FromEvent<EApplication_VisioIsIdleEventHandler, Application>(
@@ -34,19 +33,27 @@ public class DocumentMonitor : IEnableLogger
             .Select(app => app.ActiveDocument)
             .DistinctUntilChanged()
             .WhereNotNull()
-            .Where(document => document.Type == VisDocumentTypes.visTypeDrawing && document.Stat == 0)
-            .Where(x => _checked.All(i => i.ID != x.ID) && IsMasterOutOfDate(x))
+            .Where(document => document.Type == VisDocumentTypes.visTypeDrawing && document.Stat == 0 &&
+                               _checked.All(i => i.ID != document.ID))
+            .Do(document => this.Log().Info($"Try checking the currency of the {document.FullName} masters..."))
+            .Where(IsMasterOutOfDate)
+            .Do(document => this.Log().Info("Masters are out of date."))
             // switch back to the main thread to prompt user
             .ObserveOn(WindowManager.Dispatcher!)
             .Subscribe(document =>
                 {
                     // ask for update
-                    var result = WindowManager.ShowDialog("检测到文档模具与库中模具不一致，是否立即更新文档模具？");
+                    var result = WindowManager.ShowDialog(Properties.Resources.MSG_document_masters_update_confirmation);
 
                     if (result is MessageBoxResult.No or MessageBoxResult.Cancel)
+                    {
                         _checked.Add(document);
+                        this.Log().Info("Update skipped by user.");
+                    }
                     else
+                    {
                         VisioHelper.UpdateDocumentStencil(document);
+                    }
                 },
                 ex => { this.Log().Error(ex, "Document Monitor Service ternimated accidently."); },
                 () => { this.Log().Error("Document Monitor Service should never complete."); })

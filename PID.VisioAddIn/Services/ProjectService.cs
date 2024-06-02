@@ -96,7 +96,7 @@ public class ProjectService : ServiceBase
         try
         {
             var partItems = PopulatePartListTableLineItems();
-            MiniExcel.SaveAsByTemplate(dialog.FileName, Resources.BOM_template,
+            MiniExcel.SaveAsByTemplate(dialog.FileName, Resources.TEMPLATE_parts_list,
                 new
                 {
                     Parts = partItems,

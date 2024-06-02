@@ -72,6 +72,7 @@ public class AppUpdater : IEnableLogger
         try
         {
 #if DEBUG
+            // invoke check every time in debug mode
             using var response =
                 await _client.GetAsync(
                     "check-version?version=0.0.0.0");
@@ -106,14 +107,14 @@ public class AppUpdater : IEnableLogger
         {
             this.Log().Error(httpRequestException,
                 "Failed to check update from server. Firstly, check if you are able to ping to the api. If not, connect administrator.");
-            throw;
         }
         catch (KeyNotFoundException keyNotFoundException)
         {
             this.Log().Error(keyNotFoundException,
                 "Some of the keys [isUpdateAvailable, latestVersion, downloadUrl, releaseNotes] not found in the response. Please check if the api response body is out of time.");
-            throw;
         }
+
+        return false;
     }
 
     /// <summary>
@@ -195,7 +196,7 @@ public class AppUpdater : IEnableLogger
         }
     }
 
-    private ProcessStartInfo? BuildProcessInfo(string filePath)
+    private static ProcessStartInfo? BuildProcessInfo(string filePath)
     {
         var extension = Path.GetExtension(filePath);
 

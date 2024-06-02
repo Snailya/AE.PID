@@ -3,9 +3,9 @@ using Splat;
 
 namespace AE.PID.Services;
 
-public class BackgroundManager
+public class BackgroundTaskManager
 {
-    private static BackgroundManager? _instance;
+    private static BackgroundTaskManager? _instance;
 
     public AppUpdater AppUpdater { get; set; } = new(Locator.Current.GetService<HttpClient>()!,
         Locator.Current.GetService<ConfigurationService>()!);
@@ -15,8 +15,13 @@ public class BackgroundManager
 
     public DocumentMonitor DocumentMonitor { get; set; } = new(Locator.Current.GetService<ConfigurationService>()!);
 
-    public static BackgroundManager? GetInstance()
+    public static BackgroundTaskManager? GetInstance()
     {
-        return _instance ??= new BackgroundManager();
+        return _instance;
+    }
+
+    public static void Initialize()
+    {
+        _instance ??= new BackgroundTaskManager();
     }
 }

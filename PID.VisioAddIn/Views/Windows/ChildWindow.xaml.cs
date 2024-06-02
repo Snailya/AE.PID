@@ -1,4 +1,5 @@
-﻿using AE.PID.ViewModels;
+﻿using System.Windows;
+using AE.PID.ViewModels;
 
 namespace AE.PID.Views.Windows;
 
@@ -12,5 +13,12 @@ public partial class ChildWindow : WindowBase
         InitializeComponent();
 
         DataContext = new WindowViewModel(this);
+    }
+
+    protected override void OnContentRendered(System.EventArgs e)
+    {
+        SizeToContent = SizeToContent.WidthAndHeight;
+        base.OnContentRendered(e);
+        SizeToContent = SizeToContent.Manual;
     }
 }

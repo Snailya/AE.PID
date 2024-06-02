@@ -1,5 +1,7 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Net.Http;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Windows.Threading;
 using AE.PID.Services;
@@ -43,18 +45,16 @@ public partial class ThisAddIn : IEnableLogger
         uiThread.SetApartmentState(ApartmentState.STA);
         uiThread.Start();
 
-        // initialize ribbon
-        _ribbon = new Ribbon();
-        Globals.ThisAddIn.Application.RegisterRibbonX(_ribbon, null,
-            VisRibbonXModes.visRXModeDrawing,
-            "AE PID RIBBON");
-
-        BackgroundManager.GetInstance();
-
-        // // initialize the background worker
-        // Observable.Start(() =>
-        // {
-        // }).Subscribe();
+        // initialize the background worker
+        Observable.Start(BackgroundTaskManager.Initialize)
+            .Subscribe(_ =>
+            {
+                // initialize ribbon
+                _ribbon = new Ribbon();
+                Globals.ThisAddIn.Application.RegisterRibbonX(_ribbon, null,
+                    VisRibbonXModes.visRXModeDrawing,
+                    "AE PID RIBBON");
+            });
     }
 
     private void ThisAddIn_Shutdown(object sender, System.EventArgs e)

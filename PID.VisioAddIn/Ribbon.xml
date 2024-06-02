@@ -13,30 +13,35 @@
                             screentip="加载模具库"
                             size="large"
                             getImage="GetButtonImage"
+                            getEnabled="IsDocumentOpened"
                     />
                     <button id="format_page"
                             label="初始化"
                             onAction="FormatPage"
                             screentip="设置文档的样式和网格"
                             getImage="GetButtonImage"
+                            getEnabled="IsDocumentOpened"
                     />
                     <button id="open_select_tool"
                             label="选择"
                             onAction="OpenSelectTool"
                             screentip="打开高级选择工具"
                             getImage="GetButtonImage"
+                            getEnabled="IsDocumentOpened"
                     />
                     <button id="update_document"
                             label="更新"
                             onAction="UpdateDocument"
                             screentip="使用模具库中的模具更新文档中的模具"
                             getImage="GetButtonImage"
+                            getEnabled="IsDocumentOpened"
                     />
                     <button id="insert_legend"
                             label="图例"
                             onAction="InsertLegend"
                             screentip="在当前绘图页中插入图例"
                             getImage="GetButtonImage"
+                            getEnabled="IsDocumentOpened"
                     />
                 </group>
                 <group id="grpExport" label="导出">
@@ -46,6 +51,7 @@
                             screentip="打开导出工具"
                             size="large"
                             getImage="GetButtonImage"
+                            getEnabled="IsDocumentOpened"
                     />
                 </group>
                 <group id="grpAbout" label="关于">

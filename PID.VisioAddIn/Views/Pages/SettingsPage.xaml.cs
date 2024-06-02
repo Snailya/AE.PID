@@ -16,8 +16,8 @@ public partial class SettingsPage
         InitializeComponent();
 
         var configuration = Locator.Current.GetService<ConfigurationService>();
-        ViewModel = new SettingsPageViewModel(configuration!, BackgroundManager.GetInstance()!.AppUpdater,
-            BackgroundManager.GetInstance()!.LibraryUpdater);
+        ViewModel = new SettingsPageViewModel(configuration!, BackgroundTaskManager.GetInstance()!.AppUpdater,
+            BackgroundTaskManager.GetInstance()!.LibraryUpdater);
 
         this.WhenActivated(d =>
         {

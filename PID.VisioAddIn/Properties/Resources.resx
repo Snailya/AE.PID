@@ -123,57 +123,84 @@
             PublicKeyToken=b77a5c561934e089
         </value>
     </resheader>
-    <data name="Product_name" xml:space="preserve">
-    <value>AE.PID</value>
-  </data>
-    <data name="Property_Value_Override_Confirmation" xml:space="preserve">
+    <data name="PROPERTY_product_name" xml:space="preserve">
+        <value>AE PID</value>
+    </data>
+    <data name="MSG_property_value_override_confirmation" xml:space="preserve">
     <value>属性 {0} 对于形状 {1} 已经有用户定义的值：{2}。您是否希望使用新值 {3} 覆盖它？{4}点击 '是' 覆盖该值，或点击 '否' 保留当前值。</value>
   </data>
     <assembly alias="System.Windows.Forms"
               name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"/>
-    <data name="edit_configuration" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <data name="ICON_edit_configuration" type="System.Resources.ResXFileRef, System.Windows.Forms">
         <value>..\Resources\edit_configuration.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0,
             Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
         </value>
     </data>
-    <data name="format_page" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <data name="ICON_format_page" type="System.Resources.ResXFileRef, System.Windows.Forms">
         <value>..\Resources\format_page.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral,
             PublicKeyToken=b03f5f7f11d50a3a
         </value>
     </data>
-    <data name="load_libraries" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <data name="ICON_load_libraries" type="System.Resources.ResXFileRef, System.Windows.Forms">
         <value>..\Resources\load_libraries.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral,
             PublicKeyToken=b03f5f7f11d50a3a
         </value>
     </data>
-    <data name="open_export_tool" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <data name="ICON_open_export_tool" type="System.Resources.ResXFileRef, System.Windows.Forms">
         <value>..\Resources\open_export_tool.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral,
             PublicKeyToken=b03f5f7f11d50a3a
         </value>
     </data>
-    <data name="update_document" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <data name="ICON_update_document" type="System.Resources.ResXFileRef, System.Windows.Forms">
         <value>..\Resources\update_document.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral,
             PublicKeyToken=b03f5f7f11d50a3a
         </value>
     </data>
-    <data name="BOM_template" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <data name="TEMPLATE_parts_list" type="System.Resources.ResXFileRef, System.Windows.Forms">
         <value>..\Resources\BOM_template.xlsx;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral,
             PublicKeyToken=b77a5c561934e089
         </value>
     </data>
-    <data name="open_select_tool" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <data name="ICON_open_select_tool" type="System.Resources.ResXFileRef, System.Windows.Forms">
         <value>..\Resources\open_select_tool.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral,
             PublicKeyToken=b03f5f7f11d50a3a
         </value>
     </data>
-    <data name="help" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <data name="ICON_help" type="System.Resources.ResXFileRef, System.Windows.Forms">
         <value>..\Resources\help.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral,
             PublicKeyToken=b03f5f7f11d50a3a
         </value>
     </data>
-    <data name="insert_legend" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <data name="ICON_insert_legend" type="System.Resources.ResXFileRef, System.Windows.Forms">
         <value>..\Resources\insert_legend.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral,
             PublicKeyToken=b03f5f7f11d50a3a
         </value>
+    </data>
+    <data name="Log_" xml:space="preserve">
+        <value />
+    </data>
+    <data name="MSG_document_masters_update_confirmation" xml:space="preserve">
+        <value>检测到文档模具与库中模具不一致，是否立即更新文档模具？</value>
+    </data>
+    <data name="MSG_update_completed" xml:space="preserve">
+        <value>更新成功。</value>
+    </data>
+    <data name="MSG_update_failed_with_message" xml:space="preserve">
+        <value>更新失败：{0}。</value>
+    </data>
+    <data name="MSG_font_not_found" xml:space="preserve">
+        <value>未找到思源黑体，请确认安装完成后重启Visio。</value>
+    </data>
+    <data name="MSG_server_connect_failed_with_message" xml:space="preserve">
+        <value>无法连接至服务器，请检查网络：{0}。</value>
+    </data>
+    <data name="MSG_write_file_failed_with_message" xml:space="preserve">
+        <value>无法写入数据，文件被占用：{0}。</value>
+    </data>
+    <data name="MSG_delete_tmp_files_completed" xml:space="preserve">
+        <value>清除成功。</value>
+    </data>
+    <data name="MSG_no_valid_update" xml:space="preserve">
+        <value>已经是最新版。</value>
     </data>
 </root>

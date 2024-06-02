@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Globalization;
 using System.Reactive.Concurrency;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Threading;
+using AE.PID.Converters;
+using AE.PID.Properties;
 using AE.PID.ViewModels;
 using AE.PID.Views;
 using AE.PID.Views.Windows;
@@ -21,7 +22,6 @@ public class WindowManager : IDisposable
     private WindowManager()
     {
         _mainWindow.Title = Assembly.GetExecutingAssembly().GetName().Name;
-
 
         _mainWindow.LocationChanged += (_, _) =>
         {
@@ -85,10 +85,9 @@ public class WindowManager : IDisposable
 
     public void Show()
     {
-        _mainWindow.SizeToContent = SizeToContent.WidthAndHeight;
         _mainWindow.Show();
-        _mainWindow.SizeToContent = SizeToContent.Manual;
-            
+        _mainWindow.CenterOwner();
+
         if (_childWindow.Content == null) return;
 
         _childWindow.Owner = _mainWindow;
@@ -106,47 +105,35 @@ public class WindowManager : IDisposable
 
         var multiBinding = new MultiBinding
         {
-            Converter = new MyConvertor()
+            Converter = new SideWindowMaxWidthConvertor()
         };
 
         multiBinding.Bindings.Add(new Binding("ActualWidth") { Source = _mainWindow });
         multiBinding.Bindings.Add(new Binding("Left") { Source = _mainWindow });
         _childWindow.SetBinding(FrameworkElement.MaxWidthProperty, multiBinding);
 
-        _childWindow.SizeToContent = SizeToContent.Width;
         _childWindow.Show();
-        _childWindow.SizeToContent = SizeToContent.Manual;
     }
 
+    /// <summary>
+    ///     Show a modal dialog to alert user or request confirmation.
+    /// </summary>
+    /// <param name="messageBoxText"></param>
+    /// <param name="button"></param>
+    /// <returns></returns>
     public static MessageBoxResult ShowDialog(string messageBoxText, MessageBoxButton button = MessageBoxButton.YesNo)
     {
-        var caption = Assembly.GetExecutingAssembly().GetName().Name;
-        return MessageBox.Show(messageBoxText, caption, button);
+        return MessageBox.Show(messageBoxText, Resources.PROPERTY_product_name, button);
     }
 
+    /// <summary>
+    ///     Show a progress bar to provide better user experience.
+    /// </summary>
+    /// <param name="progressPageViewModel"></param>
     public void ShowProgressBar(ProgressPageViewModel progressPageViewModel)
     {
+        // todo: better use a standalone window
         SetContent(new ProgressPage(progressPageViewModel));
         _mainWindow.Show();
-    }
-}
-
-public class MyConvertor : IMultiValueConverter
-{
-    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
-    {
-        if (values.Length == 2 && values[0] is double v1 && values[1] is double v2)
-        {
-            var maxWidth = SystemParameters.WorkArea.Width - v1 - v2;
-            return maxWidth;
-        }
-
-        return SystemParameters.WorkArea.Width;
-    }
-
-
-    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-    {
-        throw new NotImplementedException();
     }
 }

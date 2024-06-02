@@ -57,6 +57,10 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
     {
         _ribbon = ribbonUi;
 
+        // invoke ribbon element status update on ever window change, for example, document open, document close
+        Globals.ThisAddIn.Application.WindowChanged += _ => { _ribbon.Invalidate(); };
+
+        // observe on button click
         _commandInvoker.Subscribe(command =>
             {
                 this.Log().Info($"{command} [Init by User]");
@@ -106,7 +110,8 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
                         throw new ArgumentOutOfRangeException(nameof(command), command, null);
                 }
             },
-            error => { }, () => { });
+            error => { this.Log().Error(error); },
+            () => { });
     }
 
 
@@ -178,7 +183,7 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
         var buttonId = control.Id;
         if (_buttonImages.TryGetValue(buttonId, out var image)) return image;
 
-        _buttonImages[buttonId] = ((Icon)Resources.ResourceManager.GetObject(buttonId))?.ToBitmap();
+        _buttonImages[buttonId] = ((Icon)Resources.ResourceManager.GetObject("ICON_" + buttonId)).ToBitmap();
         return _buttonImages[buttonId];
     }
 
@@ -224,6 +229,11 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
 
     public void Debug(IRibbonControl control)
     {
+    }
+
+    public bool IsDocumentOpened(IRibbonControl control)
+    {
+        return Globals.ThisAddIn.Application.ActiveDocument != null;
     }
 
     #endregion

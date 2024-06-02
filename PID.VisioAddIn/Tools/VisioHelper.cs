@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Windows;
+using AE.PID.Properties;
 using AE.PID.Services;
 using AE.PID.ViewModels;
 using Microsoft.Office.Interop.Visio;
@@ -74,7 +75,7 @@ internal static class VisioHelper
 
         if (font == null)
         {
-            WindowManager.ShowDialog("未找到思源黑体，请确认安装完成后重启Visio。", MessageBoxButton.OK);
+            WindowManager.ShowDialog(Resources.MSG_font_not_found, MessageBoxButton.OK);
             return;
         }
 
@@ -130,14 +131,22 @@ internal static class VisioHelper
 
     private static string? GetUpdateTool()
     {
+#if DEBUG
+        // Specify the registry key path
+        const string registryKeyPath = @"Software\Microsoft\Visio\Addins\AE.PID.DEBUG";
+#else
         // Specify the registry key path
         const string registryKeyPath = @"Software\Microsoft\Visio\Addins\AE.PID";
+#endif
 
         // Specify the value name you want to read
         const string valueName = "Manifest";
 
         try
         {
+            LogHost.Default.Info(
+                $"Try find isntall path from register key. KeyPath: {registryKeyPath}. Value: {valueName}");
+
             using var registryKey = Registry.CurrentUser.OpenSubKey(registryKeyPath);
             var value = registryKey?.GetValue(valueName) as string;
 
@@ -147,6 +156,8 @@ internal static class VisioHelper
             var fileUri = new Uri(value);
             var filePath = fileUri.LocalPath;
             var folderPath = Path.GetDirectoryName(filePath);
+
+            LogHost.Default.Info($"The install path is {folderPath}");
 
             return Path.Combine(folderPath,
                 "DocumentStencilUpdateTool/PID.DocumentStencilUpdateTool.exe");
@@ -171,7 +182,7 @@ internal static class VisioHelper
 
         // copy the document to work around over the encryption system
         var filePath = document.FullName;
-        var temp = Path.Combine(Path.GetDirectoryName(filePath)!, Guid.NewGuid()+ ".vsdx");
+        var temp = Path.Combine(Path.GetDirectoryName(filePath)!, Guid.NewGuid() + ".vsdx");
         File.Copy(filePath, temp);
 
         // close the current document
@@ -197,9 +208,12 @@ internal static class VisioHelper
         {
             Contract.Assert(document.Type == VisDocumentTypes.visTypeDrawing);
 
+            LogHost.Default.Info("Try updating the documents.");
+
             // ensure update tool exist
             var updateToolPath = GetUpdateTool();
-            if (!File.Exists(updateToolPath)) throw new InvalidOperationException("Could not find the update tool");
+            if (!File.Exists(updateToolPath))
+                throw new InvalidOperationException($"Could not find the update tool in {updateToolPath}");
 
             var progress = new Progress<ProgressValue>();
 
@@ -254,12 +268,16 @@ internal static class VisioHelper
                 if (e.Data != null)
                     LogHost.Default.Error(e.Data);
             };
-            process.Exited += (sender, _) =>
+            process.Exited += (sender, e) =>
             {
                 ((IProgress<ProgressValue>)progress).Report(new ProgressValue
                     { Message = string.Empty, Status = TaskStatus.RanToCompletion });
 
-                WindowManager.ShowDialog(sender is Process { ExitCode: 0 } ? "更新成功" : "更新失败", MessageBoxButton.OK);
+                WindowManager.ShowDialog(
+                    sender is Process { ExitCode: 0 }
+                        ? Resources.MSG_update_completed
+                        : string.Format(Resources.MSG_update_failed_with_message, "请检查日志"),
+                    MessageBoxButton.OK);
                 Globals.ThisAddIn.Application.Documents.OpenEx(file, (short)OpenFlags.ReadWrite);
             };
 
@@ -269,7 +287,8 @@ internal static class VisioHelper
         }
         catch (Exception ex)
         {
-            WindowManager.ShowDialog($"更新失败：{ex.Message}", MessageBoxButton.OK);
+            WindowManager.ShowDialog(string.Format(Resources.MSG_update_failed_with_message, ex.Message),
+                MessageBoxButton.OK);
             LogHost.Default.Error(ex, "Failed to update document stencil.");
         }
     }

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using AE.PID.Dtos;
 using AE.PID.Models;
+using AE.PID.Properties;
 using AE.PID.Tools;
 using Newtonsoft.Json;
 using ReactiveUI;
@@ -74,9 +75,10 @@ public class LibraryUpdater : IEnableLogger
             // Members that return a sequence should never return null. Return an empty sequence instead
             return JsonConvert.DeserializeObject<IEnumerable<LibraryDto>>(response)?.ToList() ?? [];
         }
-        catch (Exception e)
+        catch (HttpRequestException httpRequestException)
         {
-            this.Log().Error(e, "Failed to get libraries from server.");
+            this.Log().Error(httpRequestException,
+                "Failed to get library infos from server. Firstly, check if you are able to ping to the api. If not, connect administrator.");
         }
 
         return [];
@@ -152,13 +154,16 @@ public class LibraryUpdater : IEnableLogger
         {
             this.Log().Error(httpRequestException,
                 "Failed to donwload library from server. Firstly, check if you are able to ping to the api. If not, connect administrator.");
-            WindowManager.ShowDialog("无法连接至服务器，请检查网络。", MessageBoxButton.OK);
+            WindowManager.ShowDialog(
+                string.Format(Resources.MSG_server_connect_failed_with_message, httpRequestException.Message),
+                MessageBoxButton.OK);
         }
         catch (IOException ioException)
         {
             this.Log().Error(ioException,
                 "Failed to overwrite library file. It might be used by other process, consider close it before retry.");
-            WindowManager.ShowDialog($"无法写入数据，文件被占用。{ioException.Message}", MessageBoxButton.OK);
+            WindowManager.ShowDialog(string.Format(Resources.MSG_write_file_failed_with_message, ioException.Message),
+                MessageBoxButton.OK);
         }
 
         return [];

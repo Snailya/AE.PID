@@ -10,10 +10,6 @@ public class PageBase<TViewModel> : ViewBase<TViewModel> where TViewModel : View
     {
         Padding = new Thickness(8);
 
-        Loaded += (_, _) =>
-        {
-            if (Parent is MainWindow window) window.CenterOwner();
-        };
         Unloaded += (_, _) => { ViewModel = null; };
     }
 }

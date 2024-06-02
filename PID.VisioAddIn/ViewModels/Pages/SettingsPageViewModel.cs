@@ -5,10 +5,10 @@ using System.IO;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using AE.PID.Dtos;
+using AE.PID.Properties;
 using AE.PID.Services;
 using AE.PID.Tools;
 using DynamicData;
@@ -52,7 +52,7 @@ public class SettingsPageViewModel(
         foreach (var file in files)
             File.Delete(file);
 
-        WindowManager.ShowDialog("清除成功", MessageBoxButton.OK);
+        WindowManager.ShowDialog(Resources.MSG_delete_tmp_files_completed, MessageBoxButton.OK);
     }
 
     private void SaveChanges()
@@ -71,7 +71,7 @@ public class SettingsPageViewModel(
         CheckForAppUpdate = ReactiveCommand.CreateFromTask(async () =>
         {
             var hasUpdate = await appUpdater.CheckUpdateAsync();
-            if (!hasUpdate) WindowManager.ShowDialog("已经是最新版", MessageBoxButton.OK);
+            if (!hasUpdate) WindowManager.ShowDialog(Resources.MSG_no_valid_update, MessageBoxButton.OK);
         });
         CheckForLibrariesUpdate =
             ReactiveCommand.CreateRunInBackground(() => libraryUpdater.ManuallyInvokeTrigger.OnNext(Unit.Default));

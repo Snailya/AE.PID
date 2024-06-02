@@ -1,4 +1,5 @@
 ﻿using System.IO.Packaging;
+using System.Net.Http;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -194,7 +195,7 @@ public static class UpdateHelper
 
             if (string.IsNullOrEmpty(responseString)) return [];
 
-            await using var writer = new FileInfo(DefaultReferencePath).CreateText();
+            using var writer = new FileInfo(DefaultReferencePath).CreateText();
             await writer.WriteLineAsync(responseString);
 
             Console.WriteLine($"Reference saved at {DefaultReferencePath}");

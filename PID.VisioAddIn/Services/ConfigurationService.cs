@@ -19,8 +19,11 @@ namespace AE.PID.Services;
 
 public class ConfigurationService : ReactiveObject, IEnableLogger
 {
-    private readonly CompositeDisposable _cleanUp = [];
     private const string ConfigFileName = "ae-pid.json";
+    private readonly CompositeDisposable _cleanUp = [];
+
+    private readonly SourceCache<ReactiveLibrary, int> _libraries = new(t => t.Id);
+    private readonly IObservableList<LibraryItem> _libraryItems;
     private readonly object _lock = new();
 
     private TimeSpan _appCheckInterval;
@@ -28,15 +31,12 @@ public class ConfigurationService : ReactiveObject, IEnableLogger
     private TimeSpan _libraryCheckInterval;
     private DateTime _libraryNextTime;
 
-    private readonly SourceCache<ReactiveLibrary, int> _libraries = new(t => t.Id);
-    private readonly IObservableList<LibraryItem> _libraryItems;
-
     #region Constructors
 
     public ConfigurationService()
     {
-        // create a derived list that expose the library items.
-        // this list is used for getting the id of the items from library.
+        // create a derived list that exposes the library items.
+        // this list is used for getting the id of the items from libraries.
         // do not use BindTo but BindToObservableList to support AutoRefresh
         _libraries.Connect()
             .RemoveKey()
@@ -69,70 +69,10 @@ public class ConfigurationService : ReactiveObject, IEnableLogger
 
     #endregion
 
-    #region Read-Write Properties
-
-    public DateTime AppNextTime
-    {
-        get => _appNextTime;
-        set => this.RaiseAndSetIfChanged(ref _appNextTime, value);
-    }
-
-    public TimeSpan AppCheckInterval
-    {
-        get => _appCheckInterval;
-        set
-        {
-            // limits the minimal value to 1 hour
-            if (value == TimeSpan.Zero)
-            {
-                this.Log().Warn("The minium check interval is 1 hour.");
-                value = TimeSpan.FromHours(1);
-            }
-
-            this.RaiseAndSetIfChanged(ref _appCheckInterval, value);
-        }
-    }
-
-    public DateTime LibraryNextTime
-    {
-        get => _libraryNextTime;
-        set => this.RaiseAndSetIfChanged(ref _libraryNextTime, value);
-    }
-
-    public TimeSpan LibraryCheckInterval
-    {
-        get => _libraryCheckInterval;
-        set
-        {
-            // limits the minimal value to 1 hour
-            if (value == TimeSpan.Zero)
-            {
-                this.Log().Warn("The minium check interval is 1 hour.");
-                value = TimeSpan.FromMinutes(1);
-            }
-
-            this.RaiseAndSetIfChanged(ref _libraryCheckInterval, value);
-        }
-    }
-
-#if DEBUG
-    public Uri Api { get; private set; } = new("http://localhost:32768");
-#else
-    public Uri Api { get; private set; } = new("http://172.18.128.104:32768");
-#endif
-
-    #endregion
-
-    #region Output Properties
-
-    public IObservableCache<ReactiveLibrary, int> Libraries => _libraries.AsObservableCache();
-    public IObservableList<LibraryItem> LibraryItems => _libraryItems;
-
-    #endregion
-
     /// <summary>
-    ///     Add or update the libraries. this will update the source cache in the class.
-    ///     As the source cache updated, it will trigger the Save event and persist to the local configuration file.
+    ///     Add or update the libraries.
+    ///     This will update the source cache in the class.
+    ///     As the source cache is updated, it will trigger the Save event and persist to the local configuration file.
     /// </summary>
     /// <param name="libraries"></param>
     public void UpdateLibraries(IEnumerable<ReactiveLibrary> libraries)
@@ -143,11 +83,13 @@ public class ConfigurationService : ReactiveObject, IEnableLogger
     /// <summary>
     ///     Loads the configuration from file or create a new configuration if not exist.
     /// </summary>
-    /// <returns>An Configuration object.</returns>
+    /// <returns>A Configuration object.</returns>
     private static Configuration Load()
     {
         try
         {
+            LogHost.Default.Info($"Try load configuration from {GetPath()}...");
+
             if (File.Exists(GetPath()))
             {
                 var configContent = File.ReadAllText(GetPath());
@@ -155,14 +97,18 @@ public class ConfigurationService : ReactiveObject, IEnableLogger
                 if (!string.IsNullOrEmpty(configContent))
                 {
                     var localConfig = JsonConvert.DeserializeObject<Configuration>(configContent);
-                    if (localConfig != null) return localConfig;
+                    if (localConfig != null)
+                    {
+                        LogHost.Default.Info("Configuration loaded.");
+                        return localConfig;
+                    }
                 }
             }
         }
         catch (Exception exception)
         {
             LogHost.Default.Error(exception,
-                $"Failed to log config from {GetPath()}, a default configuration file is used instead.");
+                $"Failed to load configuration from {GetPath()}, a default configuration file will be used instead.");
         }
 
         return new Configuration();
@@ -214,12 +160,69 @@ public class ConfigurationService : ReactiveObject, IEnableLogger
                 configStreamWriter.Write(jsonString);
                 configStreamWriter.Flush();
 
-                this.Log().Info($"Configuration saved successfully at path: '{GetPath()}'");
+                this.Log().Info($"Configuration saved at path {GetPath()}.");
             }
             catch (Exception ex)
             {
-                this.Log().Error(ex, "Failed to save configuration");
+                this.Log().Error(ex, "Failed to save configuration.");
             }
         }
     }
+
+    #region Read-Write Properties
+
+    public DateTime AppNextTime
+    {
+        get => _appNextTime;
+        set => this.RaiseAndSetIfChanged(ref _appNextTime, value);
+    }
+
+    public TimeSpan AppCheckInterval
+    {
+        get => _appCheckInterval;
+        set
+        {
+            // limits the minimal value to 1 hour
+            if (value == TimeSpan.Zero)
+            {
+                this.Log().Warn("The minimum check interval is by hour.");
+                value = TimeSpan.FromHours(1);
+            }
+
+            this.RaiseAndSetIfChanged(ref _appCheckInterval, value);
+        }
+    }
+
+    public DateTime LibraryNextTime
+    {
+        get => _libraryNextTime;
+        set => this.RaiseAndSetIfChanged(ref _libraryNextTime, value);
+    }
+
+    public TimeSpan LibraryCheckInterval
+    {
+        get => _libraryCheckInterval;
+        set
+        {
+            // limits the minimal value to 1 hour
+            if (value == TimeSpan.Zero)
+            {
+                this.Log().Warn("The minimum check interval is by hour.");
+                value = TimeSpan.FromMinutes(1);
+            }
+
+            this.RaiseAndSetIfChanged(ref _libraryCheckInterval, value);
+        }
+    }
+
+    public Uri Api { get; private set; } = new("http://172.18.128.104:32768");
+
+    #endregion
+
+    #region Output Properties
+
+    public IObservableCache<ReactiveLibrary, int> Libraries => _libraries.AsObservableCache();
+    public IObservableList<LibraryItem> LibraryItems => _libraryItems;
+
+    #endregion
 }

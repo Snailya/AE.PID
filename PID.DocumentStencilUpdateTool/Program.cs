@@ -71,11 +71,13 @@ internal class Program
         UpdateHelper.CreateBackup(file);
 
         using var package = Package.Open(file.FullName, FileMode.Open, FileAccess.ReadWrite);
-        // when user using context menu to setup the subclass property, the subclass property value is a string, which will lost if the subclass format changed
+        // when user using a context menu to set up the subclass property, the subclass property value is a string,
+        // which will lost if the subclass format changed,
         // therefore, replace this string value with a formula basing the index
         UpdateHelper.SupplementSubClassFormula(package);
 
-        // though the masters is set to match name on drop, it still could not restrict user to use the unique master.
+        // though the masters are set to match name on dropping,
+        // it still could not restrict user to use the unique master.
         // by checking the BaseID in the masters, replace the shapes to point to one single master
         UpdateHelper.ReplaceDuplicateMasters(package);
 

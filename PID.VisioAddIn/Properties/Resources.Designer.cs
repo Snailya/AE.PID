@@ -60,21 +60,11 @@ namespace AE.PID.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        public static byte[] BOM_template {
-            get {
-                object obj = ResourceManager.GetObject("BOM_template", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        public static System.Drawing.Icon edit_configuration {
+        public static System.Drawing.Icon ICON_edit_configuration {
             get {
-                object obj = ResourceManager.GetObject("edit_configuration", resourceCulture);
+                object obj = ResourceManager.GetObject("ICON_edit_configuration", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
@@ -82,9 +72,9 @@ namespace AE.PID.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        public static System.Drawing.Icon format_page {
+        public static System.Drawing.Icon ICON_format_page {
             get {
-                object obj = ResourceManager.GetObject("format_page", resourceCulture);
+                object obj = ResourceManager.GetObject("ICON_format_page", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
@@ -92,9 +82,9 @@ namespace AE.PID.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        public static System.Drawing.Icon help {
+        public static System.Drawing.Icon ICON_help {
             get {
-                object obj = ResourceManager.GetObject("help", resourceCulture);
+                object obj = ResourceManager.GetObject("ICON_help", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
@@ -102,9 +92,9 @@ namespace AE.PID.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        public static System.Drawing.Icon insert_legend {
+        public static System.Drawing.Icon ICON_insert_legend {
             get {
-                object obj = ResourceManager.GetObject("insert_legend", resourceCulture);
+                object obj = ResourceManager.GetObject("ICON_insert_legend", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
@@ -112,9 +102,9 @@ namespace AE.PID.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        public static System.Drawing.Icon load_libraries {
+        public static System.Drawing.Icon ICON_load_libraries {
             get {
-                object obj = ResourceManager.GetObject("load_libraries", resourceCulture);
+                object obj = ResourceManager.GetObject("ICON_load_libraries", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
@@ -122,9 +112,9 @@ namespace AE.PID.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        public static System.Drawing.Icon open_export_tool {
+        public static System.Drawing.Icon ICON_open_export_tool {
             get {
-                object obj = ResourceManager.GetObject("open_export_tool", resourceCulture);
+                object obj = ResourceManager.GetObject("ICON_open_export_tool", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
@@ -132,38 +122,129 @@ namespace AE.PID.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        public static System.Drawing.Icon open_select_tool {
+        public static System.Drawing.Icon ICON_open_select_tool {
             get {
-                object obj = ResourceManager.GetObject("open_select_tool", resourceCulture);
+                object obj = ResourceManager.GetObject("ICON_open_select_tool", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to AE.PID.
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        public static string Product_name {
+        public static System.Drawing.Icon ICON_update_document {
             get {
-                return ResourceManager.GetString("Product_name", resourceCulture);
+                object obj = ResourceManager.GetObject("ICON_update_document", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string Log_ {
+            get {
+                return ResourceManager.GetString("Log_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 清除成功。.
+        /// </summary>
+        public static string MSG_delete_tmp_files_completed {
+            get {
+                return ResourceManager.GetString("MSG_delete_tmp_files_completed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 检测到文档模具与库中模具不一致，是否立即更新文档模具？.
+        /// </summary>
+        public static string MSG_document_masters_update_confirmation {
+            get {
+                return ResourceManager.GetString("MSG_document_masters_update_confirmation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 未找到思源黑体，请确认安装完成后重启Visio。.
+        /// </summary>
+        public static string MSG_font_not_found {
+            get {
+                return ResourceManager.GetString("MSG_font_not_found", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 已经是最新版。.
+        /// </summary>
+        public static string MSG_no_valid_update {
+            get {
+                return ResourceManager.GetString("MSG_no_valid_update", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to 属性 {0} 对于形状 {1} 已经有用户定义的值：{2}。您是否希望使用新值 {3} 覆盖它？{4}点击 &apos;是&apos; 覆盖该值，或点击 &apos;否&apos; 保留当前值。.
         /// </summary>
-        public static string Property_Value_Override_Confirmation {
+        public static string MSG_property_value_override_confirmation {
             get {
-                return ResourceManager.GetString("Property_Value_Override_Confirmation", resourceCulture);
+                return ResourceManager.GetString("MSG_property_value_override_confirmation", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        ///   Looks up a localized string similar to 无法连接至服务器，请检查网络：{0}。.
         /// </summary>
-        public static System.Drawing.Icon update_document {
+        public static string MSG_server_connect_failed_with_message {
             get {
-                object obj = ResourceManager.GetObject("update_document", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
+                return ResourceManager.GetString("MSG_server_connect_failed_with_message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 更新成功。.
+        /// </summary>
+        public static string MSG_update_completed {
+            get {
+                return ResourceManager.GetString("MSG_update_completed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 更新失败：{0}。.
+        /// </summary>
+        public static string MSG_update_failed_with_message {
+            get {
+                return ResourceManager.GetString("MSG_update_failed_with_message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 无法写入数据，文件被占用：{0}。.
+        /// </summary>
+        public static string MSG_write_file_failed_with_message {
+            get {
+                return ResourceManager.GetString("MSG_write_file_failed_with_message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AE PID.
+        /// </summary>
+        public static string PROPERTY_product_name {
+            get {
+                return ResourceManager.GetString("PROPERTY_product_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] TEMPLATE_parts_list {
+            get {
+                object obj = ResourceManager.GetObject("TEMPLATE_parts_list", resourceCulture);
+                return ((byte[])(obj));
             }
         }
     }
