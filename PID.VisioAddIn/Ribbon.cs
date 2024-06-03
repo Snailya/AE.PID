@@ -57,8 +57,8 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
     {
         _ribbon = ribbonUi;
 
-        // invoke ribbon element status update on ever window change, for example, document open, document close
-        Globals.ThisAddIn.Application.WindowChanged += _ => { _ribbon.Invalidate(); };
+        // register on triggers to update button status.
+        RegisterUpdateForElements();
 
         // observe on button click
         _commandInvoker.Subscribe(command =>
@@ -112,6 +112,13 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
             },
             error => { this.Log().Error(error); },
             () => { });
+    }
+
+    private void RegisterUpdateForElements()
+    {
+        // invoke ribbon element status update on ever window change, for example, document open, document close
+        Globals.ThisAddIn.Application.WindowOpened += _ => { _ribbon.Invalidate(); };
+        Globals.ThisAddIn.Application.WindowChanged += _ => { _ribbon.Invalidate(); };
     }
 
 

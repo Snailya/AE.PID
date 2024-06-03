@@ -51,7 +51,8 @@ public class LibraryUpdater : IEnableLogger
             .Do(_ => { configuration.LibraryNextTime = DateTime.Now + configuration.LibraryCheckInterval; })
             .Where(x => x.Any())
             .SelectMany(UpdateLibrariesAsync)
-            .Subscribe(configuration.UpdateLibraries);
+            .Subscribe(configuration.UpdateLibraries,
+                exception => { this.Log().Error(exception, "Library update failed."); });
     }
 
     public Subject<Unit> ManuallyInvokeTrigger { get; } = new();

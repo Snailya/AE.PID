@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Reactive.Concurrency;
-using System.Reflection;
+using System.Reactive.Subjects;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Threading;
@@ -16,12 +16,13 @@ namespace AE.PID.Services;
 public class WindowManager : IDisposable
 {
     private static WindowManager? _instance;
+    public static readonly BehaviorSubject<bool> Initialized = new(false);
     private readonly ChildWindow _childWindow = new();
     private readonly MainWindow _mainWindow = new();
 
     private WindowManager()
     {
-        _mainWindow.Title = Assembly.GetExecutingAssembly().GetName().Name;
+        _mainWindow.Title = Resources.PROPERTY_product_name;
 
         _mainWindow.LocationChanged += (_, _) =>
         {
@@ -66,6 +67,9 @@ public class WindowManager : IDisposable
         Dispatcher = Dispatcher.CurrentDispatcher;
         RxApp.MainThreadScheduler = DispatcherScheduler.Current;
 
+        // notify initialized
+        Initialized.OnNext(true);
+        // start event loop
         Dispatcher.Run();
     }
 
@@ -90,27 +94,28 @@ public class WindowManager : IDisposable
 
         if (_childWindow.Content == null) return;
 
+        // if there's a child content
         _childWindow.Owner = _mainWindow;
         _childWindow.Top = _mainWindow.Top;
         _childWindow.Left = _mainWindow.Left + _mainWindow.Width;
 
-        var binding = new Binding
+        var heightBinding = new Binding
         {
             Path = new PropertyPath("ActualHeight"),
             Source = _mainWindow,
             Mode = BindingMode.OneWay
         };
-        _childWindow.SetBinding(FrameworkElement.MaxHeightProperty, binding);
-        _childWindow.SetBinding(FrameworkElement.MinHeightProperty, binding);
+        _childWindow.SetBinding(FrameworkElement.MaxHeightProperty, heightBinding);
+        _childWindow.SetBinding(FrameworkElement.MinHeightProperty, heightBinding);
 
-        var multiBinding = new MultiBinding
+        var maxWidthBinding = new MultiBinding
         {
             Converter = new SideWindowMaxWidthConvertor()
         };
 
-        multiBinding.Bindings.Add(new Binding("ActualWidth") { Source = _mainWindow });
-        multiBinding.Bindings.Add(new Binding("Left") { Source = _mainWindow });
-        _childWindow.SetBinding(FrameworkElement.MaxWidthProperty, multiBinding);
+        maxWidthBinding.Bindings.Add(new Binding("ActualWidth") { Source = _mainWindow });
+        maxWidthBinding.Bindings.Add(new Binding("Left") { Source = _mainWindow });
+        _childWindow.SetBinding(FrameworkElement.MaxWidthProperty, maxWidthBinding);
 
         _childWindow.Show();
     }

@@ -43,7 +43,8 @@ public class AppUpdater : IEnableLogger
             .Do(_ => this.Log().Info("App update started. {Initiated by: Auto-Run}"))
             .SelectMany(_ => CheckUpdateAsync())
             .Do(_ => { configuration.AppNextTime = DateTime.Now + configuration.AppCheckInterval; })
-            .Subscribe(_ => { })
+            .Subscribe(_ => { },
+                error => { this.Log().Error(error, "App update check failed."); })
             .DisposeWith(_cleanUp);
 
         // whenever an update is available, it triggers a subject, so that we could ask user for permission
@@ -63,7 +64,7 @@ public class AppUpdater : IEnableLogger
             // if a user chooses to update, download the installer and invoke update
             .Where(result => result is MessageBoxResult.Yes or MessageBoxResult.OK)
             .SelectMany(_ => DownloadUpdateAsync())
-            .Subscribe(InstallUpdate)
+            .Subscribe(InstallUpdate, exception => { this.Log().Error(exception, "App update failed."); })
             .DisposeWith(_cleanUp);
     }
 
@@ -71,6 +72,8 @@ public class AppUpdater : IEnableLogger
     {
         try
         {
+            this.Log().Info("Try getting app version from server.");
+
 #if DEBUG
             // invoke check every time in debug mode
             using var response =
@@ -79,7 +82,7 @@ public class AppUpdater : IEnableLogger
 #else
             using var response =
                 await _client.GetAsync(
-                    $"check-version?version={FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion}");
+                    $"check-version?version={FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location).FileVersion}");
 #endif
             if (!response.IsSuccessStatusCode) return false;
 
@@ -112,6 +115,10 @@ public class AppUpdater : IEnableLogger
         {
             this.Log().Error(keyNotFoundException,
                 "Some of the keys [isUpdateAvailable, latestVersion, downloadUrl, releaseNotes] not found in the response. Please check if the api response body is out of time.");
+        }
+        catch (Exception ex)
+        {
+            this.Log().Error(ex);
         }
 
         return false;

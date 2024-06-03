@@ -27,10 +27,35 @@ public partial class ThisAddIn : IEnableLogger
         Directory.CreateDirectory(Constants.LibraryFolder);
         Directory.CreateDirectory(Constants.TmpFolder);
 
-        // configure services
+        ConfigureServices();
+
+        // declare a UI thread to display wpf window
+        var uiThread = new Thread(WindowManager.Initialize) { Name = "UI Thread" };
+        uiThread.SetApartmentState(ApartmentState.STA);
+        uiThread.Start();
+
+        WindowManager.Initialized
+            .Where(x => x)
+            .Subscribe(_ =>
+            {
+                // initialize background tasks
+                BackgroundTaskManager.Initialize();
+
+                // initialize ribbon
+                _ribbon = new Ribbon();
+                Globals.ThisAddIn.Application.RegisterRibbonX(_ribbon, null,
+                    VisRibbonXModes.visRXModeDrawing,
+                    "AE PID RIBBON");
+            });
+    }
+
+    private static void ConfigureServices()
+    {
+        // register logger
         Locator.CurrentMutable.RegisterConstant(new DebugLogger { Level = LogLevel.Info }, typeof(ILogger));
         Locator.CurrentMutable.UseNLogWithWrappingFullLogger();
 
+        // register other services
         Locator.CurrentMutable.RegisterLazySingleton(() => new ConfigurationService(),
             typeof(ConfigurationService));
         Locator.CurrentMutable.RegisterLazySingleton(
@@ -39,22 +64,6 @@ public partial class ThisAddIn : IEnableLogger
         Locator.CurrentMutable.RegisterLazySingleton(
             () => new MaterialsService(Locator.Current.GetService<HttpClient>()!),
             typeof(MaterialsService));
-
-        // declare a UI thread to display wpf window
-        var uiThread = new Thread(WindowManager.Initialize) { Name = "UI Thread" };
-        uiThread.SetApartmentState(ApartmentState.STA);
-        uiThread.Start();
-
-        // initialize the background worker
-        Observable.Start(BackgroundTaskManager.Initialize)
-            .Subscribe(_ =>
-            {
-                // initialize ribbon
-                _ribbon = new Ribbon();
-                Globals.ThisAddIn.Application.RegisterRibbonX(_ribbon, null,
-                    VisRibbonXModes.visRXModeDrawing,
-                    "AE PID RIBBON");
-            });
     }
 
     private void ThisAddIn_Shutdown(object sender, System.EventArgs e)
