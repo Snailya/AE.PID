@@ -4,5 +4,6 @@ public enum TaskStatus
 {
     Created,
     Running,
+    OnError,
     RanToCompletion
 }

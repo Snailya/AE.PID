@@ -52,7 +52,7 @@ public class DocumentMonitor : IEnableLogger
                     }
                     else
                     {
-                        VisioHelper.UpdateDocumentStencil(document);
+                        VisioHelper.UpdateDocument(document);
                     }
                 },
                 ex => { this.Log().Error(ex, "Document Monitor Service ternimated accidently."); },
@@ -77,7 +77,7 @@ public class DocumentMonitor : IEnableLogger
     /// </summary>
     /// <param name="document"></param>
     /// <returns></returns>
-    private bool IsMasterOutOfDate(IVDocument document)
+    public bool IsMasterOutOfDate(IVDocument document)
     {
         return document.Masters != null && document.Masters.OfType<IVMaster>().ToList().Any(source =>
             _configuration.LibraryItems.Items.Any(x => x.BaseId == source.BaseID && x.UniqueId != source.UniqueID));

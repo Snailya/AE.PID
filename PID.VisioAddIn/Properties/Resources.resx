@@ -203,4 +203,10 @@
     <data name="MSG_no_valid_update" xml:space="preserve">
         <value>已经是最新版。</value>
     </data>
+    <data name="MSG_update_tool_found_at" xml:space="preserve">
+        <value>找到更新工具，路径{0}。</value>
+    </data>
+    <data name="MSG_document_ready_for_update" xml:space="preserve">
+        <value>文档已经准备好更新。</value>
+    </data>
 </root>

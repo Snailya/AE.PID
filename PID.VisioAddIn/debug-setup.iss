@@ -37,11 +37,11 @@ Source: "..\3rd\SourceHanSansSC-Regular.otf"; DestDir: "{autofonts}"; FontInstal
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]
-Root: HKA64; Subkey: "Software\Microsoft\Visio\Addins\AE.PID.DEBUG"; Flags: uninsdeletekey
-Root: HKA64; Subkey: "Software\Microsoft\Visio\Addins\AE.PID.DEBUG"; ValueType: string; ValueName: "Description"; ValueData: "{#Description}"
-Root: HKA64; Subkey: "Software\Microsoft\Visio\Addins\AE.PID.DEBUG"; ValueType: string; ValueName: "FriendlyName"; ValueData: "{#MyAppName}"
-Root: HKA64; Subkey: "Software\Microsoft\Visio\Addins\AE.PID.DEBUG"; ValueType: dword; ValueName: "LoadBehavior"; ValueData: "3"
-Root: HKA64; Subkey: "Software\Microsoft\Visio\Addins\AE.PID.DEBUG"; ValueType: string; ValueName: "Manifest"; ValueData: "file:///{app}\AE.PID.vsto|vstolocal"
+Root: HKA64; Subkey: "Software\Microsoft\Visio\Addins\AE.PID"; Flags: uninsdeletekey
+Root: HKA64; Subkey: "Software\Microsoft\Visio\Addins\AE.PID"; ValueType: string; ValueName: "Description"; ValueData: "{#Description}"
+Root: HKA64; Subkey: "Software\Microsoft\Visio\Addins\AE.PID"; ValueType: string; ValueName: "FriendlyName"; ValueData: "{#MyAppName}"
+Root: HKA64; Subkey: "Software\Microsoft\Visio\Addins\AE.PID"; ValueType: dword; ValueName: "LoadBehavior"; ValueData: "3"
+Root: HKA64; Subkey: "Software\Microsoft\Visio\Addins\AE.PID"; ValueType: string; ValueName: "Manifest"; ValueData: "file:///{app}\AE.PID.vsto|vstolocal"
 
 ;[Code]
 ;function VstoRuntimeInstalled: Boolean;

@@ -34,7 +34,7 @@
                             onAction="UpdateDocument"
                             screentip="使用模具库中的模具更新文档中的模具"
                             getImage="GetButtonImage"
-                            getEnabled="IsDocumentOpened"
+                            getEnabled="IsDocumentOutOfDate"
                     />
                     <button id="insert_legend"
                             label="图例"

@@ -76,7 +76,7 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
                         VisioHelper.FormatDocument(Globals.ThisAddIn.Application.ActiveDocument);
                         break;
                     case Command.UpdateDocument:
-                        VisioHelper.UpdateDocumentStencil(Globals.ThisAddIn.Application.ActiveDocument);
+                        VisioHelper.UpdateDocument(Globals.ThisAddIn.Application.ActiveDocument);
                         break;
                     case Command.InsertLegend:
                         VisioHelper.InsertLegend(Globals.ThisAddIn.Application.ActivePage);
@@ -241,6 +241,14 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
     public bool IsDocumentOpened(IRibbonControl control)
     {
         return Globals.ThisAddIn.Application.ActiveDocument != null;
+    }
+
+    public bool IsDocumentOutOfDate(IRibbonControl control)
+    {
+        if (Globals.ThisAddIn.Application.ActiveDocument == null) return false;
+
+        return BackgroundTaskManager.GetInstance()!.DocumentMonitor.IsMasterOutOfDate(Globals.ThisAddIn.Application
+            .ActiveDocument);
     }
 
     #endregion

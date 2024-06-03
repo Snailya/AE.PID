@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
-using System.Reactive.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Windows;
 using AE.PID.Properties;
 using AE.PID.Services;
@@ -15,6 +13,7 @@ using Microsoft.Win32;
 using Splat;
 using Font = Microsoft.Office.Interop.Visio.Font;
 using Path = System.IO.Path;
+using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 
 namespace AE.PID.Tools;
 
@@ -129,167 +128,160 @@ internal static class VisioHelper
         page.AutoSizeDrawing();
     }
 
-    private static string? GetUpdateTool()
+    private static string GetUpdateToolPathFromRegistryKey()
     {
-#if DEBUG
-        // Specify the registry key path
-        const string registryKeyPath = @"Software\Microsoft\Visio\Addins\AE.PID.DEBUG";
-#else
-        // Specify the registry key path
         const string registryKeyPath = @"Software\Microsoft\Visio\Addins\AE.PID";
-#endif
-
-        // Specify the value name you want to read
         const string valueName = "Manifest";
 
-        try
-        {
-            LogHost.Default.Info(
-                $"Try find isntall path from register key. KeyPath: {registryKeyPath}. Value: {valueName}");
+        LogHost.Default.Info(
+            $"Try find isntall path from register key. KeyPath: {registryKeyPath}. Value: {valueName}");
 
-            using var registryKey = Registry.CurrentUser.OpenSubKey(registryKeyPath);
-            var value = registryKey?.GetValue(valueName) as string;
+        using var registryKey = Registry.CurrentUser.OpenSubKey(registryKeyPath);
+        var value = registryKey?.GetValue(valueName) as string;
 
-            var index = value?.IndexOf('|');
-            if (index >= 0) value = value.Substring(0, index.Value);
+        if (string.IsNullOrEmpty(value)) throw new RegistryKeyValueNotFoundException(registryKeyPath, valueName);
 
-            var fileUri = new Uri(value);
-            var filePath = fileUri.LocalPath;
-            var folderPath = Path.GetDirectoryName(filePath);
+        var index = value!.IndexOf('|');
+        if (index >= 0) value = value.Substring(0, index);
 
-            LogHost.Default.Info($"The install path is {folderPath}");
+        var fileUri = new Uri(value);
+        var filePath = fileUri.LocalPath;
+        var folderPath = Path.GetDirectoryName(filePath)!;
 
-            return Path.Combine(folderPath,
-                "DocumentStencilUpdateTool/PID.DocumentStencilUpdateTool.exe");
-        }
-        catch (Exception ex)
-        {
-            // Handle any exceptions that may occur
-            LogHost.Default.Error(ex.Message);
-        }
+        var toolPath = Path.Combine(folderPath,
+            "DocumentStencilUpdateTool/PID.DocumentStencilUpdateTool.exe");
+        if (!File.Exists(toolPath))
+            throw new UpdateToolNotExistException(toolPath);
 
-        return null;
+        LogHost.Default.Info($"The update tool is at {toolPath}");
+
+        return toolPath;
     }
 
-    private static string Decrypt(Document document)
+    private static void VerifySaved(Document document)
     {
-        // open the document in the background if it is in close status
-        if (document.Stat != (short)VisStatCodes.visStatNormal)
-            Globals.ThisAddIn.Application.Documents.OpenEx(document.FullName, (short)tagVisOpenSaveArgs.visOpenHidden);
+        // first check if the document is a tmp document
+        if (string.IsNullOrEmpty(document.Path))
+        {
+            // display a dialog to ask user to save the document
+            var dialog = new SaveFileDialog
+            {
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                Filter = @"Visio Files|*.vsdx",
+                Title = @"保存文件"
+            };
+            if (dialog.ShowDialog() != true) throw new DocumentNotSavedException(); // user cancel
+            document.SaveAs(dialog.FileName);
+        }
 
-        // save the document before create copy
+        // save the document if it has changes
         if (document.Saved == false) document.Save();
-
-        // copy the document to work around over the encryption system
-        var filePath = document.FullName;
-        var temp = Path.Combine(Path.GetDirectoryName(filePath)!, Guid.NewGuid() + ".vsdx");
-        File.Copy(filePath, temp);
-
-        // close the current document
-        document.Close();
-
-        // swamp the file names
-        File.Move(filePath, filePath + ".tmp");
-        File.Move(temp, filePath);
-
-        // remove the temp file
-        File.Delete(temp);
-
-        return filePath;
     }
 
     /// <summary>
     ///     Save and close document, then update the stencil using PID.DocumentStencilUpdateTool.exe.
     /// </summary>
     /// <param name="document"></param>
-    public static void UpdateDocumentStencil(Document document)
+    public static void UpdateDocument(Document document)
     {
-        try
-        {
-            Contract.Assert(document.Type == VisDocumentTypes.visTypeDrawing);
-
-            LogHost.Default.Info("Try updating the documents.");
-
-            // ensure update tool exist
-            var updateToolPath = GetUpdateTool();
-            if (!File.Exists(updateToolPath))
-                throw new InvalidOperationException($"Could not find the update tool in {updateToolPath}");
-
-            var progress = new Progress<ProgressValue>();
-
-            WindowManager.Dispatcher!.BeginInvoke(() =>
+        var progress = new Progress<ProgressValue>();
+        WindowManager.GetInstance()!.CreateRunInBackgroundWithProgress(progress,
+            () =>
             {
-                var progressViewModel = new ProgressPageViewModel { IsIndeterminate = true };
+                var file = document.FullName;
 
-                Observable.FromEventPattern<ProgressValue>(handler => progress.ProgressChanged += handler,
-                        handler => progress.ProgressChanged -= handler)
-                    .Select(x => x.EventArgs)
-                    .ObserveOn(WindowManager.Dispatcher)
-                    .Subscribe(v => { progressViewModel.ProgressValue = v; });
+                try
+                {
+                    Contract.Assert(document.Type == VisDocumentTypes.visTypeDrawing);
+                    VerifySaved(document);
 
-                WindowManager.GetInstance()!.ShowProgressBar(progressViewModel);
+                    // close document before update
+                    document.Close();
+
+                    UpdateDocumentStencil(file, progress);
+                }
+                catch (Exception ex)
+                {
+                    LogHost.Default.Error(ex, "Failed to update document stencil.");
+                    ((IProgress<ProgressValue>)progress).Report(new ProgressValue
+                        { Message = ex.Message, Status = TaskStatus.OnError });
+                }
+                finally
+                {
+                    // reopen the file
+                    Globals.ThisAddIn.Application.Documents.Open(file);
+                }
+            });
+    }
+
+    private static void UpdateDocumentStencil(string file, IProgress<ProgressValue> progress)
+    {
+        LogHost.Default.Info("Try updating the documents.");
+
+        // find out the update tool
+        var toolPath = GetUpdateToolPathFromRegistryKey();
+        progress.Report(
+            new ProgressValue
+            {
+                Message = string.Format(Resources.MSG_update_tool_found_at, toolPath),
+                Status = TaskStatus.Running
             });
 
-            var file = Decrypt(document);
-
-            // update using document stencil update tool
-            var processStartInfo = new ProcessStartInfo
-            {
-                Verb = null,
-                Arguments = $"--file {file} --reference {Path.Combine(Constants.LibraryFolder, ".cheatsheet")}",
-                CreateNoWindow = true,
-                RedirectStandardInput = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                Domain = null,
-                LoadUserProfile = false,
-                FileName = updateToolPath!,
-                ErrorDialog = false
-            };
-
-            LogHost.Default.Info(
-                $"Update document through command line: {processStartInfo.FileName} {processStartInfo.Arguments}");
-
-            var process = new Process
-            {
-                StartInfo = processStartInfo,
-                EnableRaisingEvents = true
-            };
-
-            process.OutputDataReceived += (_, args) =>
-            {
-                ((IProgress<ProgressValue>)progress).Report(new ProgressValue
-                    { Message = args.Data, Status = TaskStatus.Running });
-                LogHost.Default.Info(args.Data);
-            };
-            process.ErrorDataReceived += (_, e) =>
-            {
-                if (e.Data != null)
-                    LogHost.Default.Error(e.Data);
-            };
-            process.Exited += (sender, e) =>
-            {
-                ((IProgress<ProgressValue>)progress).Report(new ProgressValue
-                    { Message = string.Empty, Status = TaskStatus.RanToCompletion });
-
-                WindowManager.ShowDialog(
-                    sender is Process { ExitCode: 0 }
-                        ? Resources.MSG_update_completed
-                        : string.Format(Resources.MSG_update_failed_with_message, "请检查日志"),
-                    MessageBoxButton.OK);
-                Globals.ThisAddIn.Application.Documents.OpenEx(file, (short)OpenFlags.ReadWrite);
-            };
-
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-        }
-        catch (Exception ex)
+        // update using document stencil update tool
+        var processStartInfo = new ProcessStartInfo
         {
-            WindowManager.ShowDialog(string.Format(Resources.MSG_update_failed_with_message, ex.Message),
-                MessageBoxButton.OK);
-            LogHost.Default.Error(ex, "Failed to update document stencil.");
+            Verb = null,
+            Arguments =
+                $"--file \"{file}\" --reference \"{Path.Combine(Constants.LibraryFolder, ".cheatsheet")}\"",
+            CreateNoWindow = true,
+            RedirectStandardInput = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            Domain = null,
+            LoadUserProfile = false,
+            FileName = $"\"{toolPath}\"",
+            ErrorDialog = false
+        };
+
+        LogHost.Default.Info(
+            $"Update document through command line: {processStartInfo.FileName} {processStartInfo.Arguments}");
+
+        var process = new Process
+        {
+            StartInfo = processStartInfo,
+            EnableRaisingEvents = true
+        };
+
+        // redirect info and error
+        process.OutputDataReceived += (_, e) =>
+        {
+            if (e.Data != null)
+            {
+                LogHost.Default.Info(e.Data);
+
+                progress.Report(
+                    new ProgressValue
+                        { Message = e.Data, Status = TaskStatus.Running });
+            }
+        };
+        process.ErrorDataReceived += (_, e) =>
+        {
+            if (e.Data != null) throw new ProcessErrorException(e.Data);
+        };
+
+        // start the process and wait to complete
+        process.Start();
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+        process.WaitForExit();
+
+        if (process.ExitCode == 0)
+        {
+            LogHost.Default.Info("Document update completed.");
+
+            progress.Report(new ProgressValue
+                { Message = Resources.MSG_update_completed, Status = TaskStatus.RanToCompletion });
         }
     }
 
@@ -305,15 +297,14 @@ internal static class VisioHelper
         }
     }
 
-    public static IEnumerable<Document> CloseOpenedStencils()
-    {
-        var stencils = Globals.ThisAddIn.Application.Documents
-            .OfType<Document>()
-            .Where(x => x.Type == VisDocumentTypes.visTypeStencil).ToList();
+    private class RegistryKeyValueNotFoundException(string registryKeyPath, string valueName)
+        : Exception($"{valueName} not exist in {registryKeyPath}.");
 
-        foreach (var item in stencils)
-            item.Close();
+    private class UpdateToolNotExistException(string toolPath)
+        : Exception($"Unable to find the {toolPath}.");
 
-        return stencils;
-    }
+    private class ProcessErrorException(string data)
+        : Exception(data);
+
+    private class DocumentNotSavedException : Exception;
 }

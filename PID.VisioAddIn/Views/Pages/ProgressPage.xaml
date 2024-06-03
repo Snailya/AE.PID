@@ -6,6 +6,7 @@
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 xmlns:viewModels="clr-namespace:AE.PID.ViewModels"
                 xmlns:views="clr-namespace:AE.PID.Views"
+                Width="480" 
                 mc:Ignorable="d">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -14,12 +15,16 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid Margin="16">
+    <Grid Margin="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <ProgressBar x:Name="ProgressBar" Height="25" Width="360" />
-        <TextBlock Grid.Row="1" x:Name="Message" Text="Some text" HorizontalAlignment="Center" />
+        <ProgressBar x:Name="ProgressBar" 
+                     Margin="0 4"
+                     Height="25" IsIndeterminate="True"/>
+        <TextBlock Grid.Row="1" x:Name="Message" 
+                   Margin="0 4" TextWrapping="WrapWithOverflow"
+                   HorizontalAlignment="Left" />
     </Grid>
 </views:PageBase>

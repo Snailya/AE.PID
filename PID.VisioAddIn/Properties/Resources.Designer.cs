@@ -167,6 +167,15 @@ namespace AE.PID.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 文档已经准备好更新。.
+        /// </summary>
+        public static string MSG_document_ready_for_update {
+            get {
+                return ResourceManager.GetString("MSG_document_ready_for_update", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 未找到思源黑体，请确认安装完成后重启Visio。.
         /// </summary>
         public static string MSG_font_not_found {
@@ -217,6 +226,15 @@ namespace AE.PID.Properties {
         public static string MSG_update_failed_with_message {
             get {
                 return ResourceManager.GetString("MSG_update_failed_with_message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 找到更新工具，路径{0}。.
+        /// </summary>
+        public static string MSG_update_tool_found_at {
+            get {
+                return ResourceManager.GetString("MSG_update_tool_found_at", resourceCulture);
             }
         }
         

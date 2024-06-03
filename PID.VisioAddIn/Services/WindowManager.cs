@@ -130,15 +130,16 @@ public class WindowManager : IDisposable
     {
         return MessageBox.Show(messageBoxText, Resources.PROPERTY_product_name, button);
     }
-
+    
     /// <summary>
     ///     Show a progress bar to provide better user experience.
     /// </summary>
-    /// <param name="progressPageViewModel"></param>
-    public void ShowProgressBar(ProgressPageViewModel progressPageViewModel)
+    public void CreateRunInBackgroundWithProgress(Progress<ProgressValue> progress, Action task)
     {
-        // todo: better use a standalone window
-        SetContent(new ProgressPage(progressPageViewModel));
-        _mainWindow.Show();
+        Dispatcher!.Invoke(() =>
+        {
+            SetContent(new ProgressPage(new ProgressPageViewModel(progress, task)));
+            _mainWindow.Show();
+        });
     }
 }
