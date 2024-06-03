@@ -15,6 +15,7 @@
 
     <Style TargetType="{x:Type Button}">
         <Setter Property="Width" Value="64" />
+        <Setter Property="Margin" Value="4" />
     </Style>
 
     <Style TargetType="{x:Type views:LabelTextBox}">
@@ -36,6 +37,7 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Setter Property="Margin" Value="4" />
     </Style>
 
     <Style TargetType="{x:Type views:SectionLabel}">
