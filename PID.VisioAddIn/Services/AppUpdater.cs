@@ -232,7 +232,7 @@ public class AppUpdater : IEnableLogger
 
 
     /// <summary>
-    ///     Find the WinRar.exe by regedit and extract .rar file using WinRar in new process.
+    ///     Find the WinRar.exe by regedit and extract .rar file using WinRar in a new process.
     /// </summary>
     /// <param name="sourceArchiveFileName"></param>
     /// <param name="destinationDirectoryName"></param>

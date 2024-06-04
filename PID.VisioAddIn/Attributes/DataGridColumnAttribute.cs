@@ -24,7 +24,7 @@ public class DataGridColumnAttribute(string namePath, string valuePath) : Attrib
 
 /// <summary>
 ///     Indicates this property is used for generate multiple columns when render Data Grid.
-///     The type argument for this property must has <see cref="DataGridColumnAttribute" />
+///     The type argument for this property must have <see cref="DataGridColumnAttribute" />
 /// </summary>
 [AttributeUsage(AttributeTargets.Property)]
 public class DataGridMultipleColumnsAttribute : Attribute;

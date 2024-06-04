@@ -6,7 +6,7 @@ using AE.PID.Dtos;
 namespace AE.PID.Models;
 
 /// <summary>
-///     A design material is used for design bom which might pair to one or many erp material in purchase system.
+///     A design material is used for design bom which might pair to one or many erp material in a purchase system.
 /// </summary>
 /// <param name="name"></param>
 /// <param name="categories"></param>
@@ -45,7 +45,7 @@ public class DesignMaterial(
     #region General Properties
 
     /// <summary>
-    ///     The human-readable bom code from database, used as identity
+    ///     The human-readable bom code from a database, used as identity
     /// </summary>
     [DataGridColumnName("设计物料")]
     public string Code { get; private set; } = code;
@@ -57,7 +57,7 @@ public class DesignMaterial(
     public string Name { get; private set; } = name;
 
     /// <summary>
-    ///     The brand of this material. An manufacturer could have many brands.
+    ///     The brand of this material. A manufacturer could have many brands.
     /// </summary>
     [DataGridColumnName("品牌")]
     public string Brand { get; set; } = brand;

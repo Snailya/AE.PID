@@ -80,11 +80,11 @@ public class LegendService : IEnableLogger
 
             page.Application.EndUndoScope(undoScope, true);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             page.Application.EndUndoScope(undoScope, false);
 
-            throw ex;
+            throw;
         }
         finally
         {
@@ -154,13 +154,13 @@ public class LegendService : IEnableLogger
         var nominalHeight = shape.CellsU["Height"].Result["mm"];
 
         // get the bbox extent, which is the smallest bounding box that surround the visible geometry.
-        // pay attention that the flags is visBBoxDrawingCoords + visBBoxExtents
+        // pay attention that the flag is visBBoxDrawingCoords + visBBoxExtents
         var (left, bottom, right, top) = shape.BoundingBoxMetric((short)VisBoundingBoxArgs.visBBoxDrawingCoords +
                                                                  (short)VisBoundingBoxArgs.visBBoxExtents);
         var actualWidth = Math.Round(right - left, 4);
         var actualHeight = Math.Round(top - bottom, 4);
 
-        // Now the nominal height from height property represents a actual height of actualHeight.
+        // Now the nominal height from height property represents an actual height of actualHeight.
         // What we want is the actual height adjust to 5 mm, so we should scale the nominal height with [NH] / [DNH] = [AH] / [DAH], where DAH = 5 mm
         var desiredNominalHeight = Math.Round(actualWidth >= actualHeight
             ? nominalHeight / actualWidth * 5

@@ -185,10 +185,12 @@
                                                                               -->
   <ItemGroup>
     <Compile Include="Attributes\DataGridColumnAttribute.cs" />
+    <Compile Include="Converters\ButtonNameToVisibilityConvertor.cs" />
     <Compile Include="Converters\ElementTypeToBackgroundColorConverter.cs" />
     <Compile Include="Converters\ElementTypeToStringConverter.cs" />
     <Compile Include="Converters\LevelToIndentConverter.cs" />
-    <Compile Include="Converters\SideWindowMaxWidthConvertor.cs" />
+    <Compile Include="Converters\SecondaryWindowLeftConvertor.cs" />
+    <Compile Include="Converters\SecondaryWindowMaxWidthConvertor.cs" />
     <Compile Include="Dtos\DesignMaterialDto.cs" />
     <Compile Include="Dtos\DetailedLibraryItemDto.cs" />
     <Compile Include="Dtos\LibraryDto.cs" />
@@ -307,13 +309,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Views\ViewBase.cs" />
-    <Compile Include="Views\Windows\MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
+    <Compile Include="Views\Windows\SecondaryWindow.cs" />
+    <Compile Include="Views\Windows\WindowBase.xaml.cs">
+      <DependentUpon>WindowBase.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Windows\ChildWindow.xaml.cs">
-      <DependentUpon>ChildWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Windows\WindowBase.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
@@ -382,11 +381,7 @@
     <Page Include="Views\Themes\Generic.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Windows\MainWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Windows\ChildWindow.xaml">
+    <Page Include="Views\Windows\WindowBase.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

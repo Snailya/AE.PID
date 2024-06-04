@@ -61,7 +61,7 @@ public abstract class PartItem(Shape shape) : ElementBase(shape), IPartItem
     }
 
     /// <summary>
-    ///     Remove all property that start with D_ from shape sheet.
+    ///     Remove all properties that start with D_ from the shape sheet.
     /// </summary>
     private void DeleteMaterial()
     {
@@ -121,7 +121,7 @@ public abstract class PartItem(Shape shape) : ElementBase(shape), IPartItem
 
         this.WhenAnyValue(x => x.MaterialNo)
             .DistinctUntilChanged()
-            .ObserveOn(ThisAddIn.Dispatcher)
+            .ObserveOn(ThisAddIn.Dispatcher!)
             .Subscribe(AssignMaterial)
             .DisposeWith(CleanUp);
     }
@@ -138,7 +138,7 @@ public abstract class PartItem(Shape shape) : ElementBase(shape), IPartItem
     }
 
     /// <summary>
-    ///     Copy material properties from other.
+    ///     Copy material properties from another part item.
     /// </summary>
     /// <param name="partItem"></param>
     public void CopyMaterialFrom(PartItem partItem)

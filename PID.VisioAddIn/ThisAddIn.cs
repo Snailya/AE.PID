@@ -6,6 +6,7 @@ using System.Threading;
 using System.Windows.Threading;
 using AE.PID.Services;
 using AE.PID.Tools;
+using AE.PID.Views.Windows;
 using Microsoft.Office.Interop.Visio;
 using Splat;
 using Splat.NLog;
@@ -52,7 +53,6 @@ public partial class ThisAddIn : IEnableLogger
     private static void ConfigureServices()
     {
         // register logger
-        Locator.CurrentMutable.RegisterConstant(new DebugLogger { Level = LogLevel.Info }, typeof(ILogger));
         Locator.CurrentMutable.UseNLogWithWrappingFullLogger();
 
         // register other services

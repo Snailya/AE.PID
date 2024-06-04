@@ -7,7 +7,7 @@ public class MaterialDto
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Code { get; set; } = string.Empty;
-    public int[] Categories { get; set; } = { };
+    public int[] Categories { get; set; } = [];
     public string Brand { get; set; } = string.Empty;
     public string Specifications { get; set; } = string.Empty;
     public string Model { get; set; } = string.Empty;

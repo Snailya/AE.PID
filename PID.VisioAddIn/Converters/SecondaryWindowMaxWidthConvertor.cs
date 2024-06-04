@@ -5,7 +5,7 @@ using System.Windows.Data;
 
 namespace AE.PID.Converters;
 
-public class SideWindowMaxWidthConvertor : IMultiValueConverter
+public class SecondaryWindowMaxWidthConvertor : IMultiValueConverter
 {
     public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
     {
@@ -14,24 +14,6 @@ public class SideWindowMaxWidthConvertor : IMultiValueConverter
 
         var maxWidth = SystemParameters.WorkArea.Width - v1 - v2;
         return maxWidth;
-    }
-
-
-    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public class SideWindowLeftConvertor : IMultiValueConverter
-{
-    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
-    {
-        if (values.Length != 2 || values[0] is not double v1 || values[1] is not double v2)
-            throw new ArgumentException();
-
-        var left = v1 + v2;
-        return left;
     }
 
 
