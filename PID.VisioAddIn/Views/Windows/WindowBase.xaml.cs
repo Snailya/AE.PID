@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Interop;
 using System.Windows.Media;
 using AE.PID.Tools;
 using AE.PID.ViewModels;
@@ -25,8 +24,6 @@ public partial class WindowBase
         nameof(WindowButtonStyle), typeof(WindowButton), typeof(WindowBase),
         new PropertyMetadata(WindowButton.Normal));
 
-    private WindowInteropHelper? _helper;
-
     public WindowButton WindowButtonStyle
     {
         get => (WindowButton)GetValue(WindowButtonStyleProperty);
@@ -38,13 +35,7 @@ public partial class WindowBase
         SizeToContent = SizeToContent.WidthAndHeight;
         base.OnContentRendered(e);
     }
-
-    protected override void OnActivated(System.EventArgs e)
-    {
-        base.OnActivated(e);
-        SizeToContent = SizeToContent.Manual;
-    }
-
+    
     protected override void OnClosing(CancelEventArgs e)
     {
         foreach (Window ownedWindow in OwnedWindows) ownedWindow.Close();
@@ -55,13 +46,13 @@ public partial class WindowBase
         e.Cancel = true;
     }
 
-    public void CenterOwner()
+    private void CenterOwner()
     {
-        if (_helper?.Owner == IntPtr.Zero) return;
+        if (Owner != null) return;
 
         // GetWindowRect will return the rect in system resolution without scaling.
         // It means if I make a window full screen, it will return 1920 width even it is in 150 % DPI scaling for a screen resolution 1920x1080.
-        Win32Ext.GetWindowRect(_helper!.Owner, out var rect);
+        Win32Ext.GetWindowRect(new IntPtr(Globals.ThisAddIn.Application.WindowHandle32), out var rect);
 
         var parentCenterX = (rect.Right + rect.Left) / 2;
         var parentCenterY = (rect.Bottom + rect.Top) / 2;
@@ -69,8 +60,8 @@ public partial class WindowBase
         // note that this not consider the dpi scaling,
         // for example, the actual width is 320 px,
         // while a snip tool measure result is 320 * 1.5 when scaling is 150 %
-        var width = (Content as UserControl)!.ActualWidth;
-        var height = (Content as UserControl)!.ActualHeight;
+        var width = (Content as UserControl)!.Width;
+        var height = (Content as UserControl)!.Height;
 
         var dpiScale = VisualTreeHelper.GetDpi(this);
 
@@ -97,27 +88,21 @@ public partial class WindowBase
         }
     }
 
-    #region Constructors
-    
-    public WindowBase(IntPtr owner) : this()
+    protected override void OnContentChanged(object oldContent, object newContent)
     {
-        // if the parent is a win32 window
-        Loaded += (_, _) =>
-        {
-            _helper = new WindowInteropHelper(this)
-            {
-                Owner = owner
-            };
-        };
+        ResetStartupLocation();
+        base.OnContentChanged(oldContent, newContent);
     }
 
-    public WindowBase(Window owner) : this()
+    #region Constructors
+
+    protected WindowBase(Window owner) : this()
     {
         // if the parent is a WPF window
         Loaded += (_, _) => { Owner = owner; };
     }
 
-    private WindowBase()
+    public WindowBase()
     {
         Title = Properties.Resources.PROPERTY_product_name;
         MaxHeight = SystemParameters.WorkArea.Height;
@@ -126,6 +111,14 @@ public partial class WindowBase
         DataContext = new WindowViewModel(this);
 
         InitializeComponent();
+        
+        Activated += (_, _) => { SizeToContent = SizeToContent.Manual; };
+    }
+
+    private void ResetStartupLocation()
+    {
+        if (Content != null && WindowStartupLocation == WindowStartupLocation.CenterOwner)
+            CenterOwner();
     }
 
     #endregion

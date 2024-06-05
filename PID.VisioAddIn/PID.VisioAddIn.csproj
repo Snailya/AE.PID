@@ -246,10 +246,11 @@
     <Compile Include="Services\LegendService.cs" />
     <Compile Include="Services\LibraryUpdater.cs" />
     <Compile Include="Services\MaterialService.cs" />
-    <Compile Include="Services\ServiceBase.cs" />
+    <Compile Include="Services\PageServiceBase.cs" />
     <Compile Include="Services\TaskStatus.cs" />
     <Compile Include="Services\SelectService.cs" />
     <Compile Include="Services\WindowManager.cs" />
+    <Compile Include="Test\TestManager.cs" />
     <Compile Include="Tools\BindingMixins.cs" />
     <Compile Include="Tools\Constants.cs" />
     <Compile Include="Tools\RxExt.cs" />

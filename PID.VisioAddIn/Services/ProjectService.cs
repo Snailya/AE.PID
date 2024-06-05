@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -20,22 +19,9 @@ namespace AE.PID.Services;
 /// <summary>
 ///     Dealing with extracting data from shape sheet and exporting.
 /// </summary>
-public class ProjectService : ServiceBase
+public class ProjectService : PageServiceBase
 {
     private readonly SourceCache<ElementBase, int> _elements = new(t => t.Id);
-    private readonly Page _page;
-
-    #region Constructors
-
-    public ProjectService(Page page)
-    {
-        Contract.Assert(page != null,
-            "Could not initialize project service on null page.");
-
-        _page = page!;
-    }
-
-    #endregion
 
     #region Output Properties
 
@@ -49,8 +35,8 @@ public class ProjectService : ServiceBase
 
         // observe the shape added event
         Observable.FromEvent<EPage_ShapeAddedEventHandler, Shape>(
-                handler => _page.ShapeAdded += handler,
-                handler => _page.ShapeAdded -= handler)
+                handler => Globals.ThisAddIn.Application.ActivePage.ShapeAdded += handler,
+                handler => Globals.ThisAddIn.Application.ActivePage.ShapeAdded -= handler)
             .Select(TransformToElement)
             .WhereNotNull()
             .Subscribe(element => { _elements.AddOrUpdate(element); })
@@ -58,8 +44,8 @@ public class ProjectService : ServiceBase
 
         // when a shape is deleted from the page, it could be captured by BeforeShapeDelete event
         Observable.FromEvent<EPage_BeforeShapeDeleteEventHandler, Shape>(
-                handler => _page.BeforeShapeDelete += handler,
-                handler => _page.BeforeShapeDelete -= handler)
+                handler => Globals.ThisAddIn.Application.ActivePage.BeforeShapeDelete += handler,
+                handler => Globals.ThisAddIn.Application.ActivePage.BeforeShapeDelete -= handler)
             .Where(ShapePredicate())
             .Subscribe(shape =>
             {
@@ -72,7 +58,7 @@ public class ProjectService : ServiceBase
 
     public void LoadElements()
     {
-        var elements = _page.Shapes.OfType<Shape>()
+        var elements = Globals.ThisAddIn.Application.ActivePage.Shapes.OfType<Shape>()
             .Select(TransformToElement)
             .Where(x => x != null)
             .Select(x => x!).ToList();
@@ -129,7 +115,7 @@ public class ProjectService : ServiceBase
             return new FunctionalElement(shape);
         return null;
     }
-
+    
     #region Part List Table
 
     /// <summary>

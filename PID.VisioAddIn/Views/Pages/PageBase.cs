@@ -9,7 +9,7 @@ public class PageBase<TViewModel> : ViewBase<TViewModel> where TViewModel : View
     protected PageBase()
     {
         Padding = new Thickness(8);
-
+        
         Unloaded += (_, _) => { ViewModel = null; };
     }
 }

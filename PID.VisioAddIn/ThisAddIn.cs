@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Windows.Threading;
 using AE.PID.Services;
 using AE.PID.Tools;
-using AE.PID.Views.Windows;
 using Microsoft.Office.Interop.Visio;
 using Splat;
 using Splat.NLog;
@@ -23,25 +24,26 @@ public partial class ThisAddIn : IEnableLogger
     {
         // setup dispatcher
         Dispatcher = Dispatcher.CurrentDispatcher;
-
+        
         // initialize the data folder
         Directory.CreateDirectory(Constants.LibraryFolder);
         Directory.CreateDirectory(Constants.TmpFolder);
-
+        
         ConfigureServices();
 
         // declare a UI thread to display wpf window
         var uiThread = new Thread(WindowManager.Initialize) { Name = "UI Thread" };
         uiThread.SetApartmentState(ApartmentState.STA);
         uiThread.Start();
-
+        
+        // initialize background tasks
         WindowManager.Initialized
             .Where(x => x)
+            .ObserveOn(ThreadPoolScheduler.Instance)
             .Subscribe(_ =>
             {
-                // initialize background tasks
                 BackgroundTaskManager.Initialize();
-
+                
                 // initialize ribbon
                 _ribbon = new Ribbon();
                 Globals.ThisAddIn.Application.RegisterRibbonX(_ribbon, null,

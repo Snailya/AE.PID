@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Reactive.Disposables;
+using Microsoft.Office.Interop.Visio;
 using Splat;
 
 namespace AE.PID.Services;
 
-public abstract class ServiceBase : IDisposable, IEnableLogger
+public abstract class PageServiceBase : IDisposable, IEnableLogger
 {
     protected readonly CompositeDisposable CleanUp = new();
 

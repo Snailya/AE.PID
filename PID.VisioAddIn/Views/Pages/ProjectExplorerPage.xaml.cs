@@ -22,8 +22,7 @@ public partial class ProjectExplorerPage
     {
         InitializeComponent();
 
-        var service = new ProjectService(Globals.ThisAddIn.Application.ActivePage);
-        ViewModel = new ProjectExplorerPageViewModel(service);
+        ViewModel = new ProjectExplorerPageViewModel(new ProjectService());
 
         this.WhenActivated(d =>
         {
@@ -65,7 +64,7 @@ public partial class ProjectExplorerPage
                 .Subscribe(SetSelected)
                 .DisposeWith(d);
 
-            // after selecting d_bom for selected element, a new instance of element will be created as the d_bom property updated.
+            // after selecting d_bom for a selected element, a new instance of an element will be created as the d_bom property updated.
             // so the previous selection will be lost because it points to an address not exist
             // therefore, instead directly two-way bind the SelectedItem to the ViewModel.Selected property, only update the viewmodel as the SelectedItem is not null
             this.WhenAnyValue(x => x.Elements.SelectedItem)
@@ -81,7 +80,7 @@ public partial class ProjectExplorerPage
                 .BindTo(ViewModel, vm => vm.Selected)
                 .DisposeWith(d);
 
-            // highlight the item on page
+            // highlight the item on the page
             this.WhenAnyValue(x => x.ViewModel!.Selected)
                 .WhereNotNull()
                 .ObserveOn(ThisAddIn.Dispatcher!)

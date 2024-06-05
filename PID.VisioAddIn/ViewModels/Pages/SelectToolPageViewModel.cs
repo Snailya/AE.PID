@@ -45,7 +45,7 @@ public class SelectToolPageViewModel(SelectService service) : ViewModelBase
             {
                 var dispatcherOperation = ThisAddIn.Dispatcher!.InvokeAsync(() =>
                 {
-                    return Mode == SelectionMode.ById ? service.SelectShapeById(_shapeId) : SelectService.SelectShapesByMasters(_masters.Where(x => x.IsChecked).Select(x => x.BaseId));
+                    return Mode == SelectionMode.ById ? SelectService.SelectShapeById(_shapeId) : SelectService.SelectShapesByMasters(_masters.Where(x => x.IsChecked).Select(x => x.BaseId));
                 });
 
                 if (dispatcherOperation.Result == false) WindowManager.ShowDialog("没有找到", MessageBoxButton.OK);

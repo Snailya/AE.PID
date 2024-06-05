@@ -84,23 +84,20 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
                     case Command.OpenSelectTool:
                         WindowManager.Dispatcher!.Invoke(() =>
                         {
-                            WindowManager.GetInstance()!.SetContent(new SelectToolPage());
-                            WindowManager.GetInstance()!.Show();
+                            WindowManager.GetInstance()!.Show(new SelectToolPage());
                         });
                         break;
                     case Command.OpenProjectExplorer:
                         WindowManager.Dispatcher!.Invoke(() =>
                         {
-                            WindowManager.GetInstance()!.SetContent(new ProjectExplorerPage(),
+                            WindowManager.GetInstance()!.Show(new ProjectExplorerPage(),
                                 new MaterialsSelectionPage());
-                            WindowManager.GetInstance()!.Show();
                         });
                         break;
                     case Command.OpenSettings:
                         WindowManager.Dispatcher!.Invoke(() =>
                         {
-                            WindowManager.GetInstance()!.SetContent(new SettingsPage());
-                            WindowManager.GetInstance()!.Show();
+                            WindowManager.GetInstance()!.Show(new SettingsPage());
                         });
                         break;
                     case Command.Help:

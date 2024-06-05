@@ -23,5 +23,7 @@ public class BackgroundTaskManager
     public static void Initialize()
     {
         _instance ??= new BackgroundTaskManager();
+        
+        LogHost.Default.Info("Background task is running.");
     }
 }

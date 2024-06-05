@@ -16,8 +16,7 @@ public partial class SelectToolPage
     {
         InitializeComponent();
 
-        using var service = new SelectService(Globals.ThisAddIn.Application.ActivePage);
-        ViewModel = new SelectToolPageViewModel(service);
+        ViewModel = new SelectToolPageViewModel(new SelectService());
 
         this.WhenActivated(d =>
         {

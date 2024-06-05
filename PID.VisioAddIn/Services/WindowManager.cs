@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reactive.Concurrency;
 using System.Reactive.Subjects;
 using System.Windows;
@@ -20,18 +21,19 @@ public class WindowManager : IDisposable
     private readonly WindowBase _progressWindow;
     private readonly SecondaryWindow _secondaryWindow;
 
+
     #region Constructors
 
     private WindowManager()
     {
-        _mainWindow = new WindowBase(new IntPtr(Globals.ThisAddIn.Application.WindowHandle32))
+        _mainWindow = new WindowBase
         {
             WindowButtonStyle = WindowBase.WindowButton.Normal
         };
 
         _secondaryWindow = new SecondaryWindow(_mainWindow);
 
-        _progressWindow = new WindowBase(new IntPtr(Globals.ThisAddIn.Application.WindowHandle32))
+        _progressWindow = new WindowBase
         {
             ShowInTaskbar = false,
             WindowButtonStyle = WindowBase.WindowButton.CloseOnly
@@ -69,30 +71,29 @@ public class WindowManager : IDisposable
 
         // notify initialized
         Initialized.OnNext(true);
+        
+        Debug.WriteLine($"{DateTime.Now.ToLocalTime()} window manager initialized");
+        
         // start event loop
         Dispatcher.Run();
     }
 
-    public void SetContent<TMain, TSide>(PageBase<TMain> main, PageBase<TSide> child)
-        where TMain : ViewModelBase where TSide : ViewModelBase
-    {
-        _mainWindow.Content = main;
-        _secondaryWindow.Content = child;
-    }
 
-    public void SetContent<TMain>(PageBase<TMain> main)
+    public void Show<TMain>(PageBase<TMain> main)
         where TMain : ViewModelBase
     {
         _mainWindow.Content = main;
         _secondaryWindow.Content = null;
+        _mainWindow.Show();
     }
 
-    public void Show()
+    public void Show<TMain, TSide>(PageBase<TMain> main, PageBase<TSide> child)
+        where TMain : ViewModelBase where TSide : ViewModelBase
     {
-        _mainWindow.Show();
-        _mainWindow.CenterOwner();
+        _mainWindow.Content = main;
+        _secondaryWindow.Content = child;
 
-        if (_secondaryWindow.Content == null) return;
+        _mainWindow.Show();
         _secondaryWindow.Show();
     }
 

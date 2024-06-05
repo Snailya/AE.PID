@@ -8,11 +8,6 @@ namespace AE.PID.Views.Windows;
 
 public class SecondaryWindow : WindowBase
 {
-    public SecondaryWindow(IntPtr owner) : base(owner)
-    {
-        throw new NotImplementedException();
-    }
-
     public SecondaryWindow(Window owner) : base(owner)
     {
         ShowInTaskbar = false;

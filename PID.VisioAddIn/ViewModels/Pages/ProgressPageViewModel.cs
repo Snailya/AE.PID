@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reactive.Linq;
+using System.Threading;
 using AE.PID.Services;
 using ReactiveUI;
 
@@ -17,13 +19,15 @@ public class ProgressPageViewModel : ViewModelBase
             )
             .Select(eventPattern => eventPattern.EventArgs)
             .ObserveOn(RxApp.MainThreadScheduler)
+            .Do(x=>Debug.WriteLine( $"Observe progress change on {Thread.CurrentThread.Name}"))
             .Subscribe(progressValue =>
             {
                 ProgressValue = progressValue;
             });
 
         Observable.Start(task)
-            .SubscribeOn(ThisAddIn.Dispatcher!)
+            // .SubscribeOn(ThisAddIn.Dispatcher!)
+            .Do(x=>Debug.WriteLine($"Observe task on {Thread.CurrentThread.Name}"))
             .Subscribe(_ => { });
     }
 
