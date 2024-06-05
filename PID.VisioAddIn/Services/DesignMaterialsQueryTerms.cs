@@ -27,7 +27,7 @@ public record DesignMaterialsQueryTerms
     }
 
     /// <summary>
-    ///     The page number, must be large than 1
+    ///     The page number must be larger than 1.
     /// </summary>
     public int PageNumber
     {

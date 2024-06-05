@@ -82,7 +82,7 @@ public class MaterialsService : IDisposable, IEnableLogger
     }
 
     /// <summary>
-    ///     Request server for the query items if it is not exist yet.
+    ///     Request server for the query items if it does not exist yet.
     /// </summary>
     /// <param name="query"></param>
     public async Task PopulateMaterials(DesignMaterialsQueryTerms query)

@@ -6,7 +6,7 @@
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 xmlns:viewModels="clr-namespace:AE.PID.ViewModels"
                 xmlns:views="clr-namespace:AE.PID.Views"
-                Width="480" 
+                Width="480"
                 mc:Ignorable="d">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -20,10 +20,10 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <ProgressBar x:Name="ProgressBar" 
+        <ProgressBar x:Name="ProgressBar"
                      Margin="0 4"
-                     Height="25" IsIndeterminate="True"/>
-        <TextBlock Grid.Row="1" x:Name="Message" 
+                     Height="25" IsIndeterminate="True" />
+        <TextBlock Grid.Row="1" x:Name="Message"
                    Margin="0 4" TextWrapping="WrapWithOverflow"
                    HorizontalAlignment="Left" />
     </Grid>

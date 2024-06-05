@@ -50,7 +50,7 @@ public class SelectService : PageServiceBase
     }
 
     /// <summary>
-    ///     Create selection in active page for shapes of specified masters, it not work maybe to use layer instead.
+    ///     Create selection in active page for shapes of specified masters.
     /// </summary>
     /// <param name="baseIds"></param>
     public static bool SelectShapesByMasters(IEnumerable<string> baseIds)

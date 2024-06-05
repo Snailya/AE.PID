@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Data;
 using AE.PID.Converters;
 
@@ -21,9 +19,9 @@ public class SecondaryWindow : WindowBase
                 Path = new PropertyPath("Top"),
                 Source = owner,
                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
-                Mode = BindingMode.TwoWay,
+                Mode = BindingMode.TwoWay
             });
-        
+
         // binding left
         // todo: still not work as expected, I want to when the user change the main window right or secondary window left, the two window 's total width not change
         SetBinding(LeftProperty,
@@ -34,7 +32,7 @@ public class SecondaryWindow : WindowBase
                 Converter = new SecondaryWindowLeftConvertor(),
                 ConverterParameter = owner,
                 Mode = BindingMode.TwoWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             });
 
         // binding height

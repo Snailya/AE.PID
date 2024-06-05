@@ -177,7 +177,7 @@
         </value>
     </data>
     <data name="Log_" xml:space="preserve">
-        <value />
+        <value/>
     </data>
     <data name="MSG_document_masters_update_confirmation" xml:space="preserve">
         <value>检测到文档模具与库中模具不一致，是否立即更新文档模具？</value>

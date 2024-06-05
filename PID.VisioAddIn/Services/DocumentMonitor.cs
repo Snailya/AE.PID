@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows;
+using AE.PID.Properties;
 using AE.PID.Tools;
 using Microsoft.Office.Interop.Visio;
 using ReactiveUI;
@@ -37,13 +38,13 @@ public class DocumentMonitor : IEnableLogger
                                _checked.All(i => i.ID != document.ID))
             .Do(document => this.Log().Info($"Try checking the currency of the {document.FullName} masters..."))
             .Where(IsMasterOutOfDate)
-            .Do(document => this.Log().Info("Masters are out of date."))
+            .Do(document => this.Log().Info($"Masters in {document.Name} are out of date."))
             // switch back to the main thread to prompt user
             .ObserveOn(WindowManager.Dispatcher!)
             .Subscribe(document =>
                 {
                     // ask for update
-                    var result = WindowManager.ShowDialog(Properties.Resources.MSG_document_masters_update_confirmation);
+                    var result = WindowManager.ShowDialog(Resources.MSG_document_masters_update_confirmation);
 
                     if (result is MessageBoxResult.No or MessageBoxResult.Cancel)
                     {

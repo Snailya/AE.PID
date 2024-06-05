@@ -71,9 +71,9 @@ public class WindowManager : IDisposable
 
         // notify initialized
         Initialized.OnNext(true);
-        
+
         Debug.WriteLine($"{DateTime.Now.ToLocalTime()} window manager initialized");
-        
+
         // start event loop
         Dispatcher.Run();
     }

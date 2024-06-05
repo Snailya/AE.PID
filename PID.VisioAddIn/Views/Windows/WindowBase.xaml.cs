@@ -35,7 +35,7 @@ public partial class WindowBase
         SizeToContent = SizeToContent.WidthAndHeight;
         base.OnContentRendered(e);
     }
-    
+
     protected override void OnClosing(CancelEventArgs e)
     {
         foreach (Window ownedWindow in OwnedWindows) ownedWindow.Close();
@@ -60,13 +60,14 @@ public partial class WindowBase
         // note that this not consider the dpi scaling,
         // for example, the actual width is 320 px,
         // while a snip tool measure result is 320 * 1.5 when scaling is 150 %
-        var width = (Content as UserControl)!.Width;
+        var width = (Content as UserControl)!
+            .Width; // 这还不是我想要的，因为ActualWidth可能会比Width大，但是在ContentRendered之前Actual又是0。为了解决这个问题，除非找到一个更好的位置调用CenterOwner，这个位置必须在Content渲染之后，但是又在窗口呈现直线，但是我还没发现。
         var height = (Content as UserControl)!.Height;
 
         var dpiScale = VisualTreeHelper.GetDpi(this);
 
         // however, the position of the window in WPF uses dpi related position.
-        // that is for a 150% dpi scaling monitor, the mid-screen is 1920 / 1.5 / 2 = 640
+        // that is for a 150% dpi scaling monitor, the mid-screen is 1920 / 1.5 / 2 is 640
         Left = parentCenterX / dpiScale.DpiScaleX - width / 2;
         Top = parentCenterY / dpiScale.DpiScaleY - height / 2;
     }
@@ -111,7 +112,7 @@ public partial class WindowBase
         DataContext = new WindowViewModel(this);
 
         InitializeComponent();
-        
+
         Activated += (_, _) => { SizeToContent = SizeToContent.Manual; };
     }
 

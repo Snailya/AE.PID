@@ -8,7 +8,7 @@ using Splat;
 
 namespace AE.PID.Services;
 
-public class LegendService : IEnableLogger
+public abstract class LegendService : IEnableLogger
 {
     private const int Columns = 3;
     private const int RowSpacing = 10;

@@ -115,7 +115,7 @@ public class ProjectService : PageServiceBase
             return new FunctionalElement(shape);
         return null;
     }
-    
+
     #region Part List Table
 
     /// <summary>

@@ -116,7 +116,7 @@ public abstract class ElementBase : ReactiveObject, IDisposable, ITreeNode, IEqu
     public ElementType Type { get; protected set; }
 
     /// <summary>
-    ///     Notice that the property in visio for designation differs for element type.
+    ///     Notice that the property in visio for designation differs for an element type.
     /// </summary>
     public string Designation
     {

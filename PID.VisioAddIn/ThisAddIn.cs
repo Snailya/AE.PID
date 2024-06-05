@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Reactive.Concurrency;
@@ -24,18 +23,18 @@ public partial class ThisAddIn : IEnableLogger
     {
         // setup dispatcher
         Dispatcher = Dispatcher.CurrentDispatcher;
-        
+
         // initialize the data folder
         Directory.CreateDirectory(Constants.LibraryFolder);
         Directory.CreateDirectory(Constants.TmpFolder);
-        
+
         ConfigureServices();
 
         // declare a UI thread to display wpf window
         var uiThread = new Thread(WindowManager.Initialize) { Name = "UI Thread" };
         uiThread.SetApartmentState(ApartmentState.STA);
         uiThread.Start();
-        
+
         // initialize background tasks
         WindowManager.Initialized
             .Where(x => x)
@@ -43,7 +42,7 @@ public partial class ThisAddIn : IEnableLogger
             .Subscribe(_ =>
             {
                 BackgroundTaskManager.Initialize();
-                
+
                 // initialize ribbon
                 _ribbon = new Ribbon();
                 Globals.ThisAddIn.Application.RegisterRibbonX(_ribbon, null,
