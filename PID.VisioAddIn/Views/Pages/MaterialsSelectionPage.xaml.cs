@@ -19,7 +19,7 @@ namespace AE.PID.Views;
 /// </summary>
 public partial class MaterialsSelectionPage
 {
-    public MaterialsSelectionPage()
+    public MaterialsSelectionPage() : base("Material Selection")
     {
         InitializeComponent();
 
@@ -64,7 +64,7 @@ public partial class MaterialsSelectionPage
                 .Subscribe(_ => Close())
                 .DisposeWith(d);
 
-            // bind to all double clicked row to selected property
+            // bind to all double-clicked rows to selected property
             Observable.FromEventPattern<MouseButtonEventHandler, MouseButtonEventArgs>(
                     handler => DesignMaterialsGrid.MouseDoubleClick += handler,
                     handler => DesignMaterialsGrid.MouseDoubleClick -= handler)

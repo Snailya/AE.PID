@@ -8,7 +8,6 @@
         xmlns:converters="clr-namespace:AE.PID.Converters"
         WindowStyle="None"
         AllowsTransparency="True"
-        SizeToContent="WidthAndHeight"
         WindowStartupLocation="CenterOwner"
         mc:Ignorable="d"
         d:DesignHeight="450" d:DesignWidth="800">

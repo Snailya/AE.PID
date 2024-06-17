@@ -18,7 +18,7 @@ namespace AE.PID.Views;
 /// </summary>
 public partial class ProjectExplorerPage
 {
-    public ProjectExplorerPage()
+    public ProjectExplorerPage() : base("Project Explorer")
     {
         InitializeComponent();
 

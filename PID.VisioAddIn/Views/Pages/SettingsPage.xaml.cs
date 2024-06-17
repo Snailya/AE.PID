@@ -11,7 +11,7 @@ namespace AE.PID.Views;
 /// </summary>
 public partial class SettingsPage
 {
-    public SettingsPage()
+    public SettingsPage() : base("Settings")
     {
         InitializeComponent();
 

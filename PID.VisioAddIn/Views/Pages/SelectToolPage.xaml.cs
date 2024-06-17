@@ -12,7 +12,7 @@ namespace AE.PID.Views;
 /// </summary>
 public partial class SelectToolPage
 {
-    public SelectToolPage()
+    public SelectToolPage() : base("Select Tool")
     {
         InitializeComponent();
 

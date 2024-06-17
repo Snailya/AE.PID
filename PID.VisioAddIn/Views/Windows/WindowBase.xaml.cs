@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -11,7 +15,7 @@ namespace AE.PID.Views.Windows;
 /// <summary>
 ///     Interaction logic for MainWindow.xaml
 /// </summary>
-public partial class WindowBase
+public partial class WindowBase : IDisposable
 {
     public enum WindowButton
     {
@@ -24,20 +28,30 @@ public partial class WindowBase
         nameof(WindowButtonStyle), typeof(WindowButton), typeof(WindowBase),
         new PropertyMetadata(WindowButton.Normal));
 
+    private readonly CompositeDisposable _cleanup = new();
+
+    private bool _hasShow;
+
+    private Dictionary<string, SizeAndLocation> SizeAndLocations { get; } = new();
+
     public WindowButton WindowButtonStyle
     {
         get => (WindowButton)GetValue(WindowButtonStyleProperty);
         set => SetValue(WindowButtonStyleProperty, value);
     }
 
-    protected override void OnContentRendered(System.EventArgs e)
+    public void Dispose()
     {
-        SizeToContent = SizeToContent.WidthAndHeight;
-        base.OnContentRendered(e);
+        _cleanup.Dispose();
     }
 
     protected override void OnClosing(CancelEventArgs e)
     {
+        _hasShow = false;
+
+        RecordSizeAndLocationIfNeed();
+
+        // close all child windows
         foreach (Window ownedWindow in OwnedWindows) ownedWindow.Close();
 
         Hide();
@@ -89,10 +103,39 @@ public partial class WindowBase
         }
     }
 
-    protected override void OnContentChanged(object oldContent, object newContent)
+    public void ApplySizeAndLocation()
     {
-        ResetStartupLocation();
-        base.OnContentChanged(oldContent, newContent);
+        var pageTitle = GetCurrentPageTitle();
+
+        if (SizeAndLocations.TryGetValue(pageTitle, out var sizeAndLocation))
+        {
+            SizeToContent = SizeToContent.Manual;
+
+            Left = sizeAndLocation.Left;
+            Top = sizeAndLocation.Top;
+            Width = sizeAndLocation.Width;
+            Height = sizeAndLocation.Height;
+        }
+        else
+        {
+            SizeToContent = SizeToContent.WidthAndHeight;
+            CenterOwner();
+        }
+    }
+
+    private string GetCurrentPageTitle()
+    {
+        return Content == null ? string.Empty : (string)((dynamic)Content).Title;
+    }
+
+
+    private class SizeAndLocation(WindowBase window)
+    {
+        public double Height { get; } = window.ActualHeight;
+        public double Width { get; } = window.ActualWidth;
+
+        public double Left { get; } = window.Left;
+        public double Top { get; } = window.Top;
     }
 
     #region Constructors
@@ -101,6 +144,14 @@ public partial class WindowBase
     {
         // if the parent is a WPF window
         Loaded += (_, _) => { Owner = owner; };
+    }
+
+
+    private void RecordSizeAndLocationIfNeed()
+    {
+        var pageTitle = GetCurrentPageTitle();
+        if (SizeAndLocations.ContainsKey(pageTitle))
+            SizeAndLocations[pageTitle] = new SizeAndLocation(this);
     }
 
     public WindowBase()
@@ -113,13 +164,48 @@ public partial class WindowBase
 
         InitializeComponent();
 
-        Activated += (_, _) => { SizeToContent = SizeToContent.Manual; };
+        SetupSizeAndLocation();
     }
 
-    private void ResetStartupLocation()
+    private void SetupSizeAndLocation()
     {
-        if (Content != null && WindowStartupLocation == WindowStartupLocation.CenterOwner)
-            CenterOwner();
+        Observable.FromEventPattern<EventHandler, System.EventArgs>(
+                handler => ContentRendered += handler,
+                handler => ContentRendered -= handler
+            )
+            .Subscribe(_ =>
+            {
+                if (Content != null) _hasShow = true;
+            })
+            .DisposeWith(_cleanup);
+
+
+        Observable.FromEventPattern<SizeChangedEventHandler, SizeChangedEventArgs>(
+                handler => SizeChanged += handler,
+                handler => SizeChanged -= handler
+            )
+            .Select(_=>Unit.Default)
+            .Merge(Observable.FromEventPattern<EventHandler, System.EventArgs>(
+                handler => LocationChanged += handler,
+                handler => LocationChanged -= handler
+            )
+            .Select(_=>Unit.Default))
+            .Subscribe(_ =>
+            {
+                if (!_hasShow || Content == null) return;
+
+                RegisterPage(GetCurrentPageTitle());
+            })
+            .DisposeWith(_cleanup);
+
+
+        return;
+
+        void RegisterPage(string name)
+        {
+            if (!SizeAndLocations.ContainsKey(name))
+                SizeAndLocations.Add(name, new SizeAndLocation(this));
+        }
     }
 
     #endregion

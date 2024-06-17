@@ -16,7 +16,7 @@ namespace AE.PID.Views;
 /// </summary>
 public partial class ProgressPage
 {
-    public ProgressPage(ProgressPageViewModel progressViewModel)
+    public ProgressPage(ProgressPageViewModel progressViewModel) : base("Progress")
     {
         InitializeComponent();
 
