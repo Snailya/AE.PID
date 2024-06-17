@@ -13,9 +13,11 @@ using AE.PID.Dtos;
 using AE.PID.Models;
 using AE.PID.Properties;
 using AE.PID.Tools;
+using Microsoft.Office.Interop.Visio;
 using Newtonsoft.Json;
 using ReactiveUI;
 using Splat;
+using Path = System.IO.Path;
 
 namespace AE.PID.Services;
 
@@ -141,14 +143,34 @@ public class LibraryUpdater : IEnableLogger
             {
                 using var response = await _client.GetAsync(libraryToUpdate.DownloadUrl);
                 using var contentStream = await response.Content.ReadAsStreamAsync();
-                using var fileStream = File.Open(Path.ChangeExtension(
+
+                var fullName = Path.ChangeExtension(
                     Path.Combine(Constants.LibraryFolder, libraryToUpdate.Name),
-                    "vssx"), FileMode.Create, FileAccess.Write);
-                await contentStream.CopyToAsync(fileStream);
+                    "vssx");
+
+                // close the origin file if it is opened
+                var isOpened = await ThisAddIn.Dispatcher!.InvokeAsync(() =>
+                {
+                    var currentDocument = Globals.ThisAddIn.Application.Documents.OfType<Document>()
+                        .SingleOrDefault(x => x.FullName == fullName);
+                    if (currentDocument == null) return false;
+
+                    currentDocument.Close();
+                    return true;
+                });
+                
+                // do overwrite
+                using (var fileStream = File.Open(fullName, FileMode.Create, FileAccess.Write))
+                {
+                    await contentStream.CopyToAsync(fileStream);
+                }
+                
+                // restore open status
+                if (isOpened)
+                    ThisAddIn.Dispatcher.Invoke(() => { Globals.ThisAddIn.Application.Documents.OpenEx(fullName, (short)VisOpenSaveArgs.visOpenDocked); });
             }
 
             await DownloadCheatSheet();
-
             return libraryToUpdates.Select(ReactiveLibrary.FromLibraryDto);
         }
         catch (HttpRequestException httpRequestException)
