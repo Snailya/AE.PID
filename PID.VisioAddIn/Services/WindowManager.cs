@@ -35,7 +35,9 @@ public class WindowManager : IDisposable
         _progressWindow = new WindowBase
         {
             ShowInTaskbar = false,
-            WindowButtonStyle = WindowBase.WindowButton.CloseOnly
+            WindowButtonStyle = WindowBase.WindowButton.CloseOnly,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            SizeToContent = SizeToContent.WidthAndHeight
         };
     }
 
@@ -87,7 +89,7 @@ public class WindowManager : IDisposable
         _mainWindow.Content = main;
         _secondaryWindow.Content = null;
 
-        _mainWindow.ApplySizeAndLocation();
+        _mainWindow.RestoreSizeAndLocation();
         _mainWindow.Show();
     }
 
