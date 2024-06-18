@@ -15,7 +15,7 @@ namespace AE.PID;
 
 public partial class ThisAddIn : IEnableLogger
 {
-    private Ribbon _ribbon;
+    private Ribbon? _ribbon;
 
     public static Dispatcher? Dispatcher { get; private set; }
 
@@ -69,7 +69,9 @@ public partial class ThisAddIn : IEnableLogger
 
     private void ThisAddIn_Shutdown(object sender, System.EventArgs e)
     {
-        Globals.ThisAddIn.Application.UnregisterRibbonX(_ribbon, null);
+        if (_ribbon != null)
+            Globals.ThisAddIn.Application.UnregisterRibbonX(_ribbon, null);
+
         WindowManager.GetInstance()?.Dispose();
     }
 
