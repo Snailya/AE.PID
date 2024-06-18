@@ -19,12 +19,28 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+        <TextBlock x:Name="Message"
+                   Margin="0 4"
+                   HorizontalAlignment="Left" />
         <ProgressBar x:Name="ProgressBar"
+                     Grid.Row="1"
                      Margin="0 4"
                      Height="25" IsIndeterminate="True" />
-        <TextBlock Grid.Row="1" x:Name="Message"
-                   Margin="0 4" TextWrapping="WrapWithOverflow"
-                   HorizontalAlignment="Left" />
+        <Button x:Name="ExpandButton"
+                Grid.Row="2"
+                Margin="0 4"
+                Content="展开" Width="64" HorizontalAlignment="Left" />
+        <TextBox x:Name="Log"
+                 Grid.Row="3" Margin="0 4"
+                 Visibility="Collapsed" Height="320"
+                 VerticalScrollBarVisibility="Auto"
+                 TextWrapping="Wrap"
+                 IsReadOnly="True"
+                 AcceptsReturn="True"
+                 VerticalAlignment="Stretch"
+                 HorizontalAlignment="Stretch" />
     </Grid>
 </views:PageBase>

@@ -48,8 +48,7 @@ public partial class WindowBase : IDisposable
     protected override void OnClosing(CancelEventArgs e)
     {
         _hasShow = false;
-
-        RecordSizeAndLocationIfNeed();
+        SaveSizeAndLocation();
 
         // close all child windows
         foreach (Window ownedWindow in OwnedWindows) ownedWindow.Close();
@@ -103,7 +102,10 @@ public partial class WindowBase : IDisposable
         }
     }
 
-    public void ApplySizeAndLocation()
+    /// <summary>
+    ///     Restore size and location of the page from saved dictionary.
+    /// </summary>
+    public void RestoreSizeAndLocation()
     {
         var pageTitle = GetCurrentPageTitle();
 
@@ -123,9 +125,65 @@ public partial class WindowBase : IDisposable
         }
     }
 
+    /// <summary>
+    ///     Get the tittle of the current page.
+    /// </summary>
+    /// <returns></returns>
     private string GetCurrentPageTitle()
     {
         return Content == null ? string.Empty : (string)((dynamic)Content).Title;
+    }
+
+    /// <summary>
+    ///     Save the size and location of the current page if it has been registered in the dictionary.
+    /// </summary>
+    private void SaveSizeAndLocation()
+    {
+        var pageTitle = GetCurrentPageTitle();
+        if (SizeAndLocations.ContainsKey(pageTitle))
+            SizeAndLocations[pageTitle] = new SizeAndLocation(this);
+    }
+
+    /// <summary>
+    ///     Register the current page to local dictionary if it meets the conditions: window is modified by user after show up.
+    /// </summary>
+    private void SetupSizeAndLocation()
+    {
+        Observable.FromEventPattern<EventHandler, System.EventArgs>(
+                handler => ContentRendered += handler,
+                handler => ContentRendered -= handler
+            )
+            .Subscribe(_ =>
+            {
+                if (Content != null) _hasShow = true;
+            })
+            .DisposeWith(_cleanup);
+
+        Observable.FromEventPattern<SizeChangedEventHandler, SizeChangedEventArgs>(
+                handler => SizeChanged += handler,
+                handler => SizeChanged -= handler
+            )
+            .Select(_ => Unit.Default)
+            .Merge(Observable.FromEventPattern<EventHandler, System.EventArgs>(
+                    handler => LocationChanged += handler,
+                    handler => LocationChanged -= handler
+                )
+                .Select(_ => Unit.Default))
+            .Subscribe(_ =>
+            {
+                if (!_hasShow || Content == null) return;
+
+                RegisterPage(GetCurrentPageTitle());
+            })
+            .DisposeWith(_cleanup);
+
+        return;
+
+        void RegisterPage(string name)
+        {
+            if (!SizeAndLocations.ContainsKey(name))
+                SizeAndLocations.Add(name, new SizeAndLocation(this));
+        }
     }
 
 
@@ -147,13 +205,6 @@ public partial class WindowBase : IDisposable
     }
 
 
-    private void RecordSizeAndLocationIfNeed()
-    {
-        var pageTitle = GetCurrentPageTitle();
-        if (SizeAndLocations.ContainsKey(pageTitle))
-            SizeAndLocations[pageTitle] = new SizeAndLocation(this);
-    }
-
     public WindowBase()
     {
         Title = Properties.Resources.PROPERTY_product_name;
@@ -165,47 +216,6 @@ public partial class WindowBase : IDisposable
         InitializeComponent();
 
         SetupSizeAndLocation();
-    }
-
-    private void SetupSizeAndLocation()
-    {
-        Observable.FromEventPattern<EventHandler, System.EventArgs>(
-                handler => ContentRendered += handler,
-                handler => ContentRendered -= handler
-            )
-            .Subscribe(_ =>
-            {
-                if (Content != null) _hasShow = true;
-            })
-            .DisposeWith(_cleanup);
-
-
-        Observable.FromEventPattern<SizeChangedEventHandler, SizeChangedEventArgs>(
-                handler => SizeChanged += handler,
-                handler => SizeChanged -= handler
-            )
-            .Select(_=>Unit.Default)
-            .Merge(Observable.FromEventPattern<EventHandler, System.EventArgs>(
-                handler => LocationChanged += handler,
-                handler => LocationChanged -= handler
-            )
-            .Select(_=>Unit.Default))
-            .Subscribe(_ =>
-            {
-                if (!_hasShow || Content == null) return;
-
-                RegisterPage(GetCurrentPageTitle());
-            })
-            .DisposeWith(_cleanup);
-
-
-        return;
-
-        void RegisterPage(string name)
-        {
-            if (!SizeAndLocations.ContainsKey(name))
-                SizeAndLocations.Add(name, new SizeAndLocation(this));
-        }
     }
 
     #endregion
