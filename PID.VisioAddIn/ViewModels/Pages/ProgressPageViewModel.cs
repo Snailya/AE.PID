@@ -1,17 +1,37 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Reactive;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Threading;
 using AE.PID.Services;
 using ReactiveUI;
 
 namespace AE.PID.ViewModels;
 
-public class ProgressPageViewModel : ViewModelBase
+public class ProgressPageViewModel(Progress<ProgressValue> progress, Action task) : ViewModelBase
 {
+    private bool _isExpanded;
     private ProgressValue _progressValue = new() { Value = 0, Status = TaskStatus.Created, Message = string.Empty };
 
-    public ProgressPageViewModel(Progress<ProgressValue> progress, Action task)
+    public ProgressValue ProgressValue
+    {
+        get => _progressValue;
+        private set => this.RaiseAndSetIfChanged(ref _progressValue, value);
+    }
+
+    public bool IsExpanded
+    {
+        get => _isExpanded;
+        set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
+    }
+
+    public ReactiveCommand<Unit, Unit>? ToggleExpand { get; private set; }
+
+    protected override void SetupCommands()
+    {
+        ToggleExpand = ReactiveCommand.Create(() => { IsExpanded = !IsExpanded; });
+    }
+
+    protected override void SetupSubscriptions(CompositeDisposable d)
     {
         Observable.FromEventPattern<ProgressValue>(
                 handler => progress.ProgressChanged += handler,
@@ -19,19 +39,10 @@ public class ProgressPageViewModel : ViewModelBase
             )
             .Select(eventPattern => eventPattern.EventArgs)
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Do(x => Debug.WriteLine($"Observe progress change on {Thread.CurrentThread.Name}"))
-            .Subscribe(progressValue => { ProgressValue = progressValue; });
+            .Subscribe(progressValue => { ProgressValue = progressValue; }).DisposeWith(d);
 
         Observable.Start(task)
-            // .SubscribeOn(ThisAddIn.Dispatcher!)
-            .Do(x => Debug.WriteLine($"Observe task on {Thread.CurrentThread.Name}"))
-            .Subscribe(_ => { });
-    }
-
-
-    public ProgressValue ProgressValue
-    {
-        get => _progressValue;
-        private set => this.RaiseAndSetIfChanged(ref _progressValue, value);
+            .Subscribe(_ => { })
+            .DisposeWith(d);
     }
 }
