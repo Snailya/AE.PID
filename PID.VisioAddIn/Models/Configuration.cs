@@ -7,6 +7,9 @@ namespace AE.PID.Models;
 [Serializable]
 public class Configuration
 {
+    public string Server { get; set; } = "http://172.18.128.104:32768";
+    public string UserId { get; set; } = string.Empty;
+
     public DateTime NextTime { get; set; } = DateTime.Today;
 
     public TimeSpan CheckInterval { get; set; } = TimeSpan.FromDays(1);

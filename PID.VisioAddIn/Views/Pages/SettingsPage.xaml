@@ -7,8 +7,8 @@
                 xmlns:tools="clr-namespace:AE.PID.Tools"
                 xmlns:viewModels="clr-namespace:AE.PID.ViewModels"
                 xmlns:views="clr-namespace:AE.PID.Views"
-                MinHeight="480" MinWidth="320"
-                Height="480" Width="320"
+                MinHeight="480" MinWidth="480"
+                Height="480" Width="480"
                 mc:Ignorable="d"
                 d:DesignHeight="320" d:DesignWidth="480">
     <UserControl.Resources>
@@ -18,7 +18,7 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid>
+    <Grid IsSharedSizeScope="True">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -30,6 +30,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid Margin="0 4">
@@ -38,31 +39,26 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <views:SectionLabel Header="软件" />
+                <views:SectionLabel Header="通用" />
                 <Grid Grid.Row="1" Margin="0 0 0 4">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="LabelCol" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <Label Content="更新频率" Margin="4 0 0 0" />
-                    <ComboBox Grid.Column="1" x:Name="AppCheckFrequencySelector" DisplayMemberPath="Label"
-                              ItemsSource="{Binding  Source={x:Static viewModels:FrequencyOptionViewModel.Options}}" />
-                    <Button Grid.Column="2" x:Name="AppCheckUpdateButton" Margin="8 0" Content="更新" />
+                    <Label Content="服务器地址" Margin="4 0 0 0" />
+                    <TextBox x:Name="ServerInput"
+                             Grid.Column="1"
+                             Margin="0 0  8 0" VerticalContentAlignment="Center" />
                 </Grid>
                 <Grid Grid.Row="2" Margin="0 4 0 4">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="LabelCol" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <Label Content="缓存路径" Margin="4 0 0 0" />
-                    <TextBox Grid.Column="1" x:Name="TmpPathInput" Margin="0 0 4 0" VerticalContentAlignment="Center"
-                             IsEnabled="False"
-                             Text="{Binding Source={x:Static tools:Constants.TmpFolder}, Mode=OneWay}" />
-                    <Button Grid.Column="2" x:Name="OpenTmpButton" Margin="4 0" Content="打开" />
-                    <Button Grid.Column="3" x:Name="ClearCacheButton" Margin="4 0 8 0" Content="清除缓存" />
+                    <Label Content="工号" Margin="4 0 0 0" />
+                    <TextBox x:Name="UserInput"
+                             Grid.Column="1"
+                             Margin="0 0 8 0" VerticalContentAlignment="Center" />
                 </Grid>
             </Grid>
             <Grid Grid.Row="1" Margin="0 4">
@@ -71,19 +67,68 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <views:SectionLabel Header="库" />
-                <Grid Grid.Row="1">
+                <views:SectionLabel Header="软件" />
+                <Grid Grid.Row="1" Margin="0 0 0 4">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="LabelCol" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Label Content="更新频率" Margin="4 0 0 0" />
-                    <ComboBox Grid.Column="1" x:Name="LibraryCheckFrequencySelector" DisplayMemberPath="Label"
+                    <ComboBox x:Name="AppCheckFrequencySelector"
+                              Grid.Column="1"
+                              DisplayMemberPath="Label"
                               ItemsSource="{Binding  Source={x:Static viewModels:FrequencyOptionViewModel.Options}}" />
-                    <Button Grid.Column="2" x:Name="LibraryCheckUpdateButton" Margin="8 0" Content="更新" />
+                    <Button x:Name="AppCheckUpdateButton"
+                            Grid.Column="2"
+                            Margin="8 0" Content="更新" />
                 </Grid>
-                <DataGrid Grid.Row="2" x:Name="LibraryList" Margin="0 4" Padding="8 0" d:Height="120"
+                <Grid Grid.Row="2" Margin="0 4 0 4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="LabelCol" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Label Content="缓存路径" Margin="4 0 0 0" />
+                    <TextBox x:Name="TmpPathInput"
+                             Grid.Column="1" Margin="0 0 4 0" VerticalContentAlignment="Center"
+                             IsEnabled="False"
+                             ToolTip="{Binding Source={x:Static tools:Constants.TmpFolder}, Mode=OneWay}"
+                             Text="{Binding Source={x:Static tools:Constants.TmpFolder}, Mode=OneWay}" />
+                    <Button x:Name="OpenTmpButton"
+                            Grid.Column="2"
+                            Margin="4 0" Content="打开" />
+                    <Button x:Name="ClearCacheButton"
+                            Grid.Column="3"
+                            Margin="4 0 8 0" Content="清除缓存" />
+                </Grid>
+            </Grid>
+            <Grid Grid.Row="2" Margin="0 4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <views:SectionLabel Header="库" />
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="LabelCol" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Label Content="更新频率" Margin="4 0 0 0" />
+                    <ComboBox x:Name="LibraryCheckFrequencySelector"
+                              Grid.Column="1"
+                              DisplayMemberPath="Label"
+                              ItemsSource="{Binding  Source={x:Static viewModels:FrequencyOptionViewModel.Options}}" />
+                    <Button x:Name="LibraryCheckUpdateButton"
+                            Grid.Column="2"
+                            Margin="8 0" Content="更新" />
+                </Grid>
+                <DataGrid x:Name="LibraryList"
+                          Grid.Row="2"
+                          Margin="0 4" Padding="8 0" d:Height="120"
                           AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
                     <DataGrid.Resources>
                         <Style TargetType="{x:Type DataGrid}">
@@ -112,7 +157,7 @@
                                 <DataTemplate DataType="{x:Type viewModels:LibraryInfoViewModel}">
                                     <TextBlock Text="{Binding RemoteVersion}">
                                         <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
+                                            <Style TargetType="{x:Type TextBlock}">
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding NeedUpdate}" Value="True">
                                                         <Setter Property="Foreground" Value="ForestGreen" />

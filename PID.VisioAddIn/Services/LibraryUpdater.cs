@@ -44,11 +44,18 @@ public class LibraryUpdater : IEnableLogger
             .Select(_ => Unit.Default)
             .Do(_ => this.Log().Info("Library Update started. {Initiated by: Auto-Run}"));
 
+        var serverChangeObservable = configuration
+            .WhenAnyValue(x => x.Server)
+            .Select(_ => Unit.Default)
+            .Do(_ => this.Log().Info("Library update started. {Initiated by: Server-Change}"));
+
         var userCheckObservable =
             ManuallyInvokeTrigger
                 .Do(_ => this.Log().Info("Library Update started. {Initiated by: User}"));
 
-        autoCheckObservable.Merge(userCheckObservable)
+        autoCheckObservable
+            .Merge(userCheckObservable)
+            .Merge(serverChangeObservable)
             .SelectMany(_ => CheckLibraryUpdates())
             .Do(_ => { configuration.LibraryNextTime = DateTime.Now + configuration.LibraryCheckInterval; })
             .Where(x => x.Any())
@@ -69,19 +76,15 @@ public class LibraryUpdater : IEnableLogger
 
         try
         {
-            var requestUrl = "/libraries";
-#if DEBUG
-            requestUrl = "/libraries?involvePrerelease=true";
-#endif
-            var response = await _client.GetStringAsync(requestUrl);
+            var response = await _client.GetStringAsync(LibraryInfoApi);
 
             // Members that return a sequence should never return null. Return an empty sequence instead
             return JsonConvert.DeserializeObject<IEnumerable<LibraryDto>>(response)?.ToList() ?? [];
         }
-        catch (HttpRequestException httpRequestException)
+        catch (Exception ex) when (ex is InvalidOperationException or HttpRequestException)
         {
-            this.Log().Error(httpRequestException,
-                "Failed to get library infos from server. Firstly, check if you are able to ping to the api. If not, connect administrator.");
+            this.Log().Error(ex,
+                $"Failed to get library infos from {LibraryInfoApi}. Firstly, check if the server address is correct. Then check if it is connectable.");
         }
 
         return [];
@@ -107,13 +110,7 @@ public class LibraryUpdater : IEnableLogger
     {
         try
         {
-            var requestUrl = "/libraries/cheatsheet";
-
-#if DEBUG
-            requestUrl = "/libraries/cheatsheet?involvePrerelease=true";
-#endif
-
-            var responseString = await _client.GetStringAsync(requestUrl);
+            var responseString = await _client.GetStringAsync(CheatSheetApi);
 
             if (string.IsNullOrEmpty(responseString)) return;
             var responseResult = JsonConvert.DeserializeObject<IEnumerable<DetailedLibraryItemDto>>(responseString);
@@ -177,14 +174,6 @@ public class LibraryUpdater : IEnableLogger
             await DownloadCheatSheet();
             return libraryToUpdates.Select(ReactiveLibrary.FromLibraryDto);
         }
-        catch (HttpRequestException httpRequestException)
-        {
-            this.Log().Error(httpRequestException,
-                "Failed to donwload library from server. Firstly, check if you are able to ping to the api. If not, connect administrator.");
-            WindowManager.ShowDialog(
-                string.Format(Resources.MSG_server_connect_failed_with_message, httpRequestException.Message),
-                MessageBoxButton.OK);
-        }
         catch (IOException ioException)
         {
             this.Log().Error(ioException,
@@ -192,7 +181,23 @@ public class LibraryUpdater : IEnableLogger
             WindowManager.ShowDialog(string.Format(Resources.MSG_write_file_failed_with_message, ioException.Message),
                 MessageBoxButton.OK);
         }
+        catch (Exception ex) when (ex is InvalidOperationException or HttpRequestException)
+        {
+            this.Log().Error(ex,
+                "Failed to donwload library from server. Firstly, check if the server address is correct. Then check if it is connectable.");
+            WindowManager.ShowDialog(
+                string.Format(Resources.MSG_server_connect_failed_with_message, ex.Message),
+                MessageBoxButton.OK);
+        }
 
         return [];
     }
+
+    #region Api
+
+    private string LibraryInfoApi => $"{_configuration.Server}/libraries";
+
+    private string CheatSheetApi => $"{_configuration.Server}/libraries/cheatsheet";
+
+    #endregion
 }

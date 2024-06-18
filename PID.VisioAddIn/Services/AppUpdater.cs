@@ -7,13 +7,14 @@ using System.Net.Http;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using AE.PID.Tools;
-using Microsoft.Win32;
 using Newtonsoft.Json.Linq;
 using ReactiveUI;
 using Splat;
+using Path = System.IO.Path;
 
 namespace AE.PID.Services;
 
@@ -25,22 +26,35 @@ public class AppUpdater : IEnableLogger
 {
     private readonly CompositeDisposable _cleanUp = new();
     private readonly HttpClient _client;
+    private readonly ConfigurationService _configuration;
     private readonly BehaviorSubject<ReleaseInfo> _updateAvailableTrigger = new(null);
+
+    #region Constructors
 
     public AppUpdater(HttpClient client, ConfigurationService configuration)
     {
         _client = client;
+        _configuration = configuration;
 
         // automatically check update by interval if it not meets the user disabled period
-        configuration.WhenAnyValue(x => x.AppCheckInterval)
-            .Select(Observable.Interval)
-            .Switch()
-            .Merge(Observable
-                .Return<
-                    long>(-1)) // add an immediate value as the interval method emits only after the interval collapse.
-            // ignore if it is not till the next check time
-            .Where(_ => DateTime.Now > configuration.AppNextTime)
-            .Do(_ => this.Log().Info("App update started. {Initiated by: Auto-Run}"))
+        var autoCheckObservable =
+            configuration
+                .WhenAnyValue(x => x.AppCheckInterval)
+                .Select(Observable.Interval)
+                .Switch()
+                .Merge(Observable
+                    .Return<
+                        long>(-1)) // add an immediate value as the interval method emits only after the interval collapse.
+                // ignore if it is not till the next check time
+                .Where(_ => DateTime.Now > configuration.AppNextTime)
+                .Do(_ => this.Log().Info("App update started. {Initiated by: Auto-Run}"));
+
+        var serverChangeObservable = configuration
+            .WhenAnyValue(x => x.Server).Select(_ => (long)-1)
+            .Do(_ => this.Log().Info("App update started. {Initiated by: Server-Change}"));
+
+        autoCheckObservable
+            .Merge(serverChangeObservable)
             .SelectMany(_ => CheckUpdateAsync())
             .Do(_ => { configuration.AppNextTime = DateTime.Now + configuration.AppCheckInterval; })
             .Subscribe(_ => { },
@@ -68,22 +82,16 @@ public class AppUpdater : IEnableLogger
             .DisposeWith(_cleanUp);
     }
 
+    #endregion
+
     public async Task<bool> CheckUpdateAsync()
     {
         try
         {
             this.Log().Info("Try getting app version from server.");
 
-#if DEBUG
             // invoke check every time in debug mode
-            using var response =
-                await _client.GetAsync(
-                    "check-version?version=0.0.0.0");
-#else
-            using var response =
-                await _client.GetAsync(
-                    $"check-version?version={FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location).FileVersion}");
-#endif
+            using var response = await _client.GetAsync(VersionCheckApi);
             if (!response.IsSuccessStatusCode) return false;
 
             var responseBody = await response.Content.ReadAsStringAsync();
@@ -106,15 +114,15 @@ public class AppUpdater : IEnableLogger
 
             return true;
         }
-        catch (HttpRequestException httpRequestException)
-        {
-            this.Log().Error(httpRequestException,
-                "Failed to check update from server. Firstly, check if you are able to ping to the api. If not, connect administrator.");
-        }
         catch (KeyNotFoundException keyNotFoundException)
         {
             this.Log().Error(keyNotFoundException,
                 "Some of the keys [isUpdateAvailable, latestVersion, downloadUrl, releaseNotes] not found in the response. Please check if the api response body is out of time.");
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or HttpRequestException)
+        {
+            this.Log().Error(ex,
+                $"Failed to check update from {VersionCheckApi}. Firstly, check if the server address is correct. Then check if it is connectable.");
         }
         catch (Exception ex)
         {
@@ -132,7 +140,7 @@ public class AppUpdater : IEnableLogger
     {
         try
         {
-            using var response = await _client.GetAsync("download/0");
+            using var response = await _client.GetAsync(DownloadApi);
             response.EnsureSuccessStatusCode();
 
             var fileName = Path.GetFileName(
@@ -152,16 +160,16 @@ public class AppUpdater : IEnableLogger
 
             return filePath;
         }
-        catch (HttpRequestException httpRequestException)
-        {
-            this.Log().Error(httpRequestException,
-                "Failed to get installer zip from server. Firstly, check if you are able to ping to the api. If not, connect administrator.");
-            throw;
-        }
         catch (DirectoryNotFoundException directoryNotFoundException)
         {
             this.Log().Error(directoryNotFoundException,
                 "Failed to cache installer to local storage. Please check if the directory exist, if not create it manully, or it should be created next time app starts.");
+            throw;
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or HttpRequestException)
+        {
+            this.Log().Error(ex,
+                $"Failed to get installer from {DownloadApi}. Firstly, check if the server address is correct. Then check if it is connectable.");
             throw;
         }
     }
@@ -230,48 +238,6 @@ public class AppUpdater : IEnableLogger
         };
     }
 
-
-    /// <summary>
-    ///     Find the WinRar.exe by regedit and extract .rar file using WinRar in a new process.
-    /// </summary>
-    /// <param name="sourceArchiveFileName"></param>
-    /// <param name="destinationDirectoryName"></param>
-    private void ExtractAndOverWriteRarFile(string sourceArchiveFileName, string destinationDirectoryName)
-    {
-        try
-        {
-            Directory.CreateDirectory(destinationDirectoryName);
-
-            const string registryKey = @"SOFTWARE\WinRAR";
-
-            // Attempt to open the WinRAR registry key
-            using var key = Registry.LocalMachine.OpenSubKey(registryKey);
-            // Retrieve the InstallPath value from the registry
-            var installPath = key?.GetValue("exe64");
-
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = $"{installPath}",
-                Arguments =
-                    $"x -o+ \"{sourceArchiveFileName}\" \"{destinationDirectoryName}\"", // -o+ means overwrite all
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            using var process = new Process();
-            process.StartInfo = startInfo;
-            process.Start();
-            process.WaitForExit();
-        }
-        catch (Exception e)
-        {
-            this.Log().Error(e, "Failed to extract rar file.");
-            throw;
-        }
-    }
-
     private class ReleaseInfo
     {
         public string Version { get; set; } = string.Empty;
@@ -281,4 +247,13 @@ public class AppUpdater : IEnableLogger
         /// </summary>
         public string ReleaseNotes { get; set; } = string.Empty;
     }
+
+    #region Api
+
+    private string VersionCheckApi =>
+        $"{_configuration.Server}/check-version?version={FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion}";
+
+    private string DownloadApi => $"{_configuration.Server}/download/0";
+
+    #endregion
 }

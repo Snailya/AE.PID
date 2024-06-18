@@ -1,19 +1,34 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using ReactiveUI;
 using Splat;
 
 namespace AE.PID.Services;
 
-public class BackgroundTaskManager
+public class BackgroundTaskManager : IDisposable
 {
     private static BackgroundTaskManager? _instance;
+    private readonly CompositeDisposable _cleanUp = new();
 
-    public AppUpdater AppUpdater { get; set; } = new(Locator.Current.GetService<HttpClient>()!,
-        Locator.Current.GetService<ConfigurationService>()!);
+    private BackgroundTaskManager(HttpClient httpClient, ConfigurationService configuration)
+    {
+        AppUpdater = new AppUpdater(httpClient, configuration);
+        LibraryUpdater = new LibraryUpdater(httpClient, configuration);
+        DocumentMonitor = new DocumentMonitor(configuration);
+    }
 
-    public LibraryUpdater LibraryUpdater { get; set; } = new(Locator.Current.GetService<HttpClient>()!,
-        Locator.Current.GetService<ConfigurationService>()!);
+    public AppUpdater AppUpdater { get; set; }
 
-    public DocumentMonitor DocumentMonitor { get; set; } = new(Locator.Current.GetService<ConfigurationService>()!);
+    public LibraryUpdater LibraryUpdater { get; set; }
+
+    public DocumentMonitor DocumentMonitor { get; set; }
+
+    public void Dispose()
+    {
+        _cleanUp.Dispose();
+    }
 
     public static BackgroundTaskManager? GetInstance()
     {
@@ -22,8 +37,11 @@ public class BackgroundTaskManager
 
     public static void Initialize()
     {
-        _instance ??= new BackgroundTaskManager();
+        var httpClient = Locator.Current.GetService<HttpClient>()!;
+        var configuration = Locator.Current.GetService<ConfigurationService>()!;
 
+        _instance ??= new BackgroundTaskManager(httpClient, configuration);
+        
         LogHost.Default.Info("Background task is running.");
     }
 }

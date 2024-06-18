@@ -33,6 +33,9 @@ public class SettingsPageViewModel(
     private FrequencyOptionViewModel _libraryCheckFrequency =
         FrequencyOptionViewModel.GetMatchedOption(configuration.LibraryCheckInterval);
 
+    private string _server = configuration.Server;
+    private string _user = configuration.UserId;
+
     #region Output Properties
 
     public ReadOnlyObservableCollection<LibraryInfoViewModel> Libraries => _libraries;
@@ -57,6 +60,12 @@ public class SettingsPageViewModel(
 
     private void SaveChanges()
     {
+        if (configuration.Server != _server)
+            configuration.Server = _server;
+
+        if (configuration.UserId != _user)
+            configuration.UserId = _user;
+
         if (configuration.AppCheckInterval != _appCheckFrequency.TimeSpan)
             configuration.AppCheckInterval = _appCheckFrequency.TimeSpan;
 
@@ -120,24 +129,28 @@ public class SettingsPageViewModel(
 
     #region Read-Write Properties
 
+    public string Server
+    {
+        get => _server;
+        set => this.RaiseAndSetIfChanged(ref _server, value);
+    }
+
+    public string User
+    {
+        get => _user;
+        set => this.RaiseAndSetIfChanged(ref _user, value);
+    }
+
     public FrequencyOptionViewModel AppCheckFrequency
     {
         get => _appCheckFrequency;
-        private set
-        {
-            if (value != _appCheckFrequency)
-                this.RaiseAndSetIfChanged(ref _appCheckFrequency, value);
-        }
+        private set => this.RaiseAndSetIfChanged(ref _appCheckFrequency, value);
     }
 
     public FrequencyOptionViewModel LibraryCheckFrequency
     {
         get => _libraryCheckFrequency;
-        private set
-        {
-            if (value != _libraryCheckFrequency)
-                this.RaiseAndSetIfChanged(ref _libraryCheckFrequency, value);
-        }
+        private set => this.RaiseAndSetIfChanged(ref _libraryCheckFrequency, value);
     }
 
     #endregion

@@ -30,6 +30,8 @@ public class ConfigurationService : ReactiveObject, IEnableLogger
     private DateTime _appNextTime;
     private TimeSpan _libraryCheckInterval;
     private DateTime _libraryNextTime;
+    private string _server;
+    private string _userId;
 
     #region Constructors
 
@@ -48,6 +50,8 @@ public class ConfigurationService : ReactiveObject, IEnableLogger
         var configuration = Load();
 
         // setup app configuration
+        _server = configuration.Server;
+        _userId = configuration.UserId;
         _appNextTime = configuration.NextTime;
         _appCheckInterval = configuration.CheckInterval;
 
@@ -57,10 +61,12 @@ public class ConfigurationService : ReactiveObject, IEnableLogger
         _libraries.AddOrUpdate(configuration.LibraryConfiguration.Libraries.Select(ReactiveLibrary.FromLibrary));
 
         // when any property changed, save the changes in 5 seconds to enhance performance
-        this.ObservableForProperty(x => x.AppNextTime, skipInitial: true).Select(_ => Unit.Default)
-            .Merge(this.ObservableForProperty(x => x.AppCheckInterval, skipInitial: true).Select(_ => Unit.Default))
-            .Merge(this.ObservableForProperty(x => x.LibraryNextTime, skipInitial: true).Select(_ => Unit.Default))
-            .Merge(this.ObservableForProperty(x => x.LibraryCheckInterval, skipInitial: true).Select(_ => Unit.Default))
+        this.ObservableForProperty(x => x.Server).Select(_ => Unit.Default)
+            .Merge(this.ObservableForProperty(x => x.UserId).Select(_ => Unit.Default))
+            .Merge(this.ObservableForProperty(x => x.AppNextTime).Select(_ => Unit.Default))
+            .Merge(this.ObservableForProperty(x => x.AppCheckInterval).Select(_ => Unit.Default))
+            .Merge(this.ObservableForProperty(x => x.LibraryNextTime).Select(_ => Unit.Default))
+            .Merge(this.ObservableForProperty(x => x.LibraryCheckInterval).Select(_ => Unit.Default))
             .Merge(_libraries.Connect().WhenPropertyChanged(x => x.Version).Select(_ => Unit.Default))
             .Quiescent(TimeSpan.FromSeconds(5), CurrentThreadScheduler.Instance)
             .Subscribe(_ => Save())
@@ -135,6 +141,8 @@ public class ConfigurationService : ReactiveObject, IEnableLogger
                 // buildup a new configuration
                 var configuration = new Configuration
                 {
+                    Server = Server,
+                    UserId = UserId,
                     NextTime = AppNextTime,
                     CheckInterval = AppCheckInterval,
                     LibraryConfiguration = new LibraryConfiguration
@@ -215,7 +223,17 @@ public class ConfigurationService : ReactiveObject, IEnableLogger
         }
     }
 
-    public Uri Api { get; private set; } = new("http://172.18.128.104:32768");
+    public string Server
+    {
+        get => _server;
+        set => this.RaiseAndSetIfChanged(ref _server, value);
+    }
+
+    public string UserId
+    {
+        get => _userId;
+        set => this.RaiseAndSetIfChanged(ref _userId, value);
+    }
 
     #endregion
 

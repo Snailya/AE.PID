@@ -60,7 +60,7 @@ public partial class ThisAddIn : IEnableLogger
         Locator.CurrentMutable.RegisterLazySingleton(() => new ConfigurationService(),
             typeof(ConfigurationService));
         Locator.CurrentMutable.RegisterLazySingleton(
-            () => new HttpClient { BaseAddress = Locator.Current.GetService<ConfigurationService>()!.Api },
+            () => new HttpClient(),
             typeof(HttpClient));
         Locator.CurrentMutable.RegisterLazySingleton(
             () => new MaterialsService(Locator.Current.GetService<HttpClient>()!),
@@ -73,6 +73,7 @@ public partial class ThisAddIn : IEnableLogger
             Globals.ThisAddIn.Application.UnregisterRibbonX(_ribbon, null);
 
         WindowManager.GetInstance()?.Dispose();
+        BackgroundTaskManager.GetInstance()?.Dispose();
     }
 
     #region VSTO generated code

@@ -21,6 +21,11 @@ public partial class SettingsPage
 
         this.WhenActivated(d =>
         {
+            this.Bind(ViewModel, vm => vm.Server, v => v.ServerInput.Text)
+                .DisposeWith(d);
+            this.Bind(ViewModel, vm => vm.User, v => v.UserInput.Text)
+                .DisposeWith(d);
+            
             this.Bind(ViewModel,
                     vm => vm.AppCheckFrequency,
                     v => v.AppCheckFrequencySelector.SelectedItem)
