@@ -59,7 +59,7 @@ public class TreeNodeViewModel<TSource> : TreeNodeViewModelBase,
         //Wrap loader for the nested view model inside a lazy so we can control when it is invoked
         var childrenLoader = node.Children.Connect()
             .Transform(e => (TreeNodeViewModel<TSource>)System.Activator.CreateInstance(
-                typeof(TreeNodeViewModel<TSource>), [e, this]))
+                typeof(TreeNodeViewModel<TSource>), e, this))
             .Bind(out _inferiors)
             .DisposeMany()
             .Subscribe()

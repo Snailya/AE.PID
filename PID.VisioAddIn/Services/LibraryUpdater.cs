@@ -158,16 +158,20 @@ public class LibraryUpdater : IEnableLogger
                     currentDocument.Close();
                     return true;
                 });
-                
+
                 // do overwrite
                 using (var fileStream = File.Open(fullName, FileMode.Create, FileAccess.Write))
                 {
                     await contentStream.CopyToAsync(fileStream);
                 }
-                
+
                 // restore open status
                 if (isOpened)
-                    ThisAddIn.Dispatcher.Invoke(() => { Globals.ThisAddIn.Application.Documents.OpenEx(fullName, (short)VisOpenSaveArgs.visOpenDocked); });
+                    ThisAddIn.Dispatcher.Invoke(() =>
+                    {
+                        Globals.ThisAddIn.Application.Documents.OpenEx(fullName,
+                            (short)VisOpenSaveArgs.visOpenDocked);
+                    });
             }
 
             await DownloadCheatSheet();

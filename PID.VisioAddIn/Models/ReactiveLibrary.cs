@@ -37,7 +37,8 @@ public class ReactiveLibrary : ReactiveObject
     public string Hash { get; set; } = string.Empty;
 
     /// <summary>
-    ///     The path of the local file which used to load the local file to an active document when user clicks library button in
+    ///     The path of the local file which used to load the local file to an active document when user clicks library button
+    ///     in
     ///     the ribbon, and to persist file download from server.
     /// </summary>
     public string Path { get; set; } = string.Empty;
