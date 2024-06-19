@@ -29,7 +29,7 @@ public abstract class PartItem(Shape shape) : ElementBase(shape), IPartItem
         // write material id
         if (material == null)
         {
-            DeleteMaterial();
+            VisioHelper.DeleteDesignMaterial(Source);
             return;
         }
 
@@ -60,25 +60,6 @@ public abstract class PartItem(Shape shape) : ElementBase(shape), IPartItem
         AssignMaterial(material);
     }
 
-    /// <summary>
-    ///     Remove all properties that start with D_ from the shape sheet.
-    /// </summary>
-    private void DeleteMaterial()
-    {
-        // clear all shape data starts with D_BOM
-        for (var i = Source.RowCount[(short)VisSectionIndices.visSectionProp] - 1; i >= 0; i--)
-        {
-            var cell = Source.CellsSRC[(short)VisSectionIndices.visSectionProp, (short)i,
-                (short)VisCellIndices.visCustPropsValue];
-            if (cell.RowName == "D_BOM")
-            {
-                cell.Formula = "\"\"";
-                continue;
-            }
-
-            if (cell.RowName.StartsWith("D_")) Source.DeleteRow((short)VisSectionIndices.visSectionProp, (short)i);
-        }
-    }
 
     private void CopyMaterialFrom(int sourceId)
     {
@@ -144,7 +125,7 @@ public abstract class PartItem(Shape shape) : ElementBase(shape), IPartItem
     public void CopyMaterialFrom(PartItem partItem)
     {
         // delete previous material
-        DeleteMaterial();
+        VisioHelper.DeleteDesignMaterial(Source);
 
         // copy
         if (partItem.DesignMaterial != null) DesignMaterial = partItem.DesignMaterial;

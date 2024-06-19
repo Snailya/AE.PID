@@ -20,6 +20,26 @@ namespace AE.PID.Tools;
 internal static class VisioHelper
 {
     /// <summary>
+    ///     Remove all properties that start with D_ from the shape sheet.
+    /// </summary>
+    /// <param name="shape"></param>
+    public static void DeleteDesignMaterial(Shape shape)
+    {
+        for (var i = shape.RowCount[(short)VisSectionIndices.visSectionProp] - 1; i >= 0; i--)
+        {
+            var cell = shape.CellsSRC[(short)VisSectionIndices.visSectionProp, (short)i,
+                (short)VisCellIndices.visCustPropsValue];
+            if (cell.RowName == "D_BOM")
+            {
+                cell.Formula = "\"\"";
+                continue;
+            }
+
+            if (cell.RowName.StartsWith("D_")) shape.DeleteRow((short)VisSectionIndices.visSectionProp, (short)i);
+        }
+    }
+
+    /// <summary>
     ///     Load library's in config into Visio stencils.
     /// </summary>
     public static void OpenLibraries(List<string> paths)

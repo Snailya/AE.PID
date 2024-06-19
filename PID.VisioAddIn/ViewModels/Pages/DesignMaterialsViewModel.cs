@@ -40,7 +40,6 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
 
     #endregion
 
-
     #region Setups
 
     protected override void SetupCommands()
@@ -58,13 +57,14 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
     protected override void SetupSubscriptions(CompositeDisposable d)
     {
         // listen for element selected event in Export page, when the selected element changed, it is used as the seed for this page
+        // todo: not invoke if select from page on the same element
         MessageBus.Current.Listen<ElementSelectedEventArgs>()
             .DistinctUntilChanged()
             .Select(x => x.ElementBase)
             .Subscribe(x => Element = x)
             .DisposeWith(d);
 
-        // build up category predicate seed based on element
+        // build up category predicate seed based on an element
         this.WhenAnyValue(x => x.Element)
             .Select(x =>
             {
@@ -79,8 +79,8 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
             .ToProperty(this, x => x.CategoryPredicateSeed, out _categoryFilterSeed)
             .DisposeWith(d);
 
-        // when the category if fetched from server, it is originally a flatten list
-        // convert it into a tree structure using dynamic data
+        // when the category if fetched from server, it is originally a flattened list
+        // convert it into a tree structure using dynamic data,
         // however, to enhance user select efficiency, this tree is not used directly but as the source for a filtered tree that matches the current element
         var categoryPredicate = this.WhenAnyValue(x => x.CategoryPredicateSeed)
             .Select(BuildCategoryPredicate());
@@ -88,7 +88,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
             .Connect()
             .TransformToTree(x => x.ParentId, categoryPredicate)
             .Transform(node => new TreeNodeViewModel<MaterialCategoryDto>(node))
-            .ObserveOn(WindowManager.Dispatcher!)
+            .ObserveOn(RxApp.MainThreadScheduler)
             .Bind(out _categories)
             .DisposeMany()
             .Subscribe()
@@ -118,7 +118,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
         query.Subscribe(x => { _ = service.PopulateMaterials(x); })
             .DisposeWith(d);
 
-        // then valid materials is filter from service
+        // then valid materials are filter from service
         var queryFilter = query
             .WhereNotNull()
             .Select(BuildCategoryFilter);
@@ -138,7 +138,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
             .TransformMany(x => x.Materials)
             .WhereNotNull()
             .Filter(userFilter)
-            .ObserveOn(WindowManager.Dispatcher!)
+            .ObserveOn(RxApp.MainThreadScheduler)
             .Bind(out _validMaterials)
             .DisposeMany()
             .Subscribe()
@@ -154,11 +154,16 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
             .Filter(lastUsedFilter)
             .SortBy(x => x.LastUsed)
             .Transform(x => x.Source)
-            .ObserveOn(WindowManager.Dispatcher!)
+            .ObserveOn(RxApp.MainThreadScheduler)
             .Bind(out _lastUsed)
             .DisposeMany()
             .Subscribe()
             .DisposeWith(d);
+    }
+
+    protected override void SetupDeactivate()
+    {
+        Element?.Dispose();
     }
 
     private Func<string, Func<Node<MaterialCategoryDto, int>, bool>> BuildCategoryPredicate()
@@ -180,7 +185,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
     }
 
     /// <summary>
-    ///     Filter the design materials by cateogry
+    ///     Filter the design materials by category
     /// </summary>
     /// <param name="query"></param>
     /// <returns></returns>
@@ -208,8 +213,8 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
     #region Read-Write Properties
 
     /// <summary>
-    ///     The name is the seed for the this view model. The name is mapped to a category and then all girds on populated by
-    ///     this category.
+    ///     The name is the seed for this view model.
+    ///     The name is mapped to a category and then all girds on populated by this category.
     /// </summary>
     public ElementBase? Element
     {

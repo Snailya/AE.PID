@@ -208,6 +208,7 @@
         <Compile Include="Interfaces\ITreeNode.cs"/>
         <Compile Include="Interfaces\IUserData.cs"/>
         <Compile Include="Interfaces\IValueProp.cs"/>
+        <Compile Include="Models\ApiClient.cs"/>
         <Compile Include="Models\Configuration.cs"/>
         <Compile Include="Models\DesignMaterial.cs"/>
         <Compile Include="Models\DesignMaterialProperty.cs"/>
@@ -418,6 +419,7 @@
         <PackageReference Include="MiniExcel" Version="1.32.1"/>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
         <PackageReference Include="ReactiveUI.WPF" Version="20.1.1"/>
+        <PackageReference Include="Refit" Version="7.0.0"/>
         <PackageReference Include="Splat" Version="15.1.1"/>
         <PackageReference Include="Splat.NLog" Version="15.1.1"/>
         <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0"/>

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -11,6 +12,7 @@ using AE.PID.Models;
 using AE.PID.Properties;
 using AE.PID.Services;
 using AE.PID.Tools;
+using AE.PID.ViewModels;
 using AE.PID.Views;
 using Microsoft.Office.Core;
 using Microsoft.Office.Interop.Visio;
@@ -153,29 +155,42 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
 
     public void SelectDesignMaterial(IRibbonControl control)
     {
-        throw new NotImplementedException();
+        var selected = Globals.ThisAddIn.Application.ActiveWindow.Selection.OfType<Shape>().Single();
+        PartItem? element = selected.HasCategory("Equipment") ? new Equipment(selected) :
+            selected.HasCategory("FunctionalElement") ? new FunctionalElement(selected) : null;
+        if (element == null)
+            return;
+
+        WindowManager.Dispatcher!.InvokeAsync(() =>
+        {
+            var page = new MaterialsSelectionPage();
+            page.ViewModel!.Element = element;
+            WindowManager.GetInstance()!.Show(page);
+        });
     }
 
     public void DeleteDesignMaterial(IRibbonControl control)
     {
         foreach (var shape in Globals.ThisAddIn.Application.ActiveWindow.Selection.OfType<Shape>())
-            if (shape.HasCategory("Equipment"))
-            {
-                using var equipment = new Equipment(shape);
-                equipment.DesignMaterial = null;
-            }
-            else if (shape.HasCategory("FunctionalElement"))
-            {
-                using var functionalElement = new FunctionalElement(shape);
-                functionalElement.DesignMaterial = null;
-            }
+        {
+            if (!shape.CellExistsN("Prop.D_BOM", VisExistsFlags.visExistsLocally)) continue;
+            VisioHelper.DeleteDesignMaterial(shape);
+        }
     }
 
-    public bool IsMaterialButtonVisible(IRibbonControl control)
+    public bool IsPartItem(IRibbonControl control)
     {
         var window = Globals.ThisAddIn.Application.ActiveWindow;
         return window.Document.Type == VisDocumentTypes.visTypeDrawing && window.Selection.OfType<IVShape>()
-            .All(x => x.HasCategory("Equipment") || x.HasCategory("Instrument"));
+            .All(x => x.HasCategory("Equipment") || x.HasCategory("Instrument") || x.HasCategory("FunctionalElement"));
+    }
+
+    public bool HasDesignMaterial(IRibbonControl control)
+    {
+        var selected = Globals.ThisAddIn.Application.ActiveWindow.Selection.OfType<IVShape>();
+        return selected.Any(x =>
+            x.CellExistsN("Prop.D_BOM", VisExistsFlags.visExistsLocally) &&
+            !string.IsNullOrEmpty(x.Cells["Prop.D_BOM"].ResultStr[VisUnitCodes.visUnitsString]));
     }
 
     #endregion
