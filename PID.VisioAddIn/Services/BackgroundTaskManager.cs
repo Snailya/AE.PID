@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reactive.Disposables;
-using AE.PID.Models;
 using Splat;
 
 namespace AE.PID.Services;

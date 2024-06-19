@@ -82,11 +82,11 @@
     <!--This section defines custom context menu controls.-->
     <contextMenus>
         <contextMenu idMso="ContextMenuShape">
-<!--            <button id="select_design_material"-->
-<!--                    label="选择物料"-->
-<!--                    onAction="SelectDesignMaterial"-->
-<!--                    getVisible="IsPartItem"-->
-<!--            />-->
+            <!--            <button id="select_design_material"-->
+            <!--                    label="选择物料"-->
+            <!--                    onAction="SelectDesignMaterial"-->
+            <!--                    getVisible="IsPartItem"-->
+            <!--            />-->
             <button id="delete_design_material"
                     label="删除物料"
                     onAction="DeleteDesignMaterial"

@@ -10,7 +10,6 @@ using System.Reactive.Subjects;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
-using AE.PID.Models;
 using AE.PID.Tools;
 using Newtonsoft.Json.Linq;
 using ReactiveUI;

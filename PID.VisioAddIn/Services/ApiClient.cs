@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Net.Http;
 using System.Reactive.Disposables;
-using AE.PID.Services;
 using ReactiveUI;
 
-namespace AE.PID.Models;
+namespace AE.PID.Services;
 
 public class ApiClient : HttpClient, IDisposable
 {

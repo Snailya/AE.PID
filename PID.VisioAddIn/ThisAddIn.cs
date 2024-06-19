@@ -4,7 +4,6 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Windows.Threading;
-using AE.PID.Models;
 using AE.PID.Services;
 using AE.PID.Tools;
 using Microsoft.Office.Interop.Visio;

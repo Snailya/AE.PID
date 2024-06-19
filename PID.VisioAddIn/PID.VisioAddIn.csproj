@@ -208,23 +208,23 @@
         <Compile Include="Interfaces\ITreeNode.cs"/>
         <Compile Include="Interfaces\IUserData.cs"/>
         <Compile Include="Interfaces\IValueProp.cs"/>
-        <Compile Include="Models\ApiClient.cs"/>
         <Compile Include="Models\Configuration.cs"/>
         <Compile Include="Models\DesignMaterial.cs"/>
         <Compile Include="Models\DesignMaterialProperty.cs"/>
         <Compile Include="Models\LastUsedDesignMaterial.cs"/>
-        <Compile Include="Models\Masters\ElementBase.cs"/>
-        <Compile Include="Models\Masters\Equipment.cs"/>
-        <Compile Include="Models\Masters\EquipmentUnit.cs"/>
-        <Compile Include="Models\Masters\FunctionalElement.cs"/>
-        <Compile Include="Models\Masters\FunctionalGroup.cs"/>
-        <Compile Include="Models\Masters\FunctionalGroupBase.cs"/>
-        <Compile Include="Models\Masters\Instrument.cs"/>
-        <Compile Include="Models\Masters\PartItem.cs"/>
-        <Compile Include="Models\Masters\ProxyFunctionalGroup.cs"/>
+        <Compile Include="Models\Items\ElementBase.cs"/>
+        <Compile Include="Models\Items\Equipment.cs"/>
+        <Compile Include="Models\Items\EquipmentUnit.cs"/>
+        <Compile Include="Models\Items\FunctionalElement.cs"/>
+        <Compile Include="Models\Items\FunctionalGroup.cs"/>
+        <Compile Include="Models\Items\FunctionalGroupBase.cs"/>
+        <Compile Include="Models\Items\Instrument.cs"/>
+        <Compile Include="Models\Items\PartItem.cs"/>
+        <Compile Include="Models\Items\ProxyFunctionalGroup.cs"/>
         <Compile Include="Models\PartListTableLineItem.cs"/>
         <Compile Include="Models\Position.cs"/>
         <Compile Include="Models\ReactiveLibrary.cs"/>
+        <Compile Include="Models\TaskStatus.cs"/>
         <Compile Include="Models\VisioProperties\ActionData.cs"/>
         <Compile Include="Models\VisioProperties\Prop.cs"/>
         <Compile Include="Models\VisioProperties\ShapeData.cs"/>
@@ -238,6 +238,7 @@
         <Compile Include="Ribbon.cs">
             <XmlRibbon>true</XmlRibbon>
         </Compile>
+        <Compile Include="Services\ApiClient.cs"/>
         <Compile Include="Services\AppUpdater.cs"/>
         <Compile Include="Services\BackgroundTaskManager.cs"/>
         <Compile Include="Services\ConfigurationService.cs"/>
@@ -248,7 +249,6 @@
         <Compile Include="Services\LibraryUpdater.cs"/>
         <Compile Include="Services\MaterialService.cs"/>
         <Compile Include="Services\PageServiceBase.cs"/>
-        <Compile Include="Services\TaskStatus.cs"/>
         <Compile Include="Services\SelectService.cs"/>
         <Compile Include="Services\WindowManager.cs"/>
         <Compile Include="Tools\BindingMixins.cs"/>
