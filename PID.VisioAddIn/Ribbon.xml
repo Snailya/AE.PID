@@ -92,6 +92,11 @@
                     onAction="DeleteDesignMaterial"
                     getVisible="HasDesignMaterial"
             />
+            <button id="insert_functional_element"
+                    label="插入功能元件"
+                    onAction="InsertFunctionalElement"
+                    getVisible="IsSingleEquipment"
+            />
         </contextMenu>
     </contextMenus>
 </customUI>

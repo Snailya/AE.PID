@@ -130,6 +130,27 @@ internal static class VisioHelper
         LogHost.Default.Info($"Grid setup for {page.Name} finished");
     }
 
+    private static object PrepareMasterByBaseId(this Page page, string baseId)
+    {
+        // firstly, do a quick check if it is already in the document‘s masters
+        if (page.Document.Masters.OfType<Master>().SingleOrDefault(x => x.BaseID ==
+                                                                        baseId) is { } master)
+            return master;
+
+        // then get the document name from configuration
+        var configuration = Locator.Current.GetService<ConfigurationService>()!;
+        if (configuration.Libraries.Items.FirstOrDefault(x => x.Items.Any(i => i.BaseId == baseId)) is { } library)
+        {
+            // open the document if not 
+            var document = page.Application.Documents.OfType<Document>().SingleOrDefault(x => x.Name == library.Name) ??
+                           page.Application.Documents.OpenEx(library.Path, (short)VisOpenSaveArgs.visOpenDocked);
+
+            return document.Masters.ItemU[$"B{baseId}"];
+        }
+
+        throw new InvalidOperationException("Item not exist in either document stencils or libraries.");
+    }
+
     private static void InsertFrame(IVPage page)
     {
         // ensure document opened
@@ -141,7 +162,7 @@ internal static class VisioHelper
             document = page.Application.Documents.OpenEx(documentPath, (short)VisOpenSaveArgs.visOpenDocked);
         }
 
-        var frameObject = document.Masters["B{7811D65E-9633-4E98-9FCD-B496A8B823A7}"];
+        var frameObject = document.Masters[$"B{Constants.FrameBaseId}"];
         if (frameObject == null) return;
 
         page.Drop(frameObject, 0, 0);
@@ -314,6 +335,29 @@ internal static class VisioHelper
         catch (Exception ex)
         {
             LogHost.Default.Error(ex, "Failed to insert legend.");
+        }
+    }
+
+    public static void InsertFunctionalElement(Shape target)
+    {
+        var undoScope = target.Application.BeginUndoScope("Insert Functional Element");
+        try
+        {
+            // get the position of target
+            var position = target.GetPinLocation();
+
+            // get the object of functional element
+            var master = PrepareMasterByBaseId(target.ContainingPage, Constants.FunctionalElementBaseId);
+            var fe = target.ContainingPage.DropMetric(master, position.X, position.Y);
+            fe.CalloutTarget = target;
+
+            target.Application.EndUndoScope(undoScope, true);
+            LogHost.Default.Info($"Insert a functional element to {target.ID} successfully.");
+        }
+        catch (Exception ex)
+        {
+            target.Application.EndUndoScope(undoScope, false);
+            LogHost.Default.Error(ex, "Failed to insert functional element.");
         }
     }
 

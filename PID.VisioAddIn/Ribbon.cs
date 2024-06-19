@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -12,7 +11,6 @@ using AE.PID.Models;
 using AE.PID.Properties;
 using AE.PID.Services;
 using AE.PID.Tools;
-using AE.PID.ViewModels;
 using AE.PID.Views;
 using Microsoft.Office.Core;
 using Microsoft.Office.Interop.Visio;
@@ -191,6 +189,24 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
         return selected.Any(x =>
             x.CellExistsN("Prop.D_BOM", VisExistsFlags.visExistsLocally) &&
             !string.IsNullOrEmpty(x.Cells["Prop.D_BOM"].ResultStr[VisUnitCodes.visUnitsString]));
+    }
+
+    public void InsertFunctionalElement(IRibbonControl control)
+    {
+        var target = Globals.ThisAddIn.Application.ActiveWindow.Selection[1];
+        VisioHelper.InsertFunctionalElement(target);
+    }
+
+    public bool IsSingleEquipment(IRibbonControl control)
+    {
+        var window = Globals.ThisAddIn.Application.ActiveWindow;
+        // if not the drawing page
+        if (window.Document.Type != VisDocumentTypes.visTypeDrawing) return false;
+        // if multiple selection
+        if (window.Selection.Count != 1) return false;
+        // if not pure Equipment
+        return window.Selection.OfType<IVShape>()
+            .All(x => x.HasCategory("Equipment") && !x.HasCategory("Proxy"));
     }
 
     #endregion
