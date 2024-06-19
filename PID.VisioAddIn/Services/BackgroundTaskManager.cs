@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Net.Http;
 using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using ReactiveUI;
+using AE.PID.Models;
 using Splat;
 
 namespace AE.PID.Services;
@@ -12,10 +10,10 @@ public class BackgroundTaskManager : IDisposable
     private static BackgroundTaskManager? _instance;
     private readonly CompositeDisposable _cleanUp = new();
 
-    private BackgroundTaskManager(HttpClient httpClient, ConfigurationService configuration)
+    private BackgroundTaskManager(ApiClient client, ConfigurationService configuration)
     {
-        AppUpdater = new AppUpdater(httpClient, configuration);
-        LibraryUpdater = new LibraryUpdater(httpClient, configuration);
+        AppUpdater = new AppUpdater(client, configuration);
+        LibraryUpdater = new LibraryUpdater(client, configuration);
         DocumentMonitor = new DocumentMonitor(configuration);
     }
 
@@ -37,11 +35,11 @@ public class BackgroundTaskManager : IDisposable
 
     public static void Initialize()
     {
-        var httpClient = Locator.Current.GetService<HttpClient>()!;
+        var client = Locator.Current.GetService<ApiClient>()!;
         var configuration = Locator.Current.GetService<ConfigurationService>()!;
 
-        _instance ??= new BackgroundTaskManager(httpClient, configuration);
-        
+        _instance ??= new BackgroundTaskManager(client, configuration);
+
         LogHost.Default.Info("Background task is running.");
     }
 }

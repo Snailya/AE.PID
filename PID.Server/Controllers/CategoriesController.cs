@@ -2,12 +2,14 @@
 using AE.PID.Server.DTOs;
 using AE.PID.Server.DTOs.PDMS;
 using AE.PID.Server.Services;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AE.PID.Server.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[ApiVersion(1, Deprecated = true)]
+[ApiVersion(2)]
 public class CategoriesController(
     ILogger<LibrariesController> logger,
     LinkGenerator linkGenerator,
@@ -126,23 +128,38 @@ public class CategoriesController(
     };
 
     [HttpGet]
+    [MapToApiVersion(1)]
+    [Route("[controller]")]
     public async Task<IActionResult> GetCategories([FromQuery] string? name = null)
     {
-        var categories = (await GetCategoryItems(name))?.Select(x => x.FromPDMS());
+        var categories = (await GetCategoryItems("6470", name))?.Select(x => x.FromPDMS());
         return Ok(categories);
     }
 
-    [HttpGet("map")]
+    [HttpGet]
+    [MapToApiVersion(2)]
+    [Route("api/v{v:apiVersion}/[controller]")]
+    public async Task<IActionResult> GetCategoriesV2([FromHeader(Name = "User-ID")] string userId,
+        [FromQuery] string? name = null)
+    {
+        var categories = (await GetCategoryItems(userId, name))?.Select(x => x.FromPDMS());
+        return Ok(categories);
+    }
+
+    [HttpGet]
+    [Route("[controller]/map")]
+    [Route("api/v{v:apiVersion}/[controller]/map")]
     public IActionResult GetCategoryMap()
     {
         return Ok(_map);
     }
 
-    private async Task<IEnumerable<SelectDesignMaterialCategoryResponseItemDto>> GetCategoryItems(string? name = null)
+    private async Task<IEnumerable<SelectDesignMaterialCategoryResponseItemDto>> GetCategoryItems(string userId,
+        string? name = null)
     {
         var data = ApiHelper.BuildFormUrlEncodedContent(new SelectDesignMaterialCategoryRequestDto
         {
-            OperationInfo = new OperationInfoDto { Operator = "6470" },
+            OperationInfo = new OperationInfoDto { Operator = userId },
             MainTable = new DesignMaterialCategoryDto { CategoryName = name ?? "" },
             PageInfo = new PageInfoDto(1, 10000)
         });

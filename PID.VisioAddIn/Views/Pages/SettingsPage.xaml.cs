@@ -25,7 +25,7 @@ public partial class SettingsPage
                 .DisposeWith(d);
             this.Bind(ViewModel, vm => vm.User, v => v.UserInput.Text)
                 .DisposeWith(d);
-            
+
             this.Bind(ViewModel,
                     vm => vm.AppCheckFrequency,
                     v => v.AppCheckFrequencySelector.SelectedItem)

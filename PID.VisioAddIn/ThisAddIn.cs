@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO;
-using System.Net.Http;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Windows.Threading;
+using AE.PID.Models;
 using AE.PID.Services;
 using AE.PID.Tools;
 using Microsoft.Office.Interop.Visio;
@@ -56,15 +56,13 @@ public partial class ThisAddIn : IEnableLogger
         // register logger
         Locator.CurrentMutable.UseNLogWithWrappingFullLogger();
 
-        // register other services
         Locator.CurrentMutable.RegisterLazySingleton(() => new ConfigurationService(),
             typeof(ConfigurationService));
         Locator.CurrentMutable.RegisterLazySingleton(
-            () => new HttpClient(),
-            typeof(HttpClient));
+            () => new ApiClient(Locator.Current.GetService<ConfigurationService>()!),
+            typeof(ApiClient));
         Locator.CurrentMutable.RegisterLazySingleton(
-            () => new MaterialsService(Locator.Current.GetService<HttpClient>()!),
-            typeof(MaterialsService));
+            () => new MaterialsService(Locator.Current.GetService<ApiClient>()!), typeof(MaterialsService));
     }
 
     private void ThisAddIn_Shutdown(object sender, System.EventArgs e)

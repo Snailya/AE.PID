@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net.Http;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -23,7 +22,7 @@ public class MaterialsService : IDisposable, IEnableLogger
     private readonly SourceCache<MaterialCategoryDto, int> _categories = new(t => t.Id);
     private readonly CompositeDisposable _cleanUp = new();
 
-    private readonly HttpClient _client;
+    private readonly ApiClient _client;
     private readonly SourceCache<LastUsedDesignMaterial, string> _lastUsed = new(t => t.Source.Code);
 
     private readonly ReadOnlyObservableCollection<DesignMaterial> _materials;
@@ -33,7 +32,7 @@ public class MaterialsService : IDisposable, IEnableLogger
 
     #region Constructors
 
-    public MaterialsService(HttpClient client)
+    public MaterialsService(ApiClient client)
     {
         _client = client;
 
@@ -44,7 +43,7 @@ public class MaterialsService : IDisposable, IEnableLogger
             .DisposeWith(_cleanUp);
 
         // initialize category items
-        Observable.FromAsync(() => client.GetStringAsync("categories"))
+        Observable.FromAsync(() => client.GetStringAsync(CategoriesApi))
             .Select(JsonConvert.DeserializeObject<IEnumerable<MaterialCategoryDto>>)
             .WhereNotNull()
             .Subscribe(
@@ -53,7 +52,7 @@ public class MaterialsService : IDisposable, IEnableLogger
             .DisposeWith(_cleanUp);
 
         // initialize category maps
-        Observable.FromAsync(() => client.GetStringAsync("categories/map"))
+        Observable.FromAsync(() => client.GetStringAsync(CategoriesMapApi))
             .Select(JsonConvert.DeserializeObject<Dictionary<string, string[]>>)
             .WhereNotNull()
             .Subscribe(x => CategoryMap = x)
@@ -91,7 +90,7 @@ public class MaterialsService : IDisposable, IEnableLogger
 
         var response =
             await _client.GetStringAsync(
-                $"materials?category={query.CategoryId}&pageNo={query.PageNumber}&pageSize={PageSize}");
+                MaterialsApi(query.CategoryId, query.PageNumber, PageSize));
         if (string.IsNullOrEmpty(response)) return;
 
         var paged = JsonConvert.DeserializeObject<Paged<MaterialDto>>(response);
@@ -127,6 +126,19 @@ public class MaterialsService : IDisposable, IEnableLogger
         _requestResults.AsObservableCache();
 
     public ReadOnlyObservableCollection<DesignMaterial> Materials => _materials;
+
+    #endregion
+
+    #region Api
+
+    private static string CategoriesApi => "api/v2/categories";
+
+    private static string CategoriesMapApi => "api/v2/categories/map";
+
+    private static string MaterialsApi(int categoryId, int pageNumber, int pageSize)
+    {
+        return $"api/v2/materials?category={categoryId}&pageNo={pageNumber}&pageSize={pageSize}";
+    }
 
     #endregion
 }

@@ -10,6 +10,7 @@ using System.Reactive.Subjects;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
+using AE.PID.Models;
 using AE.PID.Tools;
 using Newtonsoft.Json.Linq;
 using ReactiveUI;
@@ -25,16 +26,14 @@ namespace AE.PID.Services;
 public class AppUpdater : IEnableLogger
 {
     private readonly CompositeDisposable _cleanUp = new();
-    private readonly HttpClient _client;
-    private readonly ConfigurationService _configuration;
+    private readonly ApiClient _client;
     private readonly BehaviorSubject<ReleaseInfo> _updateAvailableTrigger = new(null);
 
     #region Constructors
 
-    public AppUpdater(HttpClient client, ConfigurationService configuration)
+    public AppUpdater(ApiClient client, ConfigurationService configuration)
     {
         _client = client;
-        _configuration = configuration;
 
         // automatically check update by interval if it not meets the user disabled period
         var autoCheckObservable =
@@ -250,10 +249,10 @@ public class AppUpdater : IEnableLogger
 
     #region Api
 
-    private string VersionCheckApi =>
-        $"{_configuration.Server}/check-version?version={FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion}";
+    private static string VersionCheckApi =>
+        $"check-version?version={FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion}";
 
-    private string DownloadApi => $"{_configuration.Server}/download/0";
+    private static string DownloadApi => "download/0";
 
     #endregion
 }

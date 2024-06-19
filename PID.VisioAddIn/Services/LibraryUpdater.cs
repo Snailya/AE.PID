@@ -26,10 +26,10 @@ namespace AE.PID.Services;
 /// </summary>
 public class LibraryUpdater : IEnableLogger
 {
-    private readonly HttpClient _client;
+    private readonly ApiClient _client;
     private readonly ConfigurationService _configuration;
 
-    public LibraryUpdater(HttpClient client, ConfigurationService configuration)
+    public LibraryUpdater(ApiClient client, ConfigurationService configuration)
     {
         _client = client;
         _configuration = configuration;
@@ -195,9 +195,9 @@ public class LibraryUpdater : IEnableLogger
 
     #region Api
 
-    private string LibraryInfoApi => $"{_configuration.Server}/libraries";
+    private static string LibraryInfoApi => "libraries";
 
-    private string CheatSheetApi => $"{_configuration.Server}/libraries/cheatsheet";
+    private static string CheatSheetApi => "libraries/cheatsheet";
 
     #endregion
 }
