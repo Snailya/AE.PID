@@ -29,7 +29,7 @@ public abstract class FunctionalGroupBase : ElementBase
 
         Source.Bind(this, x => x.Designation, "Prop.FunctionalGroup")
             .DisposeWith(CleanUp);
-        Source.Bind(this, x => x.Description, "Prop.FunctionalGroupDescription")
+        Source.Bind(this, x => x.Description, "Prop.FunctionalGroupName")
             .DisposeWith(CleanUp);
 
         this.WhenPropertyChanged(x => x.Description)
