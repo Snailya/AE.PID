@@ -130,7 +130,7 @@ internal static class VisioHelper
         LogHost.Default.Info($"Grid setup for {page.Name} finished");
     }
 
-    private static object PrepareMasterByBaseId(this Page page, string baseId)
+    private static object PrepareMasterByBaseId(this IVPage page, string baseId)
     {
         // firstly, do a quick check if it is already in the document‘s masters
         if (page.Document.Masters.OfType<Master>().SingleOrDefault(x => x.BaseID ==
@@ -153,20 +153,18 @@ internal static class VisioHelper
 
     private static void InsertFrame(IVPage page)
     {
-        // ensure document opened
-        var document = page.Application.Documents.OfType<Document>().SingleOrDefault(x => x.Name == "AE逻辑.vssx");
-        if (document == null)
+        try
         {
-            var configuration = Locator.Current.GetService<ConfigurationService>()!;
-            var documentPath = configuration.Libraries.Lookup(6).Value.Path;
-            document = page.Application.Documents.OpenEx(documentPath, (short)VisOpenSaveArgs.visOpenDocked);
+            var frameObject = page.PrepareMasterByBaseId(Constants.FrameBaseId);
+
+            page.Drop(frameObject, 0, 0);
+            page.AutoSizeDrawing();
         }
-
-        var frameObject = document.Masters[$"B{Constants.FrameBaseId}"];
-        if (frameObject == null) return;
-
-        page.Drop(frameObject, 0, 0);
-        page.AutoSizeDrawing();
+        catch (Exception e)
+        {
+            LogHost.Default.Error(e,
+                "Failed to insert frame at origin");
+        }
     }
 
     private static string GetUpdateToolPathFromRegistryKey()
@@ -338,6 +336,10 @@ internal static class VisioHelper
         }
     }
 
+    /// <summary>
+    ///     Insert a functional element and link it to the target shape.
+    /// </summary>
+    /// <param name="target"></param>
     public static void InsertFunctionalElement(Shape target)
     {
         var undoScope = target.Application.BeginUndoScope("Insert Functional Element");
