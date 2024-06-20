@@ -19,6 +19,57 @@ namespace AE.PID.Tools;
 
 internal static class VisioHelper
 {
+    public static void CheckDesignationUnique(IVPage page)
+    {
+        var duplicated = page.Shapes.OfType<Shape>()
+            .Where(x => x.HasCategory("Equipment") &&
+                        !string.IsNullOrEmpty(x.CellsU["Prop.FunctionalElement"]
+                            .ResultStr[VisUnitCodes.visUnitsString]) &&
+                        !string.IsNullOrEmpty(x.CellsU["Prop.FunctionalGroup"]
+                            .ResultStr[VisUnitCodes.visUnitsString]))
+            .Select(x => new
+            {
+                x.ID,
+                FunctionalElement = x.CellsU["Prop.FunctionalElement"].TryGetFormatValue(),
+                FunctionalGroup = x.CellsU["Prop.FunctionalGroup"].ResultStr[VisUnitCodes.visUnitsString]
+            })
+            .GroupBy(x => new { x.FunctionalGroup, x.FunctionalElement })
+            .Where(x => x.Count() != 1)
+            .ToList();
+
+        if (duplicated.Count == 0) return;
+
+        // create validation layer if not exist
+        var validationLayer = page.Layers.OfType<Layer>().SingleOrDefault(x => x.Name == "Validation") ??
+                              page.Layers.Add("Validation");
+        validationLayer.CellsC[2].FormulaU = "2"; // set layer color
+        validationLayer.CellsC[11].FormulaU = "50%"; // set layer transparency
+        ClearCheckMarks(page, validationLayer.Name);
+
+        foreach (var item in duplicated.SelectMany(x => x))
+        {
+            var (left, bottom, right, top) = page.Shapes.ItemFromID[item.ID]
+                .BoundingBoxMetric((short)VisBoundingBoxArgs.visBBoxDrawingCoords +
+                                   (short)VisBoundingBoxArgs.visBBoxExtents);
+            var rect = page.DrawRectangleMetric(left - 1, bottom - 1, right + 1, top + 1);
+            // set as transparent fill
+            rect.CellsSRCN(VisSectionIndices.visSectionObject, VisRowIndices.visRowFill, VisCellIndices.visFillPattern)
+                .FormulaU = "9";
+            // set layer
+            rect.CellsSRCN(VisSectionIndices.visSectionObject, VisRowIndices.visRowLayerMem,
+                    VisCellIndices.visLayerMember).FormulaU = $"\"{validationLayer.Index - 1}\"";
+        }
+    }
+
+    public static void ClearCheckMarks(IVPage page, string layerName)
+    {
+        var selection = page.CreateSelection(VisSelectionTypes.visSelTypeByLayer, VisSelectMode.visSelModeSkipSuper,
+            layerName);
+        if (selection.Count > 0)
+            selection.Delete();
+    }
+
+
     /// <summary>
     ///     Remove all properties that start with D_ from the shape sheet.
     /// </summary>

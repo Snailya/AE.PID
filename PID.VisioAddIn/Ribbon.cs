@@ -103,9 +103,17 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
                     case Command.Help:
                         Process.Start("https://snailya.github.io/posts/ae-pid%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/");
                         break;
+                    case Command.ValidateDesignationUnique:
+                        VisioHelper.CheckDesignationUnique(Globals.ThisAddIn.Application.ActivePage);
+                        break;
+                    case Command.ClearValidationMarks:
+                        VisioHelper.ClearCheckMarks(Globals.ThisAddIn.Application.ActivePage, "Validation");
+                        break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(command), command, null);
                 }
+
+                _ribbon.Invalidate();
             },
             error => { this.Log().Error(error); },
             () => { });
@@ -144,6 +152,8 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
         UpdateDocument,
         InsertLegend,
         OpenSelectTool,
+        ValidateDesignationUnique,
+        ClearValidationMarks,
         OpenProjectExplorer,
         OpenSettings,
         Help
@@ -277,6 +287,30 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
 
         return BackgroundTaskManager.GetInstance()!.DocumentMonitor.IsMasterOutOfDate(Globals.ThisAddIn.Application
             .ActiveDocument);
+    }
+
+    public void ValidateDesignationUnique(IRibbonControl control)
+    {
+        _commandInvoker.OnNext(Command.ValidateDesignationUnique);
+    }
+
+    public void ClearValidationMarks(IRibbonControl control)
+    {
+        _commandInvoker.OnNext(Command.ClearValidationMarks);
+    }
+
+    public bool CanValidateDesignationUnique(IRibbonControl control)
+    {
+        return IsDocumentOpened(control) && !HasValidationMarks(control);
+    }
+    
+    public bool HasValidationMarks(IRibbonControl control)
+    {
+        if (Globals.ThisAddIn.Application.ActivePage == null) return false;
+
+        var selection = Globals.ThisAddIn.Application.ActivePage.CreateSelection(VisSelectionTypes.visSelTypeByLayer,
+            VisSelectMode.visSelModeSkipSuper, "Validation");
+        return selection.Count > 0;
     }
 
     #endregion

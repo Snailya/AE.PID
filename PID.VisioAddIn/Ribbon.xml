@@ -44,6 +44,24 @@
                             getEnabled="IsDocumentOpened"
                     />
                 </group>
+                <group id="grpCheck" label="检查">
+                    <button id="validate_designation_unique"
+                            label="位号重复"
+                            onAction="ValidateDesignationUnique"
+                            screentip="检查位号唯一性"
+                            size="large"
+                            getImage="GetButtonImage"
+                            getEnabled="CanValidateDesignationUnique"
+                    />
+                    <button id="clear_validation_marks"
+                            label="清除"
+                            onAction="ClearValidationMarks"
+                            screentip="清除检查标记"
+                            size="large"
+                            getImage="GetButtonImage"
+                            getEnabled="HasValidationMarks"
+                    />
+                </group>
                 <group id="grpExport" label="导出">
                     <button id="open_export_tool"
                             label="BOM"
@@ -69,11 +87,11 @@
                             size="large"
                             getImage="GetButtonImage"
                     />
-                    <button id="debug"
-                            label="调试"
-                            onAction="Debug"
-                            size="large"
-                    />
+                    <!--                    <button id="debug"-->
+                    <!--                            label="调试"-->
+                    <!--                            onAction="Debug"-->
+                    <!--                            size="large"-->
+                    <!--                    />-->
                 </group>
             </tab>
         </tabs>

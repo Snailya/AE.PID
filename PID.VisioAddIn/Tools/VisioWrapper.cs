@@ -10,6 +10,12 @@ internal static class VisioWrapper
                (short)VBABool.True;
     }
 
+    public static Cell CellsSRCN(this IVShape shape, VisSectionIndices sectionIndices, VisRowIndices rowIndices,
+        VisCellIndices cellIndices)
+    {
+        return shape.CellsSRC[(short)sectionIndices, (short)rowIndices, (short)cellIndices];
+    }
+
     private enum VBABool : short
     {
         True = -1,
