@@ -24,15 +24,17 @@ public class WindowManager : IDisposable
 
     private WindowManager()
     {
+        var visioHandle = new IntPtr(Globals.ThisAddIn.Application.WindowHandle32);
+
         // initialize the main window with normal button
-        _mainWindow = new WindowBase
+        _mainWindow = new WindowBase(visioHandle)
         {
             WindowButtonStyle = WindowBase.WindowButton.Normal
         };
 
         _secondaryWindow = new SecondaryWindow(_mainWindow);
 
-        _progressWindow = new WindowBase
+        _progressWindow = new WindowBase(visioHandle)
         {
             ShowInTaskbar = false,
             WindowButtonStyle = WindowBase.WindowButton.CloseOnly,
@@ -89,7 +91,7 @@ public class WindowManager : IDisposable
         _mainWindow.Content = main;
         _secondaryWindow.Content = null;
 
-        _mainWindow.RestoreSizeAndLocation();
+        // _mainWindow.RestoreSizeAndLocation();
         _mainWindow.Show();
     }
 

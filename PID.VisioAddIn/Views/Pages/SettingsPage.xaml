@@ -7,10 +7,8 @@
                 xmlns:tools="clr-namespace:AE.PID.Tools"
                 xmlns:viewModels="clr-namespace:AE.PID.ViewModels"
                 xmlns:views="clr-namespace:AE.PID.Views"
-                MinHeight="480" MinWidth="480"
-                Height="480" Width="480"
                 mc:Ignorable="d"
-                d:DesignHeight="320" d:DesignWidth="480">
+                d:DesignHeight="480" d:DesignWidth="480">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -108,7 +106,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" MinHeight="160" />
                 </Grid.RowDefinitions>
                 <views:SectionLabel Header="库" />
                 <Grid Grid.Row="1">

@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Reactive;
 using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Interop;
 using System.Windows.Media;
 using AE.PID.Tools;
 using AE.PID.ViewModels;
@@ -29,10 +28,9 @@ public partial class WindowBase : IDisposable
         new PropertyMetadata(WindowButton.Normal));
 
     private readonly CompositeDisposable _cleanup = new();
+    private string prevPage = string.Empty;
 
-    private bool _hasShow;
-
-    private Dictionary<string, SizeAndLocation> SizeAndLocations { get; } = new();
+    private Dictionary<string, SizeAndLocation> Locations { get; } = new();
 
     public WindowButton WindowButtonStyle
     {
@@ -47,8 +45,7 @@ public partial class WindowBase : IDisposable
 
     protected override void OnClosing(CancelEventArgs e)
     {
-        _hasShow = false;
-        SaveSizeAndLocation();
+        StoreLocation();
 
         // close all child windows
         foreach (Window ownedWindow in OwnedWindows) ownedWindow.Close();
@@ -57,6 +54,21 @@ public partial class WindowBase : IDisposable
         Content = null;
 
         e.Cancel = true;
+    }
+
+    private void StoreLocation()
+    {
+        var title = GetCurrentPageTitle();
+
+        // if a window not be resized or moved during the open duration,
+        // and it also not been record in the previous open duration, skip this process.
+        if (DataContext is not WindowViewModel { IsResizedOrMoved: true } && !Locations.ContainsKey(title)) return;
+
+        // add or update the location
+        if (!Locations.ContainsKey(title))
+            Locations.Add(title, new SizeAndLocation(this));
+        else
+            Locations[title] = new SizeAndLocation(this);
     }
 
     private void CenterOwner()
@@ -73,9 +85,8 @@ public partial class WindowBase : IDisposable
         // note that this not consider the dpi scaling,
         // for example, the actual width is 320 px,
         // while a snip tool measure result is 320 * 1.5 when scaling is 150 %
-        var width = (Content as UserControl)!
-            .Width; // 这还不是我想要的，因为ActualWidth可能会比Width大，但是在ContentRendered之前Actual又是0。为了解决这个问题，除非找到一个更好的位置调用CenterOwner，这个位置必须在Content渲染之后，但是又在窗口呈现直线，但是我还没发现。
-        var height = (Content as UserControl)!.Height;
+        var width = DesiredSize.Width;
+        var height = DesiredSize.Height;
 
         var dpiScale = VisualTreeHelper.GetDpi(this);
 
@@ -103,27 +114,16 @@ public partial class WindowBase : IDisposable
     }
 
     /// <summary>
-    ///     Restore size and location of the page from saved dictionary.
+    ///     Restore the size and location of the page from saved dictionary.
     /// </summary>
-    public void RestoreSizeAndLocation()
+    private void RestoreLocation(SizeAndLocation location)
     {
-        var pageTitle = GetCurrentPageTitle();
-
-        if (SizeAndLocations.TryGetValue(pageTitle, out var sizeAndLocation))
-        {
-            SizeToContent = SizeToContent.Manual;
-
-            Left = sizeAndLocation.Left;
-            Top = sizeAndLocation.Top;
-            Width = sizeAndLocation.Width;
-            Height = sizeAndLocation.Height;
-        }
-        else
-        {
-            SizeToContent = SizeToContent.WidthAndHeight;
-            CenterOwner();
-        }
+        Left = location.Left;
+        Top = location.Top;
+        Width = location.Width;
+        Height = location.Height;
     }
+
 
     /// <summary>
     ///     Get the tittle of the current page.
@@ -134,58 +134,18 @@ public partial class WindowBase : IDisposable
         return Content == null ? string.Empty : (string)((dynamic)Content).Title;
     }
 
-    /// <summary>
-    ///     Save the size and location of the current page if it has been registered in the dictionary.
-    /// </summary>
-    private void SaveSizeAndLocation()
+    protected override void OnContentChanged(object oldContent, object? newContent)
     {
-        var pageTitle = GetCurrentPageTitle();
-        if (SizeAndLocations.ContainsKey(pageTitle))
-            SizeAndLocations[pageTitle] = new SizeAndLocation(this);
-    }
-
-    /// <summary>
-    ///     Register the current page to local dictionary if it meets the conditions: window is modified by user after show up.
-    /// </summary>
-    private void SetupSizeAndLocation()
-    {
-        Observable.FromEventPattern<EventHandler, System.EventArgs>(
-                handler => ContentRendered += handler,
-                handler => ContentRendered -= handler
-            )
-            .Subscribe(_ =>
-            {
-                if (Content != null) _hasShow = true;
-            })
-            .DisposeWith(_cleanup);
-
-        Observable.FromEventPattern<SizeChangedEventHandler, SizeChangedEventArgs>(
-                handler => SizeChanged += handler,
-                handler => SizeChanged -= handler
-            )
-            .Select(_ => Unit.Default)
-            .Merge(Observable.FromEventPattern<EventHandler, System.EventArgs>(
-                    handler => LocationChanged += handler,
-                    handler => LocationChanged -= handler
-                )
-                .Select(_ => Unit.Default))
-            .Subscribe(_ =>
-            {
-                if (!_hasShow || Content == null) return;
-
-                RegisterPage(GetCurrentPageTitle());
-            })
-            .DisposeWith(_cleanup);
-
-        return;
-
-        void RegisterPage(string name)
+        // reset the size to content back to width and height
+        if (newContent == null)
         {
-            if (!SizeAndLocations.ContainsKey(name))
-                SizeAndLocations.Add(name, new SizeAndLocation(this));
+            (DataContext as WindowViewModel)!.IsResizedOrMoved = false;
+            SizeToContent = SizeToContent.WidthAndHeight;
+            //prevPage = (string)((dynamic)oldContent).Title;
         }
-    }
 
+        base.OnContentChanged(oldContent, newContent);
+    }
 
     private class SizeAndLocation(WindowBase window)
     {
@@ -205,7 +165,7 @@ public partial class WindowBase : IDisposable
     }
 
 
-    public WindowBase()
+    protected WindowBase()
     {
         Title = Properties.Resources.PROPERTY_product_name;
         MaxHeight = SystemParameters.WorkArea.Height;
@@ -215,7 +175,40 @@ public partial class WindowBase : IDisposable
 
         InitializeComponent();
 
-        SetupSizeAndLocation();
+        LayoutUpdated += (sender, args) =>
+        {
+            if (Content == null) return;
+
+            // fix the window size on first show
+            SizeToContent = SizeToContent.Manual;
+
+            var currPage = GetCurrentPageTitle();
+            if (currPage == prevPage) return;
+
+            // if there is a saved location for the page, restore the location
+            if (Locations.TryGetValue(currPage, out var location))
+            {
+                RestoreLocation(location);
+            }
+            else
+            {
+                // if not, there are 2 situations
+                // 1. the window is the root window, then it should be centered if it differs from the previous page
+                // 2. the window is the child window, it should not be applied Center owner
+                if (Owner == null)
+                    CenterOwner();
+            }
+
+            prevPage = currPage;
+        };
+    }
+
+    public WindowBase(IntPtr parentHandle) : this()
+    {
+        var _ = new WindowInteropHelper(this)
+        {
+            Owner = parentHandle
+        };
     }
 
     #endregion

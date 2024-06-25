@@ -10,7 +10,6 @@
                 xmlns:viewModels="clr-namespace:AE.PID.ViewModels"
                 xmlns:views="clr-namespace:AE.PID.Views"
                 xmlns:busyIndicator="https://github.com/moh3ngolshani/BusyIndicator"
-                MinHeight="480" MinWidth="640"
                 mc:Ignorable="d"
                 d:DesignHeight="480" d:DesignWidth="640">
     <UserControl.Resources>
@@ -43,7 +42,7 @@
         <Grid Grid.Row="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
+                <RowDefinition Height="*" MinHeight="360" />
             </Grid.RowDefinitions>
             <views:SectionLabel Header="设备清单" />
             <busyIndicator:BusyMask x:Name="BusyIndicator"

@@ -1,6 +1,8 @@
-﻿using System.Windows;
-using System.Windows.Data;
-using AE.PID.Converters;
+﻿using System;
+using System.Reactive;
+using System.Reactive.Linq;
+using System.Windows;
+using AE.PID.ViewModels;
 
 namespace AE.PID.Views.Windows;
 
@@ -12,45 +14,24 @@ public class SecondaryWindow : WindowBase
         WindowButtonStyle = WindowButton.CloseOnly;
         WindowStartupLocation = WindowStartupLocation.Manual;
 
-        // binding top
-        SetBinding(TopProperty,
-            new Binding
+        // bind to owner size if user does not modify the current window
+        Observable.FromEventPattern<SizeChangedEventHandler, SizeChangedEventArgs>(
+                handler => owner.SizeChanged += handler,
+                handler => owner.SizeChanged -= handler
+            )
+            .Select(_ => Unit.Default)
+            .Merge(Observable.FromEventPattern<EventHandler, System.EventArgs>(
+                    handler => owner.LocationChanged += handler,
+                    handler => owner.LocationChanged -= handler
+                )
+                .Select(_ => Unit.Default))
+            .Subscribe(_ =>
             {
-                Path = new PropertyPath("Top"),
-                Source = owner,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
-                Mode = BindingMode.TwoWay
+                if (DataContext is WindowViewModel { IsResizedOrMoved: true }) return;
+
+                Height = owner.ActualHeight;
+                Top = owner.Top;
+                Left = owner.Left + owner.Width;
             });
-
-        // binding left
-        // todo: still not work as expected, I want to when the user change the main window right or secondary window left, the two window 's total width not change
-        SetBinding(LeftProperty,
-            new Binding
-            {
-                Source = owner,
-                Path = new PropertyPath("Left"),
-                Converter = new SecondaryWindowLeftConvertor(),
-                ConverterParameter = owner,
-                Mode = BindingMode.TwoWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            });
-
-        // binding height
-        var heightBinding = new Binding
-        {
-            Path = new PropertyPath("ActualHeight"),
-            Source = owner,
-            Mode = BindingMode.OneWay
-        };
-        SetBinding(MaxHeightProperty, heightBinding);
-        SetBinding(MinHeightProperty, heightBinding);
-
-        // binding max width
-        SetBinding(MaxWidthProperty, new MultiBinding
-        {
-            Converter = new SecondaryWindowMaxWidthConvertor(),
-            Mode = BindingMode.OneWay,
-            Bindings = { new Binding("ActualWidth") { Source = owner }, new Binding("Left") { Source = owner } }
-        });
     }
 }

@@ -36,7 +36,12 @@ public sealed class WindowViewModel : INotifyPropertyChanged
             // Fire off resize events
             WindowResized();
         };
+
+        // listen for resize or move
+        _mWindowResizer.WindowStartedMove += () => { IsResizedOrMoved = true; };
     }
+
+    public bool IsResizedOrMoved { get; set; }
 
 
     #region Event
@@ -204,7 +209,7 @@ public class WindowResizer
     {
         mWindow = window;
 
-        // Listen out for source initialized to setup
+        // Listen out for source initialized to set up
         mWindow.SourceInitialized += Window_SourceInitialized;
 
         // Monitor for edge docking

@@ -8,7 +8,6 @@
                 xmlns:views="clr-namespace:AE.PID.Views"
                 xmlns:busyIndicator="https://github.com/moh3ngolshani/BusyIndicator"
                 MinHeight="320" MinWidth="320"
-                Height="320" Width="320"
                 mc:Ignorable="d"
                 d:DataContext="{d:DesignInstance viewModels:SelectToolPageViewModel}"
                 d:DesignHeight="320" d:DesignWidth="320">

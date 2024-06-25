@@ -92,6 +92,7 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
                         {
                             WindowManager.GetInstance()!.Show(new ProjectExplorerPage(),
                                 new MaterialsSelectionPage());
+                            // WindowManager.GetInstance()!.Show(new ProjectExplorerPage()                   );
                         });
                         break;
                     case Command.OpenSettings:
@@ -303,7 +304,7 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
     {
         return IsDocumentOpened(control) && !HasValidationMarks(control);
     }
-    
+
     public bool HasValidationMarks(IRibbonControl control)
     {
         if (Globals.ThisAddIn.Application.ActivePage == null) return false;
