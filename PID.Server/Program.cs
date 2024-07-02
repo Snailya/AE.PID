@@ -69,6 +69,11 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.Configure<RouteOptions>(options => { options.LowercaseUrls = true; });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowIntranetIPRange",
+        policy => policy.WithOrigins("http://172.18.0.0/22").AllowAnyMethod());
+});
 
 builder.Services.AddHttpClient("PDMS",
     client => { client.BaseAddress = new Uri("http://172.18.168.57:8000/api/cube/restful/interface/"); });

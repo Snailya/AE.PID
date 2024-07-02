@@ -18,4 +18,4 @@ RUN dotnet publish "PID.Server.csproj" -c Release -o /app/publish /p:UseAppHost=
 FROM base AS final
 WORKDIR /opt/pid
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "PID.Server.dll"]
+ENTRYPOINT ["dotnet", "AE.PID.Server.dll"]
