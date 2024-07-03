@@ -17,4 +17,5 @@ internal abstract class Constants
     public static readonly string LibraryCheatSheetPath = Path.Combine(LibraryFolder, ".cheatsheet");
 
     public static readonly string TmpFolder = Path.Combine(AppDataFolder, "Tmp");
+    public static readonly string ValidationLayerName = "Validation";
 }

@@ -60,7 +60,7 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
         // register on triggers to update button status.
         RegisterUpdateForElements();
 
-        // observe on button click
+        // distribute the task based on the command 
         _commandInvoker.Subscribe(command =>
             {
                 this.Log().Info($"{command} [Init by User]");
@@ -92,7 +92,6 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
                         {
                             WindowManager.GetInstance()!.Show(new ProjectExplorerPage(),
                                 new MaterialsSelectionPage());
-                            // WindowManager.GetInstance()!.Show(new ProjectExplorerPage()                   );
                         });
                         break;
                     case Command.OpenSettings:
@@ -108,7 +107,7 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
                         VisioHelper.CheckDesignationUnique(Globals.ThisAddIn.Application.ActivePage);
                         break;
                     case Command.ClearValidationMarks:
-                        VisioHelper.ClearCheckMarks(Globals.ThisAddIn.Application.ActivePage, "Validation");
+                        VisioHelper.ClearCheckMarks(Globals.ThisAddIn.Application.ActivePage);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(command), command, null);
@@ -120,9 +119,13 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
             () => { });
     }
 
+    /// <summary>
+    /// Because the state of the buttons on ribbon will not re-compute once loaded.
+    /// So the re-computation needs to be triggered manually by calling _ribbon.Invalidate().
+    /// As the button state is related to if there is a document in open state, observe on these two events.
+    /// </summary>
     private void RegisterUpdateForElements()
     {
-        // invoke ribbon element status update on ever window change, for example, document open, document close
         Globals.ThisAddIn.Application.WindowOpened += _ => { _ribbon.Invalidate(); };
         Globals.ThisAddIn.Application.WindowChanged += _ => { _ribbon.Invalidate(); };
     }
@@ -310,7 +313,7 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
         if (Globals.ThisAddIn.Application.ActivePage == null) return false;
 
         var selection = Globals.ThisAddIn.Application.ActivePage.CreateSelection(VisSelectionTypes.visSelTypeByLayer,
-            VisSelectMode.visSelModeSkipSuper, "Validation");
+            VisSelectMode.visSelModeSkipSuper, Constants.ValidationLayerName);
         return selection.Count > 0;
     }
 

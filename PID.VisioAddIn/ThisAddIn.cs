@@ -20,7 +20,8 @@ public partial class ThisAddIn : IEnableLogger
 
     private void ThisAddIn_Startup(object sender, System.EventArgs e)
     {
-        // setup dispatcher
+        // the dispatcher of the VSTO is used for dispatch Visio related operation to this thread
+        // perform Visio related operation on other threads need to marshal data from the thread to this thread which cause long time
         Dispatcher = Dispatcher.CurrentDispatcher;
 
         // initialize the data folder
@@ -29,12 +30,12 @@ public partial class ThisAddIn : IEnableLogger
 
         ConfigureServices();
 
-        // declare a UI thread to display wpf window
+        // declare a new UI thread for WPF. Notice the apartment state needs to be STA
         var uiThread = new Thread(WindowManager.Initialize) { Name = "UI Thread" };
         uiThread.SetApartmentState(ApartmentState.STA);
         uiThread.Start();
 
-        // initialize background tasks
+        // initialize the service that relay on the window manager
         WindowManager.Initialized
             .Where(x => x)
             .ObserveOn(ThreadPoolScheduler.Instance)
@@ -66,6 +67,7 @@ public partial class ThisAddIn : IEnableLogger
 
     private void ThisAddIn_Shutdown(object sender, System.EventArgs e)
     {
+        // if there is a custom ribbon registered, remove it
         if (_ribbon != null)
             Globals.ThisAddIn.Application.UnregisterRibbonX(_ribbon, null);
 

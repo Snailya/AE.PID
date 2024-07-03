@@ -44,8 +44,7 @@ public class WindowManager : IDisposable
     }
 
     #endregion
-
-
+    
     public static Dispatcher? Dispatcher { get; private set; }
 
     public void Dispose()
@@ -69,14 +68,21 @@ public class WindowManager : IDisposable
     {
         _instance = new WindowManager();
 
-        // initialize dispatcher
+        // the dispatcher of the UI thread is used for WPF ui rendering.
+        // a different thread from the default main thread, which is VSTO_Main is used because rending wpf on default main thread will compete between operation on Visio.
+        // for some time consumed task on Visio, such as read all data from page, a loading spinning is needed for better user experience.
+        // while the competition between WPF and Visio operation will block the spinning of the indicator.
+        // that's why a separated thread is needed for WPF rending.
         Dispatcher = Dispatcher.CurrentDispatcher;
+        
+        // manually set the RxAPP's MainThreadScheduler property to this thread so that it could be used on ObserveOn and SubscribeOn by calling RxApp.MainThreadScheduler
         RxApp.MainThreadScheduler = DispatcherScheduler.Current;
 
-        // notify initialized
+        // notify the window manager
+        // has been initialized so that other tasks based on this manager should start initializing.
         Initialized.OnNext(true);
 
-        // start event loop
+        // start event loop 
         Dispatcher.Run();
     }
 
@@ -91,7 +97,6 @@ public class WindowManager : IDisposable
         _mainWindow.Content = main;
         _secondaryWindow.Content = null;
 
-        // _mainWindow.RestoreSizeAndLocation();
         _mainWindow.Show();
     }
 

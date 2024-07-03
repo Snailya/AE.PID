@@ -19,6 +19,12 @@ namespace AE.PID.Tools;
 
 internal static class VisioHelper
 {
+    /// <summary>
+    ///     The designation for equipments should be unique within a functional group.
+    ///     To help user locate the equipment with the wrong designation number, a mask will be place don the duplicated
+    ///     equipments.
+    /// </summary>
+    /// <param name="page"></param>
     public static void CheckDesignationUnique(IVPage page)
     {
         var duplicated = page.Shapes.OfType<Shape>()
@@ -40,11 +46,12 @@ internal static class VisioHelper
         if (duplicated.Count == 0) return;
 
         // create validation layer if not exist
-        var validationLayer = page.Layers.OfType<Layer>().SingleOrDefault(x => x.Name == "Validation") ??
-                              page.Layers.Add("Validation");
+        var validationLayer =
+            page.Layers.OfType<Layer>().SingleOrDefault(x => x.Name == Constants.ValidationLayerName) ??
+            page.Layers.Add(Constants.ValidationLayerName);
         validationLayer.CellsC[2].FormulaU = "2"; // set layer color
         validationLayer.CellsC[11].FormulaU = "50%"; // set layer transparency
-        ClearCheckMarks(page, validationLayer.Name);
+        ClearCheckMarks(page);
 
         foreach (var item in duplicated.SelectMany(x => x))
         {
@@ -61,10 +68,14 @@ internal static class VisioHelper
         }
     }
 
-    public static void ClearCheckMarks(IVPage page, string layerName)
+    /// <summary>
+    ///     Clear the masks on the validation layer.
+    /// </summary>
+    /// <param name="page"></param>
+    public static void ClearCheckMarks(IVPage page)
     {
         var selection = page.CreateSelection(VisSelectionTypes.visSelTypeByLayer, VisSelectMode.visSelModeSkipSuper,
-            layerName);
+            Constants.ValidationLayerName);
         if (selection.Count > 0)
             selection.Delete();
     }
@@ -137,7 +148,11 @@ internal static class VisioHelper
         }
     }
 
-
+    /// <summary>
+    ///     All masters are based on one of the two styles, AE Normal for equipments, AE PipeLine for pipes and lines.
+    ///     Create the styles for the document if not exists.
+    /// </summary>
+    /// <param name="document"></param>
     private static void SetupStyles(IVDocument document)
     {
         // verify font exist
@@ -167,6 +182,10 @@ internal static class VisioHelper
         LogHost.Default.Info($"Style setup for {document.Name} finished");
     }
 
+    /// <summary>
+    ///     The default grid is 2.5 mm x 2.5 mm.
+    /// </summary>
+    /// <param name="page"></param>
     private static void SetupGrid(IVPage page)
     {
         page.PageSheet.CellsSRC[(short)VisSectionIndices.visSectionObject, (short)VisRowIndices.visRowRulerGrid,
@@ -181,16 +200,25 @@ internal static class VisioHelper
         LogHost.Default.Info($"Grid setup for {page.Name} finished");
     }
 
+    /// <summary>
+    /// When dropping an item to the page, the stencil includes that item need be loaded or the master should already be in the document stencil.
+    /// Prepare the environment so that the drop process will not throw exception.
+    /// </summary>
+    /// <param name="page"></param>
+    /// <param name="baseId"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     private static object PrepareMasterByBaseId(this IVPage page, string baseId)
     {
-        // firstly, do a quick check if it is already in the document‘s masters
+        // firstly, do a quick check if it is already in the document‘s stencil
         if (page.Document.Masters.OfType<Master>().SingleOrDefault(x => x.BaseID ==
                                                                         baseId) is { } master)
             return master;
 
         // then get the document name from configuration
         var configuration = Locator.Current.GetService<ConfigurationService>()!;
-        if (configuration.Libraries.Items.FirstOrDefault(x => x.Items.Any(i => i.BaseId == baseId)) is { } library)
+        if (configuration.Libraries.Items.FirstOrDefault(x => x.Items.Any(i => i.BaseId == baseId)) is not { } library)
+            throw new InvalidOperationException("Item not exist in either document stencils or libraries.");
         {
             // open the document if not 
             var document = page.Application.Documents.OfType<Document>().SingleOrDefault(x => x.Name == library.Name) ??
@@ -199,9 +227,12 @@ internal static class VisioHelper
             return document.Masters.ItemU[$"B{baseId}"];
         }
 
-        throw new InvalidOperationException("Item not exist in either document stencils or libraries.");
     }
 
+    /// <summary>
+    ///     Insert a drawing frame at the origin point.
+    /// </summary>
+    /// <param name="page"></param>
     private static void InsertFrame(IVPage page)
     {
         try
@@ -218,7 +249,14 @@ internal static class VisioHelper
         }
     }
 
-    private static string GetUpdateToolPathFromRegistryKey()
+    /// <summary>
+    ///     As the installation path varies from end to end, the actual path of the update tool varies.
+    ///     The actual path is resolved by finding the installation path from registry key.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="RegistryKeyValueNotFoundException"></exception>
+    /// <exception cref="UpdateToolNotExistException"></exception>
+    private static string ResolveUpdateToolPathFromRegistryKey()
     {
         const string registryKeyPath = @"Software\Microsoft\Visio\Addins\AE.PID";
         const string valueName = "Manifest";
@@ -309,7 +347,7 @@ internal static class VisioHelper
         LogHost.Default.Info("Try updating the documents.");
 
         // find out the update tool
-        var toolPath = GetUpdateToolPathFromRegistryKey();
+        var toolPath = ResolveUpdateToolPathFromRegistryKey();
         progress.Report(
             new ProgressValue
             {
@@ -375,6 +413,10 @@ internal static class VisioHelper
         }
     }
 
+    /// <summary>
+    ///     Insert a legend above the title block of the drawing frame.
+    /// </summary>
+    /// <param name="page"></param>
     public static void InsertLegend(IVPage page)
     {
         try
