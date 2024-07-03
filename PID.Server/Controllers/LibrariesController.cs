@@ -4,13 +4,15 @@ using AE.PID.Core.DTOs;
 using AE.PID.Server.Data;
 using AE.PID.Server.DTOs;
 using AE.PID.Server.Services;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace AE.PID.Server.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[ApiVersion(1, Deprecated = true)]
+[ApiVersion(2)]
 public class LibrariesController(
     ILogger<LibrariesController> logger,
     AppDbContext dbContext,
@@ -18,11 +20,11 @@ public class LibrariesController(
     : ControllerBase
 {
     /// <summary>
-    ///     Get info for all library. For client.
+    ///     Get info for all libraries. For client.
     /// </summary>
     /// <param name="involvePrerelease"></param>
     /// <returns></returns>
-    [HttpGet]
+    [HttpGet("[controller]")]
     public IActionResult GetLibraries([FromQuery] bool involvePrerelease = false)
     {
         var libraries = dbContext.Libraries
@@ -72,7 +74,7 @@ public class LibrariesController(
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [HttpGet("{id:int}")]
+    [HttpGet("[controller]/{id:int}")]
     public IActionResult GetLibrary([FromRoute] int id)
     {
         var library = dbContext.Libraries
@@ -89,9 +91,10 @@ public class LibrariesController(
     /// <param name="dto"></param>
     /// <returns></returns>
     [HttpPost]
+    [Route("api/v{v:apiVersion}/[controller]")]
     public IActionResult Upload([FromForm] UploadLibraryDto dto)
     {
-        // Validate model and handle the file upload
+        // Validate the model and handle the file upload
         if (Path.GetExtension(dto.File.FileName) != ".vssx")
             return BadRequest("Invalid request. Please provide a vssx file.");
 
@@ -141,7 +144,8 @@ public class LibrariesController(
         return Ok("File uploaded successfully.");
     }
 
-    [HttpDelete("{id:int}")]
+    [HttpPost]
+    [Route("api/v{v:apiVersion}/[controller]/{id:int}/delete")]
     public IActionResult DeleteLibrary([FromRoute] int id)
     {
         var library = dbContext.Libraries.Include(x => x.Versions).SingleOrDefault(x => x.Id == id);
@@ -151,6 +155,7 @@ public class LibrariesController(
         dbContext.Libraries.Remove(library);
         dbContext.SaveChanges();
 
+        logger.LogInformation("Delete library {Id} from database", id);
         return NoContent(); // Or handle the case when the file is not found
     }
 
@@ -160,7 +165,7 @@ public class LibrariesController(
     /// <param name="id"></param>
     /// <param name="versionId"></param>
     /// <returns></returns>
-    [HttpGet("{id:int}/versions/{versionId:int}")]
+    [HttpGet("[controller]/{id:int}/versions/{versionId:int}")]
     public IActionResult GetVersion([FromRoute] int id, [FromRoute] int versionId)
     {
         var version = dbContext.Libraries.Where(x => x.Id == id)
@@ -177,7 +182,7 @@ public class LibrariesController(
     /// <param name="id"></param>
     /// <param name="versionId"></param>
     /// <returns></returns>
-    [HttpPatch("{id:int}/versions/{versionId:int}")]
+    [HttpPatch("[controller]/{id:int}/versions/{versionId:int}")]
     public IActionResult Release([FromRoute] int id, [FromRoute] int versionId)
     {
         var library = dbContext.Libraries.Include(x => x.Versions).SingleOrDefault(x => x.Id == id);
@@ -201,7 +206,8 @@ public class LibrariesController(
     /// <param name="id"></param>
     /// <param name="versionId"></param>
     /// <returns></returns>
-    [HttpDelete("{id:int}/versions/{versionId:int}")]
+    [HttpPost]
+    [Route("api/v{v:apiVersion}/[controller]/{id:int}/versions/{versionId:int}/delete")]
     public IActionResult DeleteVersion([FromRoute] int id, [FromRoute] int versionId)
     {
         var library = dbContext.Libraries.Include(x => x.Versions).SingleOrDefault(x => x.Id == id);
@@ -222,7 +228,7 @@ public class LibrariesController(
         return NoContent();
     }
 
-    [HttpGet("{id:int}/download")]
+    [HttpGet("[controller]/{id:int}/download")]
     public IActionResult DownloadLibrary([FromRoute] int id, bool involvePrerelease = false)
     {
         var library = dbContext.Libraries.Include(x => x.Versions).SingleOrDefault(x => x.Id == id);
@@ -244,7 +250,7 @@ public class LibrariesController(
     /// <param name="id"></param>
     /// <param name="versionId"></param>
     /// <returns></returns>
-    [HttpGet("{id:int}/versions/{versionId:int}/items")]
+    [HttpGet("[controller]/{id:int}/versions/{versionId:int}/items")]
     public IActionResult GetVersionItems([FromRoute] int id, [FromRoute] int versionId)
     {
         var version = dbContext.Libraries.Where(x => x.Id == id)
@@ -257,7 +263,7 @@ public class LibrariesController(
         return Ok(version.Items.Select(x => x.ToDetailedLibraryItemDto()).ToList());
     }
 
-    [HttpGet("cheatsheet")]
+    [HttpGet("[controller]/cheatsheet")]
     public IActionResult GetCheatSheet(bool involvePrerelease = false)
     {
         var filePath = involvePrerelease
@@ -271,7 +277,7 @@ public class LibrariesController(
     }
 
     /// <summary>
-    ///     Get the latest items from library.
+    ///     Get the latest items from the library.
     /// </summary>
     /// <param name="involvePreRelease"></param>
     /// <returns></returns>

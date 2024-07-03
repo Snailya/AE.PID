@@ -1,7 +1,6 @@
 using System.Text.Json.Serialization;
 using AE.PID.Server.Data;
 using Asp.Versioning;
-using Asp.Versioning.ApiExplorer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -47,34 +46,32 @@ builder.Services.AddSwaggerGen(c =>
             Version = version,
             Title = $"API {version}",
             Description = $"API Documentation for version {version}",
-            TermsOfService = new Uri("https://example.com/terms"),
             Contact = new OpenApiContact
             {
-                Name = "Your Name",
-                Email = "your-email@example.com",
-                Url = new Uri("https://example.com/contact")
-            },
-            License = new OpenApiLicense
-            {
-                Name = "Use under LICX",
-                Url = new Uri("https://example.com/license")
+                Name = "Li Jingya",
+                Email = "lijingya@chinaaie.com.cn"
             }
         });
 });
 
-
+// register db context
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite("Data Source=/opt/pid/data/PID_server.db;"));
 
 builder.Services.AddHttpContextAccessor();
 
+// use lowercase for route
 builder.Services.Configure<RouteOptions>(options => { options.LowercaseUrls = true; });
 
+// register cors 
 builder.Services.AddCors(options =>
 {
+    // options.AddPolicy("AllowAll",
+    //     policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().AllowCredentials());
     options.AddPolicy("AllowIntranetIPRange",
         policy => policy.WithOrigins("http://172.18.0.0/22").AllowAnyMethod());
 });
 
+// register a httpclient for PDMS
 builder.Services.AddHttpClient("PDMS",
     client => { client.BaseAddress = new Uri("http://172.18.168.57:8000/api/cube/restful/interface/"); });
 
@@ -94,25 +91,12 @@ app.UseSwaggerUI(options =>
     var apiVersionDescriptions = new[] { "v1", "v2" };
     foreach (var version in apiVersionDescriptions)
         options.SwaggerEndpoint($"/swagger/{version}/swagger.json", $"API {version}");
-    options.RoutePrefix = string.Empty; // 
+    options.RoutePrefix = string.Empty; 
 });
 
+app.UseCors("AllowIntranetIPRange");
 app.UseAuthorization();
 
 app.MapControllers();
 
 app.Run();
-
-static OpenApiInfo CreateInfoForApiVersion(ApiVersionDescription description)
-{
-    var info = new OpenApiInfo
-    {
-        //标题
-        Title = $".NET Core API for 测试项目 {description.ApiVersion}",
-        //当前版本
-        Version = description.ApiVersion.ToString()
-    };
-    //当有弃用标记时的提示信息
-    if (description.IsDeprecated) info.Description += " - 此版本已放弃兼容";
-    return info;
-}

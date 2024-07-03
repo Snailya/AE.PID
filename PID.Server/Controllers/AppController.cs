@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AE.PID.Server.Controllers;
 
 [ApiController]
-public class AppController(ILogger<AppController> logger, AppDbContext dbContext, LinkGenerator linkGenerator)
+public partial class AppController(ILogger<AppController> logger, AppDbContext dbContext, LinkGenerator linkGenerator)
     : ControllerBase
 {
     [HttpGet("check-version")]
@@ -63,7 +63,7 @@ public class AppController(ILogger<AppController> logger, AppDbContext dbContext
         }
 
         // You can process the version and release note as needed
-        var version = new Regex("[\\d.]+").Match(Path.GetFileNameWithoutExtension(dto.Installer.FileName)).Value;
+        var version = MyRegex().Match(Path.GetFileNameWithoutExtension(dto.Installer.FileName)).Value;
         logger.LogInformation("Uploaded installer version {Version}", version);
 
         var appVersion = dbContext.Add(new AppVersionEntity
@@ -80,4 +80,7 @@ public class AppController(ILogger<AppController> logger, AppDbContext dbContext
                 ControllerContext.ActionDescriptor.ControllerName, new { id = appVersion.Entity.Id })
         });
     }
+
+    [GeneratedRegex("[\\d.]+")]
+    private static partial Regex MyRegex();
 }
