@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows;
 using AE.PID.Properties;
 using AE.PID.Tools;
@@ -10,6 +14,7 @@ using Microsoft.Office.Interop.Visio;
 using ReactiveUI;
 using Splat;
 using Application = Microsoft.Office.Interop.Visio.Application;
+using Path = System.IO.Path;
 
 namespace AE.PID.Services;
 
@@ -20,10 +25,12 @@ public class DocumentMonitor : IEnableLogger
 {
     private readonly List<Document> _checked = [];
     private readonly CompositeDisposable _cleanUp = new();
+    private readonly ApiClient _client;
     private readonly ConfigurationService _configuration;
 
-    public DocumentMonitor(ConfigurationService configuration)
+    public DocumentMonitor(ApiClient client, ConfigurationService configuration)
     {
+        _client = client;
         _configuration = configuration;
 
         // check update when visio is idle, however, if the document has been checked, skip it
@@ -53,7 +60,7 @@ public class DocumentMonitor : IEnableLogger
                     }
                     else
                     {
-                        VisioHelper.UpdateDocument(document);
+                        _ = UseServerSideUpdate(document);
                     }
                 },
                 ex => { this.Log().Error(ex, "Document Monitor Service ternimated accidently."); },
@@ -73,6 +80,13 @@ public class DocumentMonitor : IEnableLogger
             .DisposeWith(_cleanUp);
     }
 
+    #region Api
+
+    private static string UpdateDocumentApi =>
+        "api/v1/documents";
+
+    #endregion
+
     /// <summary>
     ///     Compare the document stencil with library stuffs.
     /// </summary>
@@ -82,5 +96,42 @@ public class DocumentMonitor : IEnableLogger
     {
         return document.Masters != null && document.Masters.OfType<IVMaster>().ToList().Any(source =>
             _configuration.LibraryItems.Items.Any(x => x.BaseId == source.BaseID && x.UniqueId != source.UniqueID));
+    }
+
+    /// <summary>
+    /// Update the document by transfer the file to server.
+    /// </summary>
+    /// <param name="document"></param>
+    public async Task UseServerSideUpdate(IVDocument document)
+    {
+        // remove hidden information to reduce size
+        document.RemoveHiddenInformation((int)VisRemoveHiddenInfoItems.visRHIMasters);
+        
+        // store the file path otherwise it will lose after the document close
+        var filePath = document.FullName;
+        document.Close();
+
+        if (document.Saved == false) return;
+        
+        // convert the file to byte-array content and sent as byte-array
+        // because there is an encrypted system on end user, so directly transfer the file to server will not be able to read in the server side
+        var packageBytes = File.ReadAllBytes(filePath);
+        var content = new ByteArrayContent(packageBytes);
+        var response = await _client.PostAsync(UpdateDocumentApi, content);
+        
+        response.EnsureSuccessStatusCode();
+        
+        // create a copy of the source file
+        File.Copy(filePath, Path.ChangeExtension(filePath, ".bak"));
+
+        // overwrite the origin file after a successful update
+        using var contentStream = await response.Content.ReadAsStreamAsync();
+        using var fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write);
+        {
+            await contentStream.CopyToAsync(fileStream);
+        }
+        
+        // reopen the file
+        Globals.ThisAddIn.Application.Documents.Open(filePath);
     }
 }

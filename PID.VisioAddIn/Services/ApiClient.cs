@@ -50,4 +50,9 @@ public class ApiClient : IDisposable
     {
         return _client.GetStringAsync(requestUri);
     }
+
+    public Task<HttpResponseMessage> PostAsync(string requestUri, HttpContent content)
+    {
+        return _client.PostAsync(requestUri, content);
+    }
 }

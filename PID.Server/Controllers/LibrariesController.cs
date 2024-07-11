@@ -276,28 +276,7 @@ public class LibrariesController(
         return PhysicalFile(filePath, "application/octet-stream", ".cheatsheet", true);
     }
 
-    /// <summary>
-    ///     Get the latest items from the library.
-    /// </summary>
-    /// <param name="involvePreRelease"></param>
-    /// <returns></returns>
-    private IEnumerable<DetailedLibraryItemDto> PopulatesCheatSheetItems(bool involvePreRelease = false)
-    {
-        var items = new List<DetailedLibraryItemDto>();
 
-        foreach (var library in dbContext.Libraries)
-        {
-            var version = dbContext.Entry(library).Collection(v => v.Versions).Query()
-                .Where(v => involvePreRelease || v.IsReleased)
-                .AsEnumerable()
-                .MaxBy(x => new Version(x.Version));
-            if (version == null) continue;
-            items.AddRange(dbContext.Entry(version).Collection(x => x.Items)
-                .Query().Select(x => x.ToDetailedLibraryItemDto()));
-        }
-
-        return items;
-    }
 
     /// <summary>
     ///     Persist latest items into a local file.
@@ -305,7 +284,7 @@ public class LibrariesController(
     /// <param name="involvePrerelease"></param>
     private void CreateCheatSheet(bool involvePrerelease = false)
     {
-        var items = PopulatesCheatSheetItems(involvePrerelease).ToList();
+        var items = Helper.PopulatesCheatSheetItems(dbContext,involvePrerelease).ToList();
         var jsonString = JsonSerializer.Serialize(items);
 
         var filePath = Path.Combine("/opt/pid/data/libraries", involvePrerelease ? ".cheatsheet-pre" : ".cheatsheet");

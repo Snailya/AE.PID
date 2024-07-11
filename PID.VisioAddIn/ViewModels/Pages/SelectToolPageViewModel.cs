@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows;
+using AE.PID.Core.Models;
 using AE.PID.Services;
 using DynamicData;
 using DynamicData.Aggregation;

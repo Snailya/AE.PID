@@ -5,6 +5,8 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using AE.PID.Core.DTOs;
+using AE.PID.Core.Models;
 using AE.PID.Properties;
 using AE.PID.Services;
 using AE.PID.ViewModels;
@@ -14,6 +16,7 @@ using Splat;
 using Font = Microsoft.Office.Interop.Visio.Font;
 using Path = System.IO.Path;
 using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
+using TaskStatus = AE.PID.Core.Models.TaskStatus;
 
 namespace AE.PID.Tools;
 
@@ -201,8 +204,9 @@ internal static class VisioHelper
     }
 
     /// <summary>
-    /// When dropping an item to the page, the stencil includes that item need be loaded or the master should already be in the document stencil.
-    /// Prepare the environment so that the drop process will not throw exception.
+    ///     When dropping an item to the page, the stencil includes that item need be loaded or the master should already be in
+    ///     the document stencil.
+    ///     Prepare the environment so that the drop process will not throw exception.
     /// </summary>
     /// <param name="page"></param>
     /// <param name="baseId"></param>
@@ -226,7 +230,6 @@ internal static class VisioHelper
 
             return document.Masters.ItemU[$"B{baseId}"];
         }
-
     }
 
     /// <summary>
@@ -285,34 +288,21 @@ internal static class VisioHelper
 
         return toolPath;
     }
-
-    private static void VerifySaved(Document document)
-    {
-        // first check if the document is a tmp document
-        if (string.IsNullOrEmpty(document.Path))
-        {
-            // display a dialog to ask user to save the document
-            var dialog = new SaveFileDialog
-            {
-                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-                Filter = @"Visio Files|*.vsdx",
-                Title = @"保存文件"
-            };
-            if (dialog.ShowDialog() != true) throw new DocumentNotSavedException(); // user cancel
-            document.SaveAs(dialog.FileName);
-        }
-
-        // save the document if it has changes
-        if (document.Saved == false) document.Save();
-    }
-
+    
     /// <summary>
     ///     Save and close document, then update the stencil using PID.DocumentStencilUpdateTool.exe.
     /// </summary>
     /// <param name="document"></param>
-    public static void UpdateDocument(Document document)
+    public static void UseLocalUpdate(Document document)
     {
         var progress = new Progress<ProgressValue>();
+        Contract.Assert(document.Type == VisDocumentTypes.visTypeDrawing);
+
+        // close document before update
+        document.Close();
+
+        if (document.Stat != (short)VisStatCodes.visStatClosed) return;
+
         WindowManager.GetInstance()!.CreateRunInBackgroundWithProgress(progress,
             () =>
             {
@@ -320,12 +310,6 @@ internal static class VisioHelper
 
                 try
                 {
-                    Contract.Assert(document.Type == VisDocumentTypes.visTypeDrawing);
-                    VerifySaved(document);
-
-                    // close document before update
-                    document.Close();
-
                     UpdateDocumentStencil(file, progress);
                 }
                 catch (Exception ex)
@@ -341,6 +325,7 @@ internal static class VisioHelper
                 }
             });
     }
+
 
     private static void UpdateDocumentStencil(string file, IProgress<ProgressValue> progress)
     {

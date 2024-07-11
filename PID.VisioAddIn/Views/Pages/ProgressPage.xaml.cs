@@ -6,6 +6,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
+using AE.PID.Core.Models;
 using AE.PID.Services;
 using AE.PID.ViewModels;
 using ReactiveUI;

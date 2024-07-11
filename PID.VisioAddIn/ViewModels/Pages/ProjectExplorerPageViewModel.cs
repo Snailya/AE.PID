@@ -9,7 +9,7 @@ using AE.PID.Services;
 using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
-using TaskStatus = AE.PID.Services.TaskStatus;
+using TaskStatus = AE.PID.Core.Models.TaskStatus;
 
 namespace AE.PID.ViewModels;
 

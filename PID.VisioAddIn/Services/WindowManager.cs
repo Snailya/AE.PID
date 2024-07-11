@@ -3,6 +3,8 @@ using System.Reactive.Concurrency;
 using System.Reactive.Subjects;
 using System.Windows;
 using System.Windows.Threading;
+using AE.PID.Core.DTOs;
+using AE.PID.Core.Models;
 using AE.PID.Properties;
 using AE.PID.ViewModels;
 using AE.PID.Views;

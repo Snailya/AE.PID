@@ -13,7 +13,7 @@ public class BackgroundTaskManager : IDisposable
     {
         AppUpdater = new AppUpdater(client, configuration);
         LibraryUpdater = new LibraryUpdater(client, configuration);
-        DocumentMonitor = new DocumentMonitor(configuration);
+        DocumentMonitor = new DocumentMonitor(client, configuration);
     }
 
     public AppUpdater AppUpdater { get; set; }

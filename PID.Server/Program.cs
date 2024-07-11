@@ -6,6 +6,7 @@ using Microsoft.OpenApi.Models;
 
 // initialize the environment
 if (!Directory.Exists("/opt/pid/data")) Directory.CreateDirectory("/opt/pid/data");
+if (!Directory.Exists("/opt/pid/data/tmp")) Directory.CreateDirectory("/opt/pid/data/tmp");
 if (!Directory.Exists("/opt/pid/data/apps")) Directory.CreateDirectory("/opt/pid/data/apps");
 if (!Directory.Exists("/opt/pid/data/libraries")) Directory.CreateDirectory("/opt/pid/data/libraries");
 
@@ -75,6 +76,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddHttpClient("PDMS",
     client => { client.BaseAddress = new Uri("http://172.18.168.57:8000/api/cube/restful/interface/"); });
 
+builder.Services.AddSignalR();
+
 var app = builder.Build();
 
 // initialize the database
@@ -94,9 +97,12 @@ app.UseSwaggerUI(options =>
     options.RoutePrefix = string.Empty; 
 });
 
+// set up the cors to allow only the intranet user
 app.UseCors("AllowIntranetIPRange");
+
 app.UseAuthorization();
 
 app.MapControllers();
+
 
 app.Run();

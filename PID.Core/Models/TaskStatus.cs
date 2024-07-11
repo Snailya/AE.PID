@@ -1,4 +1,4 @@
-﻿namespace AE.PID.Services;
+﻿namespace AE.PID.Core.Models;
 
 public enum TaskStatus
 {

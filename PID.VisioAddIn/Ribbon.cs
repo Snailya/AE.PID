@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using AE.PID.Models;
 using AE.PID.Properties;
 using AE.PID.Services;
@@ -76,7 +77,9 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
                         VisioHelper.FormatDocument(Globals.ThisAddIn.Application.ActiveDocument);
                         break;
                     case Command.UpdateDocument:
-                        VisioHelper.UpdateDocument(Globals.ThisAddIn.Application.ActiveDocument);
+                        // VisioHelper.UpdateDocument(Globals.ThisAddIn.Application.ActiveDocument);
+                        _ = BackgroundTaskManager.GetInstance()!.DocumentMonitor
+                            .UseServerSideUpdate(Globals.ThisAddIn.Application.ActiveDocument);
                         break;
                     case Command.InsertLegend:
                         VisioHelper.InsertLegend(Globals.ThisAddIn.Application.ActivePage);
@@ -120,9 +123,9 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
     }
 
     /// <summary>
-    /// Because the state of the buttons on ribbon will not re-compute once loaded.
-    /// So the re-computation needs to be triggered manually by calling _ribbon.Invalidate().
-    /// As the button state is related to if there is a document in open state, observe on these two events.
+    ///     Because the state of the buttons on ribbon will not re-compute once loaded.
+    ///     So the re-computation needs to be triggered manually by calling _ribbon.Invalidate().
+    ///     As the button state is related to if there is a document in open state, observe on these two events.
     /// </summary>
     private void RegisterUpdateForElements()
     {
@@ -276,7 +279,7 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
         _commandInvoker.OnNext(Command.Help);
     }
 
-    public void Debug(IRibbonControl control)
+    public async Task Debug(IRibbonControl control)
     {
     }
 
