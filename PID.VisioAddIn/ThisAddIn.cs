@@ -41,8 +41,9 @@ public partial class ThisAddIn : IEnableLogger
             .ObserveOn(ThreadPoolScheduler.Instance)
             .Subscribe(_ =>
             {
+                // todo: prompt the configuration if not add
                 BackgroundTaskManager.Initialize();
-
+                
                 // initialize ribbon
                 _ribbon = new Ribbon();
                 Globals.ThisAddIn.Application.RegisterRibbonX(_ribbon, null,

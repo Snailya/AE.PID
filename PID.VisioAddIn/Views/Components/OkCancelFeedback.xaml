@@ -22,10 +22,14 @@
         </Grid.ColumnDefinitions>
         <TextBlock x:Name="Message" />
         <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+            <StackPanel.Resources>
+                <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            </StackPanel.Resources>
             <Button x:Name="OkButton"
                     Content="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type views:OkCancelFeedback}}, Path=OkText}" />
             <Button x:Name="CancelButton"
-                    Content="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type views:OkCancelFeedback}}, Path=CancelText}" />
+                    Content="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type views:OkCancelFeedback}}, Path=CancelText}"
+                    Visibility="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type views:OkCancelFeedback}}, Path=IsCancelButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
         </StackPanel>
     </Grid>
 </views:ViewBase>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Disposables;
+using AE.PID.Views;
 using Splat;
 
 namespace AE.PID.Services;
@@ -34,11 +35,17 @@ public class BackgroundTaskManager : IDisposable
 
     public static void Initialize()
     {
-        var client = Locator.Current.GetService<ApiClient>()!;
         var configuration = Locator.Current.GetService<ConfigurationService>()!;
+        if (string.IsNullOrEmpty(configuration.Server) || string.IsNullOrWhiteSpace(configuration.UserId))
+        {
+            var d = WindowManager.Dispatcher!.BeginInvoke(() =>
+                WindowManager.GetInstance()!.ShowDialog(new InitialSetupPage()));
+            d.Wait();
+        }
 
+        var client = Locator.Current.GetService<ApiClient>()!;
         _instance ??= new BackgroundTaskManager(client, configuration);
-
+        
         LogHost.Default.Info("Background task is running.");
     }
 }

@@ -265,6 +265,7 @@
     <Compile Include="ViewModels\LibraryInfoViewModel.cs" />
     <Compile Include="ViewModels\MasterOptionViewModel.cs" />
     <Compile Include="ViewModels\Pages\DesignMaterialsViewModel.cs" />
+    <Compile Include="ViewModels\Pages\InitialSetupPageViewModel.cs" />
     <Compile Include="ViewModels\Pages\ProgressPageViewModel.cs" />
     <Compile Include="ViewModels\Pages\ProjectExplorerPageViewModel.cs" />
     <Compile Include="ViewModels\Pages\SelectToolPageViewModel.cs" />
@@ -273,8 +274,8 @@
     <Compile Include="ViewModels\TreeNodeViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="ViewModels\WindowViewModel.cs" />
-    <Compile Include="Views\Components\DocumentInfoTable.xaml.cs">
-      <DependentUpon>DocumentInfoTable.xaml</DependentUpon>
+    <Compile Include="Views\Components\ProjectInfoTable.xaml.cs">
+      <DependentUpon>ProjectInfoTable.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Components\OkCancelFeedback.xaml.cs">
       <DependentUpon>OkCancelFeedback.xaml</DependentUpon>
@@ -288,6 +289,9 @@
     <Compile Include="Views\Controls\SectionLabel.cs" />
     <Compile Include="Views\Controls\TreeListView.cs" />
     <Compile Include="Views\Controls\TreeListViewItem.cs" />
+    <Compile Include="Views\Pages\InitialSetupPage.xaml.cs">
+      <DependentUpon>InitialSetupPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Pages\ProgressPage.xaml.cs">
       <DependentUpon>ProgressPage.xaml</DependentUpon>
     </Compile>
@@ -346,7 +350,7 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Views\Components\DocumentInfoTable.xaml">
+    <Page Include="Views\Components\ProjectInfoTable.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -357,6 +361,10 @@
     <Page Include="Views\Components\UserFiltersForm.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Pages\InitialSetupPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\Pages\ProgressPage.xaml">
       <Generator>MSBuild:Compile</Generator>

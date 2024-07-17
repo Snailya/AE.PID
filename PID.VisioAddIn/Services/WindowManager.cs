@@ -3,7 +3,6 @@ using System.Reactive.Concurrency;
 using System.Reactive.Subjects;
 using System.Windows;
 using System.Windows.Threading;
-using AE.PID.Core.DTOs;
 using AE.PID.Core.Models;
 using AE.PID.Properties;
 using AE.PID.ViewModels;
@@ -46,7 +45,7 @@ public class WindowManager : IDisposable
     }
 
     #endregion
-    
+
     public static Dispatcher? Dispatcher { get; private set; }
 
     public void Dispose()
@@ -76,7 +75,7 @@ public class WindowManager : IDisposable
         // while the competition between WPF and Visio operation will block the spinning of the indicator.
         // that's why a separated thread is needed for WPF rending.
         Dispatcher = Dispatcher.CurrentDispatcher;
-        
+
         // manually set the RxAPP's MainThreadScheduler property to this thread so that it could be used on ObserveOn and SubscribeOn by calling RxApp.MainThreadScheduler
         RxApp.MainThreadScheduler = DispatcherScheduler.Current;
 
@@ -116,6 +115,14 @@ public class WindowManager : IDisposable
 
         _secondaryWindow.Content = secondary;
         _secondaryWindow.Show();
+    }
+
+    public bool? ShowDialog<TMain>(PageBase<TMain> main) where TMain : ViewModelBase
+    {
+        _mainWindow.Content = main;
+        _secondaryWindow.Content = null;
+
+        return _mainWindow.ShowDialog();
     }
 
     /// <summary>

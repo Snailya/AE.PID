@@ -11,6 +11,9 @@ namespace AE.PID.Views;
 /// </summary>
 public partial class OkCancelFeedback
 {
+    public static readonly DependencyProperty IsCancelButtonVisibleProperty = DependencyProperty.Register(
+        nameof(IsCancelButtonVisible), typeof(bool), typeof(OkCancelFeedback), new PropertyMetadata(true));
+
     public static readonly DependencyProperty OkTextProperty = DependencyProperty.Register(
         nameof(OkText), typeof(string), typeof(OkCancelFeedback), new PropertyMetadata("确认"));
 
@@ -31,9 +34,10 @@ public partial class OkCancelFeedback
 
             this.BindCommand(ViewModel, vm => vm.Ok, v => v.OkButton)
                 .DisposeWith(d);
+            
             this.BindCommand(ViewModel, vm => vm.Cancel, v => v.CancelButton)
                 .DisposeWith(d);
-
+            
             ViewModel.WhenAnyObservable(x => x.Cancel)
                 .Merge(
                     ViewModel.WhenAnyObservable(x => x.Ok)
@@ -42,6 +46,12 @@ public partial class OkCancelFeedback
                 .Subscribe(_ => Close())
                 .DisposeWith(d);
         });
+    }
+
+    public bool IsCancelButtonVisible
+    {
+        get => (bool)GetValue(IsCancelButtonVisibleProperty);
+        set => SetValue(IsCancelButtonVisibleProperty, value);
     }
 
     public bool CloseOnOk
