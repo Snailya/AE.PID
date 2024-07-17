@@ -31,7 +31,7 @@ internal static class VisioHelper
     public static void CheckDesignationUnique(IVPage page)
     {
         var duplicated = page.Shapes.OfType<Shape>()
-            .Where(x => x.HasCategory("Equipment") &&
+            .Where(x => (x.HasCategory("Equipment")  || x.HasCategory("Instrument")) &&
                         !string.IsNullOrEmpty(x.CellsU["Prop.FunctionalElement"]
                             .ResultStr[VisUnitCodes.visUnitsString]) &&
                         !string.IsNullOrEmpty(x.CellsU["Prop.FunctionalGroup"]
