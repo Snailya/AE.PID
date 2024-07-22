@@ -15,8 +15,7 @@ public partial class InitialSetupPage
     public InitialSetupPage() : base("Initial Setup")
     {
         InitializeComponent();
-        var configuration = Locator.Current.GetService<ConfigurationService>();
-        ViewModel = new InitialSetupPageViewModel(configuration!);
+        ViewModel = new InitialSetupPageViewModel();
 
         this.WhenActivated(d =>
         {

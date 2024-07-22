@@ -14,27 +14,32 @@ using AE.PID.Tools;
 using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
+using Splat;
 
 namespace AE.PID.ViewModels;
 
 public class SettingsPageViewModel(
-    ConfigurationService configuration,
-    AppUpdater appUpdater,
-    LibraryUpdater libraryUpdater)
+    ConfigurationService? configuration = null,
+    AppUpdater? appUpdater = null,
+    LibraryUpdater? libraryUpdater = null)
     : ViewModelBase
 {
+    private readonly AppUpdater _appUpdater = appUpdater ?? Locator.Current.GetService<AppUpdater>()!;
+
+    private readonly ConfigurationService _configuration =
+        configuration ?? Locator.Current.GetService<ConfigurationService>()!;
+
+    private readonly LibraryUpdater _libraryUpdater = libraryUpdater ?? Locator.Current.GetService<LibraryUpdater>()!;
     private readonly SourceCache<LibraryDto, int> _serverLibraries = new(t => t.Id);
 
-    private FrequencyOptionViewModel _appCheckFrequency =
-        FrequencyOptionViewModel.GetMatchedOption(configuration.AppCheckInterval);
+    private FrequencyOptionViewModel _appCheckFrequency;
 
     private ReadOnlyObservableCollection<LibraryInfoViewModel> _libraries = new([]);
 
-    private FrequencyOptionViewModel _libraryCheckFrequency =
-        FrequencyOptionViewModel.GetMatchedOption(configuration.LibraryCheckInterval);
+    private FrequencyOptionViewModel _libraryCheckFrequency;
 
-    private string _server = configuration.Server;
-    private string _user = configuration.UserId;
+    private string _server = string.Empty;
+    private string _user = string.Empty;
 
     #region Output Properties
 
@@ -60,17 +65,17 @@ public class SettingsPageViewModel(
 
     private void SaveChanges()
     {
-        if (configuration.Server != _server)
-            configuration.Server = _server;
+        if (_configuration.Server != _server)
+            _configuration.Server = _server;
 
-        if (configuration.UserId != _user)
-            configuration.UserId = _user;
+        if (_configuration.UserId != _user)
+            _configuration.UserId = _user;
 
-        if (configuration.AppCheckInterval != _appCheckFrequency.TimeSpan)
-            configuration.AppCheckInterval = _appCheckFrequency.TimeSpan;
+        if (_configuration.AppCheckInterval != _appCheckFrequency.TimeSpan)
+            _configuration.AppCheckInterval = _appCheckFrequency.TimeSpan;
 
-        if (configuration.LibraryCheckInterval != _libraryCheckFrequency.TimeSpan)
-            configuration.LibraryCheckInterval = _libraryCheckFrequency.TimeSpan;
+        if (_configuration.LibraryCheckInterval != _libraryCheckFrequency.TimeSpan)
+            _configuration.LibraryCheckInterval = _libraryCheckFrequency.TimeSpan;
     }
 
     #region Setup
@@ -79,11 +84,11 @@ public class SettingsPageViewModel(
     {
         CheckForAppUpdate = ReactiveCommand.CreateFromTask(async () =>
         {
-            var hasUpdate = await appUpdater.CheckUpdateAsync();
+            var hasUpdate = await _appUpdater.CheckUpdateAsync();
             if (!hasUpdate) WindowManager.ShowDialog(Resources.MSG_no_valid_update, MessageBoxButton.OK);
         });
         CheckForLibrariesUpdate =
-            ReactiveCommand.CreateRunInBackground(() => libraryUpdater.ManuallyInvokeTrigger.OnNext(Unit.Default));
+            ReactiveCommand.CreateRunInBackground(() => _libraryUpdater.ManuallyInvokeTrigger.OnNext(Unit.Default));
 
         OpenTmp = ReactiveCommand.Create(OpenTmlFolder);
         ClearCache = ReactiveCommand.CreateRunInBackground(DeleteFilesInTmpFolder);
@@ -94,7 +99,7 @@ public class SettingsPageViewModel(
 
     protected override void SetupSubscriptions(CompositeDisposable d)
     {
-        configuration.Libraries
+        _configuration.Libraries
             .Connect()
             .FullJoin(
                 _serverLibraries.Connect(),
@@ -118,9 +123,14 @@ public class SettingsPageViewModel(
 
     protected override void SetupStart()
     {
+        _appCheckFrequency = FrequencyOptionViewModel.GetMatchedOption(_configuration.AppCheckInterval);
+        _libraryCheckFrequency = FrequencyOptionViewModel.GetMatchedOption(_configuration.LibraryCheckInterval);
+        _server = _configuration.Server;
+        _user = _configuration.UserId;
+
         Task.Run(async () =>
         {
-            var libraries = await libraryUpdater.GetLibraryInfos();
+            var libraries = await _libraryUpdater.GetLibraryInfos();
             _serverLibraries.AddOrUpdate(libraries);
         });
     }

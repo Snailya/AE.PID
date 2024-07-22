@@ -29,10 +29,10 @@ public class LibraryUpdater : IEnableLogger
     private readonly ApiClient _client;
     private readonly ConfigurationService _configuration;
 
-    public LibraryUpdater(ApiClient client, ConfigurationService configuration)
+    public LibraryUpdater(ApiClient? client = null, ConfigurationService? configuration = null)
     {
-        _client = client;
-        _configuration = configuration;
+        _client = client ?? Locator.Current.GetService<ApiClient>()!;
+        _configuration = configuration ?? Locator.Current.GetService<ConfigurationService>()!;
 
         var autoCheckObservable = configuration
             .WhenAnyValue(x => x.LibraryCheckInterval)
@@ -40,11 +40,11 @@ public class LibraryUpdater : IEnableLogger
             .Switch()
             .Merge(Observable.Return<long>(-1))
             .Where(_ =>
-                DateTime.Now > configuration.LibraryNextTime)
+                DateTime.Now > _configuration.LibraryNextTime)
             .Select(_ => Unit.Default)
             .Do(_ => this.Log().Info("Library Update started. {Initiated by: Auto-Run}"));
 
-        var serverChangeObservable = configuration
+        var serverChangeObservable = _configuration
             .WhenAnyValue(x => x.Server)
             .Select(_ => Unit.Default)
             .Do(_ => this.Log().Info("Library update started. {Initiated by: Server-Change}"));
@@ -57,10 +57,10 @@ public class LibraryUpdater : IEnableLogger
             .Merge(userCheckObservable)
             .Merge(serverChangeObservable)
             .SelectMany(_ => CheckLibraryUpdates())
-            .Do(_ => { configuration.LibraryNextTime = DateTime.Now + configuration.LibraryCheckInterval; })
+            .Do(_ => { _configuration.LibraryNextTime = DateTime.Now + _configuration.LibraryCheckInterval; })
             .Where(x => x.Any())
             .SelectMany(UpdateLibrariesAsync)
-            .Subscribe(configuration.UpdateLibraries,
+            .Subscribe(_configuration.UpdateLibraries,
                 exception => { this.Log().Error(exception, "Library update failed."); });
     }
 

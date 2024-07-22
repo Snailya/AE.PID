@@ -11,11 +11,14 @@ using AE.PID.Services;
 using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
+using Splat;
 
 namespace AE.PID.ViewModels;
 
-public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
+public class DesignMaterialsViewModel(MaterialsService? service = null) : ViewModelBase
 {
+    private readonly MaterialsService _service = service??Locator.Current.GetService<MaterialsService>()!;
+
     // Members that return a sequence should never return null
     private ReadOnlyObservableCollection<TreeNodeViewModel<MaterialCategoryDto>> _categories = new([]);
 
@@ -35,7 +38,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
         if (_element is not PartItem partItem) return;
 
         partItem.MaterialNo = material.Code;
-        service.AddToLastUsed(material, CategoryPredicateSeed);
+        _service.AddToLastUsed(material, CategoryPredicateSeed);
     }
 
     #endregion
@@ -84,7 +87,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
         // however, to enhance user select efficiency, this tree is not used directly but as the source for a filtered tree that matches the current element
         var categoryPredicate = this.WhenAnyValue(x => x.CategoryPredicateSeed)
             .Select(BuildCategoryPredicate());
-        service.Categories
+        _service.Categories
             .Connect()
             .TransformToTree(x => x.ParentId, categoryPredicate)
             .Transform(node => new TreeNodeViewModel<MaterialCategoryDto>(node))
@@ -115,7 +118,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
             .WhereNotNull();
 
         // the load action is firstly process by request server to fetch materials if not in cache
-        query.Subscribe(x => { _ = service.PopulateMaterials(x); })
+        query.Subscribe(x => { _ = _service.PopulateMaterials(x); })
             .DisposeWith(d);
 
         // then valid materials are filter from service
@@ -131,7 +134,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
                 t => t.UserFiltersViewModel.Manufacturer
             )
             .Select(BuildUserFilter);
-        service.MaterialsGroupByCategory
+        _service.MaterialsGroupByCategory
             .Connect()
             .Filter(queryFilter)
             .RemoveKey()
@@ -149,7 +152,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
             .WhereNotNull()
             .Select(x => x.Id)
             .Select(BuildLastUsedFilter);
-        service.LastUsed
+        _service.LastUsed
             .Connect()
             .Filter(lastUsedFilter)
             .SortBy(x => x.LastUsed)
@@ -171,7 +174,7 @@ public class DesignMaterialsViewModel(MaterialsService service) : ViewModelBase
         return name => string.IsNullOrEmpty(name)
             ? _ => false
             : node =>
-                service.CategoryMap.TryGetValue(name, out var codes) ? codes.Contains(node.Item.Code) : node.IsRoot;
+                _service.CategoryMap.TryGetValue(name, out var codes) ? codes.Contains(node.Item.Code) : node.IsRoot;
     }
 
     /// <summary>

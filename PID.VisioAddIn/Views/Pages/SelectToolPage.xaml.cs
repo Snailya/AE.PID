@@ -16,7 +16,7 @@ public partial class SelectToolPage
     {
         InitializeComponent();
 
-        ViewModel = new SelectToolPageViewModel(new SelectService());
+        ViewModel = new SelectToolPageViewModel();
 
         this.WhenActivated(d =>
         {

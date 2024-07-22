@@ -23,8 +23,7 @@ public partial class MaterialsSelectionPage
     {
         InitializeComponent();
 
-        var materialService = Locator.Current.GetService<MaterialsService>();
-        ViewModel = new DesignMaterialsViewModel(materialService!);
+        ViewModel = new DesignMaterialsViewModel();
 
         this.WhenActivated(d =>
         {

@@ -43,7 +43,7 @@ public partial class ThisAddIn : IEnableLogger
             {
                 // todo: prompt the configuration if not add
                 BackgroundTaskManager.Initialize();
-                
+
                 // initialize ribbon
                 _ribbon = new Ribbon();
                 Globals.ThisAddIn.Application.RegisterRibbonX(_ribbon, null,
@@ -59,11 +59,14 @@ public partial class ThisAddIn : IEnableLogger
 
         Locator.CurrentMutable.RegisterLazySingleton(() => new ConfigurationService(),
             typeof(ConfigurationService));
-        Locator.CurrentMutable.RegisterLazySingleton(
-            () => new ApiClient(Locator.Current.GetService<ConfigurationService>()!),
-            typeof(ApiClient));
-        Locator.CurrentMutable.RegisterLazySingleton(
-            () => new MaterialsService(Locator.Current.GetService<ApiClient>()!), typeof(MaterialsService));
+        Locator.CurrentMutable.RegisterLazySingleton(() => new ApiClient(), typeof(ApiClient));
+        Locator.CurrentMutable.RegisterLazySingleton(() => new MaterialsService(), typeof(MaterialsService));
+        Locator.CurrentMutable.RegisterLazySingleton(() => new AppUpdater(), typeof(AppUpdater));
+        Locator.CurrentMutable.RegisterLazySingleton(() => new LibraryUpdater(), typeof(LibraryUpdater));
+        Locator.CurrentMutable.RegisterLazySingleton(() => new DocumentMonitor(), typeof(DocumentMonitor));
+        Locator.CurrentMutable.RegisterLazySingleton(() => new ProjectService(), typeof(ProjectService));
+        Locator.CurrentMutable.RegisterLazySingleton(() => new SelectService(), typeof(SelectService));
+        
     }
 
     private void ThisAddIn_Shutdown(object sender, System.EventArgs e)

@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Reactive.Disposables;
 using System.Threading.Tasks;
 using ReactiveUI;
+using Splat;
 
 namespace AE.PID.Services;
 
@@ -12,8 +13,10 @@ public class ApiClient : IDisposable
     private readonly CompositeDisposable _cleanUp = new();
     private HttpClient _client = new();
 
-    public ApiClient(ConfigurationService configuration)
+    public ApiClient(ConfigurationService? configuration=null)
     {
+        configuration ??= Locator.Current.GetService<ConfigurationService>()!;
+        
         configuration.WhenAnyValue(x => x.Server)
             .Subscribe(server =>
             {

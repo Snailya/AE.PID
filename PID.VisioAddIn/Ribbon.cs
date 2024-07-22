@@ -78,8 +78,8 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
                         break;
                     case Command.UpdateDocument:
                         // VisioHelper.UpdateDocument(Globals.ThisAddIn.Application.ActiveDocument);
-                        _ = BackgroundTaskManager.GetInstance()!.DocumentMonitor
-                            .UseServerSideUpdate(Globals.ThisAddIn.Application.ActiveDocument);
+                        var monitor = Locator.Current.GetService<DocumentMonitor>()!;
+                        _ = monitor.UseServerSideUpdate(Globals.ThisAddIn.Application.ActiveDocument);
                         break;
                     case Command.InsertLegend:
                         VisioHelper.InsertLegend(Globals.ThisAddIn.Application.ActivePage);
@@ -292,7 +292,8 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
     {
         if (Globals.ThisAddIn.Application.ActiveDocument == null) return false;
 
-        return BackgroundTaskManager.GetInstance()!.DocumentMonitor.IsMasterOutOfDate(Globals.ThisAddIn.Application
+        var monitor = Locator.Current.GetService<DocumentMonitor>()!;
+        return monitor.IsMasterOutOfDate(Globals.ThisAddIn.Application
             .ActiveDocument);
     }
 

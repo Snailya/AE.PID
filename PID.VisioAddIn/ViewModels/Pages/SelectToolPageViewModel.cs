@@ -10,16 +10,18 @@ using DynamicData;
 using DynamicData.Aggregation;
 using DynamicData.Binding;
 using ReactiveUI;
+using Splat;
 
 namespace AE.PID.ViewModels;
 
-public class SelectToolPageViewModel(SelectService service) : ViewModelBase
+public class SelectToolPageViewModel(SelectService? service = null) : ViewModelBase
 {
     private bool _hasSelection;
     private ObservableAsPropertyHelper<bool> _isMastersLoading = ObservableAsPropertyHelper<bool>.Default();
     private ReadOnlyObservableCollection<MasterOptionViewModel> _masters = new([]);
     private SelectionMode _mode = SelectionMode.ById;
     private int _shapeId;
+    private readonly SelectService _service = service??Locator.Current.GetService<SelectService>()!;
 
     #region Output Properties
 
@@ -68,7 +70,7 @@ public class SelectToolPageViewModel(SelectService service) : ViewModelBase
                 try
                 {
                     observer.OnNext(TaskStatus.Running);
-                    service.LoadMasters();
+                    _service.LoadMasters();
                 }
                 catch (Exception e)
                 {
@@ -86,7 +88,7 @@ public class SelectToolPageViewModel(SelectService service) : ViewModelBase
             .ToProperty(this, x => x.IsMastersLoading, out _isMastersLoading)
             .DisposeWith(d);
 
-        service.Masters
+        _service.Masters
             .Connect()
             .Transform(x => new MasterOptionViewModel(x))
             .Sort(SortExpressionComparer<MasterOptionViewModel>.Ascending(t => t.Name))
@@ -108,12 +110,12 @@ public class SelectToolPageViewModel(SelectService service) : ViewModelBase
 
     protected override void SetupStart()
     {
-        ThisAddIn.Dispatcher!.InvokeAsync(service.Start);
+        ThisAddIn.Dispatcher!.InvokeAsync(_service.Start);
     }
 
     protected override void SetupDeactivate()
     {
-        ThisAddIn.Dispatcher!.InvokeAsync(service.Stop);
+        ThisAddIn.Dispatcher!.InvokeAsync(_service.Stop);
     }
 
     #endregion

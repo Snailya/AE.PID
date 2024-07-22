@@ -9,17 +9,19 @@ using AE.PID.Services;
 using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
+using Splat;
 using TaskStatus = AE.PID.Core.Models.TaskStatus;
 
 namespace AE.PID.ViewModels;
 
-public class ProjectExplorerPageViewModel(ProjectService service) : ViewModelBase
+public class ProjectExplorerPageViewModel(ProjectService? service = null) : ViewModelBase
 {
     private PartItem? _copySource;
     private ReadOnlyObservableCollection<TreeNodeViewModel<ElementBase>> _elementTree = new([]);
     private ObservableAsPropertyHelper<bool> _isElementsLoading = ObservableAsPropertyHelper<bool>.Default();
     private ReadOnlyObservableCollection<PartItem> _partListItems = new([]);
     private ElementBase? _selected;
+    private readonly ProjectService _service = service?? Locator.Current.GetService<ProjectService>()!;
 
     #region Output Properties
 
@@ -43,7 +45,7 @@ public class ProjectExplorerPageViewModel(ProjectService service) : ViewModelBas
 
     protected override void SetupCommands()
     {
-        OkCancelFeedbackViewModel.Ok = ReactiveCommand.Create(() => service.ExportToExcel(DocumentInfo));
+        OkCancelFeedbackViewModel.Ok = ReactiveCommand.Create(() => _service.ExportToExcel(DocumentInfo));
         OkCancelFeedbackViewModel.Cancel = ReactiveCommand.Create(() => { });
 
         // copy design material is allowed if the selected item has material no
@@ -70,7 +72,7 @@ public class ProjectExplorerPageViewModel(ProjectService service) : ViewModelBas
                 try
                 {
                     observer.OnNext(TaskStatus.Running);
-                    service.LoadElements();
+                    _service.LoadElements();
                 }
                 catch (Exception e)
                 {
@@ -88,7 +90,7 @@ public class ProjectExplorerPageViewModel(ProjectService service) : ViewModelBas
             .ToProperty(this, x => x.IsElementsLoading, out _isElementsLoading)
             .DisposeWith(d);
 
-        service.Elements
+        _service.Elements
             .Connect()
             .AutoRefresh(t => t.ParentId)
             .TransformToTree(x => x.ParentId)
@@ -100,7 +102,7 @@ public class ProjectExplorerPageViewModel(ProjectService service) : ViewModelBas
             .Subscribe()
             .DisposeWith(d);
 
-        service.Elements
+        _service.Elements
             .Connect()
             .Filter(x => x is PartItem)
             .Transform(x => (PartItem)x)
@@ -126,12 +128,12 @@ public class ProjectExplorerPageViewModel(ProjectService service) : ViewModelBas
 
     protected override void SetupStart()
     {
-        ThisAddIn.Dispatcher!.InvokeAsync(service.Start);
+        ThisAddIn.Dispatcher!.InvokeAsync(_service.Start);
     }
 
     protected override void SetupDeactivate()
     {
-        ThisAddIn.Dispatcher!.InvokeAsync(service.Stop);
+        ThisAddIn.Dispatcher!.InvokeAsync(_service.Stop);
     }
 
     #endregion

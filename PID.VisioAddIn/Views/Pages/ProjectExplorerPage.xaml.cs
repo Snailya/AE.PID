@@ -22,7 +22,7 @@ public partial class ProjectExplorerPage
     {
         InitializeComponent();
 
-        ViewModel = new ProjectExplorerPageViewModel(new ProjectService());
+        ViewModel = new ProjectExplorerPageViewModel();
 
         this.WhenActivated(d =>
         {

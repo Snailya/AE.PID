@@ -5,13 +5,22 @@ using ReactiveUI;
 using ReactiveUI.Validation.Abstractions;
 using ReactiveUI.Validation.Contexts;
 using ReactiveUI.Validation.Extensions;
+using Splat;
 
 namespace AE.PID.ViewModels;
 
-public class InitialSetupPageViewModel(ConfigurationService configuration) : ViewModelBase, IValidatableViewModel
+public class InitialSetupPageViewModel(ConfigurationService? configuration = null)
+    : ViewModelBase, IValidatableViewModel
 {
-    private string _server = configuration.Server;
-    private string _user = configuration.UserId;
+    #region Resolution
+
+    private readonly ConfigurationService _configuration =
+        configuration ?? Locator.Current.GetService<ConfigurationService>()!;
+
+    #endregion
+
+    private string _server = string.Empty;
+    private string _user = string.Empty;
 
     #region Read-Only Properties
 
@@ -23,11 +32,11 @@ public class InitialSetupPageViewModel(ConfigurationService configuration) : Vie
 
     private void SaveChanges()
     {
-        if (configuration.Server != _server)
-            configuration.Server = _server;
+        if (_configuration.Server != _server)
+            _configuration.Server = _server;
 
-        if (configuration.UserId != _user)
-            configuration.UserId = _user;
+        if (_configuration.UserId != _user)
+            _configuration.UserId = _user;
     }
 
     private bool IsValidHttpUrl(string? url)
@@ -54,6 +63,9 @@ public class InitialSetupPageViewModel(ConfigurationService configuration) : Vie
 
     protected override void SetupStart()
     {
+        _server = _configuration.Server;
+        _user = _configuration.UserId;
+
         this.ValidationRule(
             viewModel => viewModel.Server,
             IsValidHttpUrl,

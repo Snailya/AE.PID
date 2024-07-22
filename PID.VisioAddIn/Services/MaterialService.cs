@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -32,18 +31,18 @@ public class MaterialsService : IDisposable, IEnableLogger
 
     #region Constructors
 
-    public MaterialsService(ApiClient client)
+    public MaterialsService(ApiClient? client = null)
     {
-        _client = client;
+        _client = client ?? Locator.Current.GetService<ApiClient>()!;
 
         // make the request result auto clear after 1 hour to improve accuracy
         _requestResults
-            .ExpireAfter(_ => TimeSpan.FromHours(1), scheduler:(IScheduler?)null)
+            .ExpireAfter(_ => TimeSpan.FromHours(1), scheduler:null)
             .Subscribe()
             .DisposeWith(_cleanUp);
 
         // initialize category items
-        Observable.FromAsync(() => client.GetStringAsync(CategoriesApi))
+        Observable.FromAsync(() => _client.GetStringAsync(CategoriesApi))
             .Select(JsonConvert.DeserializeObject<IEnumerable<MaterialCategoryDto>>)
             .WhereNotNull()
             .Subscribe(
@@ -52,7 +51,7 @@ public class MaterialsService : IDisposable, IEnableLogger
             .DisposeWith(_cleanUp);
 
         // initialize category maps
-        Observable.FromAsync(() => client.GetStringAsync(CategoriesMapApi))
+        Observable.FromAsync(() => _client.GetStringAsync(CategoriesMapApi))
             .Select(JsonConvert.DeserializeObject<Dictionary<string, string[]>>)
             .WhereNotNull()
             .Subscribe(x => CategoryMap = x)
