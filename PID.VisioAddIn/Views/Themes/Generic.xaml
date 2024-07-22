@@ -3,7 +3,7 @@
                     xmlns:views="clr-namespace:AE.PID.Views"
                     xmlns:converters="clr-namespace:AE.PID.Converters">
 
-    <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+    <converters:StringToVisibilityConvertor x:Key="StringToVisibilityConverter" />
     
     <Color x:Key="PrimaryColor">#185ABD</Color>
     <Color x:Key="OnPrimaryColor">#FFFFFF</Color>

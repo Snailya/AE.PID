@@ -191,6 +191,7 @@
     <Compile Include="Converters\LevelToIndentConverter.cs" />
     <Compile Include="Converters\SecondaryWindowLeftConvertor.cs" />
     <Compile Include="Converters\SecondaryWindowMaxWidthConvertor.cs" />
+    <Compile Include="Converters\StringToVisibilityConvetor.cs" />
     <Compile Include="Dtos\DesignMaterialDto.cs" />
     <Compile Include="Dtos\DetailedLibraryItemDto.cs" />
     <Compile Include="Dtos\LibraryDto.cs" />
@@ -274,9 +275,7 @@
     <Compile Include="ViewModels\TreeNodeViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="ViewModels\WindowViewModel.cs" />
-    <Compile Include="Views\Components\ProjectInfoTable.xaml.cs">
-      <DependentUpon>ProjectInfoTable.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="Views\Components\DocumentInfoTable.xaml.cs" />
     <Compile Include="Views\Components\OkCancelFeedback.xaml.cs">
       <DependentUpon>OkCancelFeedback.xaml</DependentUpon>
     </Compile>
@@ -350,10 +349,7 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Views\Components\ProjectInfoTable.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
+    <Page Include="Views\Components\DocumentInfoTable.xaml" />
     <Page Include="Views\Components\OkCancelFeedback.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -425,6 +421,7 @@
     <PackageReference Include="Material.Icons.WPF" Version="2.1.0" />
     <PackageReference Include="MiniExcel" Version="1.32.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="ReactiveUI.Validation" Version="4.0.9" />
     <PackageReference Include="ReactiveUI.WPF" Version="20.1.1" />
     <PackageReference Include="Refit" Version="7.0.0" />
     <PackageReference Include="Splat" Version="15.1.1" />
