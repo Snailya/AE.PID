@@ -418,12 +418,12 @@
     <PackageReference Include="BusyIndicators" Version="2.1.2" />
     <PackageReference Include="DataGridExtensions" Version="2.6.0" />
     <PackageReference Include="FilterDataGrid" Version="1.2.8" />
-    <PackageReference Include="Material.Icons.WPF" Version="2.1.0" />
-    <PackageReference Include="MiniExcel" Version="1.32.1" />
+    <PackageReference Include="Material.Icons.WPF" Version="2.1.10" />
+    <PackageReference Include="MiniExcel" Version="1.34.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="ReactiveUI.Validation" Version="4.0.9" />
     <PackageReference Include="ReactiveUI.WPF" Version="20.1.1" />
-    <PackageReference Include="Refit" Version="7.0.0" />
+    <PackageReference Include="Refit" Version="7.1.2" />
     <PackageReference Include="Splat" Version="15.1.1" />
     <PackageReference Include="Splat.NLog" Version="15.1.1" />
     <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0" />
