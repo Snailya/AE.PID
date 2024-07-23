@@ -1,12 +1,13 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using AE.PID.Services;
 using AE.PID.Tools;
+using AE.PID.Views;
 using Microsoft.Office.Interop.Visio;
 using ReactiveUI;
 using Splat;
@@ -17,45 +18,44 @@ namespace AE.PID;
 public partial class ThisAddIn : IEnableLogger
 {
     private Ribbon? _ribbon;
-    
+
     private void ThisAddIn_Startup(object sender, System.EventArgs e)
     {
         // the dispatcher of the VSTO is used for dispatch Visio related operation to this thread
         // perform Visio related operation on other threads need to marshal data from the thread to this thread which cause long time
         AppScheduler.VisioScheduler = new DispatcherScheduler(Dispatcher.CurrentDispatcher);
 
-        // initialize the data folder
-        Directory.CreateDirectory(Constants.LibraryFolder);
-        Directory.CreateDirectory(Constants.TmpFolder);
-
-        ConfigureServices();
-
         // declare a new UI thread for WPF. Notice the apartment state needs to be STA
-        var uiThread = new Thread(()=>
+        var uiThread = new Thread(() =>
         {
             AppScheduler.UIScheduler = new DispatcherScheduler(Dispatcher.CurrentDispatcher);
             RxApp.MainThreadScheduler = DispatcherScheduler.Current;
-            
+
             WindowManager.Initialize();
         }) { Name = "UI Thread" };
         uiThread.SetApartmentState(ApartmentState.STA);
         uiThread.Start();
-
-        // initialize the service that relay on the window manager
-        WindowManager.Initialized
-            .Where(x => x)
-            .ObserveOn(ThreadPoolScheduler.Instance)
-            .Subscribe(async _ =>
-            {
-                await BackgroundTaskManager.Initialize();
-
-                // initialize ribbon
-                _ribbon = new Ribbon();
-                Globals.ThisAddIn.Application.RegisterRibbonX(_ribbon, null,
-                    VisRibbonXModes.visRXModeDrawing,
-                    "AE PID RIBBON");
-                
-            });
+        
+        // initialize the data folder
+        Directory.CreateDirectory(Constants.LibraryFolder);
+        Directory.CreateDirectory(Constants.TmpFolder);
+        
+        ConfigureServices();
+        
+        // invoke a initial set up page if necessary
+        Task.Run(async () =>
+        {
+            var configuration = Locator.Current.GetService<ConfigurationService>()!;
+            if (string.IsNullOrEmpty(configuration.Server) || string.IsNullOrWhiteSpace(configuration.UserId))
+                await Observable.Start(() => WindowManager.GetInstance()!.ShowDialog(new InitialSetupPage()),
+                    AppScheduler.UIScheduler).ToTask();
+        });
+        
+        // initialize ribbon
+        _ribbon = new Ribbon();
+        Globals.ThisAddIn.Application.RegisterRibbonX(_ribbon, null,
+            VisRibbonXModes.visRXModeDrawing,
+            "AE PID RIBBON");
     }
 
     private static void ConfigureServices()
@@ -67,12 +67,12 @@ public partial class ThisAddIn : IEnableLogger
             typeof(ConfigurationService));
         Locator.CurrentMutable.RegisterLazySingleton(() => new ApiClient(), typeof(ApiClient));
         Locator.CurrentMutable.RegisterLazySingleton(() => new MaterialsService(), typeof(MaterialsService));
-        Locator.CurrentMutable.RegisterLazySingleton(() => new AppUpdater(), typeof(AppUpdater));
-        Locator.CurrentMutable.RegisterLazySingleton(() => new LibraryUpdater(), typeof(LibraryUpdater));
         Locator.CurrentMutable.RegisterLazySingleton(() => new DocumentMonitor(), typeof(DocumentMonitor));
         Locator.CurrentMutable.RegisterLazySingleton(() => new ProjectService(), typeof(ProjectService));
         Locator.CurrentMutable.RegisterLazySingleton(() => new SelectService(), typeof(SelectService));
         
+        Locator.CurrentMutable.RegisterConstant(new AppUpdater(), typeof(AppUpdater));
+        Locator.CurrentMutable.RegisterConstant(new LibraryUpdater(), typeof(LibraryUpdater));
     }
 
     private void ThisAddIn_Shutdown(object sender, System.EventArgs e)
@@ -82,7 +82,6 @@ public partial class ThisAddIn : IEnableLogger
             Globals.ThisAddIn.Application.UnregisterRibbonX(_ribbon, null);
 
         WindowManager.GetInstance()?.Dispose();
-        BackgroundTaskManager.GetInstance()?.Dispose();
     }
 
     #region VSTO generated code
