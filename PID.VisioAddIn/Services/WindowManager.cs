@@ -46,18 +46,17 @@ public class WindowManager : IDisposable
 
     #endregion
 
-    public static Dispatcher? Dispatcher { get; private set; }
 
     public void Dispose()
     {
-        Dispatcher?.Invoke(() =>
+        AppScheduler.UIScheduler.Schedule(() =>
         {
             _secondaryWindow.Close();
             _mainWindow.Close();
             _progressWindow.Close();
-        });
 
-        Dispatcher?.InvokeShutdown();
+            Dispatcher.CurrentDispatcher.InvokeShutdown();
+        });
     }
 
     public static WindowManager? GetInstance()
@@ -68,16 +67,8 @@ public class WindowManager : IDisposable
     public static void Initialize()
     {
         _instance = new WindowManager();
+        
 
-        // the dispatcher of the UI thread is used for WPF ui rendering.
-        // a different thread from the default main thread, which is VSTO_Main is used because rending wpf on default main thread will compete between operation on Visio.
-        // for some time consumed task on Visio, such as read all data from page, a loading spinning is needed for better user experience.
-        // while the competition between WPF and Visio operation will block the spinning of the indicator.
-        // that's why a separated thread is needed for WPF rending.
-        Dispatcher = Dispatcher.CurrentDispatcher;
-
-        // manually set the RxAPP's MainThreadScheduler property to this thread so that it could be used on ObserveOn and SubscribeOn by calling RxApp.MainThreadScheduler
-        RxApp.MainThreadScheduler = DispatcherScheduler.Current;
 
         // notify the window manager
         // has been initialized so that other tasks based on this manager should start initializing.
@@ -141,7 +132,7 @@ public class WindowManager : IDisposable
     /// </summary>
     public void CreateRunInBackgroundWithProgress(Progress<ProgressValue> progress, Action task)
     {
-        Dispatcher!.Invoke(() =>
+        AppScheduler.UIScheduler.Schedule(() =>
         {
             _progressWindow.Content = new ProgressPage(new ProgressPageViewModel(progress, task));
             _progressWindow.Show();

@@ -187,6 +187,7 @@
                                                                                       can be found.
                                                                                     -->
   <ItemGroup>
+    <Compile Include="AppScheduler.cs" />
     <Compile Include="Attributes\DataGridColumnAttribute.cs" />
     <Compile Include="Converters\ButtonNameToVisibilityConvertor.cs" />
     <Compile Include="Converters\ElementTypeToBackgroundColorConverter.cs" />

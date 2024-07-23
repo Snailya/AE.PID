@@ -84,7 +84,7 @@ public partial class ProjectExplorerPage
             // highlight the item on the page
             this.WhenAnyValue(x => x.ViewModel!.Selected)
                 .WhereNotNull()
-                .ObserveOn(ThisAddIn.Dispatcher!)
+                .ObserveOn(AppScheduler.VisioScheduler)
                 .Subscribe(x => x.Select())
                 .DisposeWith(d);
         });

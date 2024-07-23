@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -146,7 +147,7 @@ public class LibraryUpdater : IEnableLogger
                     "vssx");
 
                 // close the origin file if it is opened
-                var isOpened = await ThisAddIn.Dispatcher!.InvokeAsync(() =>
+                var isOpened = await Observable.Start(() =>
                 {
                     var currentDocument = Globals.ThisAddIn.Application.Documents.OfType<Document>()
                         .SingleOrDefault(x => x.FullName == fullName);
@@ -154,7 +155,7 @@ public class LibraryUpdater : IEnableLogger
 
                     currentDocument.Close();
                     return true;
-                });
+                }, AppScheduler.VisioScheduler);
 
                 // do overwrite
                 using (var fileStream = File.Open(fullName, FileMode.Create, FileAccess.Write))
@@ -164,7 +165,7 @@ public class LibraryUpdater : IEnableLogger
 
                 // restore open status
                 if (isOpened)
-                    ThisAddIn.Dispatcher.Invoke(() =>
+                    AppScheduler.VisioScheduler.Schedule(() =>
                     {
                         Globals.ThisAddIn.Application.Documents.OpenEx(fullName,
                             (short)VisOpenSaveArgs.visOpenDocked);

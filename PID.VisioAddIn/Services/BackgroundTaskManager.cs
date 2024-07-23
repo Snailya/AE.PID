@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
+using System.Threading.Tasks;
 using AE.PID.Views;
 using Splat;
 
@@ -9,7 +12,7 @@ public class BackgroundTaskManager : IDisposable
 {
     private static BackgroundTaskManager? _instance;
     private readonly CompositeDisposable _cleanUp = new();
-    
+
     public void Dispose()
     {
         _cleanUp.Dispose();
@@ -20,15 +23,13 @@ public class BackgroundTaskManager : IDisposable
         return _instance;
     }
 
-    public static void Initialize()
+    public static async Task Initialize()
     {
         var configuration = Locator.Current.GetService<ConfigurationService>()!;
+
         if (string.IsNullOrEmpty(configuration.Server) || string.IsNullOrWhiteSpace(configuration.UserId))
-        {
-            var d = WindowManager.Dispatcher!.BeginInvoke(() =>
-                WindowManager.GetInstance()!.ShowDialog(new InitialSetupPage()));
-            d.Wait();
-        }
+            await Observable.Start(() => WindowManager.GetInstance()!.ShowDialog(new InitialSetupPage()),
+                AppScheduler.UIScheduler).ToTask();
 
         _instance ??= new BackgroundTaskManager();
 

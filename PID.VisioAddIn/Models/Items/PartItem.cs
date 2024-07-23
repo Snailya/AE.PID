@@ -102,7 +102,7 @@ public abstract class PartItem(Shape shape) : ElementBase(shape), IPartItem
 
         this.WhenAnyValue(x => x.MaterialNo)
             .DistinctUntilChanged()
-            .ObserveOn(ThisAddIn.Dispatcher!)
+            .ObserveOn(AppScheduler.VisioScheduler)
             .Subscribe(AssignMaterial)
             .DisposeWith(CleanUp);
     }

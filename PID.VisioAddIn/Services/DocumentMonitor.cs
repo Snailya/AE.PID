@@ -46,7 +46,7 @@ public class DocumentMonitor : IEnableLogger
             .Where(IsMasterOutOfDate)
             .Do(document => this.Log().Info($"Masters in {document.Name} are out of date."))
             // switch back to the main thread to prompt user
-            .ObserveOn(WindowManager.Dispatcher!)
+            .ObserveOn(AppScheduler.UIScheduler)
             .Subscribe(document =>
                 {
                     // ask for update

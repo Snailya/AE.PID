@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Subjects;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -84,20 +85,20 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
                         VisioHelper.InsertLegend(Globals.ThisAddIn.Application.ActivePage);
                         break;
                     case Command.OpenSelectTool:
-                        WindowManager.Dispatcher!.Invoke(() =>
+                        AppScheduler.UIScheduler.Schedule(() =>
                         {
                             WindowManager.GetInstance()!.Show(new SelectToolPage());
                         });
                         break;
                     case Command.OpenProjectExplorer:
-                        WindowManager.Dispatcher!.Invoke(() =>
+                        AppScheduler.UIScheduler.Schedule(() =>
                         {
                             WindowManager.GetInstance()!.Show(new ProjectExplorerPage(),
                                 new MaterialsSelectionPage());
                         });
                         break;
                     case Command.OpenSettings:
-                        WindowManager.Dispatcher!.Invoke(() =>
+                        AppScheduler.UIScheduler.Schedule(() =>
                         {
                             WindowManager.GetInstance()!.Show(new SettingsPage());
                         });
@@ -174,8 +175,8 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
             selected.HasCategory("FunctionalElement") ? new FunctionalElement(selected) : null;
         if (element == null)
             return;
-
-        WindowManager.Dispatcher!.InvokeAsync(() =>
+        
+        AppScheduler.UIScheduler.Schedule(() =>
         {
             var page = new MaterialsSelectionPage();
             page.ViewModel!.Element = element;

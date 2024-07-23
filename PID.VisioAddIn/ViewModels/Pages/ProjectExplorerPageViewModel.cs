@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using AE.PID.EventArgs;
@@ -88,8 +89,8 @@ public class ProjectExplorerPageViewModel(ProjectService? service = null) : View
 
                 return () => { };
             })
-            .SubscribeOn(ThisAddIn.Dispatcher!)
-            .ObserveOn(WindowManager.Dispatcher!)
+            .SubscribeOn(AppScheduler.VisioScheduler)
+            .ObserveOn(AppScheduler.UIScheduler)
             .Select(x => x == TaskStatus.Running)
             .ToProperty(this, x => x.IsElementsLoading, out _isElementsLoading)
             .DisposeWith(d);
@@ -100,7 +101,7 @@ public class ProjectExplorerPageViewModel(ProjectService? service = null) : View
             .TransformToTree(x => x.ParentId)
             .Transform(x => new TreeNodeViewModel<ElementBase>(x))
             .Sort(SortExpressionComparer<TreeNodeViewModel<ElementBase>>.Ascending(t => t.Source!.Label))
-            .ObserveOn(WindowManager.Dispatcher!)
+            .ObserveOn(AppScheduler.UIScheduler)
             .Bind(out _elementTree)
             .DisposeMany()
             .Subscribe()
@@ -110,7 +111,7 @@ public class ProjectExplorerPageViewModel(ProjectService? service = null) : View
             .Connect()
             .Filter(x => x is PartItem)
             .Transform(x => (PartItem)x)
-            .ObserveOn(WindowManager.Dispatcher!)
+            .ObserveOn(AppScheduler.UIScheduler)
             .Bind(out _partListItems)
             .DisposeMany()
             .Subscribe()
@@ -120,7 +121,7 @@ public class ProjectExplorerPageViewModel(ProjectService? service = null) : View
         var selectedItem = this.WhenAnyValue(x => x.Selected)
             .WhereNotNull()
             .DistinctUntilChanged()
-            .ObserveOn(WindowManager.Dispatcher!);
+            .ObserveOn(AppScheduler.UIScheduler);
         selectedItem.Subscribe()
             .DisposeWith(d);
 
@@ -132,12 +133,12 @@ public class ProjectExplorerPageViewModel(ProjectService? service = null) : View
 
     protected override void SetupStart()
     {
-        ThisAddIn.Dispatcher!.InvokeAsync(_service.Start);
+        AppScheduler.VisioScheduler.Schedule(()=>_service.Start());
     }
 
     protected override void SetupDeactivate()
     {
-        ThisAddIn.Dispatcher!.InvokeAsync(_service.Stop);
+        AppScheduler.VisioScheduler.Schedule(()=>_service.Stop());
     }
 
     #endregion

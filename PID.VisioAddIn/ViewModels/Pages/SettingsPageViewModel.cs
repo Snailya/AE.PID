@@ -115,7 +115,7 @@ public class SettingsPageViewModel(
                 })
             .RemoveKey()
             .Sort(SortExpressionComparer<LibraryInfoViewModel>.Ascending(t => t.Id))
-            .ObserveOn(WindowManager.Dispatcher!)
+            .ObserveOn(AppScheduler.UIScheduler)
             .Bind(out _libraries)
             .Subscribe()
             .DisposeWith(d);

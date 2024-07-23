@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Linq.Expressions;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text.RegularExpressions;
@@ -93,7 +94,7 @@ public static class BindingMixins
                         break;
                     case ChangeSender.Model:
                     {
-                        ThisAddIn.Dispatcher!.InvokeAsync(() =>
+                        AppScheduler.VisioScheduler.Schedule(() =>
                         {
                             var value = (modelToVisioConverter(proxy.Value) ?? string.Empty).ClearFormat(shape,
                                 visioProp);

@@ -64,7 +64,7 @@ public class AppUpdater : IEnableLogger
         _updateAvailableTrigger
             .WhereNotNull()
             // switch to the main thread to display ui
-            .ObserveOn(WindowManager.Dispatcher!)
+            .ObserveOn(AppScheduler.UIScheduler)
             .Select(info =>
             {
                 var messageBoxText = "发现新版本。" +
@@ -73,7 +73,7 @@ public class AppUpdater : IEnableLogger
                                      Environment.NewLine;
                 return WindowManager.ShowDialog(messageBoxText);
             })
-            .ObserveOn(ThisAddIn.Dispatcher!)
+            .ObserveOn(AppScheduler.VisioScheduler)
             // if a user chooses to update, download the installer and invoke update
             .Where(result => result is MessageBoxResult.Yes or MessageBoxResult.OK)
             .SelectMany(_ => DownloadUpdateAsync())
