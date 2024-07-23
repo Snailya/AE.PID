@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -81,7 +82,7 @@ public class DocumentMonitor : IEnableLogger
     #region Api
 
     private static string UpdateDocumentApi =>
-        "api/v1/documents";
+        "api/v1/job/update-masters";
 
     #endregion
 
@@ -105,11 +106,14 @@ public class DocumentMonitor : IEnableLogger
         // remove hidden information to reduce size
         document.RemoveHiddenInformation((int)VisRemoveHiddenInfoItems.visRHIMasters);
 
+        string filePath = string.Empty;
         // store the file path otherwise it will lose after the document close
-        var filePath = document.FullName;
+        (document as Document).BeforeDocumentClose += (v) => {
+             filePath = document.FullName;
+        };
         document.Close();
 
-        if (document.Saved == false) return;
+        if (string.IsNullOrEmpty(filePath)) return;
 
         // convert the file to byte-array content and sent as byte-array
         // because there is an encrypted system on end user, so directly transfer the file to server will not be able to read in the server side
@@ -120,7 +124,12 @@ public class DocumentMonitor : IEnableLogger
         response.EnsureSuccessStatusCode();
 
         // create a copy of the source file
-        File.Copy(filePath, Path.ChangeExtension(filePath, ".bak"));
+        var backup = Path.ChangeExtension(filePath, ".bak");
+        if (File.Exists(backup))
+        {
+            backup = Path.Combine(Path.GetDirectoryName(backup),Path.GetFileNameWithoutExtension(backup) + DateTime.Now.ToString("yyyyMMdd") + ".bak");
+        }
+        File.Copy(filePath, backup);
 
         // overwrite the origin file after a successful update
         using var contentStream = await response.Content.ReadAsStreamAsync();
@@ -130,6 +139,7 @@ public class DocumentMonitor : IEnableLogger
         }
 
         // reopen the file
+        fileStream.Close();
         Globals.ThisAddIn.Application.Documents.Open(filePath);
     }
 }

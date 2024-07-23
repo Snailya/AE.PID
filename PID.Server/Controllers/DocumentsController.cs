@@ -9,11 +9,13 @@ namespace AE.PID.Server.Controllers;
 
 [ApiController]
 [Route("api/v{v:apiVersion}/[controller]")]
-public class JobController(ILogger<AppController> logger, AppDbContext dbContext) : ControllerBase
+public class JobController(ILogger<JobController> logger, AppDbContext dbContext) : ControllerBase
 {
     [HttpPost("update-masters")]
     public async Task<IActionResult> Update()
     {
+        logger.LogInformation("Server side update");
+
         // save the byte array as a local file
         byte[] buffer;
         using (var memoryStream = new MemoryStream())
@@ -22,8 +24,10 @@ public class JobController(ILogger<AppController> logger, AppDbContext dbContext
             buffer = memoryStream.ToArray();
         }
 
-        var fileName = Path.GetTempFileName();
+        var fileName = Path.Combine("/opt/pid/data/tmp", Path.GetRandomFileName());
         await System.IO.File.WriteAllBytesAsync(fileName, buffer);
+
+        logger.LogInformation("File cached at {Path}.", fileName);
 
         // open the local file as package
         using var package = Package.Open(fileName, FileMode.Open, FileAccess.ReadWrite);
@@ -31,12 +35,15 @@ public class JobController(ILogger<AppController> logger, AppDbContext dbContext
         {
             // get style sheets from current document
             var styleTable = VisioXmlWrapper.GetStyles(package).ToList();
+            logger.LogInformation("Style tables got");
 
             // take a look at the masters part to see how many masters are there
             var mastersPart = VisioXmlWrapper.GetMastersPart(package);
             var mastersDocument = XmlHelper.GetDocumentFromPart(mastersPart);
-            var masterElements = mastersDocument.XPathSelectElements("//main:Master");
-
+            var masterElements = mastersDocument.XPathSelectElements("//main:Master",VisioXmlWrapper.NamespaceManager);
+            logger.LogInformation(
+                "There are {Count} in the document", masterElements.Count());
+            
             // get the latest masters in the database
             var libraryItems = Helper.PopulatesCheatSheetItems(dbContext);
 
@@ -46,8 +53,9 @@ public class JobController(ILogger<AppController> logger, AppDbContext dbContext
                     (element, libraryItem) => new { Element = element, LibraryItem = libraryItem }).Where(x =>
                     x.Element.Attribute("UniqueID")!.Value != x.LibraryItem.UniqueId).ToArray();
             logger.LogInformation(
-                $"There are {mastersNeedUpdate.Length} out of {masterElements.Count()} masters need to be update.");
-            
+                "There are {Count} out of {Total} masters need to be update.", mastersNeedUpdate.Length,
+                masterElements.Count());
+
             foreach (var item in mastersNeedUpdate)
             {
                 // to build a new master node,
@@ -98,14 +106,14 @@ public class JobController(ILogger<AppController> logger, AppDbContext dbContext
             XmlHelper.RecalculateDocument(package);
 
             logger.LogInformation("Update done.");
-            
+
             return new PhysicalFileResult(fileName, "application/octet-stream");
         }
         catch (Exception e)
         {
             logger.LogError("Failed to update document: {Reason}", e.Message);
         }
-        
+
         return BadRequest();
     }
 }
