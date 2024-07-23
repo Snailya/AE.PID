@@ -38,6 +38,8 @@ public class ProjectExplorerPageViewModel(ProjectService? service = null) : View
     public OkCancelFeedbackViewModel OkCancelFeedbackViewModel { get; } = new();
     public ReactiveCommand<Unit, Unit>? CopyMaterial { get; private set; }
     public ReactiveCommand<Unit, Unit>? PasteMaterial { get; private set; }
+    
+    public ReactiveCommand<Unit, Unit>? ExportToPage { get; private set; }
 
     #endregion
 
@@ -47,6 +49,8 @@ public class ProjectExplorerPageViewModel(ProjectService? service = null) : View
     {
         OkCancelFeedbackViewModel.Ok = ReactiveCommand.Create(() => _service.ExportToExcel(DocumentInfo));
         OkCancelFeedbackViewModel.Cancel = ReactiveCommand.Create(() => { });
+        
+        ExportToPage = ReactiveCommand.Create(_service.ExportToPage);
 
         // copy design material is allowed if the selected item has material no
         var canCopy = this.WhenAnyValue(x => x.Selected,

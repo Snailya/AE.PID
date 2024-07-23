@@ -6,7 +6,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using AE.PID.Models;
-using AE.PID.Services;
 using AE.PID.Tools;
 using AE.PID.ViewModels;
 using ReactiveUI;
@@ -56,6 +55,8 @@ public partial class ProjectExplorerPage
                     vm => vm.PasteMaterial,
                     v => v.PasteMaterial)
                 .DisposeWith(d);
+
+            this.BindCommand(ViewModel, vm => vm.ExportToPage, v => v.ExportToPageButton).DisposeWith(d);
 
             //set selected item for right mouse click event, otherwise the context menu not work as expected
             Observable.FromEventPattern<MouseButtonEventHandler, MouseButtonEventArgs>(

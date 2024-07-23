@@ -24,7 +24,7 @@ public class PartListTableLineItem
             Total = x.SubTotal,
             InGroup = x.SubTotal,
             Units = x.DesignMaterial?.Unit ?? string.Empty,
-            Manufacturer = x.DesignMaterial?.Manufacturer ?? string.Empty,
+            Supplier = x.DesignMaterial?.Manufacturer ?? string.Empty,
             ManufacturerArticleNo = x.DesignMaterial?.ManufacturerMaterialNumber ?? string.Empty,
             SerialNo = null,
             Classification = null,
@@ -55,7 +55,7 @@ public class PartListTableLineItem
             Total = x.Total,
             InGroup = x.InGroup,
             Units = x.Units,
-            Manufacturer = x.Manufacturer,
+            Supplier = x.Supplier,
             ManufacturerArticleNo = x.ManufacturerArticleNo,
             SerialNo = x.SerialNo,
             Classification = x.Classification,
@@ -139,7 +139,7 @@ public class PartListTableLineItem
     /// <summary>
     ///     todo:
     /// </summary>
-    public string Manufacturer { get; set; } = string.Empty;
+    public string Supplier { get; set; } = string.Empty;
 
     /// <summary>
     ///     todo:

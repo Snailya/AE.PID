@@ -136,8 +136,10 @@
             </busyIndicator:BusyMask>
         </Grid>
         <Separator Grid.Row="3" />
-        <views:OkCancelFeedback x:Name="Feedback"
-                                Grid.Row="4"
-                                OkText="导出" />
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+            <views:OkCancelFeedback x:Name="Feedback"
+                                    OkText="导出" />
+            <Button x:Name="ExportToPageButton">导出到页</Button>
+        </StackPanel>
     </Grid>
 </views:PageBase>

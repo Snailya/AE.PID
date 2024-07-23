@@ -3,16 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Forms;
 using AE.PID.Models;
 using AE.PID.Properties;
 using AE.PID.ViewModels;
 using DynamicData;
+using Microsoft.Office.Interop.Excel;
 using Microsoft.Office.Interop.Visio;
 using MiniExcelLibs;
 using ReactiveUI;
 using Splat;
+using Shape = Microsoft.Office.Interop.Visio.Shape;
 
 namespace AE.PID.Services;
 
@@ -65,6 +68,63 @@ public class ProjectService : PageServiceBase
         _elements.AddOrUpdate(elements);
     }
 
+    public void ExportToPage()
+    {
+        // todo
+        var oleShape = Globals.ThisAddIn.Application.ActivePage.InsertObject("Excel.Sheet",
+            (short)VisInsertObjArgs.visInsertAsEmbed);
+        object oleObject = oleShape.Object;
+        var workbook = (Workbook)oleObject;
+
+        // 操作Excel对象
+        Worksheet worksheet = workbook.Worksheets[1];
+        var dataArray = ToDataArray(PopulatePartListTableLineItems());
+        worksheet.Range["A1"].Resize[dataArray.GetLength(0), dataArray.GetLength(1)].Value = dataArray;
+        worksheet.Columns.AutoFit();
+
+        // 保存并关闭Excel工作簿
+        workbook.Save();
+        workbook.Close(false); // 关闭工作簿，但不保存改变
+        Marshal.ReleaseComObject(worksheet);
+        Marshal.ReleaseComObject(workbook);
+
+        return;
+
+        string[,] ToDataArray(List<PartListTableLineItem> list)
+        {
+            var array = new string[list.Count + 2, 7];
+
+            // append column name
+            array[0, 0] = "序号";
+            array[0, 1] = "功能元件";
+            array[0, 2] = "描述";
+            array[0, 3] = "供应商";
+            array[0, 4] = "型号";
+            array[0, 5] = "规格";
+            array[0, 6] = "物料号";
+
+            array[1, 0] = "Index";
+            array[1, 1] = "Function Element";
+            array[1, 2] = "Description";
+            array[1, 3] = "Manufacturer";
+            array[1, 4] = "Type";
+            array[1, 5] = "Specification";
+            array[1, 6] = "Material No.";
+
+            // append data
+            for (var i = 0; i < list.Count; i++)
+            {
+                var line = list[i];
+                array[i + 2, 0] = (i + 1).ToString();
+                array[i + 2, 1] = line.FunctionalElement;
+                array[i + 2, 2] = line.Description;
+                array[i + 2, 3] = line.Supplier;
+                array[i + 2, 6] = line.AEMaterialNo;
+            }
+
+            return array;
+        }
+    }
 
     /// <summary>
     ///     extract data from shapes on layers defined in config and group them as BOM items.
