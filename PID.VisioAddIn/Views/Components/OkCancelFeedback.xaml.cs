@@ -34,10 +34,10 @@ public partial class OkCancelFeedback
 
             this.BindCommand(ViewModel, vm => vm.Ok, v => v.OkButton)
                 .DisposeWith(d);
-            
+
             this.BindCommand(ViewModel, vm => vm.Cancel, v => v.CancelButton)
                 .DisposeWith(d);
-            
+
             ViewModel.WhenAnyObservable(x => x.Cancel)
                 .Merge(
                     ViewModel.WhenAnyObservable(x => x.Ok)

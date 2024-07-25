@@ -17,7 +17,7 @@ namespace AE.PID.ViewModels;
 
 public class DesignMaterialsViewModel(MaterialsService? service = null) : ViewModelBase
 {
-    private readonly MaterialsService _service = service??Locator.Current.GetService<MaterialsService>()!;
+    private readonly MaterialsService _service = service ?? Locator.Current.GetService<MaterialsService>()!;
 
     // Members that return a sequence should never return null
     private ReadOnlyObservableCollection<TreeNodeViewModel<MaterialCategoryDto>> _categories = new([]);

@@ -30,9 +30,9 @@ public class AppUpdater : IEnableLogger
 
     #region Constructors
 
-    public AppUpdater(ApiClient? client=null, ConfigurationService? configuration=null)
+    public AppUpdater(ApiClient? client = null, ConfigurationService? configuration = null)
     {
-        _client = client??Locator.Current.GetService<ApiClient>()!;
+        _client = client ?? Locator.Current.GetService<ApiClient>()!;
         configuration ??= Locator.Current.GetService<ConfigurationService>()!;
 
         // automatically check update by interval if it not meets the user disabled period

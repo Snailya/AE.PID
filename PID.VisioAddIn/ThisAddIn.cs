@@ -5,6 +5,7 @@ using System.Reactive.Threading.Tasks;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
+using AE.PID.Interfaces;
 using AE.PID.Services;
 using AE.PID.Tools;
 using AE.PID.Views;
@@ -21,13 +22,16 @@ public partial class ThisAddIn : IEnableLogger
 
     private void ThisAddIn_Startup(object sender, System.EventArgs e)
     {
-        // the dispatcher of the VSTO is used for dispatch Visio related operation to this thread
-        // perform Visio related operation on other threads need to marshal data from the thread to this thread which cause long time
-        AppScheduler.VisioScheduler = new DispatcherScheduler(Dispatcher.CurrentDispatcher);
+        // initialize a scheduler so that we could schedule visio related work on this thread,
+        // because the main thread has no synchronization context, a new synchronization context is created
+        var mainContext = SynchronizationContext.Current ?? new SynchronizationContext();
+        SynchronizationContext.SetSynchronizationContext(mainContext);
+        AppScheduler.VisioScheduler = new SynchronizationContextScheduler(mainContext);
 
         // declare a new UI thread for WPF. Notice the apartment state needs to be STA
         var uiThread = new Thread(() =>
         {
+            // initialize a dispatcher scheduler to schedule ui related work on this thread.
             AppScheduler.UIScheduler = new DispatcherScheduler(Dispatcher.CurrentDispatcher);
             RxApp.MainThreadScheduler = DispatcherScheduler.Current;
 
@@ -35,14 +39,14 @@ public partial class ThisAddIn : IEnableLogger
         }) { Name = "UI Thread" };
         uiThread.SetApartmentState(ApartmentState.STA);
         uiThread.Start();
-        
+
         // initialize the data folder
         Directory.CreateDirectory(Constants.LibraryFolder);
         Directory.CreateDirectory(Constants.TmpFolder);
-        
+
         ConfigureServices();
-        
-        // invoke a initial set up page if necessary
+
+        // invoke an initial set up page if necessary
         Task.Run(async () =>
         {
             var configuration = Locator.Current.GetService<ConfigurationService>()!;
@@ -50,7 +54,7 @@ public partial class ThisAddIn : IEnableLogger
                 await Observable.Start(() => WindowManager.GetInstance()!.ShowDialog(new InitialSetupPage()),
                     AppScheduler.UIScheduler).ToTask();
         });
-        
+
         // initialize ribbon
         _ribbon = new Ribbon();
         Globals.ThisAddIn.Application.RegisterRibbonX(_ribbon, null,
@@ -70,7 +74,9 @@ public partial class ThisAddIn : IEnableLogger
         Locator.CurrentMutable.RegisterLazySingleton(() => new DocumentMonitor(), typeof(DocumentMonitor));
         Locator.CurrentMutable.RegisterLazySingleton(() => new ProjectService(), typeof(ProjectService));
         Locator.CurrentMutable.RegisterLazySingleton(() => new SelectService(), typeof(SelectService));
-        
+
+        Locator.CurrentMutable.Register(() => new VisioService(), typeof(IVisioService));
+
         Locator.CurrentMutable.RegisterConstant(new AppUpdater(), typeof(AppUpdater));
         Locator.CurrentMutable.RegisterConstant(new LibraryUpdater(), typeof(LibraryUpdater));
     }

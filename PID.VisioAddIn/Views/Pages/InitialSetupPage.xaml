@@ -28,9 +28,8 @@
                                 Label="工号" />
         </StackPanel>
         <views:OkCancelFeedback x:Name="Feedback"
-                                Grid.Row="1" 
-                                IsCancelButtonVisible="False" CloseOnOk="True"
-                                />
+                                Grid.Row="1"
+                                IsCancelButtonVisible="False" CloseOnOk="True" />
     </Grid>
 
 </views:PageBase>

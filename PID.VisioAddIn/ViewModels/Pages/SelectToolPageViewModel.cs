@@ -1,25 +1,25 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
-using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using AE.PID.Interfaces;
 using AE.PID.Services;
 using DynamicData;
 using DynamicData.Aggregation;
 using DynamicData.Binding;
 using ReactiveUI;
 using Splat;
-using TaskStatus = AE.PID.Core.Models.TaskStatus;
 
 namespace AE.PID.ViewModels;
 
-public class SelectToolPageViewModel(SelectService? service = null) : ViewModelBase
+public class SelectToolPageViewModel(IVisioService? visio = null) : ViewModelBase
 {
-    private readonly SelectService _service = service ?? Locator.Current.GetService<SelectService>()!;
+    private readonly IVisioService _visio = visio ?? Locator.Current.GetService<IVisioService>()!;
     private bool _hasSelection;
     private ObservableAsPropertyHelper<bool> _isMastersLoading = ObservableAsPropertyHelper<bool>.Default();
     private ReadOnlyObservableCollection<MasterOptionViewModel> _masters = new([]);
@@ -51,8 +51,8 @@ public class SelectToolPageViewModel(SelectService? service = null) : ViewModelB
                 Observable.Start(() =>
                     {
                         return Task.FromResult(Mode == SelectionMode.ById
-                            ? SelectService.SelectShapeById(_shapeId)
-                            : SelectService.SelectShapesByMasters(
+                            ? _visio.SelectShapeById(_shapeId)
+                            : _visio.SelectShapesByMasters(
                                 Masters.Where(x => x.IsChecked).Select(x => x.BaseId).ToArray()));
                     }, AppScheduler.VisioScheduler)
                     .ObserveOn(AppScheduler.VisioScheduler)
@@ -69,39 +69,45 @@ public class SelectToolPageViewModel(SelectService? service = null) : ViewModelB
 
     protected override void SetupSubscriptions(CompositeDisposable d)
     {
-        Observable.Create<TaskStatus>(observer =>
-            {
-                observer.OnNext(TaskStatus.Created);
+        // Observable.Create<TaskStatus>(observer =>
+        //     {
+        //         observer.OnNext(TaskStatus.Created);
+        //
+        //         try
+        //         {
+        //             observer.OnNext(TaskStatus.Running);
+        //             _service.LoadMasters();
+        //         }
+        //         catch (Exception e)
+        //         {
+        //             observer.OnError(e);
+        //         }
+        //
+        //         observer.OnNext(TaskStatus.RanToCompletion);
+        //         observer.OnCompleted();
+        //
+        //         return () => { };
+        //     })
+        //     .SubscribeOn(AppScheduler.VisioScheduler!)
+        //     .Select(x => x == TaskStatus.Running)
+        //     .ObserveOn(AppScheduler.UIScheduler)
+        //     .ToProperty(this, x => x.IsMastersLoading, out _isMastersLoading)
+        //     .DisposeWith(d);
 
-                try
-                {
-                    observer.OnNext(TaskStatus.Running);
-                    _service.LoadMasters();
-                }
-                catch (Exception e)
-                {
-                    observer.OnError(e);
-                }
-
-                observer.OnNext(TaskStatus.RanToCompletion);
-                observer.OnCompleted();
-
-                return () => { };
-            })
-            .SubscribeOn(AppScheduler.VisioScheduler!)
-            .Select(x => x == TaskStatus.Running)
-            .ObserveOn(AppScheduler.UIScheduler)
-            .ToProperty(this, x => x.IsMastersLoading, out _isMastersLoading)
-            .DisposeWith(d);
-
-        _service.Masters
+        _visio.Masters
             .Connect()
-            .Transform(x => new MasterOptionViewModel(x))
+            .Transform(x =>
+                new MasterOptionViewModel(x))
             .Sort(SortExpressionComparer<MasterOptionViewModel>.Ascending(t => t.Name))
             .ObserveOn(AppScheduler.UIScheduler)
             .Bind(out _masters)
             .DisposeMany()
-            .Subscribe()
+            .Subscribe(_ => Debug.WriteLine("Binded"))
+            .DisposeWith(d);
+
+        _visio.IsLoading
+            .ObserveOn(AppScheduler.UIScheduler)
+            .ToProperty(this, x => x.IsMastersLoading, out _isMastersLoading)
             .DisposeWith(d);
 
         Masters.ToObservableChangeSet()
@@ -112,16 +118,6 @@ public class SelectToolPageViewModel(SelectService? service = null) : ViewModelB
             .IsNotEmpty()
             .BindTo(this, x => x.HasSelection)
             .DisposeWith(d);
-    }
-
-    protected override void SetupStart()
-    {
-        AppScheduler.VisioScheduler!.Schedule(() => _service.Start());
-    }
-
-    protected override void SetupDeactivate()
-    {
-        AppScheduler.VisioScheduler!.Schedule(() => _service.Stop());
     }
 
     #endregion

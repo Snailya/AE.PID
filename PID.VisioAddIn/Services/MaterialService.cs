@@ -37,7 +37,7 @@ public class MaterialsService : IDisposable, IEnableLogger
 
         // make the request result auto clear after 1 hour to improve accuracy
         _requestResults
-            .ExpireAfter(_ => TimeSpan.FromHours(1), scheduler:null)
+            .ExpireAfter(_ => TimeSpan.FromHours(1), scheduler: null)
             .Subscribe()
             .DisposeWith(_cleanUp);
 

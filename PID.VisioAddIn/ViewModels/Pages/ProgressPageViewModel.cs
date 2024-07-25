@@ -2,9 +2,7 @@
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using AE.PID.Core.DTOs;
 using AE.PID.Core.Models;
-using AE.PID.Services;
 using ReactiveUI;
 
 namespace AE.PID.ViewModels;

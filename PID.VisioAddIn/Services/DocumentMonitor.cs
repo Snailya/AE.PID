@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -106,11 +105,9 @@ public class DocumentMonitor : IEnableLogger
         // remove hidden information to reduce size
         document.RemoveHiddenInformation((int)VisRemoveHiddenInfoItems.visRHIMasters);
 
-        string filePath = string.Empty;
+        var filePath = string.Empty;
         // store the file path otherwise it will lose after the document close
-        (document as Document).BeforeDocumentClose += (v) => {
-             filePath = document.FullName;
-        };
+        (document as Document).BeforeDocumentClose += v => { filePath = document.FullName; };
         document.Close();
 
         if (string.IsNullOrEmpty(filePath)) return;
@@ -126,9 +123,8 @@ public class DocumentMonitor : IEnableLogger
         // create a copy of the source file
         var backup = Path.ChangeExtension(filePath, ".bak");
         if (File.Exists(backup))
-        {
-            backup = Path.Combine(Path.GetDirectoryName(backup),Path.GetFileNameWithoutExtension(backup) + DateTime.Now.ToString("yyyyMMdd") + ".bak");
-        }
+            backup = Path.Combine(Path.GetDirectoryName(backup),
+                Path.GetFileNameWithoutExtension(backup) + DateTime.Now.ToString("yyyyMMdd") + ".bak");
         File.Copy(filePath, backup);
 
         // overwrite the origin file after a successful update

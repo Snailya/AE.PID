@@ -87,11 +87,11 @@
                             size="large"
                             getImage="GetButtonImage"
                     />
-                                        <button id="debug"
-                                                label="调试"
-                                                onAction="Debug"
-                                                size="large"
-                                        />
+                    <button id="debug"
+                            label="调试"
+                            onAction="Debug"
+                            size="large"
+                    />
                 </group>
             </tab>
         </tabs>

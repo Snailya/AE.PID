@@ -13,10 +13,10 @@ public class ApiClient : IDisposable
     private readonly CompositeDisposable _cleanUp = new();
     private HttpClient _client = new();
 
-    public ApiClient(ConfigurationService? configuration=null)
+    public ApiClient(ConfigurationService? configuration = null)
     {
         configuration ??= Locator.Current.GetService<ConfigurationService>()!;
-        
+
         configuration.WhenAnyValue(x => x.Server)
             .Subscribe(server =>
             {

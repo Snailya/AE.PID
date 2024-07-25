@@ -4,7 +4,7 @@
                     xmlns:converters="clr-namespace:AE.PID.Converters">
 
     <converters:StringToVisibilityConvertor x:Key="StringToVisibilityConverter" />
-    
+
     <Color x:Key="PrimaryColor">#185ABD</Color>
     <Color x:Key="OnPrimaryColor">#FFFFFF</Color>
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
@@ -40,7 +40,7 @@
                                  Text="{Binding  RelativeSource={RelativeSource TemplatedParent}, Path=Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="4,0" VerticalAlignment="Center" />
                         <TextBlock Grid.Row="1" Grid.Column="1"
-                                   Text="{TemplateBinding Error}" 
+                                   Text="{TemplateBinding Error}"
                                    Foreground="Red"
                                    Visibility="{Binding Path=Text, RelativeSource={RelativeSource Self}, Converter={StaticResource StringToVisibilityConverter}}" />
                     </Grid>

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using AE.PID.Models;
 using ReactiveUI;
 

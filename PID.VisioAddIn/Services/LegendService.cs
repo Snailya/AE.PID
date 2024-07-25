@@ -60,17 +60,17 @@ public abstract class LegendService : IEnableLogger
                 var (rowIndex, colIndex) = ComputeIndex(i, rows);
                 var xPos = colIndex * ColSpacing + basePosition.X + 5;
                 var yPos = rowIndex * RowSpacing + basePosition.Y + 5;
-                
+
                 var shape = page.DropMetric(item.Master, basePosition.X, basePosition.Y);
-                
+
                 // correct the properties, legend item should has count 0
                 shape.CellsU["Prop.SubClass"].FormulaForce = $"\"{item.SubclassName}\"";
                 shape.CellsU["Prop.Quantity"].FormulaForce = "0";
-                
+
                 // replace the category to legend
                 if (!shape.HasCategory("Legend"))
                     shape.CellsU["User.msvShapeCategories"].FormulaForce = "\"Legend\"";
-                        
+
                 ResizeAtPin(shape);
                 ReLocateToGeometricCenter(shape, xPos, yPos);
 

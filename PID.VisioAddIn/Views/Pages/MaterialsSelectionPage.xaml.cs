@@ -6,11 +6,9 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using AE.PID.Models;
-using AE.PID.Services;
 using AE.PID.Tools;
 using AE.PID.ViewModels;
 using ReactiveUI;
-using Splat;
 
 namespace AE.PID.Views;
 

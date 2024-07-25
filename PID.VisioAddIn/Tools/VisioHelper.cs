@@ -5,17 +5,14 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Windows;
-using AE.PID.Core.DTOs;
 using AE.PID.Core.Models;
 using AE.PID.Properties;
 using AE.PID.Services;
-using AE.PID.ViewModels;
 using Microsoft.Office.Interop.Visio;
 using Microsoft.Win32;
 using Splat;
 using Font = Microsoft.Office.Interop.Visio.Font;
 using Path = System.IO.Path;
-using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 using TaskStatus = AE.PID.Core.Models.TaskStatus;
 
 namespace AE.PID.Tools;
@@ -31,7 +28,7 @@ internal static class VisioHelper
     public static void CheckDesignationUnique(IVPage page)
     {
         var duplicated = page.Shapes.OfType<Shape>()
-            .Where(x => (x.HasCategory("Equipment")  || x.HasCategory("Instrument")) &&
+            .Where(x => (x.HasCategory("Equipment") || x.HasCategory("Instrument")) &&
                         !string.IsNullOrEmpty(x.CellsU["Prop.FunctionalElement"]
                             .ResultStr[VisUnitCodes.visUnitsString]) &&
                         !string.IsNullOrEmpty(x.CellsU["Prop.FunctionalGroup"]
@@ -288,7 +285,7 @@ internal static class VisioHelper
 
         return toolPath;
     }
-    
+
     /// <summary>
     ///     Save and close document, then update the stencil using PID.DocumentStencilUpdateTool.exe.
     /// </summary>

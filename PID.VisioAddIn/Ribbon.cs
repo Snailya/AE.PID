@@ -17,6 +17,7 @@ using AE.PID.Views;
 using Microsoft.Office.Core;
 using Microsoft.Office.Interop.Visio;
 using Splat;
+using Shape = Microsoft.Office.Interop.Visio.Shape;
 
 // TODO:   按照以下步骤启用功能区(XML)项:
 
@@ -170,12 +171,12 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
 
     public void SelectDesignMaterial(IRibbonControl control)
     {
-        var selected = Globals.ThisAddIn.Application.ActiveWindow.Selection.OfType<Microsoft.Office.Interop.Visio.Shape>().Single();
+        var selected = Globals.ThisAddIn.Application.ActiveWindow.Selection.OfType<Shape>().Single();
         PartItem? element = selected.HasCategory("Equipment") ? new Equipment(selected) :
             selected.HasCategory("FunctionalElement") ? new FunctionalElement(selected) : null;
         if (element == null)
             return;
-        
+
         AppScheduler.UIScheduler.Schedule(() =>
         {
             var page = new MaterialsSelectionPage();
@@ -186,7 +187,7 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
 
     public void DeleteDesignMaterial(IRibbonControl control)
     {
-        foreach (var shape in Globals.ThisAddIn.Application.ActiveWindow.Selection.OfType<Microsoft.Office.Interop.Visio.Shape>())
+        foreach (var shape in Globals.ThisAddIn.Application.ActiveWindow.Selection.OfType<Shape>())
         {
             if (!shape.CellExistsN("Prop.D_BOM", VisExistsFlags.visExistsLocally)) continue;
             VisioHelper.DeleteDesignMaterial(shape);
@@ -281,7 +282,6 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
 
     public async Task Debug(IRibbonControl control)
     {
-
     }
 
     public bool IsDocumentOpened(IRibbonControl control)

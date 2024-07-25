@@ -5,7 +5,7 @@ using System.Windows.Data;
 
 namespace AE.PID.Converters;
 
-public class StringToVisibilityConvertor:IValueConverter
+public class StringToVisibilityConvertor : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {

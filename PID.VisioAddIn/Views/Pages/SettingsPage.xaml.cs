@@ -1,8 +1,6 @@
 ﻿using System.Reactive.Disposables;
-using AE.PID.Services;
 using AE.PID.ViewModels;
 using ReactiveUI;
-using Splat;
 
 namespace AE.PID.Views;
 

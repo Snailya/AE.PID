@@ -8,7 +8,6 @@ using AE.PID.Properties;
 using AE.PID.ViewModels;
 using AE.PID.Views;
 using AE.PID.Views.Windows;
-using ReactiveUI;
 
 namespace AE.PID.Services;
 
@@ -67,8 +66,6 @@ public class WindowManager : IDisposable
     public static void Initialize()
     {
         _instance = new WindowManager();
-        
-
 
         // notify the window manager
         // has been initialized so that other tasks based on this manager should start initializing.

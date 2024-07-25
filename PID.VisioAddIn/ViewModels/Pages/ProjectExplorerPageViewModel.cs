@@ -17,12 +17,12 @@ namespace AE.PID.ViewModels;
 
 public class ProjectExplorerPageViewModel(ProjectService? service = null) : ViewModelBase
 {
+    private readonly ProjectService _service = service ?? Locator.Current.GetService<ProjectService>()!;
     private PartItem? _copySource;
     private ReadOnlyObservableCollection<TreeNodeViewModel<ElementBase>> _elementTree = new([]);
     private ObservableAsPropertyHelper<bool> _isElementsLoading = ObservableAsPropertyHelper<bool>.Default();
     private ReadOnlyObservableCollection<PartItem> _partListItems = new([]);
     private ElementBase? _selected;
-    private readonly ProjectService _service = service?? Locator.Current.GetService<ProjectService>()!;
 
     #region Output Properties
 
@@ -39,7 +39,7 @@ public class ProjectExplorerPageViewModel(ProjectService? service = null) : View
     public OkCancelFeedbackViewModel OkCancelFeedbackViewModel { get; } = new();
     public ReactiveCommand<Unit, Unit>? CopyMaterial { get; private set; }
     public ReactiveCommand<Unit, Unit>? PasteMaterial { get; private set; }
-    
+
     public ReactiveCommand<Unit, Unit>? ExportToPage { get; private set; }
 
     #endregion
@@ -50,7 +50,7 @@ public class ProjectExplorerPageViewModel(ProjectService? service = null) : View
     {
         OkCancelFeedbackViewModel.Ok = ReactiveCommand.Create(() => _service.ExportToExcel(DocumentInfo));
         OkCancelFeedbackViewModel.Cancel = ReactiveCommand.Create(() => { });
-        
+
         ExportToPage = ReactiveCommand.Create(_service.ExportToPage);
 
         // copy design material is allowed if the selected item has material no
@@ -133,12 +133,12 @@ public class ProjectExplorerPageViewModel(ProjectService? service = null) : View
 
     protected override void SetupStart()
     {
-        AppScheduler.VisioScheduler.Schedule(()=>_service.Start());
+        AppScheduler.VisioScheduler.Schedule(() => _service.Start());
     }
 
     protected override void SetupDeactivate()
     {
-        AppScheduler.VisioScheduler.Schedule(()=>_service.Stop());
+        AppScheduler.VisioScheduler.Schedule(() => _service.Stop());
     }
 
     #endregion
