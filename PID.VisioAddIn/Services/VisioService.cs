@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Threading;
 using AE.PID.Interfaces;
 using DynamicData;
 using Microsoft.Office.Interop.Visio;
@@ -28,7 +27,6 @@ public class VisioService : IVisioService
                 {
                     var initial = Globals.ThisAddIn.Application.ActiveDocument.Masters.OfType<IVMaster>();
                     source.AddOrUpdate(initial);
-
                 });
 
                 var added = Observable.FromEvent<EDocument_MasterAddedEventHandler, IVMaster>(

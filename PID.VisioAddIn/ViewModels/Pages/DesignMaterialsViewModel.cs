@@ -37,7 +37,8 @@ public class DesignMaterialsViewModel(MaterialsService? service = null) : ViewMo
     {
         if (_element is not PartItem partItem) return;
 
-        partItem.MaterialNo = material.Code;
+        partItem.MaterialNo = material.MaterialNo;
+        
         _service.AddToLastUsed(material, CategoryPredicateSeed);
     }
 
@@ -208,7 +209,7 @@ public class DesignMaterialsViewModel(MaterialsService? service = null) : ViewMo
         var (name, brand, specifications, model, manufacturer) = arg;
 
         return m => m.Name.Contains(name) && m.Brand.Contains(brand) && m.Specifications.Contains(specifications) &&
-                    m.Model.Contains(model) && m.Manufacturer.Contains(manufacturer);
+                    m.Type.Contains(model) && m.Supplier.Contains(manufacturer);
     }
 
     #endregion

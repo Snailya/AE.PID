@@ -11,6 +11,7 @@ using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
 using Splat;
+using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 using TaskStatus = AE.PID.Core.Models.TaskStatus;
 
 namespace AE.PID.ViewModels;
@@ -39,7 +40,6 @@ public class ProjectExplorerPageViewModel(ProjectService? service = null) : View
     public OkCancelFeedbackViewModel OkCancelFeedbackViewModel { get; } = new();
     public ReactiveCommand<Unit, Unit>? CopyMaterial { get; private set; }
     public ReactiveCommand<Unit, Unit>? PasteMaterial { get; private set; }
-
     public ReactiveCommand<Unit, Unit>? ExportToPage { get; private set; }
 
     #endregion
@@ -48,7 +48,16 @@ public class ProjectExplorerPageViewModel(ProjectService? service = null) : View
 
     protected override void SetupCommands()
     {
-        OkCancelFeedbackViewModel.Ok = ReactiveCommand.Create(() => _service.ExportToExcel(DocumentInfo));
+        OkCancelFeedbackViewModel.Ok = ReactiveCommand.Create(() =>
+        {
+            var dialog = new SaveFileDialog
+            {
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                Filter = @"Excel Files|*.xlsx|All Files|*.*""",
+                Title = @"保存文件"
+            };
+            if (dialog.ShowDialog() is true) _service.ExportToExcel(dialog.FileName, DocumentInfo);
+        });
         OkCancelFeedbackViewModel.Cancel = ReactiveCommand.Create(() => { });
 
         ExportToPage = ReactiveCommand.Create(_service.ExportToPage);

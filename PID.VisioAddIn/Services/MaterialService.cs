@@ -22,7 +22,7 @@ public class MaterialsService : IDisposable, IEnableLogger
     private readonly CompositeDisposable _cleanUp = new();
 
     private readonly ApiClient _client;
-    private readonly SourceCache<LastUsedDesignMaterial, string> _lastUsed = new(t => t.Source.Code);
+    private readonly SourceCache<LastUsedDesignMaterial, string> _lastUsed = new(t => t.Source.MaterialNo);
 
     private readonly ReadOnlyObservableCollection<DesignMaterial> _materials;
 
@@ -107,7 +107,7 @@ public class MaterialsService : IDisposable, IEnableLogger
     /// <param name="elementName"></param>
     public void AddToLastUsed(DesignMaterial designMaterial, string elementName)
     {
-        var lastUsed = _lastUsed.Items.SingleOrDefault(x => x.Source.Code == designMaterial.Code);
+        var lastUsed = _lastUsed.Items.SingleOrDefault(x => x.Source.MaterialNo == designMaterial.MaterialNo);
         if (lastUsed == null)
             lastUsed = new LastUsedDesignMaterial(designMaterial);
         else
