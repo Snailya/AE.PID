@@ -2,7 +2,7 @@
 
 public class SelectDesignMaterialRequestDto : PagedRequestDto<DesignMaterialDto>
 {
-    public string GetKeyParameters()
+    public string GetQuery()
     {
         return $"MaterialName: {MainTable.MaterialName}, " +
                $"MaterialCode: {MainTable.MaterialCode}, " +

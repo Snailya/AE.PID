@@ -62,9 +62,38 @@ public class MaterialsController(
         });
     }
 
+    [HttpGet("{code}")]
+    [MapToApiVersion(2)]
+    public async Task<IActionResult> GetMaterialsByCodeV2([FromHeader(Name = "User-ID")] string userId,
+        [FromRoute] string code)
+    {
+        var data = ApiHelper.BuildFormUrlEncodedContent(new SelectDesignMaterialRequestDto
+        {
+            OperationInfo = new OperationInfoDto { Operator = userId },
+            MainTable = new DesignMaterialDto
+            {
+                MaterialCode = code
+            },
+            PageInfo = new PageInfoDto(1, 1)
+        });
+        var response = await _client.PostAsync("getModeDataPageList/selectDesignMaterial", data);
+        if (!response.IsSuccessStatusCode) return BadRequest("Failed to send form data to the API");
+        var responseData = await response.Content.ReadFromJsonAsync<ResponseDto>();
+        if (string.IsNullOrEmpty(responseData?.Result))
+        {
+            return Ok(null);
+        }
+
+        var material =
+            JsonSerializer.Deserialize<IEnumerable<SelectDesignMaterialResponseItemDto>>(responseData.Result)?
+                .Select(x => x.FromPDMS()).First();
+        return Ok(material);
+    }
+
     [HttpGet]
     [MapToApiVersion(2)]
-    public async Task<IActionResult> GetMaterialsV2([FromHeader(Name = "User-ID")] string userId, [FromQuery] string? category = null,
+    public async Task<IActionResult> GetMaterialsV2([FromHeader(Name = "User-ID")] string userId,
+        [FromQuery] string? category = null,
         [FromQuery] int pageNo = 1,
         [FromQuery] int pageSize = 10)
     {
@@ -143,6 +172,6 @@ public class MaterialsController(
             }
         }
 
-        throw new BadHttpRequestException($"Failed to get materials count. Keywords:{data.GetKeyParameters()}");
+        throw new BadHttpRequestException($"Failed to get materials count. Keywords:{data.GetQuery()}");
     }
 }
