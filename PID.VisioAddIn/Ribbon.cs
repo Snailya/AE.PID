@@ -109,6 +109,9 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
                     case Command.ValidateDesignationUnique:
                         VisioHelper.CheckDesignationUnique(Globals.ThisAddIn.Application.ActivePage);
                         break;
+                    case Command.ValidateMasterExist:
+                        VisioHelper.ScanMaster(Globals.ThisAddIn.Application.ActivePage);
+                        break;
                     case Command.ClearValidationMarks:
                         VisioHelper.ClearCheckMarks(Globals.ThisAddIn.Application.ActivePage);
                         break;
@@ -163,7 +166,8 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
         ClearValidationMarks,
         OpenProjectExplorer,
         OpenSettings,
-        Help
+        Help,
+        ValidateMasterExist
     }
 
     #region Context Menus
@@ -302,12 +306,17 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
         _commandInvoker.OnNext(Command.ValidateDesignationUnique);
     }
 
+    public void ValidateMasterExist(IRibbonControl control)
+    {
+        _commandInvoker.OnNext(Command.ValidateMasterExist);
+    }
+
     public void ClearValidationMarks(IRibbonControl control)
     {
         _commandInvoker.OnNext(Command.ClearValidationMarks);
     }
 
-    public bool CanValidateDesignationUnique(IRibbonControl control)
+    public bool CanValidate(IRibbonControl control)
     {
         return IsDocumentOpened(control) && !HasValidationMarks(control);
     }

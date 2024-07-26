@@ -39,7 +39,7 @@ public class InitialSetupPageViewModel(ConfigurationService? configuration = nul
             _configuration.UserId = _user;
     }
 
-    private bool IsValidHttpUrl(string? url)
+    private static bool IsValidHttpUrl(string? url)
     {
         if (url is null) return false;
 
@@ -48,7 +48,7 @@ public class InitialSetupPageViewModel(ConfigurationService? configuration = nul
         return false;
     }
 
-    private bool IsAllDigits(string? input)
+    private static bool IsAllDigits(string? input)
     {
         return input?.All(char.IsDigit) ?? false;
     }
@@ -57,7 +57,7 @@ public class InitialSetupPageViewModel(ConfigurationService? configuration = nul
 
     protected override void SetupCommands()
     {
-        OkCancelFeedbackViewModel.Ok = ReactiveCommand.Create(SaveChanges);
+        OkCancelFeedbackViewModel.Ok = ReactiveCommand.CreateRunInBackground(SaveChanges);
         OkCancelFeedbackViewModel.Cancel = ReactiveCommand.Create(() => { });
     }
 

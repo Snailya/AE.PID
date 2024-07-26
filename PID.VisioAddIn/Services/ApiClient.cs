@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Reactive.Disposables;
 using System.Threading.Tasks;
 using ReactiveUI;
@@ -9,7 +10,7 @@ namespace AE.PID.Services;
 
 public class ApiClient : IDisposable
 {
-    private const string UserIdHeaderName = "User-Id";
+    private const string UserIdHeaderName = "User-ID";
     private readonly CompositeDisposable _cleanUp = new();
     private HttpClient _client = new();
 

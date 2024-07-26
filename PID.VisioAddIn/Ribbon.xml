@@ -51,7 +51,15 @@
                             screentip="检查位号唯一性"
                             size="large"
                             getImage="GetButtonImage"
-                            getEnabled="CanValidateDesignationUnique"
+                            getEnabled="CanValidate"
+                    />
+                    <button id="validate_master_exist"
+                            label="主控形状缺失"
+                            onAction="ValidateMasterExist"
+                            screentip="检查主控形状没有缺失"
+                            size="large"
+                            getImage="GetButtonImage"
+                            getEnabled="CanValidate"
                     />
                     <button id="clear_validation_marks"
                             label="清除"
@@ -62,7 +70,7 @@
                             getEnabled="HasValidationMarks"
                     />
                 </group>
-                <group id="grpExport" label="导出">
+                <group id="grpProject" label="项目">
                     <button id="open_export_tool"
                             label="BOM"
                             onAction="OpenExportTool"
@@ -87,11 +95,11 @@
                             size="large"
                             getImage="GetButtonImage"
                     />
-                    <button id="debug"
+                    <!--<button id="debug"
                             label="调试"
                             onAction="Debug"
                             size="large"
-                    />
+                    />-->
                 </group>
             </tab>
         </tabs>

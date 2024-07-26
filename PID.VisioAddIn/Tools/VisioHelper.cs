@@ -450,4 +450,34 @@ internal static class VisioHelper
         : Exception(data);
 
     private class DocumentNotSavedException : Exception;
+
+    public static void ScanMaster(Page page)
+    {
+        var noMasters = page.Shapes.OfType<Shape>()
+            .Where(x => x.CellExistsN("User.msvShapeCategories", VisExistsFlags.visExistsAnywhere))
+            .Where(x => x.Master == null)
+            .ToList();
+        
+        // create validation layer if not exist
+        var validationLayer =
+            page.Layers.OfType<Layer>().SingleOrDefault(x => x.Name == Constants.ValidationLayerName) ??
+            page.Layers.Add(Constants.ValidationLayerName);
+        validationLayer.CellsC[2].FormulaU = "2"; // set layer color
+        validationLayer.CellsC[11].FormulaU = "50%"; // set layer transparency
+        ClearCheckMarks(page);
+
+        foreach (var item in noMasters)
+        {
+            var (left, bottom, right, top) = page.Shapes.ItemFromID[item.ID]
+                .BoundingBoxMetric((short)VisBoundingBoxArgs.visBBoxDrawingCoords +
+                                   (short)VisBoundingBoxArgs.visBBoxExtents);
+            var rect = page.DrawRectangleMetric(left - 1, bottom - 1, right + 1, top + 1);
+            // set as transparent fill
+            rect.CellsSRCN(VisSectionIndices.visSectionObject, VisRowIndices.visRowFill, VisCellIndices.visFillPattern)
+                .FormulaU = "9";
+            // set layer
+            rect.CellsSRCN(VisSectionIndices.visSectionObject, VisRowIndices.visRowLayerMem,
+                    VisCellIndices.visLayerMember).FormulaU = $"\"{validationLayer.Index - 1}\"";
+        }
+    }
 }

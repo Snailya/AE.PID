@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net.Http.Json;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using AE.PID.Dtos;
 using AE.PID.Models;
 using DynamicData;
@@ -139,7 +141,34 @@ public class MaterialsService : IDisposable, IEnableLogger
         return $"api/v2/materials?category={categoryId}&pageNo={pageNumber}&pageSize={pageSize}";
     }
 
+    private static  string MaterialByCodeApi(string materialNo) => $"api/v2/materials/{materialNo}";
+
     #endregion
+
+    public async Task<DesignMaterial?> GetMaterialByCode(string materialNo)
+    {
+        var material = _materials.SingleOrDefault(x => x.MaterialNo == materialNo);
+        if (material != null) return material;
+        
+        // todo: consider cache the search result.
+        // get material by api
+
+        try
+        {
+            var response = await _client.GetStringAsync(MaterialByCodeApi(materialNo));
+            var materialDto = JsonConvert.DeserializeObject<MaterialDto>(response);
+            if (materialDto != null)
+                material =  DesignMaterial.FromDTO(materialDto);
+
+            return material;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+
+    }
 }
 
 public class MaterialsRequestResult

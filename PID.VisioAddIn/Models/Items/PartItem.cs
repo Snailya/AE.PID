@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
+using System.Threading.Tasks;
 using AE.PID.Interfaces;
+using AE.PID.Services;
 using AE.PID.Tools;
 using Microsoft.Office.Interop.Visio;
 using Newtonsoft.Json;
@@ -19,7 +22,9 @@ public abstract class PartItem : ElementBase, IPartItem
 
     protected PartItem(Shape shape) : base(shape)
     {
-        DesignMaterial = new Lazy<DesignMaterial?>(() => JsonConvert.DeserializeObject<DesignMaterial>(Source.Data1));
+        DesignMaterial = new Lazy<DesignMaterial?>(() =>
+            JsonConvert.DeserializeObject<DesignMaterial>(Source.Data1)
+        );
     }
 
     /// <summary>
@@ -81,6 +86,14 @@ public abstract class PartItem : ElementBase, IPartItem
             .DisposeWith(CleanUp);
         Source.OneWayBind(this, x => x.SubTotal, "Prop.Subtotal")
             .DisposeWith(CleanUp);
+
+
+        if (MaterialNo != string.Empty && Source.Data1 == string.Empty)
+            Task.Run(async () =>
+            {
+                var material = await Locator.Current.GetService<MaterialsService>()!.GetMaterialByCode(MaterialNo);
+                AppScheduler.VisioScheduler.Schedule(() => { Source.Data1 = JsonConvert.SerializeObject(material); });
+            });
     }
 
     #endregion
