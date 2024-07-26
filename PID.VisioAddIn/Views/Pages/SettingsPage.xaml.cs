@@ -1,13 +1,16 @@
-﻿using System.Reactive.Disposables;
+﻿using System.Diagnostics;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using AE.PID.ViewModels;
 using ReactiveUI;
+using Splat;
 
 namespace AE.PID.Views;
 
 /// <summary>
 ///     Interaction logic for MockPage.xaml
 /// </summary>
-public partial class SettingsPage
+public partial class SettingsPage : IEnableLogger
 {
     public SettingsPage() : base("Settings")
     {
@@ -56,6 +59,9 @@ public partial class SettingsPage
             this.Bind(ViewModel,
                     vm => vm.OkCancelFeedbackViewModel,
                     v => v.Feedback.ViewModel)
+                .DisposeWith(d);
+
+            this.Bind(ViewModel, vm=>vm.UseServerSideUpdate, v=>v.ServerUpdateButton.IsChecked)
                 .DisposeWith(d);
         });
     }

@@ -8,6 +8,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using AE.PID.Properties;
+using AE.PID.Tools;
 using Microsoft.Office.Interop.Visio;
 using ReactiveUI;
 using Splat;
@@ -58,7 +59,7 @@ public class DocumentMonitor : IEnableLogger
                     }
                     else
                     {
-                        _ = UseServerSideUpdate(document);
+                        _ = Update(document);
                     }
                 },
                 ex => { this.Log().Error(ex, "Document Monitor Service ternimated accidently."); },
@@ -96,18 +97,29 @@ public class DocumentMonitor : IEnableLogger
             _configuration.LibraryItems.Items.Any(x => x.BaseId == source.BaseID && x.UniqueId != source.UniqueID));
     }
 
+    public async Task Update(Document document)
+    {
+        if (_configuration.UseServerSideUpdate)
+            await UseServerSideUpdate(document);
+        else
+        {
+            VisioHelper.UseLocalUpdate(document);
+        }
+    }
+    
+    
     /// <summary>
     ///     Update the document by transfer the file to server.
     /// </summary>
     /// <param name="document"></param>
-    public async Task UseServerSideUpdate(IVDocument document)
+    private async Task UseServerSideUpdate(Document document)
     {
         // remove hidden information to reduce size
         document.RemoveHiddenInformation((int)VisRemoveHiddenInfoItems.visRHIMasters);
 
         var filePath = string.Empty;
         // store the file path otherwise it will lose after the document close
-        (document as Document).BeforeDocumentClose += v => { filePath = document.FullName; };
+        (document as Document)!.BeforeDocumentClose += v => { filePath = document.FullName; };
         document.Close();
 
         if (string.IsNullOrEmpty(filePath)) return;
@@ -123,7 +135,7 @@ public class DocumentMonitor : IEnableLogger
         // create a copy of the source file
         var backup = Path.ChangeExtension(filePath, ".bak");
         if (File.Exists(backup))
-            backup = Path.Combine(Path.GetDirectoryName(backup),
+            backup = Path.Combine(Path.GetDirectoryName(backup) ?? string.Empty,
                 Path.GetFileNameWithoutExtension(backup) + DateTime.Now.ToString("yyyyMMdd") + ".bak");
         File.Copy(filePath, backup);
 

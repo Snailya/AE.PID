@@ -8,7 +8,7 @@
                 xmlns:viewModels="clr-namespace:AE.PID.ViewModels"
                 xmlns:views="clr-namespace:AE.PID.Views"
                 mc:Ignorable="d"
-                d:DesignHeight="480" d:DesignWidth="480">
+                d:DesignHeight="600" d:DesignWidth="480">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -26,6 +26,7 @@
         <TextBlock Style="{StaticResource TitleStyle}" Text="设置" />
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -170,6 +171,33 @@
                         </DataGridTemplateColumn>
                     </DataGrid.Columns>
                 </DataGrid>
+            </Grid>
+            <Grid Grid.Row="3" >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" MinHeight="160" />
+                </Grid.RowDefinitions>
+
+                <views:SectionLabel Header="文档" />
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="LabelCol" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Label Content="更新工具" Margin="4 0 0 0" />
+                    <RadioButton x:Name="LocalUpdateButton"
+                                 Grid.Column="1"
+                                 Margin="0 0 4 0"
+                                 GroupName="rbs"  VerticalAlignment="Center"
+                                 Content="本地" IsChecked="True" />
+                <RadioButton x:Name="ServerUpdateButton"
+                             Grid.Column="2"
+                             Margin="4 0 0 0"
+                             GroupName="rbs" VerticalAlignment="Center"
+                             Content="服务器" />
+                </Grid>
             </Grid>
         </Grid>
         <Separator Grid.Row="2" />

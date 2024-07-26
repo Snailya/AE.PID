@@ -46,10 +46,6 @@ public class Equipment : PartItem
         return Designation;
     }
 
-    public override string GetName()
-    {
-        return SubClassName;
-    }
 
     protected override void OnInitialized()
     {

@@ -85,7 +85,7 @@ public abstract class ElementBase : AbstractNotifyPropertyChanged, IDisposable, 
 
     protected virtual void OnRelationshipsChanged(Cell cell)
     {
-        throw new NotImplementedException();
+        //
     }
 
     protected virtual void OnInitialized()

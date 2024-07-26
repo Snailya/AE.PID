@@ -78,9 +78,8 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
                         VisioHelper.FormatDocument(Globals.ThisAddIn.Application.ActiveDocument);
                         break;
                     case Command.UpdateDocument:
-                        // VisioHelper.UpdateDocument(Globals.ThisAddIn.Application.ActiveDocument);
                         var monitor = Locator.Current.GetService<DocumentMonitor>()!;
-                        _ = monitor.UseServerSideUpdate(Globals.ThisAddIn.Application.ActiveDocument);
+                        _ = monitor.Update(Globals.ThisAddIn.Application.ActiveDocument);
                         break;
                     case Command.InsertLegend:
                         VisioHelper.InsertLegend(Globals.ThisAddIn.Application.ActivePage);

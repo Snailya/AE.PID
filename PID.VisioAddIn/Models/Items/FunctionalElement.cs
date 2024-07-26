@@ -43,10 +43,6 @@ public sealed class FunctionalElement : PartItem
         return string.IsNullOrEmpty(parentDesignation) ? Designation : $"{parentDesignation}-{Designation}";
     }
 
-    public override string GetName()
-    {
-        return string.Empty;
-    }
 
     protected override void OnInitialized()
     {

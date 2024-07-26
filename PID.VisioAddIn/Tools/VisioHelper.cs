@@ -99,6 +99,8 @@ internal static class VisioHelper
 
             if (cell.RowName.StartsWith("D_")) shape.DeleteRow((short)VisSectionIndices.visSectionProp, (short)i);
         }
+
+        shape.Data1 = string.Empty;
     }
 
     /// <summary>

@@ -2,6 +2,7 @@
 using System.Linq;
 using AE.PID.Attributes;
 using AE.PID.Dtos;
+using Newtonsoft.Json;
 
 namespace AE.PID.Models;
 
@@ -50,25 +51,49 @@ public class DesignMaterial(
     ///     The human-readable bom code from a database, used as identity
     /// </summary>
     [DataGridColumnName("物料号")]
+    [JsonProperty("a")]
     public string MaterialNo { get; private set; } = materialNo;
 
     /// <summary>
     ///     The display text of the design material
     /// </summary>
     [DataGridColumnName("名称")]
+    [JsonProperty("b")]
     public string Name { get; private set; } = name;
 
     /// <summary>
     ///     The brand of this material. A manufacturer could have many brands.
     /// </summary>
     [DataGridColumnName("品牌")]
+    [JsonProperty("c")]
     public string Brand { get; set; } = brand;
-    [DataGridColumnName("规格")] public string Specifications { get; set; } = specifications;
-    [DataGridColumnName("型号")] public string Type { get; set; } = type;
-    [DataGridColumnName("单位")] public string Unit { get; set; } = unit;
-    [DataGridColumnName("供应商")] public string Supplier { get; set; } = supplier;
-    [DataGridColumnName("制造商物料号")] public string ManufacturerMaterialNumber { get; set; } = manufacturerMaterialNumber;
+
+    [JsonProperty("d")]
+    [DataGridColumnName("规格")]
+    public string Specifications { get; set; } = specifications;
+
+    [JsonProperty("e")]
+    [DataGridColumnName("型号")]
+    public string Type { get; set; } = type;
+
+    [JsonProperty("f")]
+    [DataGridColumnName("单位")]
+    public string Unit { get; set; } = unit;
+
+    [JsonProperty("g")]
+    [DataGridColumnName("供应商")]
+    public string Supplier { get; set; } = supplier;
+
+    [JsonProperty("h")]
+    [DataGridColumnName("制造商物料号")]
+    public string ManufacturerMaterialNumber { get; set; } = manufacturerMaterialNumber;
+
+    [JsonProperty("i")]
+    [DataGridColumnName("技术参数-英文")]
     public string TechnicalDataEnglish { get; set; } = technicalData;
+
+    [JsonProperty("j")]
+    [DataGridColumnName("技术参数-中文")]
     public string TechnicalData { get; set; } = technicalDataEnglish;
 
     #endregion

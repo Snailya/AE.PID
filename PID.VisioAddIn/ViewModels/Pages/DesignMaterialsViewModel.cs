@@ -33,12 +33,10 @@ public class DesignMaterialsViewModel(MaterialsService? service = null) : ViewMo
 
     #region Command Handlers
 
-    private void WriteMaterialAndAddToLastUsed(DesignMaterial material)
+    private void WriteMaterial(DesignMaterial material)
     {
         if (_element is not PartItem partItem) return;
-
-        partItem.MaterialNo = material.MaterialNo;
-        
+        partItem.AssignMaterial(material);
         _service.AddToLastUsed(material, CategoryPredicateSeed);
     }
 
@@ -49,7 +47,8 @@ public class DesignMaterialsViewModel(MaterialsService? service = null) : ViewMo
     protected override void SetupCommands()
     {
         // when an item is selected, it should be added to the last used grid for future use
-        Select = ReactiveCommand.Create<DesignMaterial>(WriteMaterialAndAddToLastUsed);
+        Select = ReactiveCommand.CreateRunInBackground<DesignMaterial>(WriteMaterial,
+            backgroundScheduler: AppScheduler.VisioScheduler);
 
         // create a hack command so that other class could observe this action
         // this is used to trigger load more action of the lazy load data grid in view class

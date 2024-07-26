@@ -40,6 +40,7 @@ public class SettingsPageViewModel(
 
     private string _server = string.Empty;
     private string _user = string.Empty;
+    private bool _useServerSideUpdate;
 
     #region Output Properties
 
@@ -76,6 +77,8 @@ public class SettingsPageViewModel(
 
         if (_configuration.LibraryCheckInterval != _libraryCheckFrequency.TimeSpan)
             _configuration.LibraryCheckInterval = _libraryCheckFrequency.TimeSpan;
+
+        _configuration.UseServerSideUpdate = _useServerSideUpdate;
     }
 
     #region Setup
@@ -127,6 +130,7 @@ public class SettingsPageViewModel(
         _libraryCheckFrequency = FrequencyOptionViewModel.GetMatchedOption(_configuration.LibraryCheckInterval);
         _server = _configuration.Server;
         _user = _configuration.UserId;
+        _useServerSideUpdate = _configuration.UseServerSideUpdate;
 
         Task.Run(async () =>
         {
@@ -161,6 +165,12 @@ public class SettingsPageViewModel(
     {
         get => _libraryCheckFrequency;
         private set => this.RaiseAndSetIfChanged(ref _libraryCheckFrequency, value);
+    }
+
+    public bool UseServerSideUpdate
+    {
+        get => _useServerSideUpdate;
+        set => this.RaiseAndSetIfChanged(ref _useServerSideUpdate, value);
     }
 
     #endregion

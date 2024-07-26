@@ -15,7 +15,10 @@ public class Configuration
     public TimeSpan CheckInterval { get; set; } = TimeSpan.FromDays(1);
 
     public LibraryConfiguration LibraryConfiguration { get; set; } = new();
+
+    public bool UseServerUpdate { get; set; } = false;
 }
+
 
 [Serializable]
 public class LibraryConfiguration

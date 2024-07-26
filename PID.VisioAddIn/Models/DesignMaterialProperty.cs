@@ -1,5 +1,6 @@
 ﻿using AE.PID.Attributes;
 using AE.PID.Dtos;
+using Newtonsoft.Json;
 
 namespace AE.PID.Models;
 
@@ -15,11 +16,13 @@ public class DesignMaterialProperty(string name, string value)
     /// <summary>
     ///     The name of the property
     /// </summary>
+    [JsonProperty("n")]
     public string Name { get; set; } = name;
 
     /// <summary>
     ///     The value string
     /// </summary>
+    [JsonProperty("v")]
     public string Value { get; set; } = value;
 
     public static DesignMaterialProperty FromDTO(MaterialPropertyDto dto)

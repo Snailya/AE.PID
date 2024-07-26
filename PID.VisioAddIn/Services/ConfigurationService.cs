@@ -17,7 +17,7 @@ using Splat;
 
 namespace AE.PID.Services;
 
-public class ConfigurationService : ReactiveObject, IEnableLogger
+public class ConfigurationService : AbstractNotifyPropertyChanged, IEnableLogger
 {
     private const string ConfigFileName = "ae-pid.json";
     private readonly CompositeDisposable _cleanUp = [];
@@ -32,6 +32,7 @@ public class ConfigurationService : ReactiveObject, IEnableLogger
     private DateTime _libraryNextTime;
     private string _server;
     private string _userId;
+    private bool _useServerSideUpdate;
 
     #region Constructors
 
@@ -61,13 +62,13 @@ public class ConfigurationService : ReactiveObject, IEnableLogger
         _libraries.AddOrUpdate(configuration.LibraryConfiguration.Libraries.Select(ReactiveLibrary.FromLibrary));
 
         // when any property changed, save the changes in 5 seconds to enhance performance
-        this.ObservableForProperty(x => x.Server).Select(_ => Unit.Default)
-            .Merge(this.ObservableForProperty(x => x.UserId).Select(_ => Unit.Default))
-            .Merge(this.ObservableForProperty(x => x.AppNextTime).Select(_ => Unit.Default))
-            .Merge(this.ObservableForProperty(x => x.AppCheckInterval).Select(_ => Unit.Default))
-            .Merge(this.ObservableForProperty(x => x.LibraryNextTime).Select(_ => Unit.Default))
-            .Merge(this.ObservableForProperty(x => x.LibraryCheckInterval).Select(_ => Unit.Default))
-            .Merge(_libraries.Connect().WhenPropertyChanged(x => x.Version).Select(_ => Unit.Default))
+        this.WhenValueChanged(x => x.Server, false).Select(_ => Unit.Default)
+            .Merge(this.WhenValueChanged(x => x.UserId, false).Select(_ => Unit.Default))
+            .Merge(this.WhenValueChanged(x => x.AppNextTime,false).Select(_ => Unit.Default))
+            .Merge(this.WhenValueChanged(x => x.AppCheckInterval,false).Select(_ => Unit.Default))
+            .Merge(this.WhenValueChanged(x => x.LibraryNextTime,false).Select(_ => Unit.Default))
+            .Merge(this.WhenValueChanged(x => x.LibraryCheckInterval,false).Select(_ => Unit.Default))
+            .Merge(_libraries.Connect().WhenPropertyChanged(x => x.Version,false).Select(_ => Unit.Default))
             .Quiescent(TimeSpan.FromSeconds(5), CurrentThreadScheduler.Instance)
             .Subscribe(_ => Save())
             .DisposeWith(_cleanUp);
@@ -182,7 +183,7 @@ public class ConfigurationService : ReactiveObject, IEnableLogger
     public DateTime AppNextTime
     {
         get => _appNextTime;
-        set => this.RaiseAndSetIfChanged(ref _appNextTime, value);
+        set => SetAndRaise(ref _appNextTime, value);
     }
 
     public TimeSpan AppCheckInterval
@@ -197,14 +198,14 @@ public class ConfigurationService : ReactiveObject, IEnableLogger
                 value = TimeSpan.FromHours(1);
             }
 
-            this.RaiseAndSetIfChanged(ref _appCheckInterval, value);
+            SetAndRaise(ref _appCheckInterval, value);
         }
     }
 
     public DateTime LibraryNextTime
     {
         get => _libraryNextTime;
-        set => this.RaiseAndSetIfChanged(ref _libraryNextTime, value);
+        set => SetAndRaise(ref _libraryNextTime, value);
     }
 
     public TimeSpan LibraryCheckInterval
@@ -219,20 +220,26 @@ public class ConfigurationService : ReactiveObject, IEnableLogger
                 value = TimeSpan.FromMinutes(1);
             }
 
-            this.RaiseAndSetIfChanged(ref _libraryCheckInterval, value);
+            SetAndRaise(ref _libraryCheckInterval, value);
         }
     }
 
     public string Server
     {
         get => _server;
-        set => this.RaiseAndSetIfChanged(ref _server, value);
+        set => SetAndRaise(ref _server, value);
     }
 
     public string UserId
     {
         get => _userId;
-        set => this.RaiseAndSetIfChanged(ref _userId, value);
+        set => SetAndRaise(ref _userId, value);
+    }
+
+    public bool UseServerSideUpdate
+    {
+        get => _useServerSideUpdate;
+        set => SetAndRaise(ref _useServerSideUpdate, value);
     }
 
     #endregion
