@@ -137,9 +137,9 @@
         </Grid>
         <Separator Grid.Row="3" />
         <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
-            <views:OkCancelFeedback x:Name="Feedback"
-                                    OkText="导出" />
             <Button x:Name="ExportToPageButton">导出到页</Button>
+            <views:OkCancelFeedback x:Name="Feedback"
+                                    OkText="导出Excel" />
         </StackPanel>
     </Grid>
 </views:PageBase>

@@ -25,7 +25,7 @@ public class Equipment : PartItem
     public string SubClassName
     {
         get => _subClassName;
-        private set => this.RaiseAndSetIfChanged(ref _subClassName, value);
+        private set => this.SetAndRaise(ref _subClassName, value);
     }
 
     #endregion

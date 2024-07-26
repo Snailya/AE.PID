@@ -5,7 +5,6 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
-using System.Windows.Forms;
 using AE.PID.Models;
 using AE.PID.Properties;
 using AE.PID.ViewModels;
@@ -119,7 +118,9 @@ public class ProjectService : PageServiceBase
                 array[i + 2, 1] = line.FunctionalElement;
                 array[i + 2, 2] = line.Description;
                 array[i + 2, 3] = line.Supplier;
-                array[i + 2, 6] = line.AEMaterialNo;
+                array[i + 2, 4] = line.Type;
+                array[i + 2, 5] = line.Specification;
+                array[i + 2, 6] = line.MaterialNo;
             }
 
             return array;
@@ -129,20 +130,12 @@ public class ProjectService : PageServiceBase
     /// <summary>
     ///     extract data from shapes on layers defined in config and group them as BOM items.
     /// </summary>
-    public void ExportToExcel(DocumentInfoViewModel documentInfo)
+    public void ExportToExcel(string fileName, DocumentInfoViewModel documentInfo)
     {
-        var dialog = new SaveFileDialog
-        {
-            InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-            Filter = @"Excel Files|*.xlsx|All Files|*.*""",
-            Title = @"保存文件"
-        };
-        if (dialog.ShowDialog() != DialogResult.OK) return;
-
         try
         {
             var partItems = PopulatePartListTableLineItems();
-            MiniExcel.SaveAsByTemplate(dialog.FileName, Resources.TEMPLATE_parts_list,
+            MiniExcel.SaveAsByTemplate(fileName, Resources.TEMPLATE_parts_list,
                 new
                 {
                     Parts = partItems,
@@ -176,6 +169,164 @@ public class ProjectService : PageServiceBase
         return null;
     }
 
+    private class PartListTableLineItem
+    {
+        /// <summary>
+        ///     Create a <see cref="PartListTableLineItem" /> from <see cref="PartItem" />.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        public static PartListTableLineItem FromPartItem(PartItem x)
+        {
+            return new PartListTableLineItem
+            {
+                Index = 0,
+                ProcessArea = x.ProcessArea,
+                FunctionalGroup = x.FunctionalGroup,
+                FunctionalElement = x.GetFunctionalElement(),
+                MaterialNo = x.DesignMaterial?.MaterialNo ?? string.Empty,
+                Description = x.Description,
+                Specification = x.DesignMaterial?.Specifications ?? string.Empty,
+                TechnicalDataChinese = x.DesignMaterial?.TechnicalData ?? string.Empty,
+                TechnicalDataEnglish = x.DesignMaterial?.TechnicalDataEnglish ?? string.Empty,
+                Total = x.SubTotal,
+                InGroup = x.SubTotal,
+                Count = x.SubTotal,
+                Unit = x.DesignMaterial?.Unit ?? string.Empty,
+                Supplier = x.DesignMaterial?.Supplier ?? string.Empty,
+                ManufacturerMaterialNo = x.DesignMaterial?.ManufacturerMaterialNumber ?? string.Empty,
+                Type = x.DesignMaterial?.Type ?? string.Empty,
+                Classification = string.Empty,
+                Attachment = string.Empty
+            };
+        }
+
+        /// <summary>
+        ///     Create a copy of <see cref="PartListTableLineItem" /> and reset its designations.
+        ///     Used for virtual part items.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="targetFunctionalGroup"></param>
+        /// <returns></returns>
+        public static PartListTableLineItem CopyTo(PartListTableLineItem x, string targetFunctionalGroup)
+        {
+            return new PartListTableLineItem
+            {
+                ProcessArea = x.ProcessArea,
+                FunctionalGroup = targetFunctionalGroup,
+                FunctionalElement = x.FunctionalElement.Replace(x.FunctionalGroup, targetFunctionalGroup),
+                MaterialNo = x.MaterialNo,
+                Description = x.Description,
+                Specification = x.Specification,
+                TechnicalDataChinese = x.TechnicalDataChinese,
+                TechnicalDataEnglish = x.TechnicalDataEnglish,
+                Total = x.Total,
+                InGroup = x.InGroup,
+                Count = x.Count,
+                Unit = x.Unit,
+                Supplier = x.Supplier,
+                ManufacturerMaterialNo = x.ManufacturerMaterialNo,
+                Type = x.Type,
+                Classification = x.Classification,
+                Attachment = x.Attachment
+            };
+        }
+
+        #region Properties
+
+        /// <summary>
+        ///     序号
+        /// </summary>
+        public int Index { get; set; }
+
+        /// <summary>
+        ///     区域号
+        /// </summary>
+        public string ProcessArea { get; set; } = string.Empty;
+
+        /// <summary>
+        ///     功能组
+        /// </summary>
+        public string FunctionalGroup { get; set; } = string.Empty;
+
+        /// <summary>
+        ///     功能元件
+        /// </summary>
+        public string FunctionalElement { get; set; } = string.Empty;
+
+        /// <summary>
+        ///     物料号
+        /// </summary>
+        public string MaterialNo { get; set; } = string.Empty;
+
+        /// <summary>
+        ///     描述
+        /// </summary>
+        public string Description { get; set; } = string.Empty;
+
+        /// <summary>
+        ///     规格
+        /// </summary>
+        public string Specification { get; set; } = string.Empty;
+
+        /// <summary>
+        ///     技术参数-中文
+        /// </summary>
+        public string TechnicalDataChinese { get; set; } = string.Empty;
+
+        /// <summary>
+        ///     技术参数-英文
+        /// </summary>
+        public string TechnicalDataEnglish { get; set; } = string.Empty;
+
+        /// <summary>
+        ///     数量
+        /// </summary>
+        public double Count { get; set; }
+
+        /// <summary>
+        ///     总数量
+        /// </summary>
+        public double Total { get; set; }
+
+        /// <summary>
+        ///     组内数量
+        /// </summary>
+        public double InGroup { get; set; }
+
+        /// <summary>
+        ///     单位
+        /// </summary>
+        public string Unit { get; set; } = string.Empty;
+
+        /// <summary>
+        ///     供应商
+        /// </summary>
+        public string Supplier { get; set; } = string.Empty;
+
+        /// <summary>
+        ///     制造商物品编号
+        /// </summary>
+        public string ManufacturerMaterialNo { get; set; } = string.Empty;
+
+        /// <summary>
+        ///     型号
+        /// </summary>
+        public string Type { get; set; } = string.Empty;
+
+        /// <summary>
+        ///     分类
+        /// </summary>
+        public string Classification { get; set; } = string.Empty;
+
+        /// <summary>
+        ///     附件
+        /// </summary>
+        public string Attachment { get; set; } = string.Empty;
+
+        #endregion
+    }
+
     #region Part List Table
 
     /// <summary>
@@ -191,7 +342,7 @@ public class ProjectService : PageServiceBase
         var grouped = partListItems
             .GroupBy(m => new
             {
-                MaterialNo = string.IsNullOrEmpty(m.AEMaterialNo) ? Guid.NewGuid().ToString() : m.AEMaterialNo,
+                MaterialNo = string.IsNullOrEmpty(m.MaterialNo) ? Guid.NewGuid().ToString() : m.MaterialNo,
                 m.FunctionalGroup
             })
             .Select(group => new
@@ -199,12 +350,12 @@ public class ProjectService : PageServiceBase
                 group.Key.MaterialNo,
                 group.Key.FunctionalGroup,
                 CountInGroup = group.Sum(m => m.Count),
-                Total = partListItems.Where(m => m.AEMaterialNo == group.Key.MaterialNo).Sum(m => m.Count)
+                Total = partListItems.Where(m => m.MaterialNo == group.Key.MaterialNo).Sum(m => m.Count)
             });
 
         foreach (var group in grouped)
         foreach (var material in partListItems.Where(m =>
-                     m.AEMaterialNo == group.MaterialNo && m.FunctionalGroup == group.FunctionalGroup))
+                     m.MaterialNo == group.MaterialNo && m.FunctionalGroup == group.FunctionalGroup))
         {
             material.InGroup = group.CountInGroup;
             material.Total = group.Total;

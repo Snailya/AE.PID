@@ -25,7 +25,7 @@ public sealed class Instrument : Equipment
     public string ProcessVariableAndControlFunctions
     {
         get => _processVariableAndControlFunctions;
-        set => this.RaiseAndSetIfChanged(ref _processVariableAndControlFunctions, value);
+        set => SetAndRaise(ref _processVariableAndControlFunctions, value);
     }
 
     #endregion

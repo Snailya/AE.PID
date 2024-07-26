@@ -24,16 +24,18 @@ public abstract class FunctionalGroupBase : ElementBase
 
     protected override void OnInitialized()
     {
+        base.OnInitialized();
+
         Type = ElementType.FunctionalGroup;
         ParentId = 0;
-
+        
         Source.Bind(this, x => x.Designation, "Prop.FunctionalGroup")
             .DisposeWith(CleanUp);
         Source.Bind(this, x => x.Description, "Prop.FunctionalGroupName")
             .DisposeWith(CleanUp);
 
         this.WhenPropertyChanged(x => x.Description)
-            .Subscribe(_ => this.RaisePropertyChanged(nameof(Label)))
+            .Subscribe(_ => OnPropertyChanged(nameof(Label)))
             .DisposeWith(CleanUp);
     }
 

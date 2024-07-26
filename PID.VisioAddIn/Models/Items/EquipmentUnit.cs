@@ -26,7 +26,7 @@ public sealed class EquipmentUnit : ElementBase
     public double Quantity
     {
         get => _quantity;
-        set => this.RaiseAndSetIfChanged(ref _quantity, value);
+        set => this.SetAndRaise(ref _quantity, value);
     }
 
     #endregion

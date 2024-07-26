@@ -23,7 +23,7 @@ public sealed class FunctionalGroup : FunctionalGroupBase
                 Related.ToObservableChangeSet().WhenPropertyChanged(x => x.Designation)
                     .Select(_ => Unit.Default)
             )
-            .Subscribe(_ => this.RaisePropertyChanged(nameof(Label)))
+            .Subscribe(_ => OnPropertyChanged(nameof(Label)))
             .DisposeWith(CleanUp);
     }
 
@@ -58,7 +58,7 @@ public sealed class FunctionalGroup : FunctionalGroupBase
         foreach (var add in toAdd) Related.Add(new ProxyFunctionalGroup(current.Single(x => x.ID == add)));
 
         if (toRemove.Count + toAdd.Count > 0)
-            this.RaisePropertyChanged(nameof(Label));
+            OnPropertyChanged(nameof(Label));
     }
 
     #region Methods Overrides

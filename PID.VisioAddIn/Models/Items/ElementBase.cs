@@ -3,12 +3,14 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using AE.PID.Interfaces;
+using AE.PID.Tools;
+using DynamicData.Binding;
 using Microsoft.Office.Interop.Visio;
 using ReactiveUI;
 
 namespace AE.PID.Models;
 
-public abstract class ElementBase : ReactiveObject, IDisposable, ITreeNode, IEquatable<ElementBase>
+public abstract class ElementBase : AbstractNotifyPropertyChanged, IDisposable, ITreeNode, IEquatable<ElementBase>
 {
     protected readonly CompositeDisposable CleanUp = new();
     protected readonly Shape Source;
@@ -17,6 +19,7 @@ public abstract class ElementBase : ReactiveObject, IDisposable, ITreeNode, IEqu
     private string _designation = string.Empty;
 
     private int _parentId;
+    private string _processArea = string.Empty;
 
     #region Constructors
 
@@ -87,7 +90,8 @@ public abstract class ElementBase : ReactiveObject, IDisposable, ITreeNode, IEqu
 
     protected virtual void OnInitialized()
     {
-        throw new NotImplementedException();
+        Source.OneWayBind<ElementBase, string>(this, x => x.ProcessArea, "Prop.ProcessZone")
+            .DisposeWith(CleanUp);
     }
 
     public virtual void Dispose()
@@ -105,7 +109,7 @@ public abstract class ElementBase : ReactiveObject, IDisposable, ITreeNode, IEqu
     public int ParentId
     {
         get => _parentId;
-        protected set => this.RaiseAndSetIfChanged(ref _parentId, value);
+        protected set => this.SetAndRaise(ref _parentId, value);
     }
 
     /// <summary>
@@ -121,7 +125,7 @@ public abstract class ElementBase : ReactiveObject, IDisposable, ITreeNode, IEqu
     public string Designation
     {
         get => _designation;
-        set => this.RaiseAndSetIfChanged(ref _designation, value);
+        set => this.SetAndRaise(ref _designation, value);
     }
 
     /// <summary>
@@ -136,7 +140,13 @@ public abstract class ElementBase : ReactiveObject, IDisposable, ITreeNode, IEqu
     public string Description
     {
         get => _description;
-        set => this.RaiseAndSetIfChanged(ref _description, value);
+        set => SetAndRaise(ref _description, value);
+    }
+
+    public string ProcessArea
+    {
+        get => _processArea;
+        set => SetAndRaise(ref _processArea, value);
     }
 
     #endregion

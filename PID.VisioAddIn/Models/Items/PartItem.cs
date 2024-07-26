@@ -33,7 +33,7 @@ public abstract class PartItem(Shape shape) : ElementBase(shape), IPartItem
             return;
         }
 
-        var shapeData = new ShapeData("D_BOM", "设计物料", "", $"{material.Code}");
+        var shapeData = new ShapeData("D_BOM", "设计物料", "", $"{material.MaterialNo}");
         Source.CreateOrUpdate(shapeData);
 
         // remove attributes
@@ -56,7 +56,7 @@ public abstract class PartItem(Shape shape) : ElementBase(shape), IPartItem
     private void AssignMaterial(string code)
     {
         var service = Locator.Current.GetService<MaterialsService>()!;
-        var material = service.Materials.SingleOrDefault(x => x.Code == code);
+        var material = service.Materials.SingleOrDefault(x => x.MaterialNo == code);
         AssignMaterial(material);
     }
 
@@ -85,6 +85,8 @@ public abstract class PartItem(Shape shape) : ElementBase(shape), IPartItem
 
     protected override void OnInitialized()
     {
+        base.OnInitialized();
+        
         Source.OneWayBind(this, x => x.FunctionalGroup, "Prop.FunctionalGroup")
             .DisposeWith(CleanUp);
         Source.Bind(this, x => x.Designation, "Prop.FunctionalElement")
@@ -110,14 +112,7 @@ public abstract class PartItem(Shape shape) : ElementBase(shape), IPartItem
     #endregion
 
     #region Public Methods
-
-    public string GetTechnicalData()
-    {
-        // todo: implement
-
-        return string.Empty;
-    }
-
+    
     /// <summary>
     ///     Copy material properties from another part item.
     /// </summary>
@@ -147,37 +142,37 @@ public abstract class PartItem(Shape shape) : ElementBase(shape), IPartItem
     public string KeyParameters
     {
         get => _keyParameters;
-        set => this.RaiseAndSetIfChanged(ref _keyParameters, value);
+        set => this.SetAndRaise(ref _keyParameters, value);
     }
 
     public DesignMaterial? DesignMaterial
     {
         get => _designMaterial;
-        set => this.RaiseAndSetIfChanged(ref _designMaterial, value);
+        set => this.SetAndRaise(ref _designMaterial, value);
     }
 
     public string FunctionalGroup
     {
         get => _functionalGroup;
-        set => this.RaiseAndSetIfChanged(ref _functionalGroup, value);
+        set => this.SetAndRaise(ref _functionalGroup, value);
     }
 
     public string MaterialNo
     {
         get => _materialNo;
-        set => this.RaiseAndSetIfChanged(ref _materialNo, value);
+        set => this.SetAndRaise(ref _materialNo, value);
     }
 
     public double Quantity
     {
         get => _quantity;
-        set => this.RaiseAndSetIfChanged(ref _quantity, value);
+        set => this.SetAndRaise(ref _quantity, value);
     }
 
     public double SubTotal
     {
         get => _subTotal;
-        protected set => this.RaiseAndSetIfChanged(ref _subTotal, value);
+        protected set => this.SetAndRaise(ref _subTotal, value);
     }
 
     #endregion
