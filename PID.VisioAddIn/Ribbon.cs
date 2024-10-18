@@ -14,6 +14,8 @@ using AE.PID.Properties;
 using AE.PID.Services;
 using AE.PID.Tools;
 using AE.PID.Views;
+using AE.PID.Visio.Core;
+using AE.PID.Visio.UI.Avalonia.Views;
 using Microsoft.Office.Core;
 using Microsoft.Office.Interop.Visio;
 using Splat;
@@ -70,7 +72,7 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
                 switch (command)
                 {
                     case Command.LoadLibrary:
-                        var libraryPaths = Locator.Current.GetService<ConfigurationService>()!.Libraries.Items
+                        var libraryPaths = Locator.Current.GetService<IConfigurationService>()!.Libraries.Items
                             .Select(x => x.Path).ToList();
                         VisioHelper.OpenLibraries(libraryPaths);
                         break;
@@ -85,23 +87,17 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
                         VisioHelper.InsertLegend(Globals.ThisAddIn.Application.ActivePage);
                         break;
                     case Command.OpenSelectTool:
-                        AppScheduler.UIScheduler.Schedule(() =>
-                        {
-                            WindowManager.GetInstance()!.Show(new SelectToolPage());
-                        });
+                        App.UIScheduler.Schedule(() => { WindowManager.GetInstance()!.Show(new SelectToolPage()); });
                         break;
                     case Command.OpenProjectExplorer:
-                        AppScheduler.UIScheduler.Schedule(() =>
+                        App.UIScheduler.Schedule(() =>
                         {
                             WindowManager.GetInstance()!.Show(new ProjectExplorerPage(),
                                 new MaterialsSelectionPage());
                         });
                         break;
                     case Command.OpenSettings:
-                        AppScheduler.UIScheduler.Schedule(() =>
-                        {
-                            WindowManager.GetInstance()!.Show(new SettingsPage());
-                        });
+                        App.UIScheduler.Schedule(() => { WindowManager.GetInstance()!.Show(new SettingsPage()); });
                         break;
                     case Command.Help:
                         Process.Start("https://snailya.github.io/posts/ae-pid%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/");
@@ -180,10 +176,10 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
         if (element == null)
             return;
 
-        AppScheduler.UIScheduler.Schedule(() =>
+        App.UIScheduler.Schedule(() =>
         {
             var page = new MaterialsSelectionPage();
-            page.ViewModel!.Element = element;
+            page.ViewModel!.MaterialLocation.Code = element.MaterialNo;
             WindowManager.GetInstance()!.Show(page);
         });
     }
@@ -261,6 +257,11 @@ public class Ribbon : IRibbonExtensibility, IEnableLogger
     public void UpdateDocument(IRibbonControl control)
     {
         _commandInvoker.OnNext(Command.UpdateDocument);
+    }
+
+    public void OpenProject(IRibbonControl control)
+    {
+        App.UIScheduler.Schedule(() => { new ProjectExplorerWindow().Show(); });
     }
 
     public void OpenExportTool(IRibbonControl control)

@@ -1,75 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using System.Threading.Tasks;
-using AE.PID.Interfaces;
+using System.Runtime.InteropServices;
+using AE.PID.Visio.Core;
 using DynamicData;
+using Microsoft.Office.Interop.Excel;
 using Microsoft.Office.Interop.Visio;
-using Path = Microsoft.Office.Interop.Visio.Path;
+using Shape = Microsoft.Office.Interop.Visio.Shape;
 
 namespace AE.PID.Services;
 
+/// <summary>
+///     只操作Visio，绝对不要注入任何和业务逻辑有关的类
+/// </summary>
 public class VisioService : IVisioService
 {
-    private readonly ISubject<bool> _isLoading = new ReplaySubject<bool>();
-    private readonly Lazy<SourceCache<IVMaster, string>> _masters;
-
-    public VisioService()
+    public bool CloseDocument(string fullName)
     {
-        _masters = new Lazy<SourceCache<IVMaster, string>>(() =>
-        {
-            var source = new SourceCache<IVMaster, string>(x => x.BaseID);
-
-            AppScheduler.VisioScheduler.Schedule(() =>
-            {
-                LoadImpl(() =>
-                {
-                    var initial = Globals.ThisAddIn.Application.ActiveDocument.Masters.OfType<IVMaster>();
-                    source.AddOrUpdate(initial);
-                });
-
-                var added = Observable.FromEvent<EDocument_MasterAddedEventHandler, IVMaster>(
-                        handler => Globals.ThisAddIn.Application.ActiveDocument.MasterAdded += handler,
-                        handler => Globals.ThisAddIn.Application.ActiveDocument.MasterAdded -= handler,
-                        AppScheduler.VisioScheduler)
-                    .Do(item => { LoadImpl(() => source.AddOrUpdate(item)); });
-
-                var removed = Observable.FromEvent<EDocument_BeforeMasterDeleteEventHandler, IVMaster>(
-                        handler => Globals.ThisAddIn.Application.ActiveDocument.BeforeMasterDelete += handler,
-                        handler => Globals.ThisAddIn.Application.ActiveDocument.BeforeMasterDelete -= handler,
-                        AppScheduler.VisioScheduler)
-                    .Do(item => { LoadImpl(() => { source.Remove(item.BaseID); }); });
-
-                added.Merge(removed).Subscribe();
-            });
-
-            return source;
-        });
-    }
-
-    public IObservable<bool> IsLoading => _isLoading.AsObservable();
-
-    public IObservableCache<IVMaster, string> Masters => _masters.Value.AsObservableCache();
-
-    public void OpenDocument(string fullName)
-    {
-        Globals.ThisAddIn.Application.Documents.OpenEx(fullName,
-            (short)VisOpenSaveArgs.visOpenDocked);
-    }
-
-    public bool CloseDocumentIfOpened(string fullName)
-    {
+        bool closed;
         var currentDocument = Globals.ThisAddIn.Application.Documents.OfType<Document>()
             .SingleOrDefault(x => x.FullName == fullName);
-        if (currentDocument == null) return false;
+        if (currentDocument == null)
+        {
+            closed = false;
+        }
+        else
+        {
+            currentDocument.Close();
+            closed = true;
+        }
 
-        currentDocument.Close();
-        return true;
+        return closed;
     }
 
     /// <summary>
@@ -98,6 +58,18 @@ public class VisioService : IVisioService
         return selection.Count != 0;
     }
 
+    public int? Page => Globals.ThisAddIn.Application.ActivePage?.ID;
+
+    public IObservableCache<IMaster, string> Masters => Globals.ThisAddIn.Application.ActiveDocument
+        .ToMasterObservableChangeSet().AsObservableCache();
+
+    public IObservableCache<FunctionLocation, CompositeId> FunctionLocations =>
+        Globals.ThisAddIn.Application.ActiveDocument.ToFunctionLocationObservableChangeSet().AsObservableCache();
+
+    public IObservableCache<MaterialLocation, CompositeId> MaterialLocations => Globals.ThisAddIn.Application
+        .ActiveDocument
+        .ToMaterialLocationObservableChangeSet().AsObservableCache();
+
     /// <summary>
     ///     Create a selection in active page by specified shape id.
     /// </summary>
@@ -114,12 +86,29 @@ public class VisioService : IVisioService
         return true;
     }
 
-    private void LoadImpl(Action action)
+    public void InsertAsExcelSheet(string[,] dataArray)
     {
-        _isLoading.OnNext(true);
-        action.Invoke();
-        _isLoading.OnNext(false);
+        // todo
+        var oleShape = Globals.ThisAddIn.Application.ActivePage.InsertObject("Excel.Sheet",
+            (short)VisInsertObjArgs.visInsertAsEmbed);
+        object oleObject = oleShape.Object;
+        var workbook = (Workbook)oleObject;
+
+        // 操作Excel对象
+        Worksheet worksheet = workbook.Worksheets[1];
+        worksheet.Range["A1"].Resize[dataArray.GetLength(0), dataArray.GetLength(1)].Value = dataArray;
+        worksheet.Columns.AutoFit();
+
+        // 保存并关闭Excel工作簿
+        workbook.Save();
+        workbook.Close(false); // 关闭工作簿，但不保存改变
+        Marshal.ReleaseComObject(worksheet);
+        Marshal.ReleaseComObject(workbook);
     }
 
-
+    public void OpenDocument(string fullName)
+    {
+        Globals.ThisAddIn.Application.Documents.OpenEx(fullName,
+            (short)VisOpenSaveArgs.visOpenDocked);
+    }
 }

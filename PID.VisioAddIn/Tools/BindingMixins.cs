@@ -6,6 +6,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text.RegularExpressions;
 using AE.PID.Models;
+using AE.PID.Visio.Core;
 using Microsoft.Office.Interop.Visio;
 using ReactiveUI;
 
@@ -94,7 +95,7 @@ public static class BindingMixins
                         break;
                     case ChangeSender.Model:
                     {
-                        AppScheduler.VisioScheduler.Schedule(() =>
+                        ThisAddIn.Scheduler.Schedule(() =>
                         {
                             var value = (modelToVisioConverter(proxy.Value) ?? string.Empty).ClearFormat(shape,
                                 visioProp);

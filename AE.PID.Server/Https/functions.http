@@ -1,0 +1,78 @@
+### 标准工艺区域
+POST http://172.18.168.57:8000/api/cube/restful/interface/getModeDataPageList/selectProcessSection
+Content-Type: application/x-www-form-urlencoded
+
+datajson =
+{
+  "pageInfo": {
+    "pageNo": 1,
+    "pageSize": 999
+  },
+  "mainTable": {
+    "deviceTypeCode": "",
+    "deviceTypeChineseName": "",
+    "id": "",
+    "usefullOrNot": "",
+    "deviceTypeEnglishName": ""
+  },
+  "operationinfo": {
+    "operator": "6470"
+  },
+  "header": {
+
+"systemid": "visioVault",
+"currentDateTime": "20241015151655",
+"Md5": "d5a24cd8662d52a849980ba55ede5171"
+
+  }
+}
+
+### 标准功能组
+POST http://172.18.168.57:8000/api/cube/restful/interface/getModeDataPageList/selectFunctionGroup
+Content-Type: application/x-www-form-urlencoded
+
+datajson =
+{
+  "pageInfo": {
+    "pageNo": 1,
+    "pageSize": 999
+  },
+  "mainTable": {
+    "deviceTypeCode": "",
+    "deviceTypeChineseName": "",
+    "id": "",
+    "usefullOrNot": "",
+    "deviceTypeEnglishName": ""
+  },
+  "operationinfo": {
+    "operator": "6470"
+  },
+  "header": {
+    "systemid": "visioVault",
+    "currentDateTime": "20241015151655",
+    "Md5": "d5a24cd8662d52a849980ba55ede5171"
+
+  }
+}
+
+### 项目工艺区域
+POST http://172.18.168.57:8000/api/cube/restful/interface/getModeDataPageList/selectProjectProcessSection
+Content-Type: application/x-www-form-urlencoded
+
+datajson = {
+    "pageInfo":{
+        "pageNo":"1",
+        "pageSize":"10"
+    },
+    "mainTable":{
+        "projectId": "1917"
+    },
+    "operationinfo": {
+        "operator": "6470"
+    },
+    "header": {
+      "systemid": "visioVault",
+      "currentDateTime": "20241015151655",
+      "Md5": "d5a24cd8662d52a849980ba55ede5171"
+    }
+}

@@ -2,7 +2,6 @@
 using System.Reactive.Disposables;
 using AE.PID.Tools;
 using Microsoft.Office.Interop.Visio;
-using ReactiveUI;
 
 namespace AE.PID.Models;
 
@@ -25,7 +24,7 @@ public class Equipment : PartItem
     public string SubClassName
     {
         get => _subClassName;
-        private set => this.SetAndRaise(ref _subClassName, value);
+        private set => SetAndRaise(ref _subClassName, value);
     }
 
     #endregion

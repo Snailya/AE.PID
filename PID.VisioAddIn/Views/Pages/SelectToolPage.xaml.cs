@@ -25,7 +25,7 @@ public partial class SelectToolPage
                 .DisposeWith(d);
 
             this.OneWayBind(ViewModel,
-                    x => x.IsMastersLoading,
+                    x => x.IsLoading,
                     x => x.BusyIndicator.IsBusy)
                 .DisposeWith(d);
             this.OneWayBind(ViewModel,

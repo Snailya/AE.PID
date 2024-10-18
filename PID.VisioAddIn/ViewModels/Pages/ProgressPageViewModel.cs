@@ -2,20 +2,22 @@
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using AE.PID.Core.Models;
+using AE.PID.Visio.Core.Dtos;
 using ReactiveUI;
 
 namespace AE.PID.ViewModels;
 
-public class ProgressPageViewModel(Progress<ProgressValue> progress, Action task) : ViewModelBase
+public class ProgressPageViewModel(Progress<ProgressValueDto> progress, Action task) : ViewModelBase
 {
     private bool _isExpanded;
-    private ProgressValue _progressValue = new() { Value = 0, Status = TaskStatus.Created, Message = string.Empty };
 
-    public ProgressValue ProgressValue
+    private ProgressValueDto _progressValueDto = new()
+        { Value = 0, Status = TaskStatus.Created, Message = string.Empty };
+
+    public ProgressValueDto ProgressValueDto
     {
-        get => _progressValue;
-        private set => this.RaiseAndSetIfChanged(ref _progressValue, value);
+        get => _progressValueDto;
+        private set => this.RaiseAndSetIfChanged(ref _progressValueDto, value);
     }
 
     public bool IsExpanded
@@ -33,13 +35,13 @@ public class ProgressPageViewModel(Progress<ProgressValue> progress, Action task
 
     protected override void SetupSubscriptions(CompositeDisposable d)
     {
-        Observable.FromEventPattern<ProgressValue>(
+        Observable.FromEventPattern<ProgressValueDto>(
                 handler => progress.ProgressChanged += handler,
                 handler => progress.ProgressChanged -= handler
             )
             .Select(eventPattern => eventPattern.EventArgs)
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(progressValue => { ProgressValue = progressValue; }).DisposeWith(d);
+            .Subscribe(progressValue => { ProgressValueDto = progressValue; }).DisposeWith(d);
 
         Observable.Start(task)
             .Subscribe(_ => { })

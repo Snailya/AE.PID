@@ -5,10 +5,10 @@ using System.Reactive.Threading.Tasks;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
-using AE.PID.Interfaces;
 using AE.PID.Services;
-using AE.PID.Tools;
 using AE.PID.Views;
+using AE.PID.Visio.Core;
+using AE.PID.Visio.Infrastructure.Services;
 using Microsoft.Office.Interop.Visio;
 using ReactiveUI;
 using Splat;
@@ -20,19 +20,20 @@ public partial class ThisAddIn : IEnableLogger
 {
     private Ribbon? _ribbon;
 
+
     private void ThisAddIn_Startup(object sender, System.EventArgs e)
     {
         // initialize a scheduler so that we could schedule visio related work on this thread,
         // because the main thread has no synchronization context, a new synchronization context is created
         var mainContext = SynchronizationContext.Current ?? new SynchronizationContext();
         SynchronizationContext.SetSynchronizationContext(mainContext);
-        AppScheduler.VisioScheduler = new SynchronizationContextScheduler(mainContext);
+        ThisAddIn.Scheduler = new SynchronizationContextScheduler(mainContext);
 
         // declare a new UI thread for WPF. Notice the apartment state needs to be STA
         var uiThread = new Thread(() =>
         {
             // initialize a dispatcher scheduler to schedule ui related work on this thread.
-            AppScheduler.UIScheduler = new DispatcherScheduler(Dispatcher.CurrentDispatcher);
+            App.UIScheduler = new DispatcherScheduler(Dispatcher.CurrentDispatcher);
             RxApp.MainThreadScheduler = DispatcherScheduler.Current;
 
             WindowManager.Initialize();
@@ -41,18 +42,18 @@ public partial class ThisAddIn : IEnableLogger
         uiThread.Start();
 
         // initialize the data folder
-        Directory.CreateDirectory(Constants.LibraryFolder);
-        Directory.CreateDirectory(Constants.TmpFolder);
+        Directory.CreateDirectory(App.LibraryFolder);
+        Directory.CreateDirectory(App.TmpFolder);
 
         ConfigureServices();
 
         // invoke an initial set up page if necessary
         Task.Run(async () =>
         {
-            var configuration = Locator.Current.GetService<ConfigurationService>()!;
+            var configuration = Locator.Current.GetService<IConfigurationService>()!;
             if (string.IsNullOrEmpty(configuration.Server) || string.IsNullOrWhiteSpace(configuration.UserId))
                 await Observable.Start(() => WindowManager.GetInstance()!.ShowDialog(new InitialSetupPage()),
-                    AppScheduler.UIScheduler).ToTask();
+                    App.UIScheduler).ToTask();
         });
 
         // initialize ribbon
@@ -68,14 +69,14 @@ public partial class ThisAddIn : IEnableLogger
         Locator.CurrentMutable.UseNLogWithWrappingFullLogger();
 
         Locator.CurrentMutable.RegisterLazySingleton(() => new ConfigurationService(),
-            typeof(ConfigurationService));
-        Locator.CurrentMutable.RegisterLazySingleton(() => new ApiClient(), typeof(ApiClient));
-        Locator.CurrentMutable.RegisterLazySingleton(() => new MaterialsService(), typeof(MaterialsService));
+            typeof(IConfigurationService));
+        Locator.CurrentMutable.RegisterLazySingleton(() => new MaterialsService(), typeof(IMaterialService));
         Locator.CurrentMutable.RegisterLazySingleton(() => new DocumentMonitor(), typeof(DocumentMonitor));
-        Locator.CurrentMutable.RegisterLazySingleton(() => new ProjectService(), typeof(ProjectService));
-        Locator.CurrentMutable.RegisterLazySingleton(() => new SelectService(), typeof(SelectService));
+        Locator.CurrentMutable.RegisterLazySingleton(() => new UiService(), typeof(IUiService));
+        Locator.CurrentMutable.RegisterLazySingleton(() => new ApiFactory(), typeof(ApiFactory));
+        Locator.CurrentMutable.RegisterLazySingleton(() => new VisioService(), typeof(IVisioService));
 
-        Locator.CurrentMutable.Register(() => new VisioService(), typeof(IVisioService));
+        Locator.CurrentMutable.Register(() => new ProjectService(), typeof(IProjectService));
 
         Locator.CurrentMutable.RegisterConstant(new AppUpdater(), typeof(AppUpdater));
         Locator.CurrentMutable.RegisterConstant(new LibraryUpdater(), typeof(LibraryUpdater));

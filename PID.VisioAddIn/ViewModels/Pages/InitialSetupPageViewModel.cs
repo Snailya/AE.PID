@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using AE.PID.Services;
+using AE.PID.Visio.Core;
 using ReactiveUI;
 using ReactiveUI.Validation.Abstractions;
 using ReactiveUI.Validation.Contexts;
@@ -9,13 +9,13 @@ using Splat;
 
 namespace AE.PID.ViewModels;
 
-public class InitialSetupPageViewModel(ConfigurationService? configuration = null)
+public class InitialSetupPageViewModel(IConfigurationService? configuration = null)
     : ViewModelBase, IValidatableViewModel
 {
     #region Resolution
 
-    private readonly ConfigurationService _configuration =
-        configuration ?? Locator.Current.GetService<ConfigurationService>()!;
+    private readonly IConfigurationService _configuration =
+        configuration ?? Locator.Current.GetService<IConfigurationService>()!;
 
     #endregion
 

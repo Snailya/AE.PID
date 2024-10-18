@@ -1,0 +1,42 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="using:AE.PID.Visio.UI.Avalonia.ViewModels"
+             xmlns:views="using:AE.PID.Visio.UI.Avalonia.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="AE.PID.Visio.UI.Avalonia.Views.SelectProjectView"
+             x:DataType="viewModels:SelectProjectViewModel">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <viewModels:SelectProjectViewModel />
+    </Design.DataContext>
+
+    <DockPanel>
+        <StackPanel Classes="actions" DockPanel.Dock="Bottom">
+            <Button Content="确认" Command="{Binding Confirm}" />
+            <Button Content="取消" Command="{Binding Cancel}" />
+        </StackPanel>
+
+        <StackPanel DockPanel.Dock="Top">
+            <TextBox Text="{Binding SearchText}" Watermark="搜索项目" />
+            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+        </StackPanel>
+
+        <DockPanel>
+            <views:PageNavigator DockPanel.Dock="Bottom"
+                                 DataContext="{Binding PageNavigator}" />
+            <DataGrid ItemsSource="{Binding Data}"
+                      SelectedItem="{Binding SelectedProject}"
+                      CanUserResizeColumns="True" CanUserSortColumns="True"
+                      IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="名称" Binding="{Binding Name}" />
+                    <DataGridTextColumn Header="编号" Binding="{Binding Code}" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+    </DockPanel>
+</UserControl>

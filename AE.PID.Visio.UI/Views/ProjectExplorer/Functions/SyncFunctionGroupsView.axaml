@@ -1,0 +1,63 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="using:AE.PID.Visio.UI.Avalonia.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="AE.PID.Visio.UI.Avalonia.Views.SyncFunctionGroupsView"
+             x:DataType="viewModels:ConfirmSyncFunctionGroupsViewModel">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <viewModels:ConfirmSyncFunctionGroupsViewModel />
+    </Design.DataContext>
+
+    <DockPanel>
+        <StackPanel Classes="actions" DockPanel.Dock="Bottom">
+            <Button Content="确认" Command="{Binding Confirm}" />
+            <Button Content="取消" Command="{Binding Cancel}" />
+        </StackPanel>
+        <Grid RowDefinitions="Auto,*">
+            <TextBlock Text="请核对以下待同步的内容：" />
+            <DataGrid Grid.Row="1"
+                      ItemsSource="{Binding Data}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="变更类型" Binding="{Binding Status}" />
+                    <DataGridTextColumn Header="功能组代码（服务器/本地）">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding StringFormat="{}{0} / {1}">
+                                <Binding Path="Server.Code" FallbackValue="" />
+                                <Binding Path="Client.Code" FallbackValue="" />
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="功能组名称（服务器/本地）">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding StringFormat="{}{0} / {1}">
+                                <Binding Path="Server.Name" FallbackValue="" />
+                                <Binding Path="Client.Name" FallbackValue="" />
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="功能组英文名称（服务器/本地）">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding StringFormat="{}{0} / {1}">
+                                <Binding Path="Server.EnglishName" FallbackValue="" />
+                                <Binding Path="Client.EnglishName" FallbackValue="" />
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="功能组描述（服务器/本地）">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding StringFormat="{}{0} / {1}">
+                                <Binding Path="Server.Description" FallbackValue="" />
+                                <Binding Path="Client.Description" FallbackValue="" />
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+    </DockPanel>
+</UserControl>

@@ -1,0 +1,1719 @@
+﻿<MasterContents xmlns="http://schemas.microsoft.com/office/visio/2012/main" xml:space="preserve">
+	<Shapes>
+		<Shape ID="5" NameU="Pumps" IsCustomNameU="1" Name="泵" IsCustomName="1" Type="Group" LineStyle="3"
+               FillStyle="3" TextStyle="3">
+			<Cell N="PinX" V="0.2952755905511811" U="MM" F="Width*0.5"/>
+            <Cell N="PinY" V="0.2952755905511811" U="MM" F="Height*0.5"/>
+            <Cell N="Width" V="0.5905511811023622" U="MM"/>
+            <Cell N="Height" V="0.5905511811023622" U="MM"/>
+            <Cell N="LocPinX" V="0.2952755905511811" U="MM" F="GUARD(Width*0.5)"/>
+            <Cell N="LocPinY" V="0.2952755905511811" U="MM" F="GUARD(Height*0.5)"/>
+            <Cell N="Angle" V="0"/>
+            <Cell N="FlipX" V="0"/>
+            <Cell N="FlipY" V="0"/>
+            <Cell N="ResizeMode" V="0"/>
+            <Cell N="QuickStyleVariation" V="2"/>
+            <Cell N="SelectMode" V="0"/>
+            <Cell N="IsSnapTarget" V="0"/>
+            <Cell N="IsTextEditTarget" V="0"/>
+            <Cell N="LockAspect" V="1"/>
+            <Cell N="LockTextEdit" V="1"/>
+            <Cell N="LockCalcWH" V="1" F="GUARD(1)"/>
+            <Cell N="ObjType" V="4"/>
+            <Cell N="ReplaceLockFormat" V="1"/>
+            <Cell N="ReplaceCopyCells" V="0" U="BOOL"
+                  F="DEPENDSON(User.ShowAllProps,User.ShowKeyParameters,User.TextAngle,Controls.Tag,Controls.Tag.Y,Controls.Quantity,Controls.Quantity.Y,Controls.VSD,Controls.VSD.Y,Controls.KeyParameters,Controls.KeyParameters.Y)"/>
+            <Cell N="LayerMember" V="0;1"/>
+            <Section N="User">
+				<Row N="msvShapeCategories">
+					<Cell N="Value" V="Equipment" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+				</Row>
+                <Row N="ShapeID">
+					<Cell N="Value" V="5" F="GUARD(ID())"/>
+                    <Cell N="Prompt" V=""/>
+				</Row>
+                <Row N="TextAngle">
+					<Cell N="Value" V="0" U="DEG"/>
+                    <Cell N="Prompt" V=""/>
+				</Row>
+                <Row N="ShowAllProps">
+					<Cell N="Value" V="0" U="BOOL"/>
+                    <Cell N="Prompt" V=""/>
+				</Row>
+                <Row N="ShowKeyParameters">
+					<Cell N="Value" V="0" U="BOOL"/>
+                    <Cell N="Prompt" V=""/>
+				</Row>
+                <Row N="KeyParameters">
+					<Cell N="Value" V="流量:  m3/h; 扬程:  m; 功率:  kW; 转速:  RPM" U="STR" F="Scratch.D2"/>
+                    <Cell N="Prompt" V=""/>
+				</Row>
+			</Section>
+            <Section N="Property">
+				<Row N="Factory">
+					<Cell N="Value" V="" U="STR"
+                          F="GUARD(IFERROR(CONTAINERSHEETREF(1,&quot;Frame&quot;)!Prop.FACTORY,&quot;&quot;))"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="工厂"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="200"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="ProcessZone">
+					<Cell N="Value" V="" U="STR"
+                          F="GUARD(IFERROR(CONTAINERSHEETREF(1,&quot;Frame&quot;)!Prop.PROCESSZONE,&quot;&quot;))"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="工艺区域"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="201"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="ProcessZoneName">
+					<Cell N="Value" V="" U="STR"
+                          F="GUARD(IFERROR(CONTAINERSHEETREF(1,&quot;Frame&quot;)!Prop.PROCESSZONENAME,&quot;&quot;))"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="工艺区域名称"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="201"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="ProcessZoneEnglishName">
+					<Cell N="Value" V="" U="STR"
+                          F="GUARD(IFERROR(CONTAINERSHEETREF(1,&quot;Frame&quot;)!Prop.PROCESSZONEENGLISHNAME,&quot;&quot;))"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="工艺区域英文名称"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="201"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="FunctionalGroup">
+					<Cell N="Value" V="" U="STR"
+                          F="GUARD(IFERROR(CONTAINERSHEETREF(1,&quot;FunctionalGroup&quot;)!Prop.FUNCTIONALGROUP,&quot;&quot;))"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="功能组"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="202"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="FunctionalGroupName">
+					<Cell N="Value" V="" U="STR"
+                          F="GUARD(IFERROR(CONTAINERSHEETREF(1,&quot;FunctionalGroup&quot;)!Prop.FUNCTIONALGROUPNAME,&quot;&quot;))"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="功能组名称"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="202"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="FunctionalGroupEnglishName">
+					<Cell N="Value" V="" U="STR"
+                          F="GUARD(IFERROR(CONTAINERSHEETREF(1,&quot;FunctionalGroup&quot;)!Prop.FUNCTIONALGROUPENGLISHNAME,&quot;&quot;))"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="功能组英文名称"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="202"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="FunctionalGroupDescription">
+					<Cell N="Value" V="" U="STR"
+                          F="GUARD(IFERROR(CONTAINERSHEETREF(1,&quot;FunctionalGroup&quot;)!Prop.FUNCTIONALGROUPDESCRIPTION,&quot;&quot;))"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="功能组描述"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="202"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="FunctionalElement">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="元件位号"/>
+                    <Cell N="Format" V="\G\P@" F="GUARD(&quot;\G\P@&quot;)"/>
+                    <Cell N="SortKey" V="205"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="Level">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="层"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="207"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="Axis">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="轴"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="208"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="Location">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="位号"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="209"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="Tag">
+					<Cell N="Value" V="" U="STR"
+                          F="GUARD(IF(STRSAME(&quot;&quot;,Prop.FunctionalElement),&quot;&quot;,FORMAT(Prop.FunctionalElement,Prop.FunctionalElement.Format)))"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="标签"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="210"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="DeviceTag">
+					<Cell N="Value" V="===++-" U="STR"
+                          F="GUARD(&quot;==&quot;&amp;Prop.Factory&amp;&quot;=&quot;&amp;Prop.ProcessZone&amp;&quot;++&quot;&amp;Prop.FunctionalGroup&amp;&quot;-&quot;&amp;Prop.Tag)"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="长标签"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="211"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="Quantity">
+					<Cell N="Value" V="1"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="数量"/>
+                    <Cell N="Format" V="#\"/>
+                    <Cell N="SortKey" V="301"/>
+                    <Cell N="Type" V="2"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="Subtotal">
+					<Cell N="Value" V="1"
+                          F="GUARD(IFERROR(CONTAINERSHEETREF(1,&quot;Unit&quot;)!Prop.QUANTITY,1)*Prop.Quantity)"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="小计"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="302"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="Nameplate">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="铭牌"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="303"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="PartNumber">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="厂家型号"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="304"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="ERPNumber">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="物料编码"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="305"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="TypeNumber">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="元件型号"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="306"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="AccessoryNumber">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="附件型号"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="307"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="Description">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="描述"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="308"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="Manufacturer">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="制造商"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="309"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="Supplier">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="供应商"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="310"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="ConnectionMode">
+					<Cell N="Value" V="-" U="STR" F="INDEX(0,Prop.ConnectionMode.Format)"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="接线方式"/>
+                    <Cell N="Format" V="-;Star;Delta"/>
+                    <Cell N="SortKey" V="401"/>
+                    <Cell N="Type" V="1"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="Power">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="功率"/>
+                    <Cell N="Format" V="0.## \k\W"/>
+                    <Cell N="SortKey" V="402"/>
+                    <Cell N="Type" V="2"/>
+                    <Cell N="Invisible" V="0"
+                          F="AND(STRSAME(Prop.SubClass,&quot;隔膜泵&quot;),NOT(User.ShowAllProps))"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="Voltage">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="电压"/>
+                    <Cell N="Format" V="0.## \V"/>
+                    <Cell N="SortKey" V="403"/>
+                    <Cell N="Type" V="2"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="VoltageType">
+					<Cell N="Value" V="-" U="STR" F="INDEX(0,Prop.VoltageType.Format)"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="电压类型"/>
+                    <Cell N="Format" V="-;AC;DC"/>
+                    <Cell N="SortKey" V="404"/>
+                    <Cell N="Type" V="1"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="Current">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="电流"/>
+                    <Cell N="Format" V="0.## \A"/>
+                    <Cell N="SortKey" V="405"/>
+                    <Cell N="Type" V="2"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="Range">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="量程"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="406"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="Setpoint">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="设定值"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="407"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="SignalFrom">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="控制信号源自"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="408"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="MeasuringPrinciple">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="传感器测量原理"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="409"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="ToAnalogInput420">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="到4-20mA模拟量输入"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="410"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="ToAnalogOutput420">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="到4-20mA模拟量输出"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="411"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="ToAnalogInput01M">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="到0-1MΩ模拟量输入"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="412"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="ToAnalogOutput01M">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="到0-1MΩ模拟量输出"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="413"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="ToAnalogInput010">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="到0-10V模拟量输入"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="414"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="ToAnalogOutput010">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="到0-10V模拟量输出"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="415"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="ToAnalogInput210">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="到2-10V模拟量输入"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="416"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="ToAnalogOutput210">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="到2-10V模拟量输出"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="417"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="ToDigitalInput">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="到数字量输入"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="418"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="ToDigitalOutput">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="到数字量输出"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="419"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="ToSafetyInput">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="到安全输入"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="420"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="ToSafetyOutput">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="到安全输出"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="421"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="ToIOLink">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="到IOLink信号"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="422"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="ToCabinet">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="到电控柜号"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="423"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="1" F="NOT(User.ShowAllProps)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="Remarks">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="备注"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="199"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="Class">
+					<Cell N="Value" V="泵" U="STR" F="INDEX(0,Prop.Class.Format)"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="类型"/>
+                    <Cell N="Format" V="泵" F="GUARD(&quot;泵&quot;)"/>
+                    <Cell N="SortKey" V="101"/>
+                    <Cell N="Type" V="1"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="SubClass">
+					<Cell N="Value" V="齿轮泵" U="STR" F="INDEX(0,Prop.SubClass.Format)"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="子类"/>
+                    <Cell N="Format"
+                          V="齿轮泵;隔膜泵;离心泵;双封离心泵;软管泵;螺旋转子泵;计量泵;通用泵;柱塞泵;液体射流泵"
+                          F="GUARD(&quot;齿轮泵;隔膜泵;离心泵;双封离心泵;软管泵;螺旋转子泵;计量泵;通用泵;柱塞泵;液体射流泵&quot;)"/>
+                    <Cell N="SortKey" V="102"/>
+                    <Cell N="Type" V="1"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="IsVariableSpeedDrive">
+					<Cell N="Value" V="0" U="BOOL"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="是否变频"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V="103"/>
+                    <Cell N="Type" V="3"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="FlowRate">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="流量"/>
+                    <Cell N="Format" V="0.## \m\3\/\h"/>
+                    <Cell N="SortKey" V=""/>
+                    <Cell N="Type" V="2"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="Head">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="扬程"/>
+                    <Cell N="Format" V="0.## \m"/>
+                    <Cell N="SortKey" V=""/>
+                    <Cell N="Type" V="2"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="Speed">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="转速"/>
+                    <Cell N="Format" V="0.## \R\P\M"/>
+                    <Cell N="SortKey" V=""/>
+                    <Cell N="Type" V="2"/>
+                    <Cell N="Invisible" V="0" F="STRSAME(Prop.SubClass,&quot;隔膜泵&quot;)"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+                <Row N="D_BOM">
+					<Cell N="Value" V="" U="STR"/>
+                    <Cell N="Prompt" V=""/>
+                    <Cell N="Label" V="设计物料"/>
+                    <Cell N="Format" V=""/>
+                    <Cell N="SortKey" V=""/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="Verify" V="0"/>
+                    <Cell N="DataLinked" V="0"/>
+                    <Cell N="LangID" V="zh-CN"/>
+                    <Cell N="Calendar" V="0"/>
+				</Row>
+			</Section>
+            <Section N="Connection">
+				<Row T="Connection" IX="0">
+					<Cell N="X" V="0" U="MM" F="GUARD(Width*0)"/>
+                    <Cell N="Y" V="0.2952755905511811" U="MM" F="GUARD(Height*0.5)"/>
+                    <Cell N="DirX" V="0"/>
+                    <Cell N="DirY" V="0"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="AutoGen" V="0"/>
+                    <Cell N="Prompt" V="" F="No Formula"/>
+				</Row>
+                <Row T="Connection" IX="1">
+					<Cell N="X" V="0.5905511811023622" U="MM" F="GUARD(Width*1)"/>
+                    <Cell N="Y" V="0.2952755905511811" U="MM" F="GUARD(Height*0.5)"/>
+                    <Cell N="DirX" V="0"/>
+                    <Cell N="DirY" V="0"/>
+                    <Cell N="Type" V="0"/>
+                    <Cell N="AutoGen" V="0"/>
+                    <Cell N="Prompt" V="" F="No Formula"/>
+				</Row>
+			</Section>
+            <Section N="Control">
+				<Row N="Tag">
+					<Cell N="X" V="0.2952755905511811" U="MM" F="Width*0.5"/>
+                    <Cell N="Y" V="0.6889763779527558" U="MM" F="Height*1+2.5MM"/>
+                    <Cell N="XDyn" V="0.2952755905511811" U="MM" F="Controls.Tag"/>
+                    <Cell N="YDyn" V="0.6889763779527558" U="MM" F="Controls.Tag.Y"/>
+                    <Cell N="XCon" V="5" F="IF(STRSAME(Prop.Tag,&quot;&quot;),5,0)"/>
+                    <Cell N="YCon" V="0"/>
+                    <Cell N="CanGlue" V="0"/>
+                    <Cell N="Prompt" V=""/>
+				</Row>
+                <Row N="Quantity">
+					<Cell N="X" V="0.2952755905511811" U="MM" F="Width*0.5"/>
+                    <Cell N="Y" V="-0.09842519685039369" U="MM" F="Height*0-IF(Prop.IsVariableSpeedDrive,7.5MM,2.5MM)"/>
+                    <Cell N="XDyn" V="0.2952755905511811" U="MM" F="Controls.Quantity"/>
+                    <Cell N="YDyn" V="-0.09842519685039369" U="MM" F="Controls.Quantity.Y"/>
+                    <Cell N="XCon" V="5" F="IF(Prop.Quantity&lt;=1,5,0)"/>
+                    <Cell N="YCon" V="0"/>
+                    <Cell N="CanGlue" V="0"/>
+                    <Cell N="Prompt" V=""/>
+				</Row>
+                <Row N="VSD">
+					<Cell N="X" V="0.2952755905511811" U="MM" F="Width*0.5"/>
+                    <Cell N="Y" V="-0.09842519685039369" U="MM" F="Height*0-2.5MM"/>
+                    <Cell N="XDyn" V="0.2952755905511811" U="MM" F="Controls.VSD"/>
+                    <Cell N="YDyn" V="-0.09842519685039369" U="MM" F="Controls.VSD.Y"/>
+                    <Cell N="XCon" V="5" F="IF(Prop.IsVariableSpeedDrive,0,5)"/>
+                    <Cell N="YCon" V="0"/>
+                    <Cell N="CanGlue" V="0"/>
+                    <Cell N="Prompt" V=""/>
+				</Row>
+                <Row N="KeyParameters">
+					<Cell N="X" V="0.2952755905511811" U="MM" F="Width*0.5"/>
+                    <Cell N="Y" V="-0.4429133858267716" U="MM" F="Height*-0.75"/>
+                    <Cell N="XDyn" V="0.2952755905511811" U="MM" F="Controls.KeyParameters"/>
+                    <Cell N="YDyn" V="-0.4429133858267716" U="MM" F="Controls.KeyParameters.Y"/>
+                    <Cell N="XCon" V="5" F="IF(User.ShowKeyParameters,0,5)"/>
+                    <Cell N="YCon" V="0"/>
+                    <Cell N="CanGlue" V="0"/>
+                    <Cell N="Prompt" V=""/>
+				</Row>
+			</Section>
+            <Section N="Actions">
+				<Row N="ResetSize">
+					<Cell N="Menu" V="重置尺寸"/>
+                    <Cell N="Action" V="0"
+                          F="SETF(GetRef(Width),&quot;15mm&quot;)+SETF(GetRef(Height),&quot;15mm&quot;)"/>
+                    <Cell N="Checked" V="0"/>
+                    <Cell N="Disabled" V="0"/>
+                    <Cell N="ReadOnly" V="0"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="BeginGroup" V="0"/>
+                    <Cell N="FlyoutChild" V="0"/>
+                    <Cell N="TagName" V=""/>
+                    <Cell N="ButtonFace" V=""/>
+                    <Cell N="SortKey" V="101"/>
+				</Row>
+                <Row N="RotateText">
+					<Cell N="Menu" V="旋转标签"/>
+                    <Cell N="Action" V="0" F="SETF(&quot;User.TextAngle&quot;,IF(User.TextAngle=0DEG,90DEG,0DEG))"/>
+                    <Cell N="Checked" V="0"/>
+                    <Cell N="Disabled" V="0"/>
+                    <Cell N="ReadOnly" V="0"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="BeginGroup" V="1"/>
+                    <Cell N="FlyoutChild" V="0"/>
+                    <Cell N="TagName" V=""/>
+                    <Cell N="ButtonFace" V=""/>
+                    <Cell N="SortKey" V="102"/>
+				</Row>
+                <Row N="ShowAllProps">
+					<Cell N="Menu" V="显示完整属性"
+                          F="IF(User.ShowAllProps,&quot;隐藏&quot;,&quot;显示完整&quot;)&amp;&quot;属性&quot;"/>
+                    <Cell N="Action" V="0" F="SETF(GetRef(User.ShowAllProps),NOT(User.ShowAllProps))"/>
+                    <Cell N="Checked" V="0"/>
+                    <Cell N="Disabled" V="0"/>
+                    <Cell N="ReadOnly" V="0"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="BeginGroup" V="0"/>
+                    <Cell N="FlyoutChild" V="0"/>
+                    <Cell N="TagName" V=""/>
+                    <Cell N="ButtonFace" V=""/>
+                    <Cell N="SortKey" V="103"/>
+				</Row>
+                <Row N="ShowKeyParameters">
+					<Cell N="Menu" V="显示关键参数"
+                          F="IF(User.ShowKeyParameters,&quot;隐藏&quot;,&quot;显示&quot;)&amp;&quot;关键参数&quot;"/>
+                    <Cell N="Action" V="0" F="SETF(GetRef(User.ShowKeyParameters),NOT(User.ShowKeyParameters))"/>
+                    <Cell N="Checked" V="0"/>
+                    <Cell N="Disabled" V="0"/>
+                    <Cell N="ReadOnly" V="0"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="BeginGroup" V="0"/>
+                    <Cell N="FlyoutChild" V="0"/>
+                    <Cell N="TagName" V=""/>
+                    <Cell N="ButtonFace" V=""/>
+                    <Cell N="SortKey" V="104"/>
+				</Row>
+                <Row N="SubClass">
+					<Cell N="Menu" V="子类" F="Prop.SubClass.Label"/>
+                    <Cell N="Action" V="0" F="&quot;&quot;"/>
+                    <Cell N="Checked" V="0"/>
+                    <Cell N="Disabled" V="0"/>
+                    <Cell N="ReadOnly" V="0"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="BeginGroup" V="1"/>
+                    <Cell N="FlyoutChild" V="0"/>
+                    <Cell N="TagName" V=""/>
+                    <Cell N="ButtonFace" V=""/>
+                    <Cell N="SortKey" V="201"/>
+				</Row>
+                <Row N="SubClassOption0">
+					<Cell N="Menu" V="齿轮泵" F="INDEX(0,Prop.SubClass.Format)"/>
+                    <Cell N="Action" V="0" F="SETF(GetRef(Prop.SubClass),Actions.SubClassOption0)"/>
+                    <Cell N="Checked" V="1" F="STRSAME(Actions.SubClassOption0,Prop.SubClass)"/>
+                    <Cell N="Disabled" V="0"/>
+                    <Cell N="ReadOnly" V="0"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="BeginGroup" V="0"/>
+                    <Cell N="FlyoutChild" V="1"/>
+                    <Cell N="TagName" V=""/>
+                    <Cell N="ButtonFace" V=""/>
+                    <Cell N="SortKey" V="202"/>
+				</Row>
+                <Row N="SubClassOption1">
+					<Cell N="Menu" V="隔膜泵" F="INDEX(1,Prop.SubClass.Format)"/>
+                    <Cell N="Action" V="0" F="SETF(GetRef(Prop.SubClass),Actions.SubClassOption1)"/>
+                    <Cell N="Checked" V="0" F="STRSAME(Actions.SubClassOption1,Prop.SubClass)"/>
+                    <Cell N="Disabled" V="0"/>
+                    <Cell N="ReadOnly" V="0"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="BeginGroup" V="0"/>
+                    <Cell N="FlyoutChild" V="1"/>
+                    <Cell N="TagName" V=""/>
+                    <Cell N="ButtonFace" V=""/>
+                    <Cell N="SortKey" V="203"/>
+				</Row>
+                <Row N="SubClassOption2">
+					<Cell N="Menu" V="离心泵" F="INDEX(2,Prop.SubClass.Format)"/>
+                    <Cell N="Action" V="0" F="SETF(GetRef(Prop.SubClass),Actions.SubClassOption2)"/>
+                    <Cell N="Checked" V="0" F="STRSAME(Actions.SubClassOption2,Prop.SubClass)"/>
+                    <Cell N="Disabled" V="0"/>
+                    <Cell N="ReadOnly" V="0"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="BeginGroup" V="0"/>
+                    <Cell N="FlyoutChild" V="1"/>
+                    <Cell N="TagName" V=""/>
+                    <Cell N="ButtonFace" V=""/>
+                    <Cell N="SortKey" V="204"/>
+				</Row>
+                <Row N="SubClassOption3">
+					<Cell N="Menu" V="双封离心泵" F="INDEX(3,Prop.SubClass.Format)"/>
+                    <Cell N="Action" V="0" F="SETF(GetRef(Prop.SubClass),Actions.SubClassOption3)"/>
+                    <Cell N="Checked" V="0" F="STRSAME(Actions.SubClassOption3,Prop.SubClass)"/>
+                    <Cell N="Disabled" V="0"/>
+                    <Cell N="ReadOnly" V="0"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="BeginGroup" V="0"/>
+                    <Cell N="FlyoutChild" V="1"/>
+                    <Cell N="TagName" V=""/>
+                    <Cell N="ButtonFace" V=""/>
+                    <Cell N="SortKey" V="205"/>
+				</Row>
+                <Row N="SubClassOption4">
+					<Cell N="Menu" V="软管泵" F="INDEX(4,Prop.SubClass.Format)"/>
+                    <Cell N="Action" V="0" F="SETF(GetRef(Prop.SubClass),Actions.SubClassOption4)"/>
+                    <Cell N="Checked" V="0" F="STRSAME(Actions.SubClassOption4,Prop.SubClass)"/>
+                    <Cell N="Disabled" V="0"/>
+                    <Cell N="ReadOnly" V="0"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="BeginGroup" V="0"/>
+                    <Cell N="FlyoutChild" V="1"/>
+                    <Cell N="TagName" V=""/>
+                    <Cell N="ButtonFace" V=""/>
+                    <Cell N="SortKey" V="206"/>
+				</Row>
+                <Row N="SubClassOption5">
+					<Cell N="Menu" V="螺旋转子泵" F="INDEX(5,Prop.SubClass.Format)"/>
+                    <Cell N="Action" V="0" F="SETF(GetRef(Prop.SubClass),Actions.SubClassOption5)"/>
+                    <Cell N="Checked" V="0" F="STRSAME(Actions.SubClassOption5,Prop.SubClass)"/>
+                    <Cell N="Disabled" V="0"/>
+                    <Cell N="ReadOnly" V="0"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="BeginGroup" V="0"/>
+                    <Cell N="FlyoutChild" V="1"/>
+                    <Cell N="TagName" V=""/>
+                    <Cell N="ButtonFace" V=""/>
+                    <Cell N="SortKey" V="207"/>
+				</Row>
+                <Row N="SubClassOption6">
+					<Cell N="Menu" V="计量泵" F="INDEX(6,Prop.SubClass.Format)"/>
+                    <Cell N="Action" V="0" F="SETF(GetRef(Prop.SubClass),Actions.SubClassOption6)"/>
+                    <Cell N="Checked" V="0" F="STRSAME(Actions.SubClassOption6,Prop.SubClass)"/>
+                    <Cell N="Disabled" V="0"/>
+                    <Cell N="ReadOnly" V="0"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="BeginGroup" V="0"/>
+                    <Cell N="FlyoutChild" V="1"/>
+                    <Cell N="TagName" V=""/>
+                    <Cell N="ButtonFace" V=""/>
+                    <Cell N="SortKey" V="208"/>
+				</Row>
+                <Row N="SubClassOption7">
+					<Cell N="Menu" V="通用泵" F="INDEX(7,Prop.SubClass.Format)"/>
+                    <Cell N="Action" V="0" F="SETF(GetRef(Prop.SubClass),Actions.SubClassOption7)"/>
+                    <Cell N="Checked" V="0" F="STRSAME(Actions.SubClassOption7,Prop.SubClass)"/>
+                    <Cell N="Disabled" V="0"/>
+                    <Cell N="ReadOnly" V="0"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="BeginGroup" V="0"/>
+                    <Cell N="FlyoutChild" V="1"/>
+                    <Cell N="TagName" V=""/>
+                    <Cell N="ButtonFace" V=""/>
+                    <Cell N="SortKey" V="209"/>
+				</Row>
+                <Row N="SubClassOption8">
+					<Cell N="Menu" V="柱塞泵" F="INDEX(8,Prop.SubClass.Format)"/>
+                    <Cell N="Action" V="0" F="SETF(GetRef(Prop.SubClass),Actions.SubClassOption8)"/>
+                    <Cell N="Checked" V="0" F="STRSAME(Actions.SubClassOption8,Prop.SubClass)"/>
+                    <Cell N="Disabled" V="0"/>
+                    <Cell N="ReadOnly" V="0"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="BeginGroup" V="0"/>
+                    <Cell N="FlyoutChild" V="1"/>
+                    <Cell N="TagName" V=""/>
+                    <Cell N="ButtonFace" V=""/>
+                    <Cell N="SortKey" V="210"/>
+				</Row>
+                <Row N="SubClassOption9">
+					<Cell N="Menu" V="液体射流泵" F="INDEX(9,Prop.SubClass.Format)"/>
+                    <Cell N="Action" V="0" F="SETF(GetRef(Prop.SubClass),Actions.SubClassOption9)"/>
+                    <Cell N="Checked" V="0" F="STRSAME(Actions.SubClassOption9,Prop.SubClass)"/>
+                    <Cell N="Disabled" V="0"/>
+                    <Cell N="ReadOnly" V="0"/>
+                    <Cell N="Invisible" V="0"/>
+                    <Cell N="BeginGroup" V="0"/>
+                    <Cell N="FlyoutChild" V="1"/>
+                    <Cell N="TagName" V=""/>
+                    <Cell N="ButtonFace" V=""/>
+                    <Cell N="SortKey" V="211"/>
+				</Row>
+			</Section>
+            <Section N="Scratch">
+				<Row IX="0">
+					<Cell N="X" V="0"
+                          F="IF(STRSAME(Scratch.A1,Prop.SubClass),SETF(GetRef(User.KeyParameters),&quot;Scratch.D1&quot;),&quot;&quot;)+DEPENDSON(Prop.SubClass)"
+                          E="#VALUE!"/>
+                    <Cell N="Y" V="0" F="No Formula"/>
+                    <Cell N="A" V="隔膜泵" U="STR"/>
+                    <Cell N="B" V="0" F="No Formula"/>
+                    <Cell N="C" V="0" F="No Formula"/>
+                    <Cell N="D" V="流量:  m3/h; 扬程:  m" U="STR"
+                          F="Prop.FlowRate.Label&amp;&quot;: &quot;&amp;FORMAT(Prop.FlowRate,Prop.FlowRate.Format)&amp;&quot;; &quot;&amp;Prop.Head.Label&amp;&quot;: &quot;&amp;FORMAT(Prop.Head,Prop.Head.Format)"/>
+				</Row>
+                <Row IX="1">
+					<Cell N="X" V="0"
+                          F="IF(NOT(STRSAME(Scratch.A1,Prop.SubClass)),SETF(GetRef(User.KeyParameters),&quot;Scratch.D2&quot;),&quot;&quot;)+DEPENDSON(Prop.SubClass)"/>
+                    <Cell N="Y" V="0" F="No Formula"/>
+                    <Cell N="A" V="其他" U="STR"/>
+                    <Cell N="B" V="0" F="No Formula"/>
+                    <Cell N="C" V="0" F="No Formula"/>
+                    <Cell N="D" V="流量:  m3/h; 扬程:  m; 功率:  kW; 转速:  RPM" U="STR"
+                          F="Prop.FlowRate.Label&amp;&quot;: &quot;&amp;FORMAT(Prop.FlowRate,Prop.FlowRate.Format)&amp;&quot;; &quot;&amp;Prop.Head.Label&amp;&quot;: &quot;&amp;FORMAT(Prop.Head,Prop.Head.Format)&amp;&quot;; &quot;&amp;Prop.Power.Label&amp;&quot;: &quot;&amp;FORMAT(Prop.Power,Prop.Power.Format)&amp;&quot;; &quot;&amp;Prop.Speed.Label&amp;&quot;: &quot;&amp;FORMAT(Prop.Speed,Prop.Speed.Format)"/>
+				</Row>
+			</Section>
+            <Shapes>
+				<Shape ID="201" NameU="Tag" IsCustomNameU="1" Name="Tag" IsCustomName="1" Type="Shape" LineStyle="3"
+                       FillStyle="3" TextStyle="3">
+					<Cell N="PinX" V="0.2952755905511811" U="MM" F="GUARD(Sheet.5!Controls.Tag)"/>
+                    <Cell N="PinY" V="0.6889763779527558" U="MM" F="GUARD(Sheet.5!Controls.Tag.Y)"/>
+                    <Cell N="Width" V="0.1181102362204724" U="MM" F="GUARD(MAX(TEXTWIDTH(TheText),1*Char.Size))"/>
+                    <Cell N="Height" V="0.1968503937007874" U="MM" F="GUARD(5MM)"/>
+                    <Cell N="LocPinX" V="0.0590551181102362" U="MM" F="Width*0.5"/>
+                    <Cell N="LocPinY" V="0.09842519685039369" U="MM" F="Height*0.5"/>
+                    <Cell N="Angle" V="0" F="-Sheet.5!Angle"/>
+                    <Cell N="FlipX" V="0"/>
+                    <Cell N="FlipY" V="0"/>
+                    <Cell N="ResizeMode" V="0"/>
+                    <Cell N="TxtPinX" V="0.0590551181102362" U="MM" F="Width*0.5"/>
+                    <Cell N="TxtPinY" V="0.09842519685039369" U="MM" F="Height*0.5"/>
+                    <Cell N="TxtWidth" V="0.1181102362204724" U="MM" F="Width*1"/>
+                    <Cell N="TxtHeight" V="0.1968503937007874" U="MM" F="Height*1"/>
+                    <Cell N="TxtLocPinX" V="0.0590551181102362" U="MM" F="TxtWidth*0.5"/>
+                    <Cell N="TxtLocPinY" V="0.09842519685039369" U="MM" F="TxtHeight*0.5"/>
+                    <Cell N="TxtAngle" V="0" U="DEG" F="Sheet.5!User.TextAngle"/>
+                    <Cell N="LayerMember" V="2"/>
+                    <Cell N="HideText" V="1" F="STRSAME(Sheet.5!Prop.Tag,&quot;&quot;)"/>
+                    <Section N="Field">
+						<Row IX="0">
+							<Cell N="Value" V="" U="STR" F="Sheet.5!Prop.Tag"/>
+                            <Cell N="Format" V="esc(0)" U="STR" F="FIELDPICTURE(0)"/>
+                            <Cell N="Type" V="0"/>
+                            <Cell N="UICat" V="0"/>
+                            <Cell N="UICod" V="0"/>
+                            <Cell N="UIFmt" V="0"/>
+                            <Cell N="Calendar" V="0"/>
+                            <Cell N="ObjectKind" V="0"/>
+						</Row>
+					</Section>
+                    <Text>
+						<cp IX="0"/>
+                        <fld IX="0"/>
+					</Text>
+				</Shape>
+                <Shape ID="202" NameU="Quantity" IsCustomNameU="1" Name="Quantity" IsCustomName="1" Type="Shape"
+                       LineStyle="3" FillStyle="3" TextStyle="3">
+					<Cell N="PinX" V="0.2952755905511811" U="MM" F="GUARD(Sheet.5!Controls.Quantity)"/>
+                    <Cell N="PinY" V="-0.09842519685039369" U="MM" F="GUARD(Sheet.5!Controls.Quantity.Y)"/>
+                    <Cell N="Width" V="0.1597332285390625" F="GUARD(MAX(TEXTWIDTH(TheText),1*Char.Size))"/>
+                    <Cell N="Height" V="0.1968503937007874" U="MM" F="GUARD(5MM)"/>
+                    <Cell N="LocPinX" V="0.07986661426953125" F="Width*0.5"/>
+                    <Cell N="LocPinY" V="0.09842519685039371" U="MM" F="Height*0.5"/>
+                    <Cell N="Angle" V="0" F="-Sheet.5!Angle"/>
+                    <Cell N="FlipX" V="0"/>
+                    <Cell N="FlipY" V="0"/>
+                    <Cell N="ResizeMode" V="0"/>
+                    <Cell N="QuickStyleVariation" V="3"/>
+                    <Cell N="TxtPinX" V="0.07986661426953125" F="Width*0.5"/>
+                    <Cell N="TxtPinY" V="0.09842519685039371" U="MM" F="Height*0.5"/>
+                    <Cell N="TxtWidth" V="0.1597332285390625" F="Width*1"/>
+                    <Cell N="TxtHeight" V="0.1968503937007874" U="MM" F="Height*1"/>
+                    <Cell N="TxtLocPinX" V="0.07986661426953125" F="TxtWidth*0.5"/>
+                    <Cell N="TxtLocPinY" V="0.09842519685039371" U="MM" F="TxtHeight*0.5"/>
+                    <Cell N="TxtAngle" V="0" U="DEG" F="Sheet.5!User.TextAngle"/>
+                    <Cell N="LayerMember" V=""/>
+                    <Cell N="HideText" V="1" F="Sheet.5!Prop.Quantity&lt;=1"/>
+                    <Section N="Field">
+						<Row IX="0">
+							<Cell N="Value" V="1X" U="STR" F="FORMAT(Sheet.5!Prop.Quantity,&quot;#\X&quot;)"/>
+                            <Cell N="Format" V="esc(0)" U="STR" F="FIELDPICTURE(0)"/>
+                            <Cell N="Type" V="0"/>
+                            <Cell N="UICat" V="0"/>
+                            <Cell N="UICod" V="255"/>
+                            <Cell N="UIFmt" V="0"/>
+                            <Cell N="Calendar" V="0"/>
+                            <Cell N="ObjectKind" V="0"/>
+						</Row>
+					</Section>
+                    <Text>
+						<cp IX="0"/>
+                        <fld IX="0">1X</fld>
+					</Text>
+				</Shape>
+                <Shape ID="203" NameU="KeyParameters" IsCustomNameU="1" Name="KeyParameters" IsCustomName="1"
+                       Type="Shape" LineStyle="3" FillStyle="3" TextStyle="3">
+					<Cell N="PinX" V="0.2952755905511811" U="MM" F="GUARD(Sheet.5!Controls.KeyParameters)"/>
+                    <Cell N="PinY" V="-0.4429133858267716" U="MM" F="GUARD(Sheet.5!Controls.KeyParameters.Y)"/>
+                    <Cell N="Width" V="2.309082441185547" F="GUARD(MAX(TEXTWIDTH(TheText),1*Char.Size))"/>
+                    <Cell N="Height" V="0.1968503937007874" U="MM" F="GUARD(5MM)"/>
+                    <Cell N="LocPinX" V="1.154541220592773" F="Width*0.5"/>
+                    <Cell N="LocPinY" V="0.09842519685039371" U="MM" F="Height*0.5"/>
+                    <Cell N="Angle" V="0" F="-Sheet.5!Angle"/>
+                    <Cell N="FlipX" V="0"/>
+                    <Cell N="FlipY" V="0"/>
+                    <Cell N="ResizeMode" V="0"/>
+                    <Cell N="QuickStyleVariation" V="3"/>
+                    <Cell N="TxtPinX" V="1.154541220592773" F="Width*0.5"/>
+                    <Cell N="TxtPinY" V="0.09842519685039371" U="MM" F="Height*0.5"/>
+                    <Cell N="TxtWidth" V="2.309082441185547" F="Width*1"/>
+                    <Cell N="TxtHeight" V="0.1968503937007874" U="MM" F="Height*1"/>
+                    <Cell N="TxtLocPinX" V="1.154541220592773" F="TxtWidth*0.5"/>
+                    <Cell N="TxtLocPinY" V="0.09842519685039371" U="MM" F="TxtHeight*0.5"/>
+                    <Cell N="TxtAngle" V="0" U="DEG" F="Sheet.5!User.TextAngle"/>
+                    <Cell N="LayerMember" V="3"/>
+                    <Cell N="HideText" V="1" F="NOT(Sheet.5!User.ShowKeyParameters)"/>
+                    <Section N="Field">
+						<Row IX="0">
+							<Cell N="Value" V="流量:  m3/h; 扬程:  m; 功率:  kW; 转速:  RPM" U="STR"
+                                  F="Sheet.5!User.KeyParameters"/>
+                            <Cell N="Format" V="esc(0)" U="STR" F="FIELDPICTURE(0)"/>
+                            <Cell N="Type" V="0"/>
+                            <Cell N="UICat" V="0"/>
+                            <Cell N="UICod" V="255"/>
+                            <Cell N="UIFmt" V="0"/>
+                            <Cell N="Calendar" V="0"/>
+                            <Cell N="ObjectKind" V="0"/>
+						</Row>
+					</Section>
+                    <Text>
+						<cp IX="0"/>
+                        <fld IX="0">流量:  m3/h; 扬程:  m; 功率:  kW; 转速:  RPM</fld>
+					</Text>
+				</Shape>
+                <Shape ID="506" NameU="Pump body 3" IsCustomNameU="1" Name="Pump body 3" IsCustomName="1" Type="Shape"
+                       LineStyle="3" FillStyle="3" TextStyle="3">
+					<Cell N="PinX" V="0.2952755891575393" U="MM" F="Sheet.5!Width*0.4999999976401"/>
+                    <Cell N="PinY" V="0.295275590551187" U="MM" F="Sheet.5!Height*0.50000000000001"/>
+                    <Cell N="Width" V="0.5905511811023622" U="MM" F="GUARD(15MM)"/>
+                    <Cell N="Height" V="0.5905511811023622" U="MM" F="GUARD(15MM)"/>
+                    <Cell N="LocPinX" V="0.2952755905511811" U="MM" F="Width*0.5"/>
+                    <Cell N="LocPinY" V="0.2952755905511811" U="MM" F="Height*0.5"/>
+                    <Cell N="Angle" V="0"/>
+                    <Cell N="FlipX" V="0"/>
+                    <Cell N="FlipY" V="0"/>
+                    <Cell N="ResizeMode" V="0"/>
+                    <Cell N="LayerMember" V=""/>
+                    <Section N="User">
+						<Row N="IsVisible">
+							<Cell N="Value" V="0" U="BOOL" F="GUARD(STRSAME(NAME(),Sheet.5!Prop.SubClass))"/>
+                            <Cell N="Prompt" V=""/>
+						</Row>
+					</Section>
+                    <Section N="Geometry" IX="0">
+						<Cell N="NoFill" V="1"/>
+                        <Cell N="NoLine" V="0"/>
+                        <Cell N="NoShow" V="1" F="NOT(User.IsVisible)"/>
+                        <Cell N="NoSnap" V="0"/>
+                        <Cell N="NoQuickDrag" V="0"/>
+                        <Row T="RelMoveTo" IX="1">
+							<Cell N="X" V="0.5000000139077467"/>
+                            <Cell N="Y" V="0"/>
+						</Row>
+                        <Row T="RelLineTo" IX="2">
+							<Cell N="X" V="0.9999999999999951"/>
+                            <Cell N="Y" V="0.4999999860922607"/>
+						</Row>
+                        <Row T="RelLineTo" IX="3">
+							<Cell N="X" V="0.4999999860922451"/>
+                            <Cell N="Y" V="1"/>
+						</Row>
+					</Section>
+                    <Section N="Geometry" IX="1">
+						<Cell N="NoFill" V="1"/>
+                        <Cell N="NoLine" V="0"/>
+                        <Cell N="NoShow" V="1" F="NOT(User.IsVisible)"/>
+                        <Cell N="NoSnap" V="0"/>
+                        <Cell N="NoQuickDrag" V="0"/>
+                        <Row T="RelMoveTo" IX="1">
+							<Cell N="X" V="0.1042464379829221"/>
+                            <Cell N="Y" V="0.2006927039038358"/>
+						</Row>
+                        <Row T="EllipticalArcTo" IX="2">
+							<Cell N="X" V="0.4259353282367717" U="MM" F="Width*0.7212504891476"/>
+                            <Cell N="Y" V="0.1306597294723642" U="MM" F="Height*0.22125047523987"/>
+                            <Cell N="A" V="0.2411428717307834" U="MM" F="Width*0.40833526279746"/>
+                            <Cell N="B" V="0.2028104941170059" U="MM" F="Height*0.34342577003813"/>
+                            <Cell N="C" V="-1.570795439419499" U="DA"
+                                  F="_ELLIPSE_THETA(-1.5707954394193,1.0000000004024,0.59055119752884,0.59055119752884,Width,Height)"/>
+                            <Cell N="D" V="1.0000000004024"
+                                  F="_ELLIPSE_ECC(-1.5707954394193,1.0000000004024,0.59055119752884,0.59055119752884,Width,Height,Geometry2.C2)"/>
+						</Row>
+					</Section>
+                    <Section N="Geometry" IX="2">
+						<Cell N="NoFill" V="1"/>
+                        <Cell N="NoLine" V="0"/>
+                        <Cell N="NoShow" V="1" F="NOT(User.IsVisible)"/>
+                        <Cell N="NoSnap" V="0"/>
+                        <Cell N="NoQuickDrag" V="0"/>
+                        <Row T="RelMoveTo" IX="1">
+							<Cell N="X" V="0.104246437982922"/>
+                            <Cell N="Y" V="0.7938910645311448"/>
+						</Row>
+                        <Row T="EllipticalArcTo" IX="2">
+							<Cell N="X" V="0.4259353282367717" U="MM" F="Width*0.7212504891476"/>
+                            <Cell N="Y" V="0.4566928896821574" U="MM" F="Height*0.77333329319512"/>
+                            <Cell N="A" V="0.2411428717307834" U="MM" F="Width*0.40833526279746"/>
+                            <Cell N="B" V="0.3845421250375098" U="MM" F="Height*0.65115799839685"/>
+                            <Cell N="C" V="-1.570797214170308" U="DA"
+                                  F="_ELLIPSE_THETA(-1.5707972141705,1.0000000004024,0.59055119752884,0.59055119752884,Width,Height)"/>
+                            <Cell N="D" V="1.0000000004024"
+                                  F="_ELLIPSE_ECC(-1.5707972141705,1.0000000004024,0.59055119752884,0.59055119752884,Width,Height,Geometry3.C2)"/>
+						</Row>
+					</Section>
+                    <Section N="Geometry" IX="3">
+						<Cell N="NoFill" V="0"/>
+                        <Cell N="NoLine" V="0"/>
+                        <Cell N="NoShow" V="1" F="NOT(User.IsVisible)"/>
+                        <Cell N="NoSnap" V="0"/>
+                        <Cell N="NoQuickDrag" V="0"/>
+                        <Row T="Ellipse" IX="1">
+							<Cell N="X" V="0.2952755905511811" U="MM" F="Width*0.5"/>
+                            <Cell N="Y" V="0.2952755905511811" U="MM" F="Height*0.5"/>
+                            <Cell N="A" V="0.5905511811023622" U="MM" F="Width*1"/>
+                            <Cell N="B" V="0.2952755905511811" U="MM" F="Height*0.5"/>
+                            <Cell N="C" V="0.2952755905511811" U="MM" F="Width*0.5"/>
+                            <Cell N="D" V="0" U="MM" F="Height*0"/>
+						</Row>
+					</Section>
+				</Shape>
+                <Shape ID="511" NameU="Pump body" IsCustomNameU="1" Name="Pump body" IsCustomName="1" Type="Shape"
+                       LineStyle="3" FillStyle="3" TextStyle="3">
+					<Cell N="PinX" V="0.2952755905511811" U="MM" F="GUARD(Sheet.5!Width*0.5)"/>
+                    <Cell N="PinY" V="0.2952755905511811" U="MM" F="GUARD(Sheet.5!Height*0.5)"/>
+                    <Cell N="Width" V="0.5905511811023622" U="MM" F="GUARD(Sheet.5!Width*1)"/>
+                    <Cell N="Height" V="0.5905511811023622" U="MM" F="GUARD(Sheet.5!Height*1)"/>
+                    <Cell N="LocPinX" V="0.2952755905511811" U="MM" F="Width*0.5"/>
+                    <Cell N="LocPinY" V="0.2952755905511811" U="MM" F="Height*0.5"/>
+                    <Cell N="Angle" V="0"/>
+                    <Cell N="FlipX" V="0"/>
+                    <Cell N="FlipY" V="0"/>
+                    <Cell N="ResizeMode" V="0"/>
+                    <Cell N="LayerMember" V=""/>
+                    <Section N="User">
+						<Row N="IsGearType">
+							<Cell N="Value" V="1" U="BOOL" F="STRSAME(Sheet.5!Prop.SubClass,&quot;齿轮泵&quot;)"/>
+                            <Cell N="Prompt" V=""/>
+						</Row>
+                        <Row N="IsDiaphgramType">
+							<Cell N="Value" V="0" U="BOOL" F="STRSAME(Sheet.5!Prop.SubClass,&quot;隔膜泵&quot;)"/>
+                            <Cell N="Prompt" V=""/>
+						</Row>
+                        <Row N="IsCentrifugalType">
+							<Cell N="Value" V="0" U="BOOL"
+                                  F="LOOKUP(Sheet.5!Prop.SubClass,&quot;离心泵;双封离心泵&quot;)&gt;-1"/>
+                            <Cell N="Prompt" V=""/>
+						</Row>
+                        <Row N="IsScrewType">
+							<Cell N="Value" V="0" U="BOOL" F="STRSAME(Sheet.5!Prop.SubClass,&quot;软管泵&quot;)"/>
+                            <Cell N="Prompt" V=""/>
+						</Row>
+                        <Row N="IsProgressiveCavityType">
+							<Cell N="Value" V="0" U="BOOL" F="STRSAME(Sheet.5!Prop.SubClass,&quot;螺旋转子泵&quot;)"/>
+                            <Cell N="Prompt" V=""/>
+						</Row>
+                        <Row N="IsPositiveDisplacementType">
+							<Cell N="Value" V="0" U="BOOL" F="STRSAME(Sheet.5!Prop.SubClass,&quot;计量泵&quot;)"/>
+                            <Cell N="Prompt" V=""/>
+						</Row>
+                        <Row N="IsPistonType">
+							<Cell N="Value" V="0" U="BOOL" F="STRSAME(Sheet.5!Prop.SubClass,&quot;柱塞泵&quot;)"/>
+                            <Cell N="Prompt" V=""/>
+						</Row>
+                        <Row N="IsJetType">
+							<Cell N="Value" V="0" U="BOOL" F="STRSAME(Sheet.5!Prop.SubClass,&quot;液体射流泵&quot;)"/>
+                            <Cell N="Prompt" V=""/>
+						</Row>
+					</Section>
+                    <Section N="Geometry" IX="0">
+						<Cell N="NoFill" V="0"/>
+                        <Cell N="NoLine" V="0"/>
+                        <Cell N="NoShow" V="0"/>
+                        <Cell N="NoSnap" V="0"/>
+                        <Cell N="NoQuickDrag" V="0"/>
+                        <Row T="Ellipse" IX="1">
+							<Cell N="X" V="0.2952755905511811" U="MM" F="GUARD(Width*0.5)"/>
+                            <Cell N="Y" V="0.2952755905511811" U="MM" F="GUARD(Height*0.5)"/>
+                            <Cell N="A" V="0.5905511811023622" U="MM" F="GUARD(Width*1)"/>
+                            <Cell N="B" V="0.2952755905511811" U="MM" F="GUARD(Height*0.5)"/>
+                            <Cell N="C" V="0.2952755905511811" U="MM" F="GUARD(Width*0.5)"/>
+                            <Cell N="D" V="0.5905511811023622" U="MM" F="GUARD(Height*1)"/>
+						</Row>
+					</Section>
+                    <Section N="Geometry" IX="1">
+						<Cell N="NoFill" V="1"/>
+                        <Cell N="NoLine" V="0"/>
+                        <Cell N="NoShow" V="0"/>
+                        <Cell N="NoSnap" V="0"/>
+                        <Cell N="NoQuickDrag" V="0"/>
+                        <Row T="RelMoveTo" IX="1">
+							<Cell N="X" V="0.5" F="GUARD(0.5)"/>
+                            <Cell N="Y" V="1" F="GUARD(1)"/>
+						</Row>
+                        <Row T="RelLineTo" IX="2">
+							<Cell N="X" V="1" F="GUARD(1)"/>
+                            <Cell N="Y" V="0.5" F="GUARD(0.5)"/>
+						</Row>
+                        <Row T="RelLineTo" IX="3">
+							<Cell N="X" V="0.5" F="GUARD(0.5)"/>
+                            <Cell N="Y" V="0" F="GUARD(0)"/>
+						</Row>
+					</Section>
+                    <Section N="Geometry" IX="2">
+						<Cell N="NoFill" V="1"/>
+                        <Cell N="NoLine" V="0"/>
+                        <Cell N="NoShow" V="0" F="NOT(User.IsGearType)"/>
+                        <Cell N="NoSnap" V="0"/>
+                        <Cell N="NoQuickDrag" V="0"/>
+                        <Row T="Ellipse" IX="1">
+							<Cell N="X" V="0.2460629921259842" U="MM" F="GUARD(Width*(2.5/6))"/>
+                            <Cell N="Y" V="0.3690944881889763" U="MM" F="GUARD(Height*((6-2.25)/6))"/>
+                            <Cell N="A" V="0.2460629921259842" U="MM" F="GUARD(Geometry3.X1)"/>
+                            <Cell N="B" V="0.4921259842519685" U="MM" F="GUARD(Geometry3.Y1+Height*1.25/6)"/>
+                            <Cell N="C" V="0.3690944881889763" U="MM" F="GUARD(Geometry3.X1+Width*1.25/6)"/>
+                            <Cell N="D" V="0.3690944881889763" U="MM" F="GUARD(Geometry3.Y1)"/>
+						</Row>
+					</Section>
+                    <Section N="Geometry" IX="3">
+						<Cell N="NoFill" V="1"/>
+                        <Cell N="NoLine" V="0"/>
+                        <Cell N="NoShow" V="1" F="NOT(User.IsDiaphgramType)"/>
+                        <Cell N="NoSnap" V="0"/>
+                        <Cell N="NoQuickDrag" V="0"/>
+                        <Row T="RelMoveTo" IX="1">
+							<Cell N="X" V="0.5" F="GUARD(0.5)"/>
+                            <Cell N="Y" V="1" F="GUARD(1)"/>
+						</Row>
+                        <Row T="RelEllipticalArcTo" IX="2">
+							<Cell N="X" V="0.5" F="GUARD(0.5)"/>
+                            <Cell N="Y" V="0" F="GUARD(0)"/>
+                            <Cell N="A" V="0.25" F="GUARD(0.25)"/>
+                            <Cell N="B" V="0.5" F="GUARD(0.5)"/>
+                            <Cell N="C" V="0" U="DEG" F="GUARD(0DEG)"/>
+                            <Cell N="D" V="1" F="GUARD(Width/Height*1)"/>
+						</Row>
+					</Section>
+                    <Section N="Geometry" IX="4">
+						<Cell N="NoFill" V="1"/>
+                        <Cell N="NoLine" V="0"/>
+                        <Cell N="NoShow" V="1" F="NOT(User.IsCentrifugalType)"/>
+                        <Cell N="NoSnap" V="0"/>
+                        <Cell N="NoQuickDrag" V="0"/>
+                        <Row T="RelMoveTo" IX="1">
+							<Cell N="X" V="0" F="GUARD(0)"/>
+                            <Cell N="Y" V="0.5" F="GUARD(0.5)"/>
+						</Row>
+                        <Row T="RelLineTo" IX="2">
+							<Cell N="X" V="1" F="GUARD(1)"/>
+                            <Cell N="Y" V="0.5" F="GUARD(0.5)"/>
+						</Row>
+					</Section>
+                    <Section N="Geometry" IX="5">
+						<Cell N="NoFill" V="1"/>
+                        <Cell N="NoLine" V="0"/>
+                        <Cell N="NoShow" V="1" F="NOT(User.IsScrewType)"/>
+                        <Cell N="NoSnap" V="0"/>
+                        <Cell N="NoQuickDrag" V="0"/>
+                        <Row T="RelMoveTo" IX="1">
+							<Cell N="X" V="0.3333333333333333" F="GUARD(1/3)"/>
+                            <Cell N="Y" V="0.6666666666666666" F="GUARD(2/3)"/>
+						</Row>
+                        <Row T="RelLineTo" IX="2">
+							<Cell N="X" V="0.5" F="GUARD(0.5)"/>
+                            <Cell N="Y" V="0.5" F="GUARD(0.5)"/>
+						</Row>
+                        <Row T="RelLineTo" IX="3">
+							<Cell N="X" V="0.3333333333333333" F="GUARD(1/3)"/>
+                            <Cell N="Y" V="0.3333333333333333" F="GUARD(1/3)"/>
+						</Row>
+                        <Row T="RelMoveTo" IX="4">
+							<Cell N="X" V="0.5" F="GUARD(0.5)"/>
+                            <Cell N="Y" V="0.6666666666666666" F="GUARD(2/3)"/>
+						</Row>
+                        <Row T="RelLineTo" IX="5">
+							<Cell N="X" V="0.6666666666666666" F="GUARD(2/3)"/>
+                            <Cell N="Y" V="0.5" F="GUARD(0.5)"/>
+						</Row>
+                        <Row T="RelLineTo" IX="6">
+							<Cell N="X" V="0.5" F="GUARD(0.5)"/>
+                            <Cell N="Y" V="0.3333333333333333" F="GUARD(1/3)"/>
+						</Row>
+					</Section>
+                    <Section N="Geometry" IX="6">
+						<Cell N="NoFill" V="1"/>
+                        <Cell N="NoLine" V="0"/>
+                        <Cell N="NoShow" V="1" F="NOT(User.IsProgressiveCavityType)"/>
+                        <Cell N="NoSnap" V="0"/>
+                        <Cell N="NoQuickDrag" V="0"/>
+                        <Row T="RelMoveTo" IX="1">
+							<Cell N="X" V="0.1666666666666667" F="GUARD(1/6)"/>
+                            <Cell N="Y" V="0.5" F="GUARD(0.5)"/>
+						</Row>
+                        <Row T="RelEllipticalArcTo" IX="2">
+							<Cell N="X" V="0.3333333333333333" F="GUARD(2/6)"/>
+                            <Cell N="Y" V="0.5" F="GUARD(0.5)"/>
+                            <Cell N="A" V="0.25" F="GUARD(3/12)"/>
+                            <Cell N="B" V="0.5833333333333334" F="GUARD(7/12)"/>
+                            <Cell N="C" V="0" U="DEG" F="GUARD(0DEG)"/>
+                            <Cell N="D" V="1" F="GUARD(Width/Height*1)"/>
+						</Row>
+                        <Row T="RelEllipticalArcTo" IX="3">
+							<Cell N="X" V="0.5" F="GUARD(0.5)"/>
+                            <Cell N="Y" V="0.5" F="GUARD(0.5)"/>
+                            <Cell N="A" V="0.4166666666666667" F="GUARD(5/12)"/>
+                            <Cell N="B" V="0.4166666666666667" F="GUARD(5/12)"/>
+                            <Cell N="C" V="0" U="DEG" F="GUARD(0DEG)"/>
+                            <Cell N="D" V="1" F="GUARD(Width/Height*1)"/>
+						</Row>
+                        <Row T="RelEllipticalArcTo" IX="4">
+							<Cell N="X" V="0.6666666666666666" F="GUARD(4/6)"/>
+                            <Cell N="Y" V="0.5" F="GUARD(0.5)"/>
+                            <Cell N="A" V="0.5833333333333334" F="GUARD(7/12)"/>
+                            <Cell N="B" V="0.5833333333333334" F="GUARD(7/12)"/>
+                            <Cell N="C" V="0" U="DEG" F="GUARD(0DEG)"/>
+                            <Cell N="D" V="1" F="GUARD(Width/Height*1)"/>
+						</Row>
+					</Section>
+                    <Section N="Geometry" IX="7">
+						<Cell N="NoFill" V="1"/>
+                        <Cell N="NoLine" V="0"/>
+                        <Cell N="NoShow" V="1" F="NOT(User.IsPositiveDisplacementType)"/>
+                        <Cell N="NoSnap" V="0"/>
+                        <Cell N="NoQuickDrag" V="0"/>
+                        <Row T="RelMoveTo" IX="1">
+							<Cell N="X" V="0.1666666666666667" F="GUARD(1/6)"/>
+                            <Cell N="Y" V="0.3333333333333333" F="GUARD(2/6)"/>
+						</Row>
+                        <Row T="RelLineTo" IX="2">
+							<Cell N="X" V="0.1666666666666667" F="GUARD(1/6)"/>
+                            <Cell N="Y" V="0.6666666666666666" F="GUARD(4/6)"/>
+						</Row>
+                        <Row T="RelLineTo" IX="3">
+							<Cell N="X" V="0.5" F="GUARD(0.5)"/>
+                            <Cell N="Y" V="0.6666666666666666" F="GUARD(4/6)"/>
+						</Row>
+                        <Row T="RelLineTo" IX="4">
+							<Cell N="X" V="0.5" F="GUARD(0.5)"/>
+                            <Cell N="Y" V="0.3333333333333333" F="GUARD(2/6)"/>
+						</Row>
+                        <Row T="RelLineTo" IX="5">
+							<Cell N="X" V="0.1666666666666667" F="GUARD(1/6)"/>
+                            <Cell N="Y" V="0.3333333333333333" F="GUARD(2/6)"/>
+						</Row>
+					</Section>
+                    <Section N="Geometry" IX="8">
+						<Cell N="NoFill" V="1"/>
+                        <Cell N="NoLine" V="0"/>
+                        <Cell N="NoShow" V="1" F="NOT(User.IsPistonType)"/>
+                        <Cell N="NoSnap" V="0"/>
+                        <Cell N="NoQuickDrag" V="0"/>
+                        <Row T="RelMoveTo" IX="1">
+							<Cell N="X" V="0.3333333333333333" F="GUARD(1/3)"/>
+                            <Cell N="Y" V="0.5" F="GUARD(0.5)"/>
+						</Row>
+                        <Row T="RelLineTo" IX="2">
+							<Cell N="X" V="0.6666666666666666" F="GUARD(2/3)"/>
+                            <Cell N="Y" V="0.5" F="GUARD(0.5)"/>
+						</Row>
+                        <Row T="RelMoveTo" IX="3">
+							<Cell N="X" V="0.6666666666666666" F="GUARD(2/3)"/>
+                            <Cell N="Y" V="0.6666666666666666" F="GUARD(2/3)"/>
+						</Row>
+                        <Row T="RelLineTo" IX="4">
+							<Cell N="X" V="0.6666666666666666" F="GUARD(2/3)"/>
+                            <Cell N="Y" V="0.3333333333333333" F="GUARD(1/3)"/>
+						</Row>
+					</Section>
+                    <Section N="Geometry" IX="9">
+						<Cell N="NoFill" V="1"/>
+                        <Cell N="NoLine" V="0"/>
+                        <Cell N="NoShow" V="0" F="NOT(User.IsGearType)"/>
+                        <Cell N="NoSnap" V="0"/>
+                        <Cell N="NoQuickDrag" V="0"/>
+                        <Row T="RelMoveTo" IX="1">
+							<Cell N="X" V="0.25" F="GUARD(1.5/6)"/>
+                            <Cell N="Y" V="0.5" F="GUARD(0.5)"/>
+						</Row>
+                        <Row T="RelEllipticalArcTo" IX="2">
+							<Cell N="X" V="0.5833333333333334" F="GUARD(3.5/6)"/>
+                            <Cell N="Y" V="0.5" F="GUARD(0.5)"/>
+                            <Cell N="A" V="0.375" F="GUARD(2.25/6)"/>
+                            <Cell N="B" V="0.1666666666666667" F="GUARD(1/6)"/>
+                            <Cell N="C" V="0" U="DA"/>
+                            <Cell N="D" V="1" F="Width/Height*1"/>
+						</Row>
+					</Section>
+                    <Section N="Geometry" IX="10">
+						<Cell N="NoFill" V="1"/>
+                        <Cell N="NoLine" V="0"/>
+                        <Cell N="NoShow" V="1" F="NOT(User.IsJetType)"/>
+                        <Cell N="NoSnap" V="0"/>
+                        <Cell N="NoQuickDrag" V="0"/>
+                        <Row T="RelMoveTo" IX="1">
+							<Cell N="X" V="0.7397166666666667" F="GUARD(4.4383/6)"/>
+                            <Cell N="Y" V="0.2397166666666667" F="GUARD(1.4383/6)"/>
+						</Row>
+                        <Row T="RelEllipticalArcTo" IX="2">
+							<Cell N="X" V="0.07905" F="GUARD(0.4743/6)"/>
+                            <Cell N="Y" V="0.2302" F="GUARD(1.3812/6)"/>
+                            <Cell N="A" V="0.4166666666666667" F="GUARD(2.5/6)"/>
+                            <Cell N="B" V="0.3333333333333333" F="GUARD(2/6)"/>
+                            <Cell N="C" V="0" U="DA"/>
+                            <Cell N="D" V="1" F="Width/Height*1"/>
+						</Row>
+                        <Row T="RelMoveTo" IX="3">
+							<Cell N="X" V="0.7397166666666667" F="GUARD(4.4383/6)"/>
+                            <Cell N="Y" V="0.7602833333333333" F="GUARD((6-1.4383)/6)"/>
+						</Row>
+                        <Row T="RelEllipticalArcTo" IX="4">
+							<Cell N="X" V="0.07905" F="GUARD(0.4743/6)"/>
+                            <Cell N="Y" V="0.7698" F="GUARD((6-1.3812)/6)"/>
+                            <Cell N="A" V="0.4166666666666667" F="GUARD(2.5/6)"/>
+                            <Cell N="B" V="0.6666666666666666" F="GUARD(4/6)"/>
+                            <Cell N="C" V="0" U="DA"/>
+                            <Cell N="D" V="1" F="Width/Height*1"/>
+						</Row>
+					</Section>
+				</Shape>
+                <Shape ID="512" NameU="Sealing" IsCustomNameU="1" Name="Sealing" IsCustomName="1" Type="Shape"
+                       LineStyle="3" FillStyle="3" TextStyle="3">
+					<Cell N="PinX" V="0.2952755905511811" U="MM" F="GUARD(Sheet.5!Width*0.5)"/>
+                    <Cell N="PinY" V="0.2952755905511811" U="MM" F="GUARD(Sheet.5!Height*0.5)"/>
+                    <Cell N="Width" V="0.5905511811023622" U="MM" F="GUARD(Sheet.5!Width*1)"/>
+                    <Cell N="Height" V="0.5905511811023622" U="MM" F="GUARD(Sheet.5!Height*1)"/>
+                    <Cell N="LocPinX" V="0.2952755905511811" U="MM" F="Width*0.5"/>
+                    <Cell N="LocPinY" V="0.2952755905511811" U="MM" F="Height*0.5"/>
+                    <Cell N="Angle" V="0"/>
+                    <Cell N="FlipX" V="0"/>
+                    <Cell N="FlipY" V="0"/>
+                    <Cell N="ResizeMode" V="0"/>
+                    <Cell N="LayerMember" V=""/>
+                    <Section N="User">
+						<Row N="IsVisible">
+							<Cell N="Value" V="0" U="BOOL" F="STRSAME(Sheet.5!Prop.SubClass,&quot;双封离心泵&quot;)"/>
+                            <Cell N="Prompt" V=""/>
+						</Row>
+					</Section>
+                    <Section N="Geometry" IX="0">
+						<Cell N="NoFill" V="1"/>
+                        <Cell N="NoLine" V="0"/>
+                        <Cell N="NoShow" V="1" F="NOT(User.IsVisible)"/>
+                        <Cell N="NoSnap" V="0"/>
+                        <Cell N="NoQuickDrag" V="0"/>
+                        <Row T="RelMoveTo" IX="1">
+							<Cell N="X" V="1.166666666666667" F="GUARD(7/6)"/>
+                            <Cell N="Y" V="-0.1666666666666667" F="GUARD(-1/6)"/>
+						</Row>
+                        <Row T="RelLineTo" IX="2">
+							<Cell N="X" V="0.75" F="GUARD(0.75)"/>
+                            <Cell N="Y" V="0.25" F="GUARD(0.25)"/>
+						</Row>
+                        <Row T="RelMoveTo" IX="3">
+							<Cell N="X" V="1.166666666666667" F="GUARD(7/6)"/>
+                            <Cell N="Y" V="1.166666666666667" F="GUARD(7/6)"/>
+						</Row>
+                        <Row T="RelLineTo" IX="4">
+							<Cell N="X" V="0.75" F="GUARD(0.75)"/>
+                            <Cell N="Y" V="0.75" F="GUARD(0.75)"/>
+						</Row>
+					</Section>
+                    <Section N="Geometry" IX="1">
+						<Cell N="NoFill" V="0"/>
+                        <Cell N="NoLine" V="0"/>
+                        <Cell N="NoShow" V="1" F="NOT(User.IsVisible)"/>
+                        <Cell N="NoSnap" V="0"/>
+                        <Cell N="NoQuickDrag" V="0"/>
+                        <Row T="RelMoveTo" IX="1">
+							<Cell N="X" V="0.8535533905932733" F="GUARD(((1/COS(45DEG)-1)/2+1)*COS(45DEG))"/>
+                            <Cell N="Y" V="0.8535533905932762" F="GUARD(((1/COS(45DEG)-1)/2+1)*SIN(45DEG))"/>
+						</Row>
+                        <Row T="RelLineTo" IX="2">
+							<Cell N="X" V="0.892793641318082"
+                                  F="GUARD(Geometry2.X1+(1/COS(45DEG)-1)/2*TAN(15DEG)*SIN(45DEG))"/>
+                            <Cell N="Y" V="0.8143131398684675"
+                                  F="GUARD(Geometry2.Y1-(1/COS(45DEG)-1)/2*TAN(15DEG)*COS(45DEG))"/>
+						</Row>
+                        <Row T="RelLineTo" IX="3">
+							<Cell N="X" V="1" F="GUARD(1)"/>
+                            <Cell N="Y" V="1" F="GUARD(1)"/>
+						</Row>
+                        <Row T="RelLineTo" IX="4">
+							<Cell N="X" V="0.8143131398684645"
+                                  F="GUARD(Geometry2.X1-(1/COS(45DEG)-1)/2*TAN(15DEG)*SIN(45DEG))"/>
+                            <Cell N="Y" V="0.8927936413180848"
+                                  F="GUARD(Geometry2.Y1+(1/COS(45DEG)-1)/2*TAN(15DEG)*COS(45DEG))"/>
+						</Row>
+                        <Row T="RelLineTo" IX="5">
+							<Cell N="X" V="0.8535533905932733" F="GUARD(Geometry2.X1)"/>
+                            <Cell N="Y" V="0.8535533905932762" F="GUARD(Geometry2.Y1)"/>
+						</Row>
+					</Section>
+                    <Section N="Geometry" IX="2">
+						<Cell N="NoFill" V="0"/>
+                        <Cell N="NoLine" V="0"/>
+                        <Cell N="NoShow" V="1" F="NOT(User.IsVisible)"/>
+                        <Cell N="NoSnap" V="0"/>
+                        <Cell N="NoQuickDrag" V="0"/>
+                        <Row T="RelMoveTo" IX="1">
+							<Cell N="X" V="0.8535533905932733" F="GUARD(((1/COS(45DEG)-1)/2+1)*COS(45DEG))"/>
+                            <Cell N="Y" V="0.1464466094067263" F="GUARD((1-1/SQRT(2))*0.5)"/>
+						</Row>
+                        <Row T="RelLineTo" IX="2">
+							<Cell N="X" V="0.9607597492751913" F="GUARD(1-(1/COS(45DEG)-1)/2*TAN(15DEG)*SIN(45DEG))"/>
+                            <Cell N="Y" V="-0.03924025072480859" F="GUARD(-(1/COS(45DEG)-1)/2*TAN(15DEG)*COS(45DEG))"/>
+						</Row>
+                        <Row T="RelLineTo" IX="3">
+							<Cell N="X" V="1.039240250724809" F="GUARD(1+(1/COS(45DEG)-1)/2*TAN(15DEG)*COS(45DEG))"/>
+                            <Cell N="Y" V="0.03924025072480873" F="GUARD((1/COS(45DEG)-1)/2*TAN(15DEG)*SIN(45DEG))"/>
+						</Row>
+                        <Row T="RelLineTo" IX="4">
+							<Cell N="X" V="0.8535533905932733" F="Geometry3.X1"/>
+                            <Cell N="Y" V="0.1464466094067263" F="Geometry3.Y1"/>
+						</Row>
+					</Section>
+				</Shape>
+                <Shape ID="514" NameU="VSD" IsCustomNameU="1" Name="VSD" IsCustomName="1" Type="Shape" LineStyle="3"
+                       FillStyle="3" TextStyle="3">
+					<Cell N="PinX" V="0.2952755905511811" U="MM" F="GUARD(Sheet.5!Controls.VSD)"/>
+                    <Cell N="PinY" V="-0.09842519685039369" U="MM" F="GUARD(Sheet.5!Controls.VSD.Y)"/>
+                    <Cell N="Width" V="0.2460712717519531" F="GUARD(MAX(TEXTWIDTH(TheText),1*Char.Size))"/>
+                    <Cell N="Height" V="0.1968503937007874" U="MM" F="GUARD(5MM)"/>
+                    <Cell N="LocPinX" V="0.1230356358759766" F="Width*0.5"/>
+                    <Cell N="LocPinY" V="0.09842519685039369" U="MM" F="Height*0.5"/>
+                    <Cell N="Angle" V="0" F="-Sheet.5!Angle"/>
+                    <Cell N="FlipX" V="0"/>
+                    <Cell N="FlipY" V="0"/>
+                    <Cell N="ResizeMode" V="0"/>
+                    <Cell N="TxtPinX" V="0.1230356358759766" F="Width*0.5"/>
+                    <Cell N="TxtPinY" V="0.09842519685039369" U="MM" F="Height*0.5"/>
+                    <Cell N="TxtWidth" V="0.2460712717519531" F="Width*1"/>
+                    <Cell N="TxtHeight" V="0.1968503937007874" U="MM" F="Height*1"/>
+                    <Cell N="TxtLocPinX" V="0.1230356358759766" F="TxtWidth*0.5"/>
+                    <Cell N="TxtLocPinY" V="0.09842519685039369" U="MM" F="TxtHeight*0.5"/>
+                    <Cell N="TxtAngle" V="0" U="DEG" F="Sheet.5!User.TextAngle"/>
+                    <Cell N="LayerMember" V=""/>
+                    <Cell N="HideText" V="1" F="NOT(Sheet.5!Prop.IsVariableSpeedDrive)"/>
+                    <Section N="Field">
+						<Row IX="0">
+							<Cell N="Value" V="VSD" U="STR"/>
+                            <Cell N="Format" V="esc(0)" U="STR" F="FIELDPICTURE(0)"/>
+                            <Cell N="Type" V="0"/>
+                            <Cell N="UICat" V="0"/>
+                            <Cell N="UICod" V="0"/>
+                            <Cell N="UIFmt" V="0"/>
+                            <Cell N="Calendar" V="0"/>
+                            <Cell N="ObjectKind" V="0"/>
+						</Row>
+					</Section>
+                    <Text>
+						<cp IX="0"/>
+                        <fld IX="0">VSD</fld>
+					</Text>
+				</Shape>
+			</Shapes>
+		</Shape>
+	</Shapes>
+</MasterContents>

@@ -3,7 +3,6 @@ using System.Linq;
 using System.Reactive.Disposables;
 using AE.PID.Tools;
 using Microsoft.Office.Interop.Visio;
-using ReactiveUI;
 
 namespace AE.PID.Models;
 
@@ -26,7 +25,7 @@ public sealed class EquipmentUnit : ElementBase
     public double Quantity
     {
         get => _quantity;
-        set => this.SetAndRaise(ref _quantity, value);
+        set => SetAndRaise(ref _quantity, value);
     }
 
     #endregion

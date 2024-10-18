@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using AE.PID.Interfaces;
@@ -10,6 +11,21 @@ namespace AE.PID.Tools;
 
 internal static class VisioExt
 {
+    public static void SetValue(this Cell source, string value)
+    {
+        source.FormulaU = $"\"{value}\"";
+    }
+
+    public static void SetValue(this Cell source, double value)
+    {
+        source.FormulaU = value.ToString(CultureInfo.InvariantCulture);
+    }
+
+    public static void SetValue(this Cell source, int value)
+    {
+        source.FormulaU = value.ToString();
+    }
+
     private static Row GetOrAdd(this IVShape shape, IProp prop)
     {
         var existsAnywhere = shape.CellExistsN(prop.FullName, VisExistsFlags.visExistsAnywhere);
@@ -26,7 +42,7 @@ internal static class VisioExt
     }
 
     /// <summary>
-    ///     Try delete a property from the shape.
+    ///     Try to delete a property from the shape.
     /// </summary>
     /// <param name="shape"></param>
     /// <param name="fullName"></param>

@@ -1,0 +1,27 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="using:AE.PID.Visio.UI.Avalonia.ViewModels"
+             xmlns:attachedProperties="clr-namespace:AE.PID.Visio.UI.Avalonia.AttachedProperties"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="AE.PID.Visio.UI.Avalonia.Views.AccountSettingView"
+             x:DataType="viewModels:AccountSettingViewModel">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <viewModels:AccountSettingViewModel />
+    </Design.DataContext>
+    <UserControl.Styles>
+        <Style Selector="TextBox">
+            <Setter Property="Margin" Value="4" />
+        </Style>
+    </UserControl.Styles>
+
+    <StackPanel>
+        <Grid ColumnDefinitions="Auto, *">
+            <TextBox attachedProperties:LabelBehav.Value="工号" Text="{Binding UserId}" Watermark="e.g. 6470" />
+        </Grid>
+    </StackPanel>
+</UserControl>

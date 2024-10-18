@@ -1,0 +1,39 @@
+### 项目
+POST http://172.18.168.57:8000/api/cube/restful/interface/getModeDataPageList/selectNewProjectInfo
+Content-Type: application/x-www-form-urlencoded
+
+datajson = {
+    "pageInfo":{
+        "pageNo":"1",
+        "pageSize":"10"
+    },
+    "mainTable":{
+        "projectName": "测试"
+    },
+    "operationinfo": {
+        "operator": "6470"
+    },
+    "header": {
+      "systemid": "visioVault",
+      "currentDateTime": "20240912103543",
+      "Md5": "3e059fb7642b7df6cf1008227df346ed"
+    }
+}
+
+### 项目数量
+POST http://172.18.168.57:8000/api/cube/restful/interface/getModeDataPageCount/countNewProject
+Content-Type: application/x-www-form-urlencoded
+
+datajson = {
+    "mainTable":{
+        "projectName": "测试"
+    },
+    "operationinfo": {
+        "operator": "6470"
+    },
+    "header": {
+      "systemid": "visioVault",
+      "currentDateTime": "20240912103543",
+      "Md5": "3e059fb7642b7df6cf1008227df346ed"
+    }
+}

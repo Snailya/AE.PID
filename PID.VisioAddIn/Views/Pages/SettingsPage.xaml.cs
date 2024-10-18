@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
+﻿using System.Reactive.Disposables;
 using AE.PID.ViewModels;
 using ReactiveUI;
 using Splat;
@@ -61,7 +59,7 @@ public partial class SettingsPage : IEnableLogger
                     v => v.Feedback.ViewModel)
                 .DisposeWith(d);
 
-            this.Bind(ViewModel, vm=>vm.UseServerSideUpdate, v=>v.ServerUpdateButton.IsChecked)
+            this.Bind(ViewModel, vm => vm.UseServerSideUpdate, v => v.ServerUpdateButton.IsChecked)
                 .DisposeWith(d);
         });
     }

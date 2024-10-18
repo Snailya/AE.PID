@@ -5,9 +5,9 @@ using System.Reactive.Linq;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using AE.PID.Models;
 using AE.PID.Tools;
 using AE.PID.ViewModels;
+using AE.PID.Visio.Core.Models;
 using ReactiveUI;
 
 namespace AE.PID.Views;

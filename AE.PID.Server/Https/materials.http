@@ -1,0 +1,98 @@
+### 物料分类
+POST http://172.18.168.57:8000/api/cube/restful/interface/getModeDataPageList/selectDesignMaterialCategory
+Content-Type: application/x-www-form-urlencoded
+
+datajson = {
+    "pageInfo":{
+        "pageNo":"1",
+        "pageSize":"10"
+    },
+    "mainTable":{
+        "showOrder":"",
+        "id":"",
+        "code":"",
+        "categoryCode":"",
+        "categoryName":"卧式离心泵",
+        "parentId":""
+    },
+    "operationinfo": {
+        "operator": "6470"
+    },
+    "header": {
+      "systemid": "visioVault",
+      "currentDateTime": "20240326164307",
+      "Md5": "095c64460e522ca980641f94c750d6c6"
+    }
+}
+
+### 设计物料数量
+POST http://172.18.168.57:8000/api/cube/restful/interface/getModeDataPageCount/countDesignMaterial
+Content-Type: application/x-www-form-urlencoded
+
+datajson = {
+    "mainTable": {
+        "materialName":"",
+        "materialCode":"",
+        "model":"",
+        "materialCategory":"81",
+        "brand":"",
+        "specifications":"",
+        "manufacturer":""
+    },
+  "operationinfo": {
+    "operator": "6470"
+  },
+  "header": {
+    "systemid": "visioVault",
+    "currentDateTime": "20240318095212",
+    "Md5": "0458e1758331968661d85136b7b7c719"
+  }
+}
+
+### 设计物料
+
+POST http://172.18.168.57:8000/api/cube/restful/interface/getModeDataPageList/selectDesignMaterial
+Content-Type: application/x-www-form-urlencoded
+
+datajson = {
+  "pageInfo": {
+        "pageNo":"1",
+        "pageSize":"1"
+  },
+  "mainTable": {
+    # "materialType":"",
+    # "description":"",
+    # "materialCode":"",
+    # "materialCategory":"81",
+    # "specifications":"",
+    # "manufacturer":"",
+    # "manufacturerMaterialNumber":"",
+    # "materialName":"",
+    # "unit":"",
+    # "showOrder":"",
+    # "model":"",
+    # "id":"",
+    # "brand":""
+    "id": null,
+    "materialName": null,
+    "materialCode": null,
+    "materialCategory": "81",
+    "showOrder": null,
+    "brand": null,
+    "specifications": null,
+    "model": null,
+    "unit": null,
+    "manufacturer": null,
+    "manufacturerMaterialNumber": null,
+    "description": null,
+    "materialType":null
+  },
+  "operationinfo": {
+    "operator": "6470"
+  },
+  "header": {
+    "systemid": "visioVault",
+    "currentDateTime": "20240318095212",
+    "Md5": "0458e1758331968661d85136b7b7c719"
+  }
+}

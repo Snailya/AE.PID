@@ -3,11 +3,13 @@ using System.Reactive.Concurrency;
 using System.Reactive.Subjects;
 using System.Windows;
 using System.Windows.Threading;
-using AE.PID.Core.Models;
 using AE.PID.Properties;
 using AE.PID.ViewModels;
 using AE.PID.Views;
 using AE.PID.Views.Windows;
+using AE.PID.Visio.Core;
+using AE.PID.Visio.Core.Dtos;
+using MessageBox = System.Windows.MessageBox;
 
 namespace AE.PID.Services;
 
@@ -48,7 +50,7 @@ public class WindowManager : IDisposable
 
     public void Dispose()
     {
-        AppScheduler.UIScheduler.Schedule(() =>
+        App.UIScheduler.Schedule(() =>
         {
             _secondaryWindow.Close();
             _mainWindow.Close();
@@ -57,6 +59,7 @@ public class WindowManager : IDisposable
             Dispatcher.CurrentDispatcher.InvokeShutdown();
         });
     }
+
 
     public static WindowManager? GetInstance()
     {
@@ -127,9 +130,9 @@ public class WindowManager : IDisposable
     /// <summary>
     ///     Show a progress bar to provide better user experience.
     /// </summary>
-    public void CreateRunInBackgroundWithProgress(Progress<ProgressValue> progress, Action task)
+    public void CreateRunInBackgroundWithProgress(Progress<ProgressValueDto> progress, Action task)
     {
-        AppScheduler.UIScheduler.Schedule(() =>
+        App.UIScheduler.Schedule(() =>
         {
             _progressWindow.Content = new ProgressPage(new ProgressPageViewModel(progress, task));
             _progressWindow.Show();

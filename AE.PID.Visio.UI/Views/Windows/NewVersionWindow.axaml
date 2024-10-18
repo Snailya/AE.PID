@@ -1,0 +1,53 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AE.PID.Visio.UI.Avalonia.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:converters="using:AE.PID.Visio.UI.Avalonia.Converters"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="AE.PID.Visio.UI.Avalonia.Views.NewVersionWindow"
+        x:DataType="vm:NewVersionViewModel"
+        Height="512" Width="448"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="新版本"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        ExtendClientAreaToDecorationsHint="True">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:ToolsWindowViewModel />
+    </Design.DataContext>
+
+    <Panel>
+        <ExperimentalAcrylicBorder IsHitTestVisible="False">
+            <ExperimentalAcrylicBorder.Material>
+                <ExperimentalAcrylicMaterial BackgroundSource="Digger"
+                                             TintColor="{Binding ActualThemeVariant, Source={x:Static Application.Current}, Converter={x:Static converters:SimpleConverters.ThemeToColorConverter} }"
+                                             TintOpacity="1"
+                                             MaterialOpacity="0.65" />
+            </ExperimentalAcrylicBorder.Material>
+        </ExperimentalAcrylicBorder>
+        <Panel Classes="content">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Bottom">
+                    <TextBlock Text="现在安装？" />
+                    <StackPanel Classes="actions">
+                        <Button Content="确认" Command="{Binding Confirm}" />
+                        <Button Content="取消" Command="{Binding Confirm}" />
+                    </StackPanel>
+                </StackPanel>
+                <ScrollViewer>
+                    <Grid RowDefinitions="Auto,*">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="发现新版本" FontWeight="Bold" />
+                            <TextBlock Text="{Binding Version, StringFormat=({0})}" FontWeight="Light" />
+                        </StackPanel>
+                        <TextBlock Grid.Row="1" Text="{Binding ReleaseNotes}" />
+                    </Grid>
+                </ScrollViewer>
+            </DockPanel>
+        </Panel>
+    </Panel>
+</Window>

@@ -1,0 +1,66 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="using:AE.PID.Visio.UI.Avalonia.ViewModels"
+             xmlns:views="clr-namespace:AE.PID.Visio.UI.Avalonia.Views"
+             mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="528"
+             x:Class="AE.PID.Visio.UI.Avalonia.Views.SelectMaterialView"
+             x:DataType="viewModels:SelectMaterialViewModel">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <viewModels:SelectMaterialViewModel />
+    </Design.DataContext>
+
+    <DockPanel>
+        <StackPanel Classes="actions" DockPanel.Dock="Bottom">
+            <Button Content="确认" Command="{Binding Confirm}" />
+            <Button Content="取消" Command="{Binding Cancel}" />
+        </StackPanel>
+        <DockPanel>
+            <TreeView DockPanel.Dock="Left" MinWidth="256"
+                      ItemsSource="{Binding ValidCategories}"
+                      SelectedItem="{Binding SelectedCategory}">
+                <TreeView.ItemTemplate>
+                    <TreeDataTemplate ItemsSource="{Binding Inferiors}">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Name}" />
+                        </StackPanel>
+                    </TreeDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+            <StackPanel DockPanel.Dock="Top">
+                <TextBox Text="{Binding SearchText}" Watermark="搜索物料" />
+                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+            </StackPanel>
+            <views:PageNavigator DockPanel.Dock="Bottom"
+                                 DataContext="{Binding PageNavigator}" />
+            <DataGrid ItemsSource="{Binding Data}"
+                      SelectedItem="{Binding SelectedMaterial}"
+                      IsReadOnly="True"
+                      GridLinesVisibility="All">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="名称" Binding="{Binding Name}" />
+                    <DataGridTextColumn Header="品牌" Binding="{Binding Brand}" />
+                    <DataGridTextColumn Header="型号" Binding="{Binding Type}" />
+                    <DataGridTextColumn Header="规格" Binding="{Binding  Specifications}" />
+                    <DataGridTextColumn Header="技术参数" Binding="{Binding TechnicalData}" />
+                    <DataGridTextColumn Header="物料号" Binding="{Binding Code}" />
+                </DataGrid.Columns>
+                <DataGrid.RowDetailsTemplate>
+                    <DataTemplate x:DataType="{x:Type viewModels:MaterialViewModel}">
+                        <ItemsControl ItemsSource="{Binding Properties}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </DataTemplate>
+                </DataGrid.RowDetailsTemplate>
+            </DataGrid>
+        </DockPanel>
+    </DockPanel>
+</UserControl>

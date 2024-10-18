@@ -3,12 +3,14 @@ using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Threading.Tasks;
-using AE.PID.Interfaces;
-using AE.PID.Services;
 using AE.PID.Tools;
+using AE.PID.Visio.Core;
+using AE.PID.Visio.Core.Models;
+using AE.PID.Visio.Infrastructure.Services;
 using Microsoft.Office.Interop.Visio;
 using Newtonsoft.Json;
 using Splat;
+using IPartItem = AE.PID.Interfaces.IPartItem;
 
 namespace AE.PID.Models;
 
@@ -92,7 +94,7 @@ public abstract class PartItem : ElementBase, IPartItem
             Task.Run(async () =>
             {
                 var material = await Locator.Current.GetService<MaterialsService>()!.GetMaterialByCode(MaterialNo);
-                AppScheduler.VisioScheduler.Schedule(() => { Source.Data1 = JsonConvert.SerializeObject(material); });
+                ThisAddIn.Scheduler.Schedule(() => { Source.Data1 = JsonConvert.SerializeObject(material); });
             });
     }
 

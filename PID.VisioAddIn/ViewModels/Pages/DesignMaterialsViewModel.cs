@@ -4,10 +4,10 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using AE.PID.Dtos;
+using AE.PID.Core.DTOs;
 using AE.PID.EventArgs;
-using AE.PID.Models;
-using AE.PID.Services;
+using AE.PID.Visio.Core;
+using AE.PID.Visio.Core.Models;
 using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
@@ -15,17 +15,17 @@ using Splat;
 
 namespace AE.PID.ViewModels;
 
-public class DesignMaterialsViewModel(MaterialsService? service = null) : ViewModelBase
+public class DesignMaterialsViewModel(IMaterialService? service = null) : ViewModelBase
 {
-    private readonly MaterialsService _service = service ?? Locator.Current.GetService<MaterialsService>()!;
+    private readonly IMaterialService _service = service ?? Locator.Current.GetService<IMaterialService>()!;
 
     // Members that return a sequence should never return null
     private ReadOnlyObservableCollection<TreeNodeViewModel<MaterialCategoryDto>> _categories = new([]);
 
-    private ObservableAsPropertyHelper<string>? _categoryFilterSeed;
-
-    private ElementBase? _element;
+    private ObservableAsPropertyHelper<string> _categoryFilterSeed = ObservableAsPropertyHelper<string>.Default("");
     private ReadOnlyObservableCollection<DesignMaterial> _lastUsed = new([]);
+
+    private MaterialLocationViewModel? _materialLocation;
     private int _pageNumber = 1;
     private TreeNodeViewModel<MaterialCategoryDto>? _selectedCategory;
     private ReadOnlyObservableCollection<DesignMaterial> _validMaterials = new([]);
@@ -35,8 +35,10 @@ public class DesignMaterialsViewModel(MaterialsService? service = null) : ViewMo
 
     private void WriteMaterial(DesignMaterial material)
     {
-        if (_element is not PartItem partItem) return;
-        partItem.AssignMaterial(material);
+        if (_materialLocation is null) return;
+
+        // todo: call method to write code 
+        _materialLocation.Code = material.MaterialNo;
         _service.AddToLastUsed(material, CategoryPredicateSeed);
     }
 
@@ -48,7 +50,7 @@ public class DesignMaterialsViewModel(MaterialsService? service = null) : ViewMo
     {
         // when an item is selected, it should be added to the last used grid for future use
         Select = ReactiveCommand.CreateRunInBackground<DesignMaterial>(WriteMaterial,
-            backgroundScheduler: AppScheduler.VisioScheduler);
+            backgroundScheduler: ThisAddIn.Scheduler);
 
         // create a hack command so that other class could observe this action
         // this is used to trigger load more action of the lazy load data grid in view class
@@ -61,24 +63,16 @@ public class DesignMaterialsViewModel(MaterialsService? service = null) : ViewMo
     {
         // listen for element selected event in Export page, when the selected element changed, it is used as the seed for this page
         // todo: not invoke if select from page on the same element
-        MessageBus.Current.Listen<ElementSelectedEventArgs>()
+        MessageBus.Current.Listen<MaterialLocationSelectedEventArgs>()
             .DistinctUntilChanged()
-            .Select(x => x.ElementBase)
-            .Subscribe(x => Element = x)
+            .Select(x => x.MaterialLocation)
+            .Subscribe(x => MaterialLocation = x)
             .DisposeWith(d);
 
         // build up category predicate seed based on an element
-        this.WhenAnyValue(x => x.Element)
-            .Select(x =>
-            {
-                return x switch
-                {
-                    FunctionalGroup or EquipmentUnit => string.Empty,
-                    Equipment equipment => equipment.SubClassName,
-                    FunctionalElement functionalElement => functionalElement.Designation,
-                    _ => string.Empty
-                };
-            })
+        this.WhenAnyValue(x => x.MaterialLocation)
+            .WhereNotNull()
+            .Select(x => x.MaterialType)
             .ToProperty(this, x => x.CategoryPredicateSeed, out _categoryFilterSeed)
             .DisposeWith(d);
 
@@ -164,11 +158,6 @@ public class DesignMaterialsViewModel(MaterialsService? service = null) : ViewMo
             .DisposeWith(d);
     }
 
-    protected override void SetupDeactivate()
-    {
-        Element?.Dispose();
-    }
-
     private Func<string, Func<Node<MaterialCategoryDto, int>, bool>> BuildCategoryPredicate()
     {
         return name => string.IsNullOrEmpty(name)
@@ -219,10 +208,10 @@ public class DesignMaterialsViewModel(MaterialsService? service = null) : ViewMo
     ///     The name is the seed for this view model.
     ///     The name is mapped to a category and then all girds on populated by this category.
     /// </summary>
-    public ElementBase? Element
+    public MaterialLocationViewModel? MaterialLocation
     {
-        get => _element;
-        set => this.RaiseAndSetIfChanged(ref _element, value);
+        get => _materialLocation;
+        set => this.RaiseAndSetIfChanged(ref _materialLocation, value);
     }
 
     /// <summary>

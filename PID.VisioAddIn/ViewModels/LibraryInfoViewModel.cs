@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reactive.Disposables;
-using AE.PID.Models;
 using ReactiveUI;
 
 namespace AE.PID.ViewModels;
@@ -15,17 +14,6 @@ public class LibraryInfoViewModel : ReactiveObject, IDisposable
 
     public LibraryInfoViewModel()
     {
-    }
-
-    public LibraryInfoViewModel(ReactiveLibrary library)
-    {
-        Id = library.Id;
-        Name = library.Name;
-
-        library.WhenAnyValue(x => x.Version)
-            .BindTo(this, x => x.LocalVersion)
-            .DisposeWith(_cleanUp);
-
         this.WhenAnyValue(
                 x => x.LocalVersion,
                 x => x.RemoteVersion,
@@ -35,7 +23,7 @@ public class LibraryInfoViewModel : ReactiveObject, IDisposable
             .DisposeWith(_cleanUp);
     }
 
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     public string LocalVersion
     {
@@ -50,7 +38,7 @@ public class LibraryInfoViewModel : ReactiveObject, IDisposable
     }
 
     public bool NeedUpdate => _needUpdate.Value;
-    public int Id { get; private set; }
+    public int Id { get; set; }
 
     public void Dispose()
     {

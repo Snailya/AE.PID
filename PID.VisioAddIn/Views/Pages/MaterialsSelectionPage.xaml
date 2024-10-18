@@ -41,7 +41,7 @@
                         <HierarchicalDataTemplate DataType="{x:Type viewModels:TreeNodeViewModel`1}"
                                                   ItemsSource="{Binding Inferiors}">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding Source.Name}" />
+                                <TextBlock Text="{Binding Source.Element}" />
                             </StackPanel>
                         </HierarchicalDataTemplate>
                     </TreeView.ItemTemplate>

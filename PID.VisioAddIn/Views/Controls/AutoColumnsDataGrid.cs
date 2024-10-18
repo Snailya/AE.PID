@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using AE.PID.Attributes;
+using AE.PID.Visio.Core.Attributes;
 using DynamicData.Binding;
 
 namespace AE.PID.Views;

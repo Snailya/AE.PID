@@ -1,0 +1,151 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="using:AE.PID.Visio.UI.Avalonia.ViewModels"
+             xmlns:views="using:AE.PID.Visio.UI.Avalonia.Views"
+             xmlns:models="using:AE.PID.Visio.UI.Avalonia.Models"
+             xmlns:converters="clr-namespace:AE.PID.Visio.UI.Avalonia.Converters"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="AE.PID.Visio.UI.Avalonia.Views.MaterialsView"
+             x:DataType="viewModels:MaterialsViewModel">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <viewModels:MaterialsViewModel />
+    </Design.DataContext>
+
+    <UserControl.KeyBindings>
+        <KeyBinding Gesture="Ctrl+C" Command="{Binding CopyMaterial}" />
+    </UserControl.KeyBindings>
+
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top"
+                    Classes="actions" Margin="0 0 0 4"
+                    HorizontalAlignment="Right">
+            <SplitButton Content="导出"
+                         Command="{Binding Export}"
+                         CommandParameter="{x:Static models:OutputType.Page}">
+                <SplitButton.Flyout>
+                    <MenuFlyout Placement="Bottom">
+                        <MenuItem Header="导出到Excel"
+                                  Command="{Binding Export}"
+                                  CommandParameter="{x:Static models:OutputType.Excel}" />
+                    </MenuFlyout>
+                </SplitButton.Flyout>
+            </SplitButton>
+            <!-- <Button Content="同步" Command="{Binding Sync}" /> -->
+        </StackPanel>
+
+        <Grid>
+            <views:LoadingIndicator IsLoading="{Binding IsLoading}" />
+            <SplitView
+                Margin="0 4 0 0"
+                IsPaneOpen="{Binding IsMaterialVisible}"
+                DisplayMode="Overlay"
+                PanePlacement="Right">
+                <DataGrid SelectionMode="Extended" FrozenColumnCount="1"
+                          CanUserReorderColumns="True" CanUserResizeColumns="True" CanUserSortColumns="True"
+                          ItemsSource="{Binding Locations}"
+                          SelectedItem="{Binding SelectedLocation}">
+                    <DataGrid.KeyBindings>
+                        <KeyBinding Gesture="Ctrl+C" Command="{Binding CopyMaterial}"
+                                    CommandParameter="{Binding SelectedLocation}" />
+                        <KeyBinding Gesture="Ctrl+V" Command="{Binding PasteMaterial}"
+                                    CommandParameter="{Binding SelectedLocation}" />
+                    </DataGrid.KeyBindings>
+                    <DataGrid.Styles>
+                        <Style Selector="DataGridRow">
+                            <Setter Property="ContextMenu">
+                                <ContextMenu x:DataType="viewModels:MaterialLocationViewModel">
+                                    <!-- ReSharper disable once Xaml.PossibleNullReferenceException -->
+                                    <MenuItem Header="定位"
+                                              Command="{Binding $parent[DataGrid].((viewModels:MaterialsViewModel)DataContext).Locate}"
+                                              CommandParameter="{Binding }" />
+                                    <!-- ReSharper disable once Xaml.PossibleNullReferenceException -->
+                                    <MenuItem Header="复制"
+                                              Command="{Binding $parent[DataGrid].((viewModels:MaterialsViewModel)DataContext).CopyMaterial}"
+                                              CommandParameter="{Binding }" />
+
+                                    <!-- ReSharper disable once Xaml.PossibleNullReferenceException -->
+                                    <MenuItem
+                                        Header="{Binding $parent[DataGrid].((viewModels:MaterialsViewModel)DataContext).Clipboard, Converter={x:Static converters:SimpleConverters.FormatPasteCommandLabel}}"
+                                        Command="{Binding $parent[DataGrid].((viewModels:MaterialsViewModel)DataContext).PasteMaterial}"
+                                        CommandParameter="{Binding }" />
+                                </ContextMenu>
+                            </Setter>
+                        </Style>
+                    </DataGrid.Styles>
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn>
+                            <DataGridTemplateColumn.HeaderTemplate>
+                                <DataTemplate>
+                                    <!-- ReSharper disable once Xaml.PossibleNullReferenceException -->
+                                    <CheckBox
+                                        IsVisible="{Binding $parent[DataGrid].((viewModels:MaterialsViewModel)DataContext).SelectedLocations.Count, FallbackValue=False}"
+                                        IsChecked="{Binding $parent[DataGrid].((viewModels:MaterialsViewModel)DataContext).SelectedLocations.Count, FallbackValue=False}"
+                                        Command="{Binding $parent[DataGrid].((viewModels:MaterialsViewModel)DataContext).ClearSelection}"
+                                        HorizontalAlignment="Center" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.HeaderTemplate>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                              IsEnabled="{Binding IsEnabled}"
+                                              HorizontalAlignment="Center" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <!-- <DataGridTextColumn Header="序号" -->
+                        <!--                     Binding="{Binding $parent[DataGridRow], Converter={x:Static converters:SimpleConverters.IndexConverter}}" /> -->
+                        <DataGridTextColumn Header="工艺区域" Binding="{Binding ProcessArea}" />
+                        <DataGridTextColumn Header="功能单元" Binding="{Binding FunctionalGroup}" />
+                        <DataGridTextColumn Header="功能元件" Binding="{Binding FunctionalElement}" />
+                        <DataGridTextColumn Header="类型" Binding="{Binding MaterialType}" />
+                        <DataGridTextColumn Header="描述" IsReadOnly="False" Binding="{Binding Description}" />
+                        <DataGridTextColumn Header="备注" IsReadOnly="False" Binding="{Binding Remarks}" />
+                        <DataGridTextColumn Header="关键参数" Binding="{Binding KeyParameters}" />
+                        <DataGridTextColumn Header="数量" IsReadOnly="False" Binding="{Binding Quantity}" />
+                        <DataGridTemplateColumn Header="物料号">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <!-- ReSharper disable once Xaml.PossibleNullReferenceException -->
+                                    <Button Classes="link"
+                                            IsVisible="{Binding MaterialCode, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                            Command="{Binding $parent[DataGrid].((viewModels:MaterialsViewModel)DataContext).LoadMaterial}"
+                                            CommandParameter="{Binding}">
+                                        <TextBlock TextDecorations="Underline"
+                                                   Text="{Binding MaterialCode, UpdateSourceTrigger=LostFocus}" />
+                                    </Button>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="操作">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Classes="actions">
+                                        <!-- ReSharper disable once Xaml.PossibleNullReferenceException -->
+                                        <Button Content="选择"
+                                                IsEnabled="{Binding IsEnabled}"
+                                                Command="{Binding $parent[DataGrid].((viewModels:MaterialsViewModel)DataContext).SelectMaterial}"
+                                                CommandParameter="{Binding .}" />
+                                        <!-- ReSharper disable once Xaml.PossibleNullReferenceException -->
+                                        <Button Content="清除"
+                                                IsEnabled="{Binding MaterialCode, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                                Command="{Binding  $parent[DataGrid].((viewModels:MaterialsViewModel)DataContext).DeleteMaterial}"
+                                                CommandParameter="{Binding .}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <SplitView.Pane>
+                    <views:MaterialView DataContext="{Binding Material}" />
+                </SplitView.Pane>
+            </SplitView>
+        </Grid>
+    </DockPanel>
+
+</UserControl>

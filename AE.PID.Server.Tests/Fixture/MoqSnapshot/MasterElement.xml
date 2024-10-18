@@ -1,0 +1,108 @@
+﻿<Master ID="2" NameU="泵" IsCustomNameU="1" Name="泵" IsCustomName="1" Prompt="" IconSize="1" AlignName="2"
+        MatchByName="1" IconUpdate="1" UniqueID="{24526CCA-0002-0000-8E40-00608CF305B2}"
+        BaseID="{664C2F7C-9EA3-4342-935D-861C148E3D52}" PatternFlags="0" Hidden="0" MasterType="2"
+        xmlns="http://schemas.microsoft.com/office/visio/2012/main">
+    <PageSheet LineStyle="0" FillStyle="0" TextStyle="0">
+        <Cell N="PageWidth" V="0.5905512085293632"/>
+        <Cell N="PageHeight" V="0.5905511811023622"/>
+        <Cell N="ShdwOffsetX" V="0.1181102362204724"/>
+        <Cell N="ShdwOffsetY" V="-0.1181102362204724"/>
+        <Cell N="PageScale" V="0.03937007874015748" U="MM"/>
+        <Cell N="DrawingScale" V="0.03937007874015748" U="MM"/>
+        <Cell N="DrawingSizeType" V="3"/>
+        <Cell N="DrawingScaleType" V="0"/>
+        <Cell N="InhibitSnap" V="0"/>
+        <Cell N="PageLockReplace" V="0" U="BOOL"/>
+        <Cell N="PageLockDuplicate" V="0" U="BOOL"/>
+        <Cell N="UIVisibility" V="0"/>
+        <Cell N="ShdwType" V="0"/>
+        <Cell N="ShdwObliqueAngle" V="0"/>
+        <Cell N="ShdwScaleFactor" V="1"/>
+        <Cell N="DrawingResizeType" V="1"/>
+        <Cell N="XGridDensity" V="0"/>
+        <Cell N="YGridDensity" V="0"/>
+        <Cell N="XGridSpacing" V="0.09842519685039369"/>
+        <Cell N="YGridSpacing" V="0.09842519685039369"/>
+        <Cell N="LineToNodeX" V="0.09842519685039369" U="MM"/>
+        <Cell N="LineToNodeY" V="0.09842519685039369" U="MM"/>
+        <Cell N="BlockSizeX" V="0.1968503937007874" U="MM"/>
+        <Cell N="BlockSizeY" V="0.1968503937007874" U="MM"/>
+        <Cell N="AvenueSizeX" V="0.2952755905511811" U="MM"/>
+        <Cell N="AvenueSizeY" V="0.2952755905511811" U="MM"/>
+        <Cell N="LineToLineX" V="0.09842519685039369" U="MM"/>
+        <Cell N="LineToLineY" V="0.09842519685039369" U="MM"/>
+        <Cell N="ShapeKeywords">泵;齿轮泵;隔膜泵;离心泵;软管泵;螺旋转子泵;计量泵;通用泵;柱塞泵;液体射流泵
+        </Cell>
+        <Section N="Layer">
+            <Row IX="0">
+                <Cell N="Name" V="Equipments"/>
+                <Cell N="Color" V="255"/>
+                <Cell N="Status" V="0"/>
+                <Cell N="Visible" V="1"/>
+                <Cell N="Print" V="1"/>
+                <Cell N="Active" V="0"/>
+                <Cell N="Lock" V="0"/>
+                <Cell N="Snap" V="1"/>
+                <Cell N="Glue" V="1"/>
+                <Cell N="NameUniv" V="Equipment"/>
+                <Cell N="ColorTrans" V="0"/>
+            </Row>
+            <Row IX="1">
+                <Cell N="Name" V="Pumps"/>
+                <Cell N="Color" V="255"/>
+                <Cell N="Status" V="0"/>
+                <Cell N="Visible" V="1"/>
+                <Cell N="Print" V="1"/>
+                <Cell N="Active" V="0"/>
+                <Cell N="Lock" V="0"/>
+                <Cell N="Snap" V="1"/>
+                <Cell N="Glue" V="1"/>
+                <Cell N="NameUniv" V="Pumps"/>
+                <Cell N="ColorTrans" V="0"/>
+            </Row>
+            <Row IX="2">
+                <Cell N="Name" V="Tag"/>
+                <Cell N="Color" V="255"/>
+                <Cell N="Status" V="0"/>
+                <Cell N="Visible" V="1"/>
+                <Cell N="Print" V="1"/>
+                <Cell N="Active" V="0"/>
+                <Cell N="Lock" V="0"/>
+                <Cell N="Snap" V="1"/>
+                <Cell N="Glue" V="1"/>
+                <Cell N="NameUniv" V="Tag"/>
+                <Cell N="ColorTrans" V="0"/>
+            </Row>
+            <Row IX="3">
+                <Cell N="Name" V="KeyParameters"/>
+                <Cell N="Color" V="255"/>
+                <Cell N="Status" V="0"/>
+                <Cell N="Visible" V="1"/>
+                <Cell N="Print" V="1"/>
+                <Cell N="Active" V="0"/>
+                <Cell N="Lock" V="0"/>
+                <Cell N="Snap" V="1"/>
+                <Cell N="Glue" V="1"/>
+                <Cell N="NameUniv" V="KeyParameters"/>
+                <Cell N="ColorTrans" V="0"/>
+            </Row>
+        </Section>
+    </PageSheet>
+    <Icon>
+        AAABAAEAICAQAAAAAADoAgAAFgAAACgAAAAgAAAAQAAAAAEABAAAAAAAgAIAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAACAAACAAAAAgIAAgAAAAIAAgACAgAAAgICAAMDAwAAAAP8AAP8AAAD//wD/AAAA/w
+        D/AP//AAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAAAAAd/JwAAAAAAAAAAAAAAAAA
+        IAAjwAAAAAAAAAAAAAAAACD9o8AAAAAAAAAAAAAAAAAd/JwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAD/////////////////////////////////////////////////////////////////////////
+        ///8P///+B////AP///wD///8A////AP///4P////T///////////////////////////////////
+        ////////////////////w==
+    </Icon>
+    <Rel xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="rId1"/>
+</Master>

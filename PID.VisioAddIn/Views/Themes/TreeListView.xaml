@@ -77,6 +77,7 @@
     </Style>
 
     <Style TargetType="{x:Type views:TreeListViewItem}">
+        <Setter Property="IsExpanded" Value="{Binding IsExpanded,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Template">
             <Setter.Value>
@@ -98,6 +99,9 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsExpanded" Value="false">
                             <Setter TargetName="ItemsHost" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="IsExpanded" Value="True">
+                            <Setter TargetName="ItemsHost" Property="Visibility" Value="Visible" />
                         </Trigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
@@ -180,6 +184,25 @@
         </Setter>
     </Style>
 
+    <DataTemplate x:Key="ExpandCellTemplate2" DataType="{x:Type viewModels:MaterialTreeViewModel}">
+        <DockPanel>
+            <ToggleButton
+                x:Name="Expander"
+                Style="{StaticResource ExpandCollapseToggleStyle}"
+                Margin="{Binding Path=Level, Converter={StaticResource LevelToIndentConverter}, RelativeSource={RelativeSource AncestorType={x:Type views:TreeListViewItem}}}"
+                ClickMode="Press"
+                IsChecked="{Binding Path=IsExpanded, Mode=TwoWay}" />
+            <TextBlock Text="{Binding Name}" />
+            <TextBlock Text="{Binding InferiorsCount}" />
+        </DockPanel>
+        <DataTemplate.Triggers>
+            <DataTrigger
+                Binding="{Binding Path=InferiorsCount}" Value="0">
+                <Setter TargetName="Expander" Property="Visibility" Value="Hidden" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
     <DataTemplate x:Key="ExpandCellTemplate" DataType="{x:Type viewModels:TreeNodeViewModel`1}">
         <DockPanel>
             <ToggleButton
@@ -188,7 +211,7 @@
                 Margin="{Binding Path=Level, Converter={StaticResource LevelToIndentConverter}, RelativeSource={RelativeSource AncestorType={x:Type views:TreeListViewItem}}}"
                 ClickMode="Press"
                 IsChecked="{Binding Path=IsExpanded, RelativeSource={RelativeSource AncestorType={x:Type views:TreeListViewItem}}}" />
-            <TextBlock Text="{Binding Source.Label}" />
+            <TextBlock Text="{Binding Name}" />
         </DockPanel>
         <DataTemplate.Triggers>
             <DataTrigger

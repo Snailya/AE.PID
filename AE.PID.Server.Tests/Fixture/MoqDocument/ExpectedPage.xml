@@ -1,0 +1,77 @@
+﻿<?xml version='1.0' encoding='utf-8' ?>
+<PageContents xmlns='http://schemas.microsoft.com/office/visio/2012/main' xml:space='preserve'>
+	<Shapes>
+		<Shape ID='1' NameU='泵.1129' Name='泵.1129' Type='Group' Master='2'>
+			<Cell N='PinX' V='8'/>
+            <Cell N='PinY' V='10.5'/>
+            <Cell N='Angle' V='-1.5707963267949'/>
+            <Cell N='LayerMember' V='0;1'/>
+            <Cell N='Relationships' V='0' F='SUM(DEPENDSON(4))'/>
+            <Section N='User'>
+				<Row N='ShapeID'>
+					<Cell N='Value' V='1' F='Inh'/>
+				</Row>
+			</Section>
+            <Section N='Property'>
+				<Row N='SubClass'>
+					<Cell N='Value' V='离心泵' U='STR'/>
+				</Row>
+			</Section>
+            <Section N='Actions'>
+				<Row N='SubClassOption0'>
+					<Cell N='Checked' V='0' F='Inh'/>
+				</Row>
+                <Row N='SubClassOption2'>
+					<Cell N='Checked' V='1' F='Inh'/>
+				</Row>
+			</Section>
+            <Shapes>
+				<Shape ID='2' NameU='Pump body 3' IsCustomNameU='1' Name='Pump body 3' IsCustomName='1' Type='Shape'
+                       MasterShape='506'>
+					<Cell N='LayerMember' V=''/>
+				</Shape>
+                <Shape ID='3' NameU='Tag' IsCustomNameU='1' Name='Tag' IsCustomName='1' Type='Shape' MasterShape='201'>
+					<Cell N='Angle' V='1.5707963267949' F='Inh'/>
+                    <Cell N='LayerMember' V=''/>
+				</Shape>
+                <Shape ID='4' NameU='Quantity' IsCustomNameU='1' Name='Quantity' IsCustomName='1' Type='Shape'
+                       MasterShape='202'>
+					<Cell N='Angle' V='1.5707963267949' F='Inh'/>
+                    <Cell N='LayerMember' V=''/>
+				</Shape>
+                <Shape ID='5' NameU='Pump body' IsCustomNameU='1' Name='Pump body' IsCustomName='1' Type='Shape'
+                       MasterShape='511'>
+					<Cell N='LayerMember' V=''/>
+                    <Section N='User'>
+						<Row N='IsGearType'>
+							<Cell N='Value' V='0' U='BOOL' F='Inh'/>
+						</Row>
+                        <Row N='IsCentrifugalType'>
+							<Cell N='Value' V='1' U='BOOL' F='Inh'/>
+						</Row>
+					</Section>
+                    <Section N='Geometry' IX='2'>
+						<Cell N='NoShow' V='1' F='Inh'/>
+					</Section>
+                    <Section N='Geometry' IX='4'>
+						<Cell N='NoShow' V='0' F='Inh'/>
+					</Section>
+                    <Section N='Geometry' IX='9'>
+						<Cell N='NoShow' V='1' F='Inh'/>
+					</Section>
+				</Shape>
+                <Shape ID='6' NameU='Sealing' IsCustomNameU='1' Name='Sealing' IsCustomName='1' Type='Shape'
+                       MasterShape='512'>
+					<Cell N='LayerMember' V=''/>
+				</Shape>
+                <Shape ID='7' NameU='VSD' IsCustomNameU='1' Name='VSD' IsCustomName='1' Type='Shape' MasterShape='514'>
+					<Cell N='Angle' V='1.5707963267949' F='Inh'/>
+                    <Cell N='LayerMember' V=''/>
+				</Shape>
+                <Shape ID='8' NameU='KeyParameters' IsCustomNameU='1' Name='KeyParameters' IsCustomName='1' Type='Shape'
+                       MasterShape='203'>
+				</Shape>
+			</Shapes>
+		</Shape>
+	</Shapes>
+</PageContents>

@@ -1,8 +1,8 @@
-﻿using AE.PID.Models;
+﻿using AE.PID.ViewModels;
 
 namespace AE.PID.EventArgs;
 
-public class ElementSelectedEventArgs(ElementBase elementBase)
+public class MaterialLocationSelectedEventArgs(MaterialLocationViewModel materialLocation)
 {
-    public ElementBase ElementBase { get; } = elementBase;
+    public MaterialLocationViewModel MaterialLocation { get; } = materialLocation;
 }

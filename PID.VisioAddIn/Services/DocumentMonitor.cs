@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using AE.PID.Properties;
 using AE.PID.Tools;
+using AE.PID.Visio.Core;
+using AE.PID.Visio.Infrastructure.Services;
 using Microsoft.Office.Interop.Visio;
 using ReactiveUI;
 using Splat;
@@ -24,13 +26,14 @@ public class DocumentMonitor : IEnableLogger
 {
     private readonly List<Document> _checked = [];
     private readonly CompositeDisposable _cleanUp = new();
-    private readonly ApiClient _client;
-    private readonly ConfigurationService _configuration;
+    private readonly IConfigurationService _configuration;
+    private readonly ApiFactory _factory;
 
-    public DocumentMonitor(ApiClient? client = null, ConfigurationService? configuration = null)
+    public DocumentMonitor(ApiFactory? factory = null, IConfigurationService? configuration = null)
     {
-        _client = client ?? Locator.Current.GetService<ApiClient>()!;
-        _configuration = configuration ?? Locator.Current.GetService<ConfigurationService>()!;
+        _factory = factory ?? Locator.Current.GetService<ApiFactory>()!;
+
+        _configuration = configuration ?? Locator.Current.GetService<IConfigurationService>()!;
 
         // check update when visio is idle, however, if the document has been checked, skip it
         Observable.FromEvent<EApplication_VisioIsIdleEventHandler, Application>(
@@ -46,7 +49,7 @@ public class DocumentMonitor : IEnableLogger
             .Where(IsMasterOutOfDate)
             .Do(document => this.Log().Info($"Masters in {document.Name} are out of date."))
             // switch back to the main thread to prompt user
-            .ObserveOn(AppScheduler.UIScheduler)
+            .ObserveOn(App.UIScheduler)
             .Subscribe(document =>
                 {
                     // ask for update
@@ -79,13 +82,6 @@ public class DocumentMonitor : IEnableLogger
             .DisposeWith(_cleanUp);
     }
 
-    #region Api
-
-    private static string UpdateDocumentApi =>
-        "api/v1/job/update-masters";
-
-    #endregion
-
     /// <summary>
     ///     Compare the document stencil with library stuffs.
     /// </summary>
@@ -94,7 +90,7 @@ public class DocumentMonitor : IEnableLogger
     public bool IsMasterOutOfDate(IVDocument document)
     {
         return document.Masters != null && document.Masters.OfType<IVMaster>().ToList().Any(source =>
-            _configuration.LibraryItems.Items.Any(x => x.BaseId == source.BaseID && x.UniqueId != source.UniqueID));
+            _configuration.Masters.Items.Any(x => x.BaseId == source.BaseID && x.UniqueId != source.UniqueID));
     }
 
     public async Task Update(Document document)
@@ -102,12 +98,10 @@ public class DocumentMonitor : IEnableLogger
         if (_configuration.UseServerSideUpdate)
             await UseServerSideUpdate(document);
         else
-        {
             VisioHelper.UseLocalUpdate(document);
-        }
     }
-    
-    
+
+
     /// <summary>
     ///     Update the document by transfer the file to server.
     /// </summary>
@@ -119,7 +113,7 @@ public class DocumentMonitor : IEnableLogger
 
         var filePath = string.Empty;
         // store the file path otherwise it will lose after the document close
-        (document as Document)!.BeforeDocumentClose += v => { filePath = document.FullName; };
+        document!.BeforeDocumentClose += v => { filePath = document.FullName; };
         document.Close();
 
         if (string.IsNullOrEmpty(filePath)) return;
@@ -128,9 +122,7 @@ public class DocumentMonitor : IEnableLogger
         // because there is an encrypted system on end user, so directly transfer the file to server will not be able to read in the server side
         var packageBytes = File.ReadAllBytes(filePath);
         var content = new ByteArrayContent(packageBytes);
-        var response = await _client.PostAsync(UpdateDocumentApi, content);
-
-        response.EnsureSuccessStatusCode();
+        var result = await _factory.GetClient().UpdateDocumentMasters(content);
 
         // create a copy of the source file
         var backup = Path.ChangeExtension(filePath, ".bak");
@@ -140,10 +132,9 @@ public class DocumentMonitor : IEnableLogger
         File.Copy(filePath, backup);
 
         // overwrite the origin file after a successful update
-        using var contentStream = await response.Content.ReadAsStreamAsync();
         using var fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write);
         {
-            await contentStream.CopyToAsync(fileStream);
+            await result.CopyToAsync(fileStream);
         }
 
         // reopen the file

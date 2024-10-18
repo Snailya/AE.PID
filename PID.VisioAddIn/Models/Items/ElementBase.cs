@@ -2,11 +2,10 @@
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using AE.PID.Interfaces;
+using AE.PID.Core.Interfaces;
 using AE.PID.Tools;
 using DynamicData.Binding;
 using Microsoft.Office.Interop.Visio;
-using ReactiveUI;
 
 namespace AE.PID.Models;
 
@@ -109,8 +108,10 @@ public abstract class ElementBase : AbstractNotifyPropertyChanged, IDisposable, 
     public int ParentId
     {
         get => _parentId;
-        protected set => this.SetAndRaise(ref _parentId, value);
+        set => SetAndRaise(ref _parentId, value);
     }
+
+    public string Name { get; set; }
 
     /// <summary>
     ///     The shape id of the source shape.
@@ -125,7 +126,7 @@ public abstract class ElementBase : AbstractNotifyPropertyChanged, IDisposable, 
     public string Designation
     {
         get => _designation;
-        set => this.SetAndRaise(ref _designation, value);
+        set => SetAndRaise(ref _designation, value);
     }
 
     /// <summary>

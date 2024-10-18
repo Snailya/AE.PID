@@ -7,10 +7,11 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using AE.PID.Dtos;
+using AE.PID.Core.DTOs;
 using AE.PID.Properties;
 using AE.PID.Services;
-using AE.PID.Tools;
+using AE.PID.Visio.Core;
+using AE.PID.Visio.Infrastructure.Services;
 using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
@@ -19,15 +20,15 @@ using Splat;
 namespace AE.PID.ViewModels;
 
 public class SettingsPageViewModel(
-    ConfigurationService? configuration = null,
+    IConfigurationService? configuration = null,
     AppUpdater? appUpdater = null,
     LibraryUpdater? libraryUpdater = null)
     : ViewModelBase
 {
     private readonly AppUpdater _appUpdater = appUpdater ?? Locator.Current.GetService<AppUpdater>()!;
 
-    private readonly ConfigurationService _configuration =
-        configuration ?? Locator.Current.GetService<ConfigurationService>()!;
+    private readonly IConfigurationService _configuration =
+        configuration ?? Locator.Current.GetService<IConfigurationService>()!;
 
     private readonly LibraryUpdater _libraryUpdater = libraryUpdater ?? Locator.Current.GetService<LibraryUpdater>()!;
     private readonly SourceCache<LibraryDto, int> _serverLibraries = new(t => t.Id);
@@ -50,14 +51,14 @@ public class SettingsPageViewModel(
 
     private static void OpenTmlFolder()
     {
-        Process.Start("explorer.exe", $"\"{Constants.TmpFolder}\"");
+        Process.Start("explorer.exe", $"\"{App.TmpFolder}\"");
     }
 
     private static void DeleteFilesInTmpFolder()
     {
-        if (!Directory.Exists(Constants.TmpFolder)) return;
+        if (!Directory.Exists(App.TmpFolder)) return;
 
-        var files = Directory.GetFiles(Constants.TmpFolder);
+        var files = Directory.GetFiles(App.TmpFolder);
         foreach (var file in files)
             File.Delete(file);
 
@@ -109,16 +110,26 @@ public class SettingsPageViewModel(
                 a => a.Id,
                 (serverKey, local, server) =>
                 {
-                    var library = local.HasValue ? new LibraryInfoViewModel(local.Value) : new LibraryInfoViewModel();
+                    var libraryInfo = new LibraryInfoViewModel();
+
+                    if (local.HasValue)
+                    {
+                        libraryInfo.Id = local.Value.Id;
+                        libraryInfo.Name = local.Value.Name;
+                        libraryInfo.LocalVersion = local.Value.Version;
+                    }
 
                     if (server.HasValue)
-                        library.RemoteVersion = server.Value.Version;
+                    {
+                        libraryInfo.Name = server.Value.Name;
+                        libraryInfo.LocalVersion = server.Value.Version;
+                    }
 
-                    return library;
+                    return libraryInfo;
                 })
             .RemoveKey()
             .Sort(SortExpressionComparer<LibraryInfoViewModel>.Ascending(t => t.Id))
-            .ObserveOn(AppScheduler.UIScheduler)
+            .ObserveOn(App.UIScheduler)
             .Bind(out _libraries)
             .Subscribe()
             .DisposeWith(d);

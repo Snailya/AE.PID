@@ -4,7 +4,6 @@ using System.Reactive.Disposables;
 using AE.PID.Tools;
 using DynamicData.Binding;
 using Microsoft.Office.Interop.Visio;
-using ReactiveUI;
 
 namespace AE.PID.Models;
 
@@ -28,7 +27,7 @@ public abstract class FunctionalGroupBase : ElementBase
 
         Type = ElementType.FunctionalGroup;
         ParentId = 0;
-        
+
         Source.Bind(this, x => x.Designation, "Prop.FunctionalGroup")
             .DisposeWith(CleanUp);
         Source.Bind(this, x => x.Description, "Prop.FunctionalGroupName")

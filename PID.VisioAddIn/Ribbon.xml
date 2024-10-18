@@ -71,6 +71,11 @@
                     />
                 </group>
                 <group id="grpProject" label="项目">
+                    <button id="open_project"
+                            label="项目"
+                            onAction="OpenProject"
+                            size="large"
+                    />
                     <button id="open_export_tool"
                             label="BOM"
                             onAction="OpenExportTool"
@@ -103,7 +108,8 @@
                 </group>
             </tab>
         </tabs>
-    </ribbon>
+
+		
 
     <!--This section defines custom context menu controls.-->
     <contextMenus>

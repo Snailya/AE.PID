@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using AE.PID.Interfaces;
 using AE.PID.Services;
+using AE.PID.Visio.Core;
 using DynamicData;
 using DynamicData.Aggregation;
 using DynamicData.Binding;
@@ -19,17 +18,17 @@ namespace AE.PID.ViewModels;
 
 public class SelectToolPageViewModel(IVisioService? visio = null) : ViewModelBase
 {
+    private readonly ObservableAsPropertyHelper<bool> _isLoading = ObservableAsPropertyHelper<bool>.Default();
     private readonly IVisioService _visio = visio ?? Locator.Current.GetService<IVisioService>()!;
     private bool _hasSelection;
-    private ObservableAsPropertyHelper<bool> _isMastersLoading = ObservableAsPropertyHelper<bool>.Default();
-    private ReadOnlyObservableCollection<MasterOptionViewModel> _masters = new([]);
     private SelectionMode _mode = SelectionMode.ById;
     private int _shapeId;
 
     #region Output Properties
 
-    public ReadOnlyObservableCollection<MasterOptionViewModel> Masters => _masters;
-    public bool IsMastersLoading => _isMastersLoading.Value;
+    public ObservableCollection<MasterOptionViewModel> Masters { get; } = [];
+
+    public bool IsLoading => _isLoading.Value;
 
     #endregion
 
@@ -54,8 +53,8 @@ public class SelectToolPageViewModel(IVisioService? visio = null) : ViewModelBas
                             ? _visio.SelectShapeById(_shapeId)
                             : _visio.SelectShapesByMasters(
                                 Masters.Where(x => x.IsChecked).Select(x => x.BaseId).ToArray()));
-                    }, AppScheduler.VisioScheduler)
-                    .ObserveOn(AppScheduler.VisioScheduler)
+                    }, ThisAddIn.Scheduler)
+                    .ObserveOn(ThisAddIn.Scheduler)
                     .SelectMany(x => x)
                     .Do(x =>
                     {
@@ -98,16 +97,10 @@ public class SelectToolPageViewModel(IVisioService? visio = null) : ViewModelBas
             .Connect()
             .Transform(x =>
                 new MasterOptionViewModel(x))
-            .Sort(SortExpressionComparer<MasterOptionViewModel>.Ascending(t => t.Name))
-            .ObserveOn(AppScheduler.UIScheduler)
-            .Bind(out _masters)
+            .ObserveOn(App.UIScheduler)
+            .SortAndBind(Masters, SortExpressionComparer<MasterOptionViewModel>.Ascending(t => t.Name))
             .DisposeMany()
-            .Subscribe(_ => Debug.WriteLine("Binded"))
-            .DisposeWith(d);
-
-        _visio.IsLoading
-            .ObserveOn(AppScheduler.UIScheduler)
-            .ToProperty(this, x => x.IsMastersLoading, out _isMastersLoading)
+            .Subscribe()
             .DisposeWith(d);
 
         Masters.ToObservableChangeSet()

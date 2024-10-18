@@ -5,15 +5,15 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Windows;
-using AE.PID.Core.Models;
 using AE.PID.Properties;
 using AE.PID.Services;
+using AE.PID.Visio.Core;
+using AE.PID.Visio.Core.Dtos;
 using Microsoft.Office.Interop.Visio;
 using Microsoft.Win32;
 using Splat;
 using Font = Microsoft.Office.Interop.Visio.Font;
 using Path = System.IO.Path;
-using TaskStatus = AE.PID.Core.Models.TaskStatus;
 
 namespace AE.PID.Tools;
 
@@ -219,7 +219,7 @@ internal static class VisioHelper
             return master;
 
         // then get the document name from configuration
-        var configuration = Locator.Current.GetService<ConfigurationService>()!;
+        var configuration = Locator.Current.GetService<IConfigurationService>()!;
         if (configuration.Libraries.Items.FirstOrDefault(x => x.Items.Any(i => i.BaseId == baseId)) is not { } library)
             throw new InvalidOperationException("Item not exist in either document stencils or libraries.");
         {
@@ -294,7 +294,7 @@ internal static class VisioHelper
     /// <param name="document"></param>
     public static void UseLocalUpdate(Document document)
     {
-        var progress = new Progress<ProgressValue>();
+        var progress = new Progress<ProgressValueDto>();
         Contract.Assert(document.Type == VisDocumentTypes.visTypeDrawing);
 
         // close document before update
@@ -314,7 +314,7 @@ internal static class VisioHelper
                 catch (Exception ex)
                 {
                     LogHost.Default.Error(ex, "Failed to update document stencil.");
-                    ((IProgress<ProgressValue>)progress).Report(new ProgressValue
+                    ((IProgress<ProgressValueDto>)progress).Report(new ProgressValueDto
                         { Message = ex.Message, Status = TaskStatus.OnError });
                 }
                 finally
@@ -326,14 +326,14 @@ internal static class VisioHelper
     }
 
 
-    private static void UpdateDocumentStencil(string file, IProgress<ProgressValue> progress)
+    private static void UpdateDocumentStencil(string file, IProgress<ProgressValueDto> progress)
     {
         LogHost.Default.Info("Try updating the documents.");
 
         // find out the update tool
         var toolPath = ResolveUpdateToolPathFromRegistryKey();
         progress.Report(
-            new ProgressValue
+            new ProgressValueDto
             {
                 Message = string.Format(Resources.MSG_update_tool_found_at, toolPath),
                 Status = TaskStatus.Running
@@ -344,7 +344,7 @@ internal static class VisioHelper
         {
             Verb = null,
             Arguments =
-                $"--file \"{file}\" --reference \"{Path.Combine(Constants.LibraryFolder, ".cheatsheet")}\"",
+                $"--file \"{file}\" --reference \"{Path.Combine(App.LibraryFolder, ".cheatsheet")}\"",
             CreateNoWindow = true,
             RedirectStandardInput = false,
             RedirectStandardOutput = true,
@@ -373,7 +373,7 @@ internal static class VisioHelper
                 LogHost.Default.Info(e.Data);
 
                 progress.Report(
-                    new ProgressValue
+                    new ProgressValueDto
                         { Message = e.Data, Status = TaskStatus.Running });
             }
         };
@@ -392,7 +392,7 @@ internal static class VisioHelper
         {
             LogHost.Default.Info("Document update completed.");
 
-            progress.Report(new ProgressValue
+            progress.Report(new ProgressValueDto
                 { Message = Resources.MSG_update_completed, Status = TaskStatus.RanToCompletion });
         }
     }
@@ -440,24 +440,13 @@ internal static class VisioHelper
         }
     }
 
-    private class RegistryKeyValueNotFoundException(string registryKeyPath, string valueName)
-        : Exception($"{valueName} not exist in {registryKeyPath}.");
-
-    private class UpdateToolNotExistException(string toolPath)
-        : Exception($"Unable to find the {toolPath}.");
-
-    private class ProcessErrorException(string data)
-        : Exception(data);
-
-    private class DocumentNotSavedException : Exception;
-
     public static void ScanMaster(Page page)
     {
         var noMasters = page.Shapes.OfType<Shape>()
             .Where(x => x.CellExistsN("User.msvShapeCategories", VisExistsFlags.visExistsAnywhere))
             .Where(x => x.Master == null)
             .ToList();
-        
+
         // create validation layer if not exist
         var validationLayer =
             page.Layers.OfType<Layer>().SingleOrDefault(x => x.Name == Constants.ValidationLayerName) ??
@@ -480,4 +469,15 @@ internal static class VisioHelper
                     VisCellIndices.visLayerMember).FormulaU = $"\"{validationLayer.Index - 1}\"";
         }
     }
+
+    private class RegistryKeyValueNotFoundException(string registryKeyPath, string valueName)
+        : Exception($"{valueName} not exist in {registryKeyPath}.");
+
+    private class UpdateToolNotExistException(string toolPath)
+        : Exception($"Unable to find the {toolPath}.");
+
+    private class ProcessErrorException(string data)
+        : Exception(data);
+
+    private class DocumentNotSavedException : Exception;
 }

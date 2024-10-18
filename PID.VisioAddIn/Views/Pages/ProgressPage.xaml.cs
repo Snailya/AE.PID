@@ -6,8 +6,8 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
-using AE.PID.Core.Models;
 using AE.PID.ViewModels;
+using AE.PID.Visio.Core.Dtos;
 using ReactiveUI;
 
 namespace AE.PID.Views;
@@ -30,8 +30,8 @@ public partial class ProgressPage
                 .DisposeWith(d);
             this.OneWayBind(ViewModel, vm => vm.IsExpanded, v => v.Log.Visibility,
                 b => b ? Visibility.Visible : Visibility.Collapsed).DisposeWith(d);
-            this.OneWayBind(ViewModel, vm => vm.ProgressValue.Message, v => v.Message.Text).DisposeWith(d);
-            this.OneWayBind(ViewModel, vm => vm.ProgressValue.Value, v => v.ProgressBar.Value).DisposeWith(d);
+            this.OneWayBind(ViewModel, vm => vm.ProgressValueDto.Message, v => v.Message.Text).DisposeWith(d);
+            this.OneWayBind(ViewModel, vm => vm.ProgressValueDto.Value, v => v.ProgressBar.Value).DisposeWith(d);
 
             this.WhenAnyValue(x => x.Log.Visibility)
                 .Subscribe(_ =>
@@ -45,7 +45,7 @@ public partial class ProgressPage
                 })
                 .DisposeWith(d);
 
-            this.WhenAnyValue(x => x.ViewModel!.ProgressValue.Message)
+            this.WhenAnyValue(x => x.ViewModel!.ProgressValueDto.Message)
                 .Where(x => !string.IsNullOrEmpty(x))
                 .Subscribe(message =>
                 {
@@ -54,7 +54,7 @@ public partial class ProgressPage
                 })
                 .DisposeWith(d);
 
-            this.WhenAnyValue(x => x.ViewModel!.ProgressValue.Status)
+            this.WhenAnyValue(x => x.ViewModel!.ProgressValueDto.Status)
                 .DistinctUntilChanged()
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Do(x => Debug.WriteLine($"Observe status on {Thread.CurrentThread.Name}"))

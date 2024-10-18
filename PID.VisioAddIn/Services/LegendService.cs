@@ -61,9 +61,9 @@ public abstract class LegendService : IEnableLogger
                 var xPos = colIndex * ColSpacing + basePosition.X + 5;
                 var yPos = rowIndex * RowSpacing + basePosition.Y + 5;
 
-                var shape = page.DropMetric(item.Master, basePosition.X, basePosition.Y);
+                var shape = page.DropMetric(item.VisMaster, basePosition.X, basePosition.Y);
 
-                // correct the properties, legend item should has count 0
+                // correct the properties, legend item should have count 0
                 shape.CellsU["Prop.SubClass"].FormulaForce = $"\"{item.SubclassName}\"";
                 shape.CellsU["Prop.Quantity"].FormulaForce = "0";
 
@@ -203,10 +203,10 @@ public abstract class LegendService : IEnableLogger
         return callout;
     }
 
-    private class LegendItem(string category, string subclassName, Master master)
+    private class LegendItem(string category, string subclassName, IVMaster visMaster)
     {
         public string Category { get; } = category;
         public string SubclassName { get; } = subclassName;
-        public IVMaster Master { get; } = master;
+        public IVMaster VisMaster { get; } = visMaster;
     }
 }
