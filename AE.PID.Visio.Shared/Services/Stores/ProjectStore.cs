@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -15,16 +13,19 @@ namespace AE.PID.Visio.Shared.Services;
 public class ProjectStore : DisposableBase, IProjectStore
 {
     private const string SolutionXmlKey = "projects";
+    private readonly ILocalCacheService _localCacheService;
 
     private readonly IProjectService _projectService;
 
     private readonly BehaviorSubject<Result<Project?>> _projectSubject = new(Result<Project?>.Success(null));
     private readonly IVisioService _visioService;
 
-    public ProjectStore(IProjectService projectService, IVisioService visioService)
+    public ProjectStore(IProjectService projectService, IVisioService visioService,
+        ILocalCacheService localCacheService)
     {
         _projectService = projectService;
         _visioService = visioService;
+        _localCacheService = localCacheService;
 
         // initialize the data
         _ = LoadInitialData();
@@ -51,7 +52,7 @@ public class ProjectStore : DisposableBase, IProjectStore
         if (current == null) return;
 
         // save the data to solution xml before dispose
-        _visioService.PersistAsSolutionXml<Project, int>(SolutionXmlKey, [current], x => x.Id, true);
+        _localCacheService.PersistAsSolutionXml<Project, int>(SolutionXmlKey, [current], x => x.Id, true);
     }
 
     #endregion
@@ -107,8 +108,7 @@ public class ProjectStore : DisposableBase, IProjectStore
 
         Project? ResolveProjectFromSolutionXml(int x)
         {
-            var projects = _visioService.ReadFromSolutionXml<List<Project>>(SolutionXmlKey);
-            return projects.SingleOrDefault(i => i.Id == x);
+            return _localCacheService.GetProjectById(id);
         }
     }
 }

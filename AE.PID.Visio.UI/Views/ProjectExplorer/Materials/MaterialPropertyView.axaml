@@ -3,7 +3,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewModels="using:AE.PID.Visio.UI.Avalonia.ViewModels"
-             xmlns:views="using:AE.PID.Visio.UI.Avalonia.Views"
              xmlns:attachedProperties="clr-namespace:AE.PID.Visio.UI.Avalonia.AttachedProperties"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="AE.PID.Visio.UI.Avalonia.Views.MaterialPropertyView"
@@ -14,5 +13,5 @@
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <viewModels:MaterialPropertyViewModel />
     </Design.DataContext>
-    <TextBlock attachedProperties:LabelBehav.Value="{Binding Name}" Text="{Binding Value}" />
+    <TextBlock attachedProperties:LabelBehav.Value="{Binding Name, StringFormat='\{0\}：'}" Text="{Binding Value}" />
 </UserControl>

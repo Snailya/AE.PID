@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Reactive.Concurrency;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using AE.PID.Core.DTOs;
 using AE.PID.Core.Models;
@@ -15,10 +15,8 @@ using AE.PID.Visio.UI.Avalonia.ViewModels;
 using AE.PID.Visio.UI.Avalonia.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Office.Interop.Visio;
-using ReactiveUI;
 using Splat;
 using Office = Microsoft.Office.Core;
-using Window = Avalonia.Controls.Window;
 
 // TODO:  Follow these steps to enable the Ribbon (XML) item:
 
@@ -44,7 +42,6 @@ namespace AE.PID.Visio;
 [ComVisible(true)]
 public class Ribbon : Office.IRibbonExtensibility
 {
-    private const int GWL_HWNDPARENT = -8;
     private Office.IRibbonUI _ribbon;
 
     #region IRibbonExtensibility Members
@@ -55,16 +52,6 @@ public class Ribbon : Office.IRibbonExtensibility
     }
 
     #endregion
-
-    [DllImport("user32.dll")]
-    private static extern bool SetWindowLong(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetWindowLong(IntPtr hWnd, int nIndex);
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
-
 
     #region Helpers
 
@@ -99,7 +86,7 @@ public class Ribbon : Office.IRibbonExtensibility
 
     public void OpenSettings(Office.IRibbonControl control)
     {
-        Show<SettingsWindow, SettingsWindowViewModel>();
+        WindowHelper.Show<SettingsWindow, SettingsWindowViewModel>();
     }
 
     #endregion
@@ -108,35 +95,16 @@ public class Ribbon : Office.IRibbonExtensibility
 
     public void OpenProjectExplorer(Office.IRibbonControl control)
     {
-        Show<ProjectExplorerWindow, ProjectExplorerWindowViewModel>();
+        WindowHelper.Show<ProjectExplorerWindow, ProjectExplorerWindowViewModel>();
     }
 
     #endregion
 
-    private static void Show<TWindow, TViewModel>() where TWindow : Window where TViewModel : ViewModelBase
+    public void Debug(Office.IRibbonControl control)
     {
-        RxApp.MainThreadScheduler.Schedule(() =>
-        {
-            var scope = ThisAddIn.Services!.CreateScope();
 
-            var mainWindow = Activator.CreateInstance<TWindow>();
-            mainWindow.DataContext = scope.ServiceProvider.GetRequiredService<TViewModel>();
-
-            mainWindow.Closed += (_, _) =>
-            {
-                // Dispose the scope and any services tied to it when the window closes
-                scope.Dispose();
-            };
-
-            var mainWindowHandle = mainWindow.TryGetPlatformHandle()?.Handle;
-            if (mainWindowHandle.HasValue)
-                SetWindowLong(mainWindowHandle.Value, GWL_HWNDPARENT,
-                    new IntPtr(Globals.ThisAddIn.Application
-                        .WindowHandle32)); // 注意设置的是Parent，而不是Owner。如果设置成Owner，会将mainwindow变成子窗口，子窗口的尺寸是无法超过Owner的窗口尺寸的。
-
-            mainWindow.Show();
-        });
     }
+
 
     #region -- Ribbon Callbacks --
 
@@ -250,7 +218,7 @@ public class Ribbon : Office.IRibbonExtensibility
 
     public void OpenTools(Office.IRibbonControl control)
     {
-        Show<ToolsWindow, ToolsWindowViewModel>();
+        WindowHelper.Show<ToolsWindow, ToolsWindowViewModel>();
     }
 
     #endregion
@@ -297,6 +265,16 @@ public class Ribbon : Office.IRibbonExtensibility
 
     #region -- Material Context Menu --
 
+    public void ShowMaterialDataPane(Office.IRibbonControl control)
+    {
+        WindowHelper.ShowTaskPane<MaterialPaneView, MaterialPaneViewModel>("物料",
+            (shape, vm) =>
+            {
+                System.Diagnostics.Debug.WriteLine($"selected shape id : {shape.ID}");
+                vm.Code = shape.TryGetValue(CellNameDict.MaterialCode) ?? string.Empty;
+            });
+    }
+
     public void DeleteDesignMaterial(Office.IRibbonControl control)
     {
         foreach (var shape in Globals.ThisAddIn.Application.ActiveWindow.Selection.OfType<Shape>())
@@ -306,7 +284,7 @@ public class Ribbon : Office.IRibbonExtensibility
         }
     }
 
-    public bool CanDeleteMaterial(Office.IRibbonControl control)
+    public bool HasMaterial(Office.IRibbonControl control)
     {
         var selected = Globals.ThisAddIn.Application.ActiveWindow.Selection.OfType<IVShape>();
         return selected.Any(x =>

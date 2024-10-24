@@ -18,5 +18,5 @@ public interface IMaterialApi
         [Query] int pageSize);
 
     [Get("/api/v3/materials/{materialNo}")]
-    Task<MaterialDto?> GetMaterialByCodeAsync(string materialNo);
+    Task<MaterialDto> GetMaterialByCodeAsync(string materialNo);
 }

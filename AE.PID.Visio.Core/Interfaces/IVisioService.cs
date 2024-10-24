@@ -48,25 +48,25 @@ public interface IVisioService
     /// <param name="patches"></param>
     void UpdateShapeProperties(CompositeId id, IEnumerable<ValuePatch> patches);
 
-    /// <summary>
-    ///     Save the instance to document's solution xml
-    /// </summary>
-    /// <param name="keyword"></param>
-    /// <param name="items"></param>
-    /// <param name="keySelector"></param>
-    /// <param name="overwrite"></param>
-    /// <typeparam name="TObject"></typeparam>
-    /// <typeparam name="TKey"></typeparam>
-    void PersistAsSolutionXml<TObject, TKey>(string keyword, TObject[] items,
-        Func<TObject, TKey> keySelector, bool overwrite = false)
-        where TKey : notnull;
+    // /// <summary>
+    // ///     Save the instance to document's solution xml
+    // /// </summary>
+    // /// <param name="keyword"></param>
+    // /// <param name="items"></param>
+    // /// <param name="keySelector"></param>
+    // /// <param name="overwrite"></param>
+    // /// <typeparam name="TObject"></typeparam>
+    // /// <typeparam name="TKey"></typeparam>
+    // void PersistAsSolutionXml<TObject, TKey>(string keyword, TObject[] items,
+    //     Func<TObject, TKey> keySelector, bool overwrite = false)
+    //     where TKey : notnull;
 
-    /// <summary>
-    ///     Get the instance from the document's solution xml by keyword
-    /// </summary>
-    /// <param name="name"></param>
-    /// <typeparam name="T"></typeparam>
-    T ReadFromSolutionXml<T>(string name);
+    // /// <summary>
+    // ///     Get the instance from the document's solution xml by keyword
+    // /// </summary>
+    // /// <param name="name"></param>
+    // /// <typeparam name="T"></typeparam>
+    // T ReadFromSolutionXml<T>(string name);
 
     /// <summary>
     ///     Insert the data as embedded Excel sheet at the active page.

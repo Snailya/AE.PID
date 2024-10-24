@@ -1,5 +1,13 @@
 ﻿namespace AE.PID.Visio.Core.Models;
 
+/// <summary>
+///     The identifier used to locate the shape in the visio. Because the shape id is page scoped, so there will be overlap
+///     between different pages, so the page id is also recorded to avoid this overlap.
+///     Currently, the program if only for one document, so no document id is considered, but it can be adjusted to involve
+///     document id in the future.
+/// </summary>
+/// <param name="pageId"></param>
+/// <param name="shapeId"></param>
 public class CompositeId(int pageId = 0, int shapeId = 0) : IEquatable<CompositeId>
 {
     public int PageId { get; } = pageId;

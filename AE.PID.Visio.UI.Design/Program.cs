@@ -65,13 +65,15 @@ public sealed class Program
         // register for project explorer
         Locator.CurrentMutable.Register<IProjectStore>(() =>
             new ProjectStore(Locator.Current.GetService<IProjectService>()!,
-                Locator.Current.GetService<IVisioService>()!));
+                Locator.Current.GetService<IVisioService>()!, Locator.Current.GetService<ILocalCacheService>()!));
         Locator.CurrentMutable.Register<IFunctionLocationStore>(() =>
             new FunctionLocationStore(Locator.Current.GetService<IFunctionService>()!,
                 Locator.Current.GetService<IVisioService>()!));
         Locator.CurrentMutable.Register<IMaterialLocationStore>(() =>
-            new MaterialLocationStore(Locator.Current.GetService<IMaterialService>()!,
-                Locator.Current.GetService<IVisioService>()!, Locator.Current.GetService<IFunctionLocationStore>()!,
+            new MaterialLocationStore(Locator.Current.GetService<IVisioService>()!,
+                Locator.Current.GetService<IFunctionLocationStore>()!,
+                Locator.Current.GetService<IMaterialResolver>()!,
+                Locator.Current.GetService<ILocalCacheService>()!,
                 Locator.Current.GetService<IStorageService>()!));
 
         // register for tools

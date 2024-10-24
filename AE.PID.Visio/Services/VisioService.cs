@@ -134,7 +134,7 @@ public class VisioService : DisposableBase, IVisioService
 
     public void SelectAndCenterView(CompositeId id)
     {
-        var shape = _document.Pages.ItemFromID[id.PageId].Shapes[id.ShapeId];
+        var shape = _document.Pages.ItemFromID[id.PageId].Shapes.ItemFromID[id.ShapeId];
         _document.Application.ActivePage.Application.ActiveWindow.Select(shape, (short)VisSelectArgs.visSelect);
         _document.Application.ActivePage.Application.ActiveWindow.CenterViewOnShape(shape,
             VisCenterViewFlags.visCenterViewSelectShape);
@@ -173,13 +173,7 @@ public class VisioService : DisposableBase, IVisioService
         var shape = GetShape(id);
         UpdateProperties(shape, patches);
     }
-
-
-    public T ReadFromSolutionXml<T>(string name)
-    {
-        return SolutionXmlHelper.Get<T>(_document, name);
-    }
-
+    
     public void InsertAsExcelSheet(string[,] dataArray)
     {
         var oleShape = Globals.ThisAddIn.Application.ActivePage.InsertObject("Excel.Sheet",
@@ -199,41 +193,41 @@ public class VisioService : DisposableBase, IVisioService
         Marshal.ReleaseComObject(workbook);
     }
 
-    public void PersistAsSolutionXml<TObject, TKey>(string keyword, TObject[] items,
-        Func<TObject, TKey> keySelector, bool overwrite = false)
-        where TKey : notnull
-    {
-        List<TObject>? solutionItems;
-
-        if (!overwrite)
-            try
-            {
-                // replace the origin project xml
-                solutionItems = ReadFromSolutionXml<List<TObject>>(keyword);
-
-                foreach (var item in items)
-                    solutionItems.ReplaceOrAdd(
-                        solutionItems.SingleOrDefault(x => Equals(keySelector(x), keySelector(item))), item);
-            }
-            catch (FileNotFoundException e)
-            {
-                // or create a new one
-                solutionItems = items.ToList();
-            }
-        else
-            solutionItems = items.ToList();
-
-
-        // persist
-        var element = new SolutionXmlElement<List<TObject>>
-        {
-            Name = keyword,
-            Data = solutionItems
-        };
-        SolutionXmlHelper.Store(_document, element);
-
-        this.Log().Info($"{items.Length} items saved with keyword {keyword} as solution xml.");
-    }
+    // public void PersistAsSolutionXml<TObject, TKey>(string keyword, TObject[] items,
+    //     Func<TObject, TKey> keySelector, bool overwrite = false)
+    //     where TKey : notnull
+    // {
+    //     List<TObject>? solutionItems;
+    //
+    //     if (!overwrite)
+    //         try
+    //         {
+    //             // replace the origin project xml
+    //             solutionItems = ReadFromSolutionXml<List<TObject>>(keyword);
+    //
+    //             foreach (var item in items)
+    //                 solutionItems.ReplaceOrAdd(
+    //                     solutionItems.SingleOrDefault(x => Equals(keySelector(x), keySelector(item))), item);
+    //         }
+    //         catch (FileNotFoundException e)
+    //         {
+    //             // or create a new one
+    //             solutionItems = items.ToList();
+    //         }
+    //     else
+    //         solutionItems = items.ToList();
+    //
+    //
+    //     // persist
+    //     var element = new SolutionXmlElement<List<TObject>>
+    //     {
+    //         Name = keyword,
+    //         Data = solutionItems
+    //     };
+    //     SolutionXmlHelper.Store(_document, element);
+    //
+    //     this.Log().Info($"{items.Length} items saved with keyword {keyword} as solution xml.");
+    // }
 
 
     public string? GetDocumentProperty<T>(string propName)

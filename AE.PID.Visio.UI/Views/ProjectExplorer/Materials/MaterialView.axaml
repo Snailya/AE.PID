@@ -22,6 +22,16 @@
         <TextBlock attachedProperties:LabelBehav.Value="规格" Text="{Binding  Specifications}" />
         <TextBlock attachedProperties:LabelBehav.Value="技术参数" Text="{Binding TechnicalData}" />
         <TextBlock attachedProperties:LabelBehav.Value="物料号" Text="{Binding Code}" />
-        <ItemsControl ItemsSource="{Binding Properties}" />
+        <ItemsControl ItemsSource="{Binding Properties}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border>
+                        <TextBlock
+                            attachedProperties:LabelBehav.Value="{Binding Name}"
+                            Text="{Binding Value}" />
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
     </StackPanel>
 </UserControl>

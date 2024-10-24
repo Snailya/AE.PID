@@ -34,7 +34,7 @@ public static class ChangeSetExt
             var observeAdded = Observable.FromEvent<EDocument_MasterAddedEventHandler, Master>(
                     handler => document.MasterAdded += handler,
                     handler => document.MasterAdded -= handler,
-                    ThisAddIn.Scheduler)
+                    SchedulerManager.VisioScheduler)
                 .Select(master => master.BaseID)
                 .Do(x => LogHost.Default.Debug($"MasterAdded {x}"))
                 .Do(cache.AddOrUpdate);
@@ -42,7 +42,7 @@ public static class ChangeSetExt
             var observeRemoved = Observable.FromEvent<EDocument_BeforeMasterDeleteEventHandler, Master>(
                     handler => document.BeforeMasterDelete += handler,
                     handler => document.BeforeMasterDelete -= handler,
-                    ThisAddIn.Scheduler)
+                    SchedulerManager.VisioScheduler)
                 .Select(master => master.BaseID)
                 .Do(x => LogHost.Default.Debug($"BeforeMasterDelete {x}"))
                 .Do(cache.RemoveKey);
@@ -73,7 +73,7 @@ public static class ChangeSetExt
                         .FromEvent<EDocument_PageAddedEventHandler, Page>(
                             handler => document.PageAdded += handler,
                             handler => document.PageAdded -= handler,
-                            ThisAddIn.Scheduler))
+                            SchedulerManager.VisioScheduler))
                     .Subscribe(page =>
                     {
                         var observePageChange = page.ToChangeSet()
@@ -88,7 +88,7 @@ public static class ChangeSetExt
                         Observable.FromEvent<EPage_BeforePageDeleteEventHandler, Page>(
                                 handler => page.BeforePageDelete += handler,
                                 handler => page.BeforePageDelete -= handler,
-                                ThisAddIn.Scheduler)
+                                SchedulerManager.VisioScheduler)
                             .Subscribe(x =>
                             {
                                 var items = cache.Items.Where(i => i.PageId == x.ID);
@@ -223,7 +223,7 @@ public static class ChangeSetExt
             var observeAdded = Observable.FromEvent<EPage_ShapeAddedEventHandler, IVShape>(
                     handler => page.ShapeAdded += handler,
                     handler => page.ShapeAdded -= handler,
-                    ThisAddIn.Scheduler)
+                    SchedulerManager.VisioScheduler)
                 .Where(predicate)
                 .Select(shape => new CompositeId(shape.ContainingPageID, shape.ID))
                 .Do(x => LogHost.Default.Debug($"ShapeAdded {x}"))
@@ -232,7 +232,7 @@ public static class ChangeSetExt
             var observeRemoved = Observable.FromEvent<EPage_BeforeShapeDeleteEventHandler, IVShape>(
                     handler => page.BeforeShapeDelete += handler,
                     handler => page.BeforeShapeDelete -= handler,
-                    ThisAddIn.Scheduler)
+                    SchedulerManager.VisioScheduler)
                 .Where(predicate)
                 .Select(shape => new CompositeId(shape.ContainingPageID, shape.ID))
                 .Do(x => LogHost.Default.Debug($"BeforeShapeDelete {x}"))
@@ -242,12 +242,12 @@ public static class ChangeSetExt
                 Observable.FromEvent<EPage_CellChangedEventHandler, Cell>(
                         handler => page.CellChanged += handler,
                         handler => page.CellChanged -= handler,
-                        ThisAddIn.Scheduler)
+                        SchedulerManager.VisioScheduler)
                     .Where(cell => CellsToMonitor.Contains(cell.Name))
                     .Select(cell => cell.Shape)
                     .Where(predicate)
                     .Select(shape => new CompositeId(shape.ContainingPageID, shape.ID))
-                    .QuiescentBuffer(TimeSpan.FromMilliseconds(400), ThisAddIn.Scheduler)
+                    .QuiescentBuffer(TimeSpan.FromMilliseconds(400), SchedulerManager.VisioScheduler)
                     .SelectMany(x => x.Distinct())
                     .Do(x => LogHost.Default.Debug($"ShapeCellChanged {x}"))
                     .Do(cache.AddOrUpdate);

@@ -1,32 +1,48 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using AE.PID.Visio.Core.Interfaces;
 using AE.PID.Visio.Core.Models;
 using DynamicData;
-using Splat;
 
 namespace AE.PID.Visio.Shared.Services;
 
+/// <summary>
+///     The store service provides the ability to read and write the material location data from and to the source. The
+///     source might be either a visio document as in this case, or others with different implementation.
+///     The word store here is equivalent to the word repository but to differ it from a real database.
+/// </summary>
 public class MaterialLocationStore : DisposableBase, IMaterialLocationStore
 {
     private readonly IFunctionLocationStore _functionLocationStore;
-    private readonly IMaterialService _materialService;
+    private readonly ILocalCacheService _localCacheService;
+    private readonly IMaterialResolver _materialResolver;
     private readonly IStorageService _storageService;
     private readonly IVisioService _visioService;
 
-    public MaterialLocationStore(IMaterialService materialService,
+    /// <summary>
+    /// </summary>
+    /// <param name="visioService">
+    ///     implementation for getting the material location source, and highlight the shape in the
+    ///     source.
+    /// </param>
+    /// <param name="functionLocationStore">implementation for getting the function info by providing only the function id.</param>
+    /// <param name="materialResolver"></param>
+    /// <param name="localCacheService"></param>
+    /// <param name="storageService"></param>
+    public MaterialLocationStore(
         IVisioService visioService,
         IFunctionLocationStore functionLocationStore,
+        IMaterialResolver materialResolver,
+        ILocalCacheService localCacheService,
         IStorageService storageService)
     {
         _visioService = visioService;
+        _localCacheService = localCacheService;
         _functionLocationStore = functionLocationStore;
-        _materialService = materialService;
+        _materialResolver = materialResolver;
         _storageService = storageService;
 
         // initialize the data
@@ -122,19 +138,9 @@ public class MaterialLocationStore : DisposableBase, IMaterialLocationStore
     /// <inheritdoc />
     public async void Save()
     {
-        // first ge all material cache from solution XML
-        var caches = new List<Material>();
-        try
-        {
-            caches.Add(_visioService.ReadFromSolutionXml<List<Material>>("materials"));
-        }
-        catch (FileNotFoundException e)
-        {
-            this.Log().Info("No materials cache found in solution xml.");
-        }
-
         // append the item that is not in the cache
-        var codes = MaterialLocations.Items.Select(x => x.Code).Union(caches.Select(x => x.Code))
+        var codes = MaterialLocations.Items.Select(x => x.Code)
+            .Union(_localCacheService.GetMaterials().Select(x => x.Code))
             .Where(x => !string.IsNullOrEmpty(x));
 
         try
@@ -146,20 +152,19 @@ public class MaterialLocationStore : DisposableBase, IMaterialLocationStore
                 // first try to get from the server
                 try
                 {
-                    return await _materialService.GetByCodeAsync(x);
+                    return await _materialResolver.GetMaterialByCodeAsync(x);
                 }
                 catch (Exception ex)
                 {
-                    var cache = caches.SingleOrDefault(i => i.Code == x);
-                    return cache;
+                    return null;
                 }
             }).ToList();
 
-            var materials = (await Task.WhenAll(tasks)).Where(x => x != null).Select(x => x)
+            var materials = (await Task.WhenAll(tasks)).Select(x => x?.Value).Where(x => x != null)
                 .ToArray();
 
             if (materials.Any())
-                _visioService.PersistAsSolutionXml<Material, string>("materials", materials!, x => x.Code);
+                _localCacheService.PersistAsSolutionXml<Material, string>("materials", materials!, x => x.Code);
         }
         catch (AggregateException ex)
         {
@@ -211,10 +216,7 @@ public class MaterialLocationStore : DisposableBase, IMaterialLocationStore
     private async Task<PartListItem> ToPartListItem(MaterialLocation location)
     {
         var functionLocation = _functionLocationStore.Find(location.LocationId);
-
-
-        var material = await _materialService.GetByCodeAsync(location.Code);
-
+        var material = await _materialResolver.GetMaterialByCodeAsync(location.Code);
 
         return new PartListItem
         {
@@ -226,15 +228,15 @@ public class MaterialLocationStore : DisposableBase, IMaterialLocationStore
             MaterialNo = location.Code,
             Count = location.Quantity,
 
-            Specification = material?.Specifications ?? string.Empty,
-            Type = material?.Type ?? string.Empty,
-            TechnicalDataChinese = material?.TechnicalData ?? string.Empty,
-            TechnicalDataEnglish = material?.TechnicalDataEnglish ?? string.Empty,
-            Unit = material?.Unit ?? string.Empty,
-            Supplier = material?.Supplier ?? string.Empty,
-            ManufacturerMaterialNo = material?.ManufacturerMaterialNumber ?? string.Empty,
-            Classification = material?.Classification ?? string.Empty,
-            Attachment = material?.Attachment ?? string.Empty
+            Specification = material?.Value.Specifications ?? string.Empty,
+            Type = material?.Value.Type ?? string.Empty,
+            TechnicalDataChinese = material?.Value.TechnicalData ?? string.Empty,
+            TechnicalDataEnglish = material?.Value.TechnicalDataEnglish ?? string.Empty,
+            Unit = material?.Value.Unit ?? string.Empty,
+            Supplier = material?.Value.Supplier ?? string.Empty,
+            ManufacturerMaterialNo = material?.Value.ManufacturerMaterialNumber ?? string.Empty,
+            Classification = material?.Value.Classification ?? string.Empty,
+            Attachment = material?.Value.Attachment ?? string.Empty
         };
     }
 

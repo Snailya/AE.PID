@@ -43,8 +43,10 @@ public interface IMaterialService
     /// <param name="code"></param>
     /// <param name="token"></param>
     /// <returns></returns>
+    /// <exception cref="ArgumentNullException">THe code passed in this method should not be empty.</exception>
     /// <exception cref="NetworkNotValidException">There is a network error between server and local.</exception>
-    Task<Material?> GetByCodeAsync(string code, CancellationToken token = default);
+    /// <exception cref="MaterialNotValidException">There is no valid material in the database that matches the key.</exception>
+    Task<Material> GetByCodeAsync(string code, CancellationToken token = default);
 
     /// <summary>
     ///     Get the category map dictionary.

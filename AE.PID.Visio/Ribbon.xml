@@ -34,6 +34,7 @@
                 </group>
                 <group id="Settings" label="设置">
                     <button id="button3" onAction="OpenSettings" label="设置"/>
+                    <button id="button4" onAction="Debug" label="调试"/>
                 </group>
             </tab>
         </tabs>
@@ -59,11 +60,18 @@
                         getEnabled="IsInsertFunctionElementValid"
                 />
             </menu>
-            <button id="DeleteMaterial"
-                    label="删除物料"
-                    onAction="DeleteMaterial"
-                    getVisible="CanDeleteMaterial"
-            />
+            <menu id="Material" label="物料">
+                <button id="MaterialData"
+                        label="物料数据"
+                        onAction="ShowMaterialDataPane"
+                        getEnabled="HasMaterial"
+                />
+                <button id="DeleteMaterial"
+                        label="删除"
+                        onAction="DeleteMaterial"
+                        getEnabled="HasMaterial"
+                />
+            </menu>
         </contextMenu>
     </contextMenus>
 </customUI>

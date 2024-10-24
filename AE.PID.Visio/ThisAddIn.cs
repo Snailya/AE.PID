@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading;
 using System.Windows.Threading;
 using AE.PID.Visio.Core.Interfaces;
+using AE.PID.Visio.Helpers;
 using AE.PID.Visio.Services;
 using AE.PID.Visio.Shared;
 using AE.PID.Visio.Shared.Extensions;
@@ -20,7 +21,6 @@ using Avalonia.ReactiveUI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Office.Core;
-using ReactiveUI;
 using Splat;
 using Splat.NLog;
 
@@ -30,8 +30,7 @@ public partial class ThisAddIn : IEnableLogger
 {
     private IHost _host;
     private Thread _uiThread;
-    public static IScheduler Scheduler { get; set; }
-    public static IServiceProvider Services { get; set; }
+    public static IServiceProvider Services { get; private set; }
 
     private void ThisAddIn_Startup(object sender, EventArgs e)
     {
@@ -44,12 +43,13 @@ public partial class ThisAddIn : IEnableLogger
         // because the main thread has no synchronization context, a new synchronization context is created
         var mainContext = SynchronizationContext.Current ?? new SynchronizationContext();
         SynchronizationContext.SetSynchronizationContext(mainContext);
+        // SynchronizationContext = mainContext;
 
         // initialize a custom scheduler with VSTO main context
-        Scheduler = new SynchronizationContextScheduler(mainContext);
+        var dispatcher = Dispatcher.CurrentDispatcher;
 
         // initialize scheduler manager
-        SchedulerManager.VisioScheduler = Scheduler;
+        SchedulerManager.VisioScheduler = new DispatcherScheduler(dispatcher);
 
         this.Log().Info("Synchronization scheduler initialized.");
 
@@ -89,23 +89,7 @@ public partial class ThisAddIn : IEnableLogger
             // 如果当前的用户ID是空值，提示用户输入UserId
             var configuration = Services.GetRequiredService<IConfigurationService>();
             if (string.IsNullOrEmpty(configuration.GetCurrentConfiguration().UserId))
-                RxApp.MainThreadScheduler.Schedule(() =>
-                {
-                    var scope = Services!.CreateScope();
-
-                    var window = new SettingsWindow
-                    {
-                        DataContext = scope.ServiceProvider.GetRequiredService<SettingsWindowViewModel>()
-                    };
-
-                    window.Closed += (_, _) =>
-                    {
-                        // Dispose the scope and any services tied to it when the window closes
-                        scope.Dispose();
-                    };
-
-                    window.Show();
-                });
+                WindowHelper.Show<SettingsWindow, SettingsWindowViewModel>();
         });
     }
 
@@ -173,8 +157,13 @@ public partial class ThisAddIn : IEnableLogger
         services.AddSingleton<IMaterialService, MaterialService>();
 
         // register for visio related
+        services.AddScoped<ILocalCacheService, LocalCacheService>(_ =>
+            new LocalCacheService(Globals.ThisAddIn.Application.ActiveDocument));
         services.AddScoped<IVisioService, VisioService>(_ =>
-            new VisioService(Globals.ThisAddIn.Application.ActiveDocument, Scheduler));
+            new VisioService(Globals.ThisAddIn.Application.ActiveDocument, SchedulerManager.VisioScheduler));
+
+        //
+        services.AddScoped<IMaterialResolver, MaterialResolver>();
 
         // register for project explorer
         services.AddScoped<IProjectStore, ProjectStore>();
@@ -189,6 +178,8 @@ public partial class ThisAddIn : IEnableLogger
         services.AddScoped<ProjectExplorerWindowViewModel, ProjectExplorerWindowViewModel>();
         services.AddScoped<ToolsWindowViewModel, ToolsWindowViewModel>();
         services.AddScoped<SettingsWindowViewModel, SettingsWindowViewModel>();
+        services.AddScoped<MaterialPaneViewModel, MaterialPaneViewModel>();
+
 
         LogHost.Default.Info("Services configured.");
     }

@@ -14,7 +14,6 @@ public class IntegrationTest : IDisposable
 
     public IntegrationTest()
     {
-        ThisAddIn.Scheduler = Scheduler.CurrentThread;
 
         // 初始化 Visio 应用程序
         _visioApp = new Application();

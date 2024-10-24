@@ -135,7 +135,7 @@ public class StencilsController(ILogger<StencilsController> logger, AppDbContext
         dbContext.Stencils.Update(stencil);
         dbContext.SaveChanges();
 
-        return Ok();
+        return Ok(snapshot);
     }
 
     private static string SaveFile(UploadStencilDto dto)

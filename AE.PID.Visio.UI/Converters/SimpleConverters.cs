@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using AE.PID.Core.Models;
 using AE.PID.Visio.UI.Avalonia.ViewModels;
 using Avalonia.Controls;
@@ -52,4 +54,8 @@ public abstract class SimpleConverters
 
     public static FuncValueConverter<ValueTuple<string, string>?, string> FormatPasteCommandLabel { get; } =
         new(tuple => tuple != null && !string.IsNullOrEmpty(tuple.Value.Item2) ? $"粘贴：{tuple.Value.Item2}" : "粘贴");
+
+    public static FuncValueConverter<IEnumerable<MaterialPropertyViewModel>?, IEnumerable<MaterialPropertyViewModel>?>
+        UsefulProperties { get; } =
+        new(list => list?.Where(x => !string.IsNullOrEmpty(x.Value)));
 }

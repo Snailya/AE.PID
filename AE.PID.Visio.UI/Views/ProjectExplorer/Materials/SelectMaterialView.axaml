@@ -4,6 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewModels="using:AE.PID.Visio.UI.Avalonia.ViewModels"
              xmlns:views="clr-namespace:AE.PID.Visio.UI.Avalonia.Views"
+             xmlns:attachedProperties="clr-namespace:AE.PID.Visio.UI.Avalonia.AttachedProperties"
+             xmlns:converters="clr-namespace:AE.PID.Visio.UI.Avalonia.Converters"
              mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="528"
              x:Class="AE.PID.Visio.UI.Avalonia.Views.SelectMaterialView"
              x:DataType="viewModels:SelectMaterialViewModel">
@@ -51,12 +53,21 @@
                 </DataGrid.Columns>
                 <DataGrid.RowDetailsTemplate>
                     <DataTemplate x:DataType="{x:Type viewModels:MaterialViewModel}">
-                        <ItemsControl ItemsSource="{Binding Properties}">
+                        <ItemsControl ItemsSource="{Binding Properties, Converter={x:Static converters:SimpleConverters.UsefulProperties}}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <WrapPanel />
+                                    <StackPanel Margin="12 4"/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border>
+                                        <TextBlock Margin="4 " FontSize="12"
+                                                   attachedProperties:LabelBehav.Value="{Binding Name, StringFormat='\{0\}：'}"
+                                                   Text="{Binding Value}" />
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </DataTemplate>
                 </DataGrid.RowDetailsTemplate>

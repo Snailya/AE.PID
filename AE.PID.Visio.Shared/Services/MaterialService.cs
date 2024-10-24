@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -15,7 +16,12 @@ using Splat;
 namespace AE.PID.Visio.Shared.Services;
 
 /// <summary>
-///     p.s. Service method only throw known exceptions.
+///     The material service is a wrapper for the backend api that related  to provide material information.
+///     This service uses source cache to temporally store the searched result so that it could be quickly used by other
+///     service that request the detail when providing only the code property.
+///     When trying to get material by key, it should throw exception when there is no related data available in the
+///     database.
+///     All the methods here should only throw known exceptions.
 /// </summary>
 public class MaterialService(IApiFactory<IMaterialApi> apiFactory)
     : IMaterialService, IEnableLogger
@@ -111,7 +117,7 @@ public class MaterialService(IApiFactory<IMaterialApi> apiFactory)
     {
         try
         {
-            var result = await apiFactory.Api!.GetMaterialsAsync(categoryId, s, pageRequest.Page, pageRequest.Size);
+            var result = await apiFactory.Api.GetMaterialsAsync(categoryId, s, pageRequest.Page, pageRequest.Size);
             _caches.AddOrUpdate(result.Items);
 
             var items = result.Items.Select(async x => await ToMaterial(x)).Select(x => x.Result).ToList();
@@ -137,9 +143,9 @@ public class MaterialService(IApiFactory<IMaterialApi> apiFactory)
     }
 
     /// <inheritdoc />
-    public async Task<Material?> GetByCodeAsync(string code, CancellationToken token = default)
+    public async Task<Material> GetByCodeAsync(string code, CancellationToken token = default)
     {
-        if (string.IsNullOrEmpty(code)) return null;
+        if (string.IsNullOrEmpty(code)) throw new ArgumentNullException(nameof(code));
 
         var cache = _caches.Lookup(code);
         if (cache.HasValue) return await ToMaterial(cache.Value);
@@ -147,10 +153,8 @@ public class MaterialService(IApiFactory<IMaterialApi> apiFactory)
         // if there is no memory cache, try to get it from the server
         try
         {
-            var remote = await apiFactory.Api!.GetMaterialByCodeAsync(code);
-
-            if (remote == null) return null;
-
+            var remote = await apiFactory.Api.GetMaterialByCodeAsync(code);
+            
             _caches.AddOrUpdate(remote);
             return await ToMaterial(remote);
         }
