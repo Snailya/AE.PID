@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,20 +51,38 @@ public class DocumentUpdateService : DisposableBase, IDocumentUpdateService
         // because there is an encrypted system on end user, so directly transfer the file to server will not be able to read in the server side
         var packageBytes = File.ReadAllBytes(filePath);
         var content = new ByteArrayContent(packageBytes);
-        var result = await _apiFactory.Api.Update(content);
 
-        // create a copy of the source file
-        var backup = Path.ChangeExtension(filePath, ".bak");
-        if (File.Exists(backup))
-            backup = Path.Combine(Path.GetDirectoryName(backup) ?? string.Empty,
-                Path.GetFileNameWithoutExtension(backup) + DateTime.Now.ToString("yyyyMMddhhmmss") + ".bak");
-        File.Copy(filePath, backup);
-
-        // overwrite the origin file after a successful update
-        using (var fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write))
+        try
         {
-            await result.CopyToAsync(fileStream);
-            fileStream.Close();
+            var result = await _apiFactory.Api.Update(content);
+
+            // create a copy of the source file
+            var backup = Path.ChangeExtension(filePath, ".bak");
+            if (File.Exists(backup))
+                backup = Path.Combine(Path.GetDirectoryName(backup) ?? string.Empty,
+                    Path.GetFileNameWithoutExtension(backup) + DateTime.Now.ToString("yyyyMMddhhmmss") + ".bak");
+            File.Copy(filePath, backup);
+
+            // overwrite the origin file after a successful update
+            using (var fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write))
+            {
+                await result.CopyToAsync(fileStream);
+                fileStream.Close();
+            }
+        }
+        catch (ApiException e) when (e.StatusCode == HttpStatusCode.BadRequest)
+        {
+            throw new DocumentNotRecognizedException(e.Message);
+        }
+        catch (ApiException e)
+        {
+            this.Log().Error(e);
+            throw new NetworkNotValidException();
+        }
+        catch (HttpRequestException e)
+        {
+            this.Log().Error(e);
+            throw new NetworkNotValidException();
         }
     }
 

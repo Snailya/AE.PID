@@ -3,10 +3,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using AE.PID.Core.DTOs;
 using AE.PID.Core.Models;
+using AE.PID.Visio.Core.Exceptions;
 using AE.PID.Visio.Core.Interfaces;
 using AE.PID.Visio.Extensions;
 using AE.PID.Visio.Helpers;
@@ -102,7 +103,6 @@ public class Ribbon : Office.IRibbonExtensibility
 
     public void Debug(Office.IRibbonControl control)
     {
-
     }
 
 
@@ -177,8 +177,19 @@ public class Ribbon : Office.IRibbonExtensibility
         doc.DocumentSaved += d => { filePath = d.FullName; };
         doc.Close();
 
-        // do update
-        await service.UpdateAsync(filePath);
+        try
+        {
+            // do update
+            await service.UpdateAsync(filePath);
+        }
+        catch (DocumentNotRecognizedException e)
+        {
+            MessageBox.Show(@"更新失败，文档无法被识别。");
+        }
+        catch (Exception e)
+        {
+            MessageBox.Show($"更新失败，{e.Message}");
+        }
 
         // reopen after updated
         Globals.ThisAddIn.Application.Documents.Add(filePath);

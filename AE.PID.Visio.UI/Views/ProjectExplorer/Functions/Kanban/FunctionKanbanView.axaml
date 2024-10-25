@@ -54,7 +54,7 @@
                         <TextBlock Text="功能组" VerticalAlignment="Center" />
                         <TextBlock Grid.Column="1"
                                    Text="{Binding LastSynced, Converter={x:Static converters:SimpleConverters.LastSyncedText}}" />
-                        <Button Grid.Column="2" Content="同步" Command="{Binding SyncFunctionGroups}" />
+                        <!-- <Button Grid.Column="2" Content="同步" Command="{Binding SyncFunctionGroups}" /> -->
                     </Grid>
                 </Expander.Header>
                 <DataGrid ItemsSource="{Binding Groups}"
@@ -62,8 +62,6 @@
                           Height="{Binding Groups.Count, Converter={x:Static converters:SimpleConverters.GetMinHeight}}"
                           VerticalScrollBarVisibility="Auto">
                     <DataGrid.Columns>
-                        <!-- <DataGridTextColumn Header="序号" -->
-                        <!--                     Binding="{Binding $parent[DataGridRow], Converter={x:Static converters:SimpleConverters.IndexConverter}}" /> -->
                         <DataGridTextColumn Header="工艺区域" Binding="{Binding  Zone}" />
                         <DataGridTextColumn Header="功能组" Binding="{Binding  Group}" />
                         <DataGridTextColumn Header="功能组名称" Binding="{Binding  GroupName}" />

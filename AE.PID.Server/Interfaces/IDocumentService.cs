@@ -1,6 +1,7 @@
 ﻿using System.IO.Packaging;
 using System.Xml.Linq;
 using AE.PID.Server.Data;
+using AE.PID.Server.Exceptions;
 
 namespace AE.PID.Server.Interfaces;
 
@@ -41,5 +42,11 @@ public interface IDocumentService
     /// <param name="snapshot"></param>
     void Update(Package package, MasterContentSnapshot snapshot);
 
-    void ValidateMasterBaseIdUnique(Package visioPackage);
+    /// <summary>
+    /// Validate if there is no duplicated master base id.
+    /// </summary>
+    /// <param name="visioPackage"></param>
+    /// <param name="baseIds"></param>
+    /// <exception cref="MasterBaseIdNotUniqueException"></exception>
+    void ValidateMasterBaseIdUnique(Package visioPackage, IEnumerable<string> baseIds);
 }

@@ -37,7 +37,7 @@ public abstract class FormatHelper
             }
 
             // insert the frame at the 0,0 potion
-            InsertFrame(page);
+            InsertFrameIfNotExist(page);
 
             // set the view to make the frame center in the window
             Globals.ThisAddIn.Application.ActiveWindow.ViewFit = (int)VisWindowFit.visFitPage;
@@ -65,9 +65,11 @@ public abstract class FormatHelper
         LogHost.Default.Info($"Grid setup for {page.Name} finished");
     }
 
-    private static void InsertFrame(IVPage page)
+    private static void InsertFrameIfNotExist(IVPage page)
     {
         const string baseId = "{7811D65E-9633-4E98-9FCD-B496A8B823A7}";
+
+        if (page.Shapes.OfType<Shape>().Any(x => x.Master.BaseID == baseId)) return;
 
         try
         {
@@ -78,7 +80,7 @@ public abstract class FormatHelper
         }
         catch (MasterNotValidException)
         {
-            MessageBox.Show("未能找到图框，请检查AE逻辑.vssx文件。");
+            MessageBox.Show(@"未能找到图框，请检查AE逻辑.vssx文件。");
         }
         catch (Exception e)
         {

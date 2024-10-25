@@ -48,17 +48,21 @@ public class DocumentsController(
         {
             // first validate the document
             using var visioPackage = Package.Open(fileName, FileMode.Open, FileAccess.ReadWrite);
-            documentService.ValidateMasterBaseIdUnique(visioPackage);
+            var snapshots = GetMasterSnapshot(status);
+            documentService.ValidateMasterBaseIdUnique(visioPackage, snapshots.Select(x=>x.BaseId));
 
             // do update
-            var snapshots = GetMasterSnapshot(status);
             foreach (var snapshot in snapshots) documentService.Update(visioPackage, snapshot);
+
+            logger.LogInformation("File updated without error.");
 
             // return physical file
             return new PhysicalFileResult(fileName, "application/octet-stream");
         }
         catch (Exception e)
         {
+            logger.LogError(e,"File updated failed with error.");
+            
             return BadRequest(e.Message);
         }
     }
@@ -85,10 +89,10 @@ public class DocumentsController(
         {
             // first validate the document
             using var visioPackage = Package.Open(fileName, FileMode.Open, FileAccess.ReadWrite);
-            documentService.ValidateMasterBaseIdUnique(visioPackage);
+            var snapshots = GetMasterSnapshot(status);
+            documentService.ValidateMasterBaseIdUnique(visioPackage,snapshots.Select(x=>x.BaseId));
 
             // do update
-            var snapshots = GetMasterSnapshot(status);
             foreach (var snapshot in snapshots) documentService.Update(visioPackage, snapshot);
 
             // return physical file

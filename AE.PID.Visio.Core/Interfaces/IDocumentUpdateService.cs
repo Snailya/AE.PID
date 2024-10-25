@@ -11,6 +11,7 @@ public interface IDocumentUpdateService
     /// <param name="filePath"></param>
     /// <returns></returns>
     /// <exception cref="NetworkNotValidException">There is a network error between server and local.</exception>
+    /// <exception cref="DocumentNotRecognizedException">The document is not a valid document to process update.</exception>
     Task UpdateAsync(string filePath);
 
     /// <summary>

@@ -191,7 +191,7 @@ public class DocumentService(ILogger<DocumentService> logger) : IDocumentService
         logger.LogInformation("{snapshot} is update to date.", snapshot.BaseId);
     }
 
-    public void ValidateMasterBaseIdUnique(Package package)
+    public void ValidateMasterBaseIdUnique(Package package, IEnumerable<string> baseIds)
     {
         var mastersUri = PackUriHelper.CreatePartUri(new Uri("visio/masters/masters.xml", UriKind.Relative));
         var mastersPart = package.GetPart(mastersUri);
@@ -199,7 +199,7 @@ public class DocumentService(ILogger<DocumentService> logger) : IDocumentService
 
         var duplicates = mastersDocument.Root!.Elements()
             .GroupBy(x => x.Attribute("BaseID")!.Value) // Group the list by each value
-            .Where(g => g.Count() > 1) // Filter groups where count > 1
+            .Where(g => g.Count() > 1 && baseIds.Any(x=>x == g.Key)) // Filter groups where count > 1
             .Select(g => g.Key) // Select the value (key) from each group
             .ToList();
 
