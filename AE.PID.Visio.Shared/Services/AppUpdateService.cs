@@ -150,7 +150,7 @@ public class AppUpdateService(IApiFactory<IAppApi> apiFactory)
                 FileName = filePath,
                 CreateNoWindow = true,
                 // ensure the administrator privilege as the replacement in the Local folder might return access deny code 5 
-                UseShellExecute = true,
+                UseShellExecute = false,
                 Verb = "runas"
             },
             _ => throw new UnsupportedFileExtensionException(extension)
