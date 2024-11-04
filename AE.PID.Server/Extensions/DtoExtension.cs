@@ -1,9 +1,10 @@
 ﻿using AE.PID.Core.DTOs;
 using AE.PID.Core.Models;
+using AE.PID.Server.Data.Recommendation;
 using AE.PID.Server.DTOs.PDMS;
 using AE.PID.Visio.Core.DTOs;
 
-namespace AE.PID.Server.DTOs;
+namespace AE.PID.Server.Extensions;
 
 public static class DtoExtension
 {

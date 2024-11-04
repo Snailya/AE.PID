@@ -25,6 +25,8 @@ if (!Directory.Exists(Constants.StencilPath)) Directory.CreateDirectory(Constant
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddTransient<IDocumentService, DocumentService>();
+builder.Services.AddTransient<IMaterialService, MaterialService>();
+builder.Services.AddTransient<IRecommendService,RecommendService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

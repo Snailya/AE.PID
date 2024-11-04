@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using AE.PID.Server.DTOs;
 using AE.PID.Server.DTOs.PDMS;
+using AE.PID.Server.Extensions;
 using AE.PID.Server.Services;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,7 @@ namespace AE.PID.Server.Controllers;
 [ApiVersion(3)]
 [Route("api/v{apiVersion:apiVersion}/[controller]")]
 public class CategoriesController(
-    ILogger<LibrariesController> logger,
+    ILogger<CategoriesController> logger,
     LinkGenerator linkGenerator,
     IHttpClientFactory httpClientFactory)
     : ControllerBase

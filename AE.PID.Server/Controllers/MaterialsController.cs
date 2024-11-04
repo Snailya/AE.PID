@@ -1,8 +1,6 @@
-﻿using System.Text.Json;
-using AE.PID.Core.DTOs;
-using AE.PID.Server.DTOs;
-using AE.PID.Server.DTOs.PDMS;
-using AE.PID.Server.Services;
+﻿using System.Text;
+using System.Text.Json;
+using AE.PID.Server.Interfaces;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,11 +9,9 @@ namespace AE.PID.Server.Controllers;
 [ApiController]
 [Route("api/v{apiVersion:apiVersion}/[controller]")]
 [ApiVersion(3)]
-public class MaterialsController(IHttpClientFactory httpClientFactory)
+public class MaterialsController(IMaterialService materialService)
     : ControllerBase
 {
-    private readonly HttpClient _client = httpClientFactory.CreateClient("PDMS");
-
     /// <summary>
     ///     根据编码获取物料。
     /// </summary>
@@ -26,24 +22,15 @@ public class MaterialsController(IHttpClientFactory httpClientFactory)
     public async Task<IActionResult> GetMaterialsByCode([FromHeader(Name = "User-ID")] string userId,
         [FromRoute] string code)
     {
-        var data = PDMSApiResolver.BuildFormUrlEncodedContent(new SelectDesignMaterialRequestDto
+        try
         {
-            OperationInfo = new OperationInfoDto { Operator = userId },
-            MainTable = new DesignMaterialDto
-            {
-                MaterialCode = code
-            },
-            PageInfo = new PageInfoDto(1, 1)
-        });
-        var response = await _client.PostAsync("getModeDataPageList/selectDesignMaterial", data);
-        if (!response.IsSuccessStatusCode) return BadRequest("Failed to send form data to the API");
-        var responseData = await response.Content.ReadFromJsonAsync<ResponseDto>();
-        if (string.IsNullOrEmpty(responseData?.Result)) return Ok(null);
-
-        var material =
-            JsonSerializer.Deserialize<IEnumerable<SelectDesignMaterialResponseItemDto>>(responseData.Result)?
-                .Select(x => x.FromPDMS()).First();
-        return Ok(material);
+            var material = await materialService.GetMaterialByCodeAsync(userId, code);
+            return Ok(material);
+        }
+        catch (BadHttpRequestException e)
+        {
+            return BadRequest(e.Message);
+        }
     }
 
     /// <summary>
@@ -61,115 +48,48 @@ public class MaterialsController(IHttpClientFactory httpClientFactory)
         [FromQuery] int pageNo = 1,
         [FromQuery] int pageSize = 10)
     {
-        var count = await GetMaterialsCount(category ?? string.Empty);
-
-        var data = PDMSApiResolver.BuildFormUrlEncodedContent(new SelectDesignMaterialRequestDto
+        try
         {
-            OperationInfo = new OperationInfoDto { Operator = userId },
-            MainTable = new DesignMaterialDto
-            {
-                MaterialCategory = category ?? string.Empty,
-                MaterialName = s ?? string.Empty
-            },
-            PageInfo = new PageInfoDto(pageNo, pageSize)
-        });
-
-        var response = await _client.PostAsync("getModeDataPageList/selectDesignMaterial", data);
-
-        if (!response.IsSuccessStatusCode) return BadRequest("Failed to send form data to the API");
-
-        var responseData = await response.Content.ReadFromJsonAsync<ResponseDto>();
-        if (string.IsNullOrEmpty(responseData?.Result)) return NoContent();
-
-        var materials =
-            JsonSerializer.Deserialize<IEnumerable<SelectDesignMaterialResponseItemDto>>(responseData.Result)?
-                .Select(x => x.FromPDMS());
-        return Ok(new Paged<MaterialDto>
+            var results = await materialService.GetMaterialsAsync(userId, category, s, pageNo, pageSize);
+            if (results is null) return NoContent();
+            return Ok(results);
+        }
+        catch (BadHttpRequestException e)
         {
-            Page = pageNo,
-            PageSize = pageSize,
-            Pages = (int)Math.Ceiling((double)count / pageSize),
-            TotalSize = count,
-            Items = materials
-        });
+            return BadRequest(e.Message);
+        }
     }
-    
+
+    /// <summary>
+    ///     获取物料数据的Json文件。
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="category"></param>
+    /// <param name="s"></param>
+    /// <param name="pageNo"></param>
+    /// <param name="pageSize"></param>
+    /// <returns></returns>
     [HttpGet("file")]
     public async Task<IActionResult> GetMaterialsAsFile([FromHeader(Name = "User-ID")] string userId,
         [FromQuery] string? category = null, [FromQuery] string? s = null,
         [FromQuery] int pageNo = 1,
         [FromQuery] int pageSize = 10)
     {
-        var count = await GetMaterialsCount(category ?? string.Empty);
-
-        var data = PDMSApiResolver.BuildFormUrlEncodedContent(new SelectDesignMaterialRequestDto
+        try
         {
-            OperationInfo = new OperationInfoDto { Operator = userId },
-            MainTable = new DesignMaterialDto
-            {
-                MaterialCategory = category ?? string.Empty,
-                MaterialName = s ?? string.Empty
-            },
-            PageInfo = new PageInfoDto(pageNo, pageSize)
-        });
+            var materials = await materialService.GetFlattenMaterialsAsync(userId, category, s, pageNo, pageSize);
 
-        var response = await _client.PostAsync("getModeDataPageList/selectDesignMaterial", data);
+            if (materials == null) return NoContent();
 
-        if (!response.IsSuccessStatusCode) return BadRequest("Failed to send form data to the API");
+            var json = JsonSerializer.Serialize(materials);
+            var byteArray = Encoding.UTF8.GetBytes(json);
+            var stream = new MemoryStream(byteArray);
 
-        var responseData = await response.Content.ReadFromJsonAsync<ResponseDto>();
-        if (string.IsNullOrEmpty(responseData?.Result)) return NoContent();
-
-        var materials =
-            JsonSerializer.Deserialize<IEnumerable<SelectDesignMaterialResponseItemDto>>(responseData.Result)?
-                .Select(x => x.FromPDMS());
-        
-        var json = JsonSerializer.Serialize(materials);
-        var byteArray = System.Text.Encoding.UTF8.GetBytes(json);
-        var stream = new MemoryStream(byteArray);
-
-        return File(stream, "application/json", $"category={category}&no={pageNo}&size={pageSize}.json");
-    }
-
-    private Task<int> GetMaterialsCount(string category)
-    {
-        return GetMaterialsCount("", "", "", category, "", "", "");
-    }
-
-    private async Task<int> GetMaterialsCount(string name, string code, string model, string category, string brand,
-        string specifications, string manufacturer)
-    {
-        var data = new SelectDesignMaterialRequestDto
-        {
-            OperationInfo = new OperationInfoDto { Operator = "6470" },
-            MainTable = new DesignMaterialDto
-            {
-                MaterialName = name,
-                MaterialCode = code,
-                Model = model,
-                MaterialCategory = category,
-                Brand = brand,
-                Specifications = specifications,
-                Manufacturer = manufacturer
-            }
-        };
-        var content = PDMSApiResolver.BuildFormUrlEncodedContent(data);
-
-        var response = await _client.PostAsync("getModeDataPageCount/countDesignMaterial", content);
-
-        if (response.IsSuccessStatusCode)
-        {
-            var responseData = await response.Content.ReadFromJsonAsync<ResponseDto>();
-            if (!string.IsNullOrEmpty(responseData?.Result))
-            {
-                var pageCountDto =
-                    JsonSerializer.Deserialize<PageCountDto>(responseData.Result);
-
-                if (pageCountDto != null)
-                    return pageCountDto.PageCount;
-            }
+            return File(stream, "application/json", $"category={category}&no={pageNo}&size={pageSize}.json");
         }
-
-        throw new BadHttpRequestException($"Failed to get materials count. Keywords:{data.GetQuery()}");
+        catch (BadHttpRequestException e)
+        {
+            return BadRequest(e.Message);
+        }
     }
 }

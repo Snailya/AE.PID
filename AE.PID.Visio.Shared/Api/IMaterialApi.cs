@@ -19,4 +19,11 @@ public interface IMaterialApi
 
     [Get("/api/v3/materials/{materialNo}")]
     Task<MaterialDto> GetMaterialByCodeAsync(string materialNo);
+
+    [Get("/api/v3/recommendations/materials")]
+    Task<MaterialRecommendationCollectionDto> GetRecommendedMaterialsAsync([Query] int? projectId = null, [Query] string? functionZone = null,
+        [Query] string? functionGroup = null, [Query] string? functionElement = null, [Query] string? materialLocationType = null);
+
+    [Post("/api/v3/recommendations/materials")]
+    Task<int> FeedbackMaterialSelectionsAsync(UserMaterialSelectionFeedbackDto feedback);
 }

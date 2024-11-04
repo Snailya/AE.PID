@@ -15,7 +15,7 @@ public static class SolutionXmlHelper
     private static readonly XNamespace RNs = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 
     /// <summary>
-    ///     Update the version solution xml element.
+    ///     UpdateMaster the version solution xml element.
     /// </summary>
     /// <param name="visioPackage"></param>
     /// <param name="versionId"></param>

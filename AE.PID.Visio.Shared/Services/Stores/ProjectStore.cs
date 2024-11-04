@@ -31,11 +31,19 @@ public class ProjectStore : DisposableBase, IProjectStore
         _ = LoadInitialData();
     }
 
+    public Project? GetCurrentProject()
+    {
+        return _projectSubject.Value.Value;
+    }
+
     /// <inheritdoc />
     public void Update(Project project)
     {
         // save the project to document sheet
-        _visioService.UpdateDocumentProperties([new ValuePatch(CellNameDict.ProjectId, project.Id, true)]);
+        _visioService.UpdateDocumentProperties([
+            new ValuePatch(CellNameDict.ProjectId, project.Id, true),
+            new ValuePatch(CellNameDict.ProjectCode, project.Code, true)
+        ]);
 
         // propagate if it is a successful action
         _projectSubject.OnNext(Result<Project?>.Success(project));

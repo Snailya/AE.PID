@@ -37,7 +37,8 @@ public class MaterialLocationStore : DisposableBase, IMaterialLocationStore
         IFunctionLocationStore functionLocationStore,
         IMaterialResolver materialResolver,
         ILocalCacheService localCacheService,
-        IStorageService storageService)
+        IStorageService storageService
+        )
     {
         _visioService = visioService;
         _localCacheService = localCacheService;
@@ -51,18 +52,22 @@ public class MaterialLocationStore : DisposableBase, IMaterialLocationStore
         // observable property changes and propagate to Visio shape
         var propagateChangeToVisio = MaterialLocations.Connect()
             .AutoRefresh(propertyChangeThrottle: TimeSpan.FromMilliseconds(400))
-            .WhereReasonsAre(ChangeReason.Refresh)
+            .WhereReasonsAre(ChangeReason.Refresh) // 当通过addorupdate更新sourcecache中的某个对象时，如果对象不存在，则reason为add，如果存在，则为update。当直接修改item时，则reason为refresh。
             .ObserveOn(SchedulerManager.VisioScheduler)
             .Subscribe(changes =>
             {
                 foreach (var change in changes)
+                {
                     visioService.UpdateShapeProperties(change.Key,
                         [
                             new ValuePatch(CellNameDict.MaterialCode, change.Current.Code, true),
                             new ValuePatch(CellNameDict.UnitQuantity, change.Current.UnitQuantity)
                         ]
                     );
+                }
             });
+
+
         CleanUp.Add(propagateChangeToVisio);
     }
 

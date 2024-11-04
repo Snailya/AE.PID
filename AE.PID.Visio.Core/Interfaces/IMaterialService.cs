@@ -1,4 +1,5 @@
 ﻿using AE.PID.Core.DTOs;
+using AE.PID.Core.Models;
 using AE.PID.Visio.Core.Exceptions;
 using AE.PID.Visio.Core.Models;
 using DynamicData;
@@ -54,4 +55,25 @@ public interface IMaterialService
     /// <returns></returns>
     /// <exception cref="NetworkNotValidException">There is a network error between server and local.</exception>
     Task<Dictionary<string, string[]>> GetCategoryMapAsync();
+
+    /// <summary>
+    ///     Get the recommended materials based on material location context.
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    /// <exception cref="NetworkNotValidException">There is a network error between server and local.</exception>
+    Task<IEnumerable<Recommendation<Material>>> GetRecommendationAsync(MaterialLocationContext context,
+        CancellationToken token = default);
+
+    /// <summary>
+    ///     Send the user selection feedback to server.
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="materialId"></param>
+    /// <param name="collectionId"></param>
+    /// <param name="recommendationId"></param>
+    /// <returns></returns>
+    Task FeedbackAsync(MaterialLocationContext context, int materialId, int? collectionId = null,
+        int? recommendationId = null);
 }

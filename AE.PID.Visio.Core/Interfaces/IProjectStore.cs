@@ -9,6 +9,12 @@ public interface IProjectStore : IStore
     ///     The observable for project of the document.
     /// </summary>
     public IObservable<Result<Project?>> Project { get; }
+    
+    /// <summary>
+    /// Get the current project, used by the recommend service.
+    /// </summary>
+    /// <returns></returns>
+    public Project? GetCurrentProject();
 
     /// <summary>
     ///     Update the project that assigned to the document.

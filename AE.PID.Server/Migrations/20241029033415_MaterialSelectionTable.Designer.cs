@@ -3,6 +3,7 @@ using System;
 using AE.PID.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AE.PID.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241029033415_MaterialSelectionTable")]
+    partial class MaterialSelectionTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.7");
@@ -266,46 +269,21 @@ namespace AE.PID.Server.Migrations
                     b.ToTable("MasterContentSnapshots");
                 });
 
-            modelBuilder.Entity("AE.PID.Server.Data.Recommendation.MaterialRecommendation", b =>
+            modelBuilder.Entity("AE.PID.Server.Data.Recommendation.MaterialSelection", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Algorithm")
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MaterialCode")
                         .IsRequired()
-                        .HasMaxLength(512)
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("MaterialId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("MaterialRecommendationCollectionId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("ModifiedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Rank")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MaterialRecommendationCollectionId");
-
-                    b.ToTable("MaterialRecommendation");
-                });
-
-            modelBuilder.Entity("AE.PID.Server.Data.Recommendation.MaterialRecommendationCollection", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<string>("MaterialLocationType")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("ModifiedAt")
@@ -313,65 +291,11 @@ namespace AE.PID.Server.Migrations
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasMaxLength(8)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.ToTable("MaterialRecommendationCollections");
-                });
-
-            modelBuilder.Entity("AE.PID.Server.Data.Recommendation.MaterialRecommendationCollectionFeedback", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("CollectionId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("ModifiedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("SelectedRecommendationId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(8)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("MaterialRecommendationCollectionFeedbacks");
-                });
-
-            modelBuilder.Entity("AE.PID.Server.Data.Recommendation.UserMaterialSelection", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("MaterialId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("ModifiedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(8)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("UserMaterialSelections");
+                    b.ToTable("MaterialSelections");
                 });
 
             modelBuilder.Entity("AE.PID.Server.Data.RepositorySnapshot", b =>
@@ -519,89 +443,6 @@ namespace AE.PID.Server.Migrations
                     b.Navigation("Master");
                 });
 
-            modelBuilder.Entity("AE.PID.Server.Data.Recommendation.MaterialRecommendation", b =>
-                {
-                    b.HasOne("AE.PID.Server.Data.Recommendation.MaterialRecommendationCollection", null)
-                        .WithMany("Recommendations")
-                        .HasForeignKey("MaterialRecommendationCollectionId");
-                });
-
-            modelBuilder.Entity("AE.PID.Server.Data.Recommendation.MaterialRecommendationCollection", b =>
-                {
-                    b.OwnsOne("AE.PID.Core.Models.MaterialLocationContext", "Context", b1 =>
-                        {
-                            b1.Property<int>("MaterialRecommendationCollectionId")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<string>("FunctionElement")
-                                .IsRequired()
-                                .HasColumnType("TEXT");
-
-                            b1.Property<string>("FunctionGroup")
-                                .IsRequired()
-                                .HasColumnType("TEXT");
-
-                            b1.Property<string>("FunctionZone")
-                                .IsRequired()
-                                .HasColumnType("TEXT");
-
-                            b1.Property<string>("MaterialLocationType")
-                                .IsRequired()
-                                .HasColumnType("TEXT");
-
-                            b1.Property<int?>("ProjectId")
-                                .HasColumnType("INTEGER");
-
-                            b1.HasKey("MaterialRecommendationCollectionId");
-
-                            b1.ToTable("MaterialRecommendationCollections");
-
-                            b1.WithOwner()
-                                .HasForeignKey("MaterialRecommendationCollectionId");
-                        });
-
-                    b.Navigation("Context")
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("AE.PID.Server.Data.Recommendation.UserMaterialSelection", b =>
-                {
-                    b.OwnsOne("AE.PID.Core.Models.MaterialLocationContext", "Context", b1 =>
-                        {
-                            b1.Property<int>("UserMaterialSelectionId")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<string>("FunctionElement")
-                                .IsRequired()
-                                .HasColumnType("TEXT");
-
-                            b1.Property<string>("FunctionGroup")
-                                .IsRequired()
-                                .HasColumnType("TEXT");
-
-                            b1.Property<string>("FunctionZone")
-                                .IsRequired()
-                                .HasColumnType("TEXT");
-
-                            b1.Property<string>("MaterialLocationType")
-                                .IsRequired()
-                                .HasColumnType("TEXT");
-
-                            b1.Property<int?>("ProjectId")
-                                .HasColumnType("INTEGER");
-
-                            b1.HasKey("UserMaterialSelectionId");
-
-                            b1.ToTable("UserMaterialSelections");
-
-                            b1.WithOwner()
-                                .HasForeignKey("UserMaterialSelectionId");
-                        });
-
-                    b.Navigation("Context")
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("AE.PID.Server.Data.StencilSnapshot", b =>
                 {
                     b.HasOne("AE.PID.Server.Data.Stencil", "Stencil")
@@ -662,11 +503,6 @@ namespace AE.PID.Server.Migrations
             modelBuilder.Entity("AE.PID.Server.Data.Master", b =>
                 {
                     b.Navigation("MasterContentSnapshots");
-                });
-
-            modelBuilder.Entity("AE.PID.Server.Data.Recommendation.MaterialRecommendationCollection", b =>
-                {
-                    b.Navigation("Recommendations");
                 });
 
             modelBuilder.Entity("AE.PID.Server.Data.Stencil", b =>

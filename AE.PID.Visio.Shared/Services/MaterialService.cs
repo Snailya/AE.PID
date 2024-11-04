@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using AE.PID.Core.DTOs;
+using AE.PID.Core.Models;
 using AE.PID.Visio.Core.Exceptions;
 using AE.PID.Visio.Core.Interfaces;
 using AE.PID.Visio.Core.Models;
@@ -154,7 +155,7 @@ public class MaterialService(IApiFactory<IMaterialApi> apiFactory)
         try
         {
             var remote = await apiFactory.Api.GetMaterialByCodeAsync(code);
-            
+
             _caches.AddOrUpdate(remote);
             return await ToMaterial(remote);
         }
@@ -175,6 +176,49 @@ public class MaterialService(IApiFactory<IMaterialApi> apiFactory)
             throw new NetworkNotValidException();
         }
     }
+
+    public async Task<IEnumerable<Recommendation<Material>>> GetRecommendationAsync(MaterialLocationContext context,
+        CancellationToken token = default)
+    {
+        try
+        {
+            var collectionDto = await apiFactory.Api.GetRecommendedMaterialsAsync(context.ProjectId,
+                context.FunctionZone, context.FunctionGroup, context.FunctionElement, context.MaterialLocationType);
+
+            var recommendations = await Task.WhenAll(collectionDto.Items.Select(async x => new Recommendation<Material>
+            {
+                CollectionId = collectionDto.Id,
+                Id = x.Id,
+                Data = await ToMaterial(x.Material)
+            }));
+
+            return recommendations;
+        }
+        catch (ApiException e)
+        {
+            this.Log().Error(e);
+            throw new NetworkNotValidException();
+        }
+        catch (HttpRequestException e)
+        {
+            this.Log().Error(e);
+            throw new NetworkNotValidException();
+        }
+    }
+
+    public async Task FeedbackAsync(MaterialLocationContext context, int materialId, int? collectionId = null,
+        int? recommendationId = null)
+    {
+        var dto = new UserMaterialSelectionFeedbackDto
+        {
+            MaterialId = materialId,
+            MaterialLocationContext = context,
+            RecommendationCollectionId = collectionId,
+            SelectedRecommendationId = recommendationId
+        };
+        await apiFactory.Api.FeedbackMaterialSelectionsAsync(dto);
+    }
+
 
     private async Task<Material> ToMaterial(MaterialDto dto)
     {
