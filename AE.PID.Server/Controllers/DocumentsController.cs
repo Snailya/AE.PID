@@ -48,11 +48,15 @@ public class DocumentsController(
         {
             // first validate the document
             using var visioPackage = Package.Open(fileName, FileMode.Open, FileAccess.ReadWrite);
+            
+            // update styles
+            documentService.UpdateStyles(visioPackage);
+
+            // update masters
             var snapshots = GetMasterSnapshot(status);
             documentService.ValidateMasterBaseIdUnique(visioPackage, snapshots.Select(x=>x.BaseId));
-
             // do update
-            foreach (var snapshot in snapshots) documentService.Update(visioPackage, snapshot);
+            foreach (var snapshot in snapshots) documentService.UpdateMaster(visioPackage, snapshot);
 
             logger.LogInformation("File updated without error.");
 
@@ -89,11 +93,15 @@ public class DocumentsController(
         {
             // first validate the document
             using var visioPackage = Package.Open(fileName, FileMode.Open, FileAccess.ReadWrite);
+            
+            // update styles
+            documentService.UpdateStyles(visioPackage);
+            
+            // update masters
             var snapshots = GetMasterSnapshot(status);
             documentService.ValidateMasterBaseIdUnique(visioPackage,snapshots.Select(x=>x.BaseId));
-
             // do update
-            foreach (var snapshot in snapshots) documentService.Update(visioPackage, snapshot);
+            foreach (var snapshot in snapshots) documentService.UpdateMaster(visioPackage, snapshot);
 
             // return physical file
             return PhysicalFile(fileName, "application/octet-stream", request.File.FileName, true);
@@ -232,7 +240,7 @@ public class DocumentsController(
             // recalculate formula in shape sheet
             XmlHelper.RecalculateDocument(visioPackage);
 
-            logger.LogInformation("Update done.");
+            logger.LogInformation("UpdateMaster done.");
         }
         catch (Exception e)
         {

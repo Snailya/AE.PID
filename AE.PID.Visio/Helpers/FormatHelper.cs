@@ -21,18 +21,18 @@ public abstract class FormatHelper
     public static void FormatPage(Page page)
     {
         var document = page.Document;
-
-        var undoScope = page.Application.BeginUndoScope("Format Document");
-
-        // the grid setting is not relevant to any other custom object import by this program, so it should never have failed
-        // so set it in the first.
-        SetupGrid(page);
+        var undoScope = page.Application.BeginUndoScope("Format Page");
 
         try
         {
-            // the style is strongly relevant to font 思源仿宋， if the font is missing, this step should be skipped.
+            // the style is strongly relevant to font 等线， if the font is missing, this step should be skipped.
             if (document.Fonts.OfType<Font>().SingleOrDefault(x => x.Name == "等线") is { } font)
                 SetupStyles(document, font);
+
+            SetupLayoutAndRouting(page);
+            // the grid setting is not relevant to any other custom object import by this program, so it should never have failed
+            // so set it in the first.
+            SetupRulerAndGrid(page);
 
             // insert the frame at the 0,0 potion
             var frame = InsertFrameIfNotExist(page);
@@ -47,11 +47,11 @@ public abstract class FormatHelper
         catch (Exception ex)
         {
             document.EndUndoScope(undoScope, false);
-            LogHost.Default.Error(ex, "Failed to format document.");
+            LogHost.Default.Error(ex, "Failed to format page.");
         }
     }
 
-    private static void SetupGrid(IVPage page)
+    private static void SetupRulerAndGrid(IVPage page)
     {
         page.PageSheet.CellsSRC[(short)VisSectionIndices.visSectionObject, (short)VisRowIndices.visRowRulerGrid,
             (short)VisCellIndices.visXGridDensity].FormulaU = ((int)VisCellVals.visGridFixed).ToString();
@@ -65,8 +65,15 @@ public abstract class FormatHelper
             (short)VisCellIndices.visXGridOrigin].FormulaU = "0mm";
         page.PageSheet.CellsSRC[(short)VisSectionIndices.visSectionObject, (short)VisRowIndices.visRowRulerGrid,
             (short)VisCellIndices.visYGridOrigin].FormulaU = "0mm";
-
+        
         LogHost.Default.Info($"Grid setup for {page.Name} finished");
+    }
+
+    private static void SetupLayoutAndRouting(IVPage page)
+    {
+        page.PageSheet.CellsSRC[(short)VisSectionIndices.visSectionObject, (short)VisRowIndices.visRowPageLayout,
+            (short)VisCellIndices.visPLOJumpFactorX].FormulaU = "1";
+        LogHost.Default.Info($"Layout and routing setup for {page.Name} finished");
     }
 
     private static Shape? InsertFrameIfNotExist(IVPage page)

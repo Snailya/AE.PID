@@ -36,11 +36,17 @@ public interface IDocumentService
     XDocument BuildPageDocument(XDocument source, XDocument snapshot, string masterId);
 
     /// <summary>
-    ///     更新Visio包
+    ///     更新文档模具
     /// </summary>
     /// <param name="package"></param>
     /// <param name="snapshot"></param>
-    void Update(Package package, MasterContentSnapshot snapshot);
+    void UpdateMaster(Package package, MasterContentSnapshot snapshot);
+    
+    /// <summary>
+    /// 更新文档样式
+    /// </summary>
+    /// <param name="package"></param>
+    void UpdateStyles(Package package);
 
     /// <summary>
     /// Validate if there is no duplicated master base id.

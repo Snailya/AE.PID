@@ -56,8 +56,18 @@ public class DocumentService(ILogger<DocumentService> logger) : IDocumentService
         foreach (var shapeElement in source.Descendants(_mainNs + "Shape")
                      .Where(x => x.Attribute("Master")?.Value == masterId))
         {
+            // 如果模具的新版本调整了Pro.SubClass.Format的值顺序，可能会导致更新后的形状显示为错误的子类，解决的方法是去掉公式，只使用值
+            var subClassFormulaAttribute = shapeElement.Elements(_mainNs + "Section")
+                .SingleOrDefault(x => x.Attribute("N")?.Value == "Property")?
+                .Elements(_mainNs + "Row")
+                .SingleOrDefault(x => x.Attribute("N")?.Value == "SubClass")?
+                .Element(_mainNs + "Cell")?.Attribute("F");
+            subClassFormulaAttribute?.Remove();
+
+            // 如果模具的新版本与旧版本相比增加了新的形状，会导致更新后的绘图页的形状显示异常，例如调节阀的开关箭头消失，所以这种情况需要补充缺少的子形状
             var sourceElement = shapeElement.Element(_mainNs + "Shapes");
             if (sourceElement == null) continue;
+
 
             var targetElement = new XElement(_mainNs + "Shapes");
             foreach (var xElement in snapshot.Elements(_mainNs + "MasterContents")
@@ -114,7 +124,7 @@ public class DocumentService(ILogger<DocumentService> logger) : IDocumentService
         return source;
     }
 
-    public void Update(Package package, MasterContentSnapshot snapshot)
+    public void UpdateMaster(Package package, MasterContentSnapshot snapshot)
     {
         logger.LogInformation("Start checking {snapshot}...", snapshot.BaseId);
 
@@ -191,6 +201,38 @@ public class DocumentService(ILogger<DocumentService> logger) : IDocumentService
         logger.LogInformation("{snapshot} is update to date.", snapshot.BaseId);
     }
 
+    public void UpdateStyles(Package package)
+    {
+        // 20241104: 由于将默认字体从思源黑体修改为等线，需要在更新文档的时候帮助处理。
+        var documentUri = PackUriHelper.CreatePartUri(new Uri("visio/document.xml", UriKind.Relative));
+        var documentPart = package.GetPart(documentUri);
+        var documentDocument = documentPart.GetDocumentFromPart();
+
+        // find out the AE Normal style's character section
+        var rowElement = documentDocument.Element(_mainNs + "VisioDocument")?.Element(_mainNs + "StyleSheets")
+            ?.Elements(_mainNs + "StyleSheet").SingleOrDefault(x => x.Attribute("NameU")?.Value == "AE Normal")
+            ?.Elements(_mainNs + "Section")
+            .SingleOrDefault(x => x.Attribute("N")?.Value == "Character")?.Elements(_mainNs + "Row")
+            .SingleOrDefault(x => x.Attribute("IX")?.Value == "0");
+
+        if (rowElement != null)
+        {
+            // check if the font is 等线
+            var fontElement = rowElement.Elements(_mainNs + "Cell").Single(x => x.Attribute("N")?.Value == "Font");
+            if (fontElement.Attribute("V")!.Value != "等线")
+                fontElement.Attribute("V")!.SetValue("等线");
+
+            // check if the font is 等线
+            var asiaFontElement = rowElement.Elements(_mainNs + "Cell")
+                .Single(x => x.Attribute("N")?.Value == "AsianFont");
+            if (asiaFontElement.Attribute("V")!.Value != "等线")
+                asiaFontElement.Attribute("V")!.SetValue("等线");
+        }
+
+        XmlHelper.SaveXDocumentToPart(documentPart, documentDocument);
+    }
+
+
     public void ValidateMasterBaseIdUnique(Package package, IEnumerable<string> baseIds)
     {
         var mastersUri = PackUriHelper.CreatePartUri(new Uri("visio/masters/masters.xml", UriKind.Relative));
@@ -199,7 +241,7 @@ public class DocumentService(ILogger<DocumentService> logger) : IDocumentService
 
         var duplicates = mastersDocument.Root!.Elements()
             .GroupBy(x => x.Attribute("BaseID")!.Value) // Group the list by each value
-            .Where(g => g.Count() > 1 && baseIds.Any(x=>x == g.Key)) // Filter groups where count > 1
+            .Where(g => g.Count() > 1 && baseIds.Any(x => x == g.Key)) // Filter groups where count > 1
             .Select(g => g.Key) // Select the value (key) from each group
             .ToList();
 
