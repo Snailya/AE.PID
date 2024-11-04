@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using AE.PID.Visio.Exceptions;
 using AE.PID.Visio.Extensions;
+using Microsoft.Office.Interop.Excel;
 using Microsoft.Office.Interop.Visio;
 using Splat;
+using Font = Microsoft.Office.Interop.Visio.Font;
+using Page = Microsoft.Office.Interop.Visio.Page;
+using Shape = Microsoft.Office.Interop.Visio.Shape;
 
 namespace AE.PID.Visio.Helpers;
 
@@ -26,18 +31,13 @@ public abstract class FormatHelper
         try
         {
             // the style is strongly relevant to font 思源仿宋， if the font is missing, this step should be skipped.
-            if (document.Fonts.OfType<Font>().SingleOrDefault(x => x.Name == "思源黑体") is { } font)
-            {
+            if (document.Fonts.OfType<Font>().SingleOrDefault(x => x.Name == "等线") is { } font)
                 SetupStyles(document, font);
-            }
-            else
-            {
-                SetupStyles(document);
-                MessageBox.Show("未找到思源黑体，将跳过字体设置,请在安装字体后重新初始化页面", "字体缺失", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
 
             // insert the frame at the 0,0 potion
-            InsertFrameIfNotExist(page);
+            var frame = InsertFrameIfNotExist(page);
+            if (frame != null)
+                InsertTableIfNotExist(page, frame);
 
             // set the view to make the frame center in the window
             Globals.ThisAddIn.Application.ActiveWindow.ViewFit = (int)VisWindowFit.visFitPage;
@@ -61,22 +61,28 @@ public abstract class FormatHelper
             (short)VisCellIndices.visXGridSpacing].FormulaU = "2.5mm";
         page.PageSheet.CellsSRC[(short)VisSectionIndices.visSectionObject, (short)VisRowIndices.visRowRulerGrid,
             (short)VisCellIndices.visYGridSpacing].FormulaU = "2.5mm";
+        page.PageSheet.CellsSRC[(short)VisSectionIndices.visSectionObject, (short)VisRowIndices.visRowRulerGrid,
+            (short)VisCellIndices.visXGridOrigin].FormulaU = "0mm";
+        page.PageSheet.CellsSRC[(short)VisSectionIndices.visSectionObject, (short)VisRowIndices.visRowRulerGrid,
+            (short)VisCellIndices.visYGridOrigin].FormulaU = "0mm";
 
         LogHost.Default.Info($"Grid setup for {page.Name} finished");
     }
 
-    private static void InsertFrameIfNotExist(IVPage page)
+    private static Shape? InsertFrameIfNotExist(IVPage page)
     {
         const string baseId = "{7811D65E-9633-4E98-9FCD-B496A8B823A7}";
 
-        if (page.Shapes.OfType<Shape>().Any(x => x.Master.BaseID == baseId)) return;
+        if (page.Shapes.OfType<Shape>().Any(x => x.Master.BaseID == baseId)) return null;
 
         try
         {
             var frameObject = page.Document.GetMaster(baseId);
 
-            page.Drop(frameObject, 0, 0);
+            var frame = page.DropMetric(frameObject, (0, 0));
             page.AutoSizeDrawing();
+
+            return frame;
         }
         catch (MasterNotValidException)
         {
@@ -87,6 +93,41 @@ public abstract class FormatHelper
             LogHost.Default.Error(e,
                 "Failed to insert frame at origin");
         }
+
+        return null;
+    }
+
+    private static (Shape? Table1, Shape? Table2) InsertTableIfNotExist(IVPage page, Shape frame)
+    {
+        const string table1BaseId = "{D1A49D75-2A8B-4F4B-9A3A-27A0BC63D08D}";
+        const string table2BaseId = "{4B7CA2AC-E82E-4382-80F8-D2E0CC85B151}";
+
+        if (page.Shapes.OfType<Shape>().Any(x => x.Master.BaseID == table1BaseId)) return (null, null);
+        if (page.Shapes.OfType<Shape>().Any(x => x.Master.BaseID == table2BaseId)) return (null, null);
+
+        try
+        {
+            var (_, _, right, top) = frame.BoundingBoxMetric((short)VisBoundingBoxArgs.visBBoxDrawingCoords +
+                                                             (short)VisBoundingBoxArgs.visBBoxExtents);
+            var table1Object = page.Document.GetMaster(table1BaseId);
+            var table2Object = page.Document.GetMaster(table2BaseId);
+
+            var table1 = page.DropMetric(table1Object, (right - 130, top - 76));
+            var table2 = page.DropMetric(table2Object, (right - 130, top - 316));
+
+            return (table1, table2);
+        }
+        catch (MasterNotValidException)
+        {
+            MessageBox.Show(@"未能找到PCI符号说明，请检查AE标识.vssx文件是否已打开。");
+        }
+        catch (Exception e)
+        {
+            LogHost.Default.Error(e,
+                "Failed to insert frame at origin");
+        }
+
+        return (null, null);
     }
 
     private static void SetupStyles(IVDocument document, Font? font = null)
@@ -113,5 +154,23 @@ public abstract class FormatHelper
             LogHost.Default.Warn(
                 "Failed to setup the font becasue font is missing in the system.");
         }
+    }
+
+    public static void InsertWorkSheet(Worksheet worksheet)
+    {
+        var oleShape = Globals.ThisAddIn.Application.ActivePage.InsertObject("Excel.Sheet",
+            (short)VisInsertObjArgs.visInsertAsEmbed);
+        object oleObject = oleShape.Object;
+        var workbook = (Workbook)oleObject;
+
+        // 操作Excel对象
+        (workbook.Worksheets[1] as Worksheet)?.Delete();
+        workbook.Worksheets.Add(worksheet);
+
+        // 保存并关闭Excel工作簿
+        workbook.Save();
+        workbook.Close(false); // 关闭工作簿，但不保存改变
+        Marshal.ReleaseComObject(worksheet);
+        Marshal.ReleaseComObject(workbook);
     }
 }
