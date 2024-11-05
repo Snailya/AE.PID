@@ -34,7 +34,7 @@
                 </TreeView.ItemTemplate>
             </TreeView>
             <StackPanel DockPanel.Dock="Top">
-                <TextBox Text="{Binding SearchText}" Watermark="搜索物料" />
+                <TextBox Text="{Binding SearchText}" Watermark="搜索" />
                 <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
             </StackPanel>
             <views:PageNavigator DockPanel.Dock="Bottom"

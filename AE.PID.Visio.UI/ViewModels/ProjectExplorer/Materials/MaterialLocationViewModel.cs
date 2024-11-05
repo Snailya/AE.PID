@@ -17,6 +17,7 @@ public class MaterialLocationViewModel : ReactiveObject
     private string _materialCode;
     private string _remarks = string.Empty;
     private double _unitQuantity;
+    private string _fullText;
 
     public CompositeId FunctionId { get; }
     public string MaterialType { get; set; }
@@ -72,8 +73,7 @@ public class MaterialLocationViewModel : ReactiveObject
     {
         _cleanUp.Dispose();
     }
-
-
+    
     #region -- Constuctor --
 
     public MaterialLocationViewModel(MaterialLocation material, FunctionLocation function) :
@@ -92,6 +92,11 @@ public class MaterialLocationViewModel : ReactiveObject
             .Subscribe(x => { _function.Remarks = x; })
             .DisposeWith(_cleanUp);
     }
+    
+    public bool Contains(string text){
+        var lowercaseText = text.ToLower();
+        return ProcessArea.ToLower().Contains(text) || FunctionalGroup.ToLower().Contains(text) || FunctionalElement.ToLower().Contains(text) || MaterialType.ToLower().Contains(text) || KeyParameters.ToLower().Contains(text) || Description.ToLower().Contains(text) || Remarks.ToLower().Contains(text);
+        }
 
     public MaterialLocationViewModel(MaterialLocation material)
     {

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Text.Json;
 using AE.PID.Core.Models;
 using AE.PID.Visio.Core.Exceptions;
 using AE.PID.Visio.Core.Interfaces;
@@ -27,7 +28,14 @@ public class MaterialsViewModel : ViewModelBase
     private bool _isLoading = true;
     private bool _isMaterialVisible;
     private MaterialViewModel? _material;
+    private string? _searchText;
     private MaterialLocationViewModel? _selectedLocation;
+
+    public string? SearchText
+    {
+        get => _searchText;
+        set => this.RaiseAndSetIfChanged(ref _searchText, value);
+    }
 
     public ValueTuple<string, string>? Clipboard
     {
@@ -115,7 +123,7 @@ public class MaterialsViewModel : ViewModelBase
         IMaterialService materialService)
     {
 #if DEBUG
-        DebugExt.Log("Initializing MaterialsViewModel",null, nameof(MaterialsViewModel));
+        DebugExt.Log("Initializing MaterialsViewModel", null, nameof(MaterialsViewModel));
 #endif
 
         #region -- Commands --
@@ -233,8 +241,10 @@ public class MaterialsViewModel : ViewModelBase
             .OnItemAdded(x => DebugExt.Log("MaterialLocations.OnItemAdded", x.LocationId, nameof(MaterialsViewModel)))
             .OnItemUpdated((cur, prev, _) =>
                 DebugExt.Log("MaterialLocations.OnItemUpdated", cur.LocationId, nameof(MaterialsViewModel)))
-            .OnItemRefreshed(x => DebugExt.Log("MaterialLocations.OnItemRefreshed", x.LocationId, nameof(MaterialsViewModel)))
-            .OnItemRemoved(x => DebugExt.Log("MaterialLocations.OnItemRemoved", x.LocationId, nameof(MaterialsViewModel)))
+            .OnItemRefreshed(x =>
+                DebugExt.Log("MaterialLocations.OnItemRefreshed", x.LocationId, nameof(MaterialsViewModel)))
+            .OnItemRemoved(x =>
+                DebugExt.Log("MaterialLocations.OnItemRemoved", x.LocationId, nameof(MaterialsViewModel)))
 #endif
             .ObserveOn(RxApp.MainThreadScheduler)
             .Do(x => { IsLoading = false; });
@@ -250,12 +260,18 @@ public class MaterialsViewModel : ViewModelBase
 #endif
             .ObserveOn(RxApp.MainThreadScheduler);
 
+        var fullTextFilter = this.WhenValueChanged(t => t.SearchText)
+            .Throttle(TimeSpan.FromMilliseconds(400))
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Select(BuildFilter);
+
         observeMaterial
             .InnerJoin<MaterialLocation, CompositeId, FunctionLocation, CompositeId, MaterialLocationViewModel>(
                 observeFunction,
                 right => right.Id,
                 (left, right) => new MaterialLocationViewModel(left, right)
             )
+            .Filter(fullTextFilter)
             .SortAndBind(out _locations,
                 SortExpressionComparer<MaterialLocationViewModel>.Ascending(x => x.ProcessArea)
                     .ThenByAscending(x => x.FunctionalGroup)
@@ -280,6 +296,15 @@ public class MaterialsViewModel : ViewModelBase
             });
 
         #endregion
+
+        return;
+
+        Func<MaterialLocationViewModel, bool> BuildFilter(string? searchText)
+        {
+            if (string.IsNullOrEmpty(searchText)) return _ => true;
+
+            return material =>material.Contains(searchText!);
+        }
     }
 
     #endregion

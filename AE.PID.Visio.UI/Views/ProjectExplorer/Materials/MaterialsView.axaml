@@ -24,6 +24,7 @@
         <StackPanel DockPanel.Dock="Top"
                     Classes="actions" Margin="0 0 0 4"
                     HorizontalAlignment="Right">
+            <TextBox Text="{Binding SearchText}" Watermark="搜索" Width="128" />
             <SplitButton Content="导出"
                          Command="{Binding Export}"
                          CommandParameter="{x:Static models:OutputType.Page}">
@@ -37,7 +38,7 @@
             </SplitButton>
             <!-- <Button Content="同步" Command="{Binding Sync}" /> -->
         </StackPanel>
-
+        
         <Grid>
             <views:LoadingIndicator IsLoading="{Binding IsLoading}" />
             <SplitView
