@@ -14,14 +14,16 @@
         <viewModels:AccountSettingViewModel />
     </Design.DataContext>
     <UserControl.Styles>
+        <Style Selector="TextBlock">
+            <Setter Property="Margin" Value="4" />
+        </Style>
         <Style Selector="TextBox">
             <Setter Property="Margin" Value="4" />
         </Style>
     </UserControl.Styles>
 
-    <StackPanel>
-        <Grid ColumnDefinitions="Auto, *">
+    <StackPanel Grid.IsSharedSizeScope="True">
+            <TextBlock attachedProperties:LabelBehav.Value="设备ID" Text="{Binding DeviceId}" />
             <TextBox attachedProperties:LabelBehav.Value="工号" Text="{Binding UserId}" Watermark="e.g. 6470" />
-        </Grid>
     </StackPanel>
 </UserControl>

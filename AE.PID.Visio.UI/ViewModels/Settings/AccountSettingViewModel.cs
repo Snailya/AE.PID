@@ -18,6 +18,8 @@ public class AccountSettingViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _userId, value);
     }
 
+    public string DeviceId { get; set; }
+
     private void DoUpdateUserId(string value)
     {
         _configurationService.UpdateProperty(x => x.UserId, value);
@@ -28,6 +30,8 @@ public class AccountSettingViewModel : ViewModelBase
     public AccountSettingViewModel(IConfigurationService configurationService)
     {
         _configurationService = configurationService;
+
+        DeviceId = configurationService.RuntimeConfiguration.UUID;
 
         configurationService.Configuration.Subscribe(v => { UserId = v.UserId; });
 
