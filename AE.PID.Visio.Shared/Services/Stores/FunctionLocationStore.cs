@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text.RegularExpressions;
 using AE.PID.Core.Models;
@@ -13,7 +15,8 @@ namespace AE.PID.Visio.Shared.Services;
 public class FunctionLocationStore : DisposableBase, IFunctionLocationStore
 {
     private const string SolutionXmlKey = "materials";
-    private readonly IFunctionService _functionService;
+    private readonly SourceCache<FunctionLocation, CompositeId> _functionLocations = new(t => t.Id);
+    private readonly Lazy<IDisposable> _loader;
 
     private readonly IVisioService _visioService;
 
@@ -21,17 +24,30 @@ public class FunctionLocationStore : DisposableBase, IFunctionLocationStore
         IVisioService visioService)
     {
         _visioService = visioService;
-        _functionService = functionService;
+        
+        FunctionLocations = _functionLocations.AsObservableCache(); 
 
-        // initialize the data
-        // 这里还是没有实现延迟加载
-        FunctionLocations = visioService.FunctionLocations.Value;
+        // the function locations is implemented as lazy load by invoke the Load method, because for a drawing there might be hundreds of material locations which takes a lot of time to load  
+        // we should also consider to implement the load method into an async method with cancellation
+        _loader = new Lazy<IDisposable>(() => visioService.Shapes.Value
+            .Connect()
+            .Filter(x => x.Types.Contains(VisioShape.ShapeType.FunctionLocation))
+            .Transform(visioService.ToFunctionLocation)
+            // after the shape is transformed into the model, switch the forward working into background scheduler
+            .ObserveOn(TaskPoolScheduler.Default)
+            .PopulateInto(_functionLocations)
+        );
+
+        CleanUp.Add(Disposable.Create(() =>
+        {
+            if (_loader.IsValueCreated)
+                _loader.Value.Dispose();
+        }));
 
         // observable property changes and propagate to Visio shape
         var propagateChangeToVisio = FunctionLocations.Connect()
             .AutoRefresh(propertyChangeThrottle: TimeSpan.FromMilliseconds(400))
             .WhereReasonsAre(ChangeReason.Refresh)
-            .ObserveOn(SchedulerManager.VisioScheduler)
             .Subscribe(changes =>
             {
                 foreach (var change in changes) UpdateInVisio(change);
@@ -58,7 +74,7 @@ public class FunctionLocationStore : DisposableBase, IFunctionLocationStore
     }
 
     /// <inheritdoc />
-    public IObservableCache<FunctionLocation, CompositeId> FunctionLocations { get; }
+    public IObservableCache<FunctionLocation, CompositeId> FunctionLocations { get; } 
 
     /// <inheritdoc />
     public void Update(CompositeId id, Function function)
@@ -66,7 +82,8 @@ public class FunctionLocationStore : DisposableBase, IFunctionLocationStore
         var location = FunctionLocations.Lookup(id);
         if (!location.HasValue) throw new FunctionLocationNotValidException(id);
 
-        if (function.Type != location.Value.Type) throw new FunctionTypeNotMatchException(function.Type,location.Value.Type);
+        if (function.Type != location.Value.Type)
+            throw new FunctionTypeNotMatchException(function.Type, location.Value.Type);
 
         switch (location.Value.Type)
         {
@@ -98,12 +115,16 @@ public class FunctionLocationStore : DisposableBase, IFunctionLocationStore
         }
     }
 
-
     /// <inheritdoc />
     public FunctionLocation? Find(CompositeId id)
     {
         var location = FunctionLocations.Lookup(id);
         return location.HasValue ? location.Value : null;
+    }
+
+    public void Load()
+    {
+        var _ = _loader.Value;
     }
 
     private void UpdateInVisio(Change<FunctionLocation, CompositeId> change)

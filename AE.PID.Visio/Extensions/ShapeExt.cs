@@ -47,7 +47,7 @@ public static class ShapeExt
     /// <param name="shape"></param>
     /// <param name="flags"></param>
     /// <returns></returns>
-    public static (double, double, double, double) BoundingBoxMetric(this IVShape shape, short flags)
+    public static (double Left, double Bottom, double Right, double Top) BoundingBoxMetric(this IVShape shape, short flags)
     {
         shape.BoundingBox(flags, out var left, out var bottom, out var right, out var top);
         return (left * 25.4, bottom * 25.4, right * 25.4, top * 25.4);

@@ -25,5 +25,5 @@ public interface IMaterialApi
         [Query] string? functionGroup = null, [Query] string? functionElement = null, [Query] string? materialLocationType = null);
 
     [Post("/api/v3/recommendations/materials")]
-    Task<int> FeedbackMaterialSelectionsAsync(UserMaterialSelectionFeedbackDto feedback);
+    Task<int> FeedbackMaterialSelectionsAsync(UserMaterialSelectionFeedbackDto[] feedbacks);
 }

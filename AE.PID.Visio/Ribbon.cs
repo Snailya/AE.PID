@@ -15,9 +15,11 @@ using AE.PID.Visio.Shared;
 using AE.PID.Visio.UI.Avalonia.ViewModels;
 using AE.PID.Visio.UI.Avalonia.Views;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Office.Interop.Excel;
 using Microsoft.Office.Interop.Visio;
 using Splat;
 using Office = Microsoft.Office.Core;
+using Shape = Microsoft.Office.Interop.Visio.Shape;
 
 // TODO:  Follow these steps to enable the Ribbon (XML) item:
 
@@ -103,6 +105,17 @@ public class Ribbon : Office.IRibbonExtensibility
 
     public void Debug(Office.IRibbonControl control)
     {
+        string[,] dataArray = new string[2, 9]
+        {
+            { "1", "2", "3", "4", "5", "6", "7", "8", "9" },
+            { "1", "2", "3", "4", "5", "6", "7", "8", "9" }
+        };
+
+        var worksheet = new Worksheet();
+        worksheet.Range["A1", "C1"].Merge();
+        worksheet.Range["A1"].Value2 = "Letter code for process variables and control functions (ISO 15519-2)";
+
+        FormatHelper.InsertWorkSheet(worksheet);
     }
 
 

@@ -99,15 +99,19 @@ public class FunctionKanbanViewModel : ViewModelBase
 
     #region -- Constructors --
 
-    public FunctionKanbanViewModel(IProjectStore projectStore, IFunctionService functionService,
+    public FunctionKanbanViewModel(NotificationHelper notificationHelper, IProjectStore projectStore,
+        IFunctionService functionService,
         IFunctionLocationStore fLocStore,
-        IMaterialLocationStore mLocStore, NotifyService notifyService)
+        IMaterialLocationStore mLocStore)
     {
         #region -- Commands --
 
         // for the function zone, the selection is allowed when there is a project specified
         // but for function group, it could happen any time
-        var canSelect = projectStore.Project.Select(x => x.Value)
+        var canSelect = projectStore.Project
+            .Select(x => x.Value)
+            // switch to UI thread
+            .ObserveOn(RxApp.MainThreadScheduler)
             .CombineLatest(this.WhenAnyValue(x => x.SelectedLocation.Source.Type))
             .Select(x =>
             {
@@ -138,7 +142,7 @@ public class FunctionKanbanViewModel : ViewModelBase
                     fLocStore.Update(SelectedLocation.Source.Id, dialogResult.Source);
                 }, canSelect);
         SelectFunction.ThrownExceptions
-            .Subscribe(v => { notifyService.Error("选择失败", v!.Message); });
+            .Subscribe(v => { notificationHelper.Error("选择失败", v!.Message); });
 
         SyncFunctionGroups = ReactiveCommand.CreateFromTask(async () =>
         {
@@ -152,27 +156,27 @@ public class FunctionKanbanViewModel : ViewModelBase
                 dialogResult);
         });
         SyncFunctionGroups.ThrownExceptions
-            .Subscribe(v => { notifyService.Error("同步功能组失败", v!.Message); });
+            .Subscribe(v => { notificationHelper.Error("同步功能组失败", v!.Message); });
 
         #endregion
 
         #region -- Subscriptions --
 
         projectStore.Project
+            // switch to UI thread
+            .ObserveOn(RxApp.MainThreadScheduler)
             .Do(x =>
             {
                 if (!x.IsSuccess)
-                    notifyService.Error("加载项目信息失败", x.Exception!.Message);
+                    notificationHelper.Error("加载项目信息失败", x.Exception!.Message);
             })
             .Select(x => x.Value)
             .ToProperty(this, x => x.Project, out _project, scheduler: RxApp.MainThreadScheduler);
 
-        var functionObservable = fLocStore.FunctionLocations.Connect();
-
+        var functionObservable = fLocStore.FunctionLocations.Connect().ObserveOn(RxApp.MainThreadScheduler);
         this.WhenAnyValue(x => x.SelectedLocation.Id)
             .Select(id => functionObservable.WatchValue(id))
             .Switch()
-            .ObserveOn(RxApp.MainThreadScheduler)
             .Select(x => new FunctionLocationPropertiesViewModel(x))
             .ToProperty(this, x => x.Properties, out _properties);
 
@@ -180,7 +184,6 @@ public class FunctionKanbanViewModel : ViewModelBase
             .Select<CompositeId?, Func<FunctionLocation, bool>>(x => loc => loc.ParentId.Equals(x));
         functionObservable
             .Filter(groupFilter)
-            .ObserveOn(RxApp.MainThreadScheduler)
             .Transform(x => new FunctionGroupViewModel(x))
             .Bind(out _groups)
             .Subscribe();
@@ -189,13 +192,11 @@ public class FunctionKanbanViewModel : ViewModelBase
             .Select<CompositeId, Func<FunctionLocation, bool>>(v =>
                 location => IsDescendant(fLocStore.FunctionLocations, location, v) && (int)location.Type > 2);
         functionObservable
-            .ObserveOn(RxApp.MainThreadScheduler)
             .Filter(materialFilter)
             .LeftJoin(mLocStore.MaterialLocations.Connect(), x => x.LocationId,
                 (left, right) =>
                     new { Function = left, Material = right })
             .Filter(x => x.Material.HasValue)
-            .ObserveOn(RxApp.MainThreadScheduler)
             .Transform(x => new MaterialLocationViewModel(x.Material.Value, x.Function))
             .SortAndBind(out _materials,
                 SortExpressionComparer<MaterialLocationViewModel>.Ascending(x => x.ProcessArea)

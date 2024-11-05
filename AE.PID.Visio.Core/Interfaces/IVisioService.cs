@@ -1,10 +1,36 @@
-﻿using AE.PID.Visio.Core.Models;
+﻿using AE.PID.Visio.Core.Exceptions;
+using AE.PID.Visio.Core.Models;
 using DynamicData;
 
 namespace AE.PID.Visio.Core.Interfaces;
 
 public interface IVisioService
 {
+    /// <summary>
+    ///     Get the shape that connected to the shape
+    /// </summary>
+    /// <returns></returns>
+    CompositeId[] GetAdjacent(CompositeId compositeId);
+
+    #region -- Interactions --
+
+    /// <summary>
+    ///     Insert the data as embedded Excel sheet at the active page.
+    /// </summary>
+    /// <param name="dataArray"></param>
+    void InsertAsExcelSheet(string[,] dataArray);
+
+    /// <summary>
+    ///     Select the shape with specified id and make it view center.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <exception cref="ShapeNotExistException">If there is no shape that matches the id.</exception>
+    void SelectAndCenterView(CompositeId id);
+
+    #endregion
+
+    #region -- Shape Sheet --
+
     /// <summary>
     ///     Get the document property by prop name.
     /// </summary>
@@ -47,41 +73,31 @@ public interface IVisioService
     /// <param name="id"></param>
     /// <param name="patches"></param>
     void UpdateShapeProperties(CompositeId id, IEnumerable<ValuePatch> patches);
-    
-    /// <summary>
-    ///     Insert the data as embedded Excel sheet at the active page.
-    /// </summary>
-    /// <param name="dataArray"></param>
-    void InsertAsExcelSheet(string[,] dataArray);
-    
-    /// <summary>
-    ///     Select the shape with specified id and make it view center.
-    /// </summary>
-    /// <param name="id"></param>
-    void SelectAndCenterView(CompositeId id);
+
+    #endregion
 
     #region -- Models --
 
     /// <summary>
-    ///     Get the function locations from the document.
+    ///     Get the shapes from the document.
+    ///     Because the load shape takes a lot of time, so it is defined as Lazy.
     /// </summary>
-    Lazy<IObservableCache<FunctionLocation, CompositeId>> FunctionLocations { get; }
-
-    /// <summary>
-    ///     Get the material locations from the document
-    /// </summary>
-    Lazy<IObservableCache<MaterialLocation, CompositeId>> MaterialLocations { get; }
+    Lazy<IObservableCache<VisioShape, CompositeId>> Shapes { get; }
 
     /// <summary>
     ///     Get the symbols from the document
     /// </summary>
-    Lazy<IObservableCache<Symbol, string>> Symbols { get; }
-
-    #endregion
+    Lazy<IObservableCache<VisioMaster, string>> Masters { get; }
 
     /// <summary>
-    /// Get the shape that connected to the shape
+    ///     Get the shape as function location
     /// </summary>
-    /// <returns></returns>
-    CompositeId[] GetAdjacent(CompositeId compositeId);
+    FunctionLocation ToFunctionLocation(VisioShape shape);
+
+    /// <summary>
+    ///     Convert the shape as material location
+    /// </summary>
+    MaterialLocation ToMaterialLocation(VisioShape shape);
+
+    #endregion
 }

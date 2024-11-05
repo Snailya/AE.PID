@@ -10,10 +10,10 @@ public class SettingsWindowViewModel : ViewModelBase
 
     #region -- Constructors --
 
-    public SettingsWindowViewModel(NotifyService notifyService, IConfigurationService configurationService,
+    public SettingsWindowViewModel(NotificationHelper notificationHelper, IConfigurationService configurationService,
         IAppUpdateService appUpdateService)
     {
-        About = new AboutViewModel(notifyService, configurationService, appUpdateService);
+        About = new AboutViewModel(notificationHelper, configurationService, appUpdateService);
         Account = new AccountSettingViewModel(configurationService);
     }
 

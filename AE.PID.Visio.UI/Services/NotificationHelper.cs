@@ -5,7 +5,7 @@ using Avalonia.Controls.Notifications;
 
 namespace AE.PID.Visio.UI.Avalonia.Services;
 
-public class NotifyService
+public class NotificationHelper
 {
     private readonly BehaviorSubject<NotificationExt?> _subject = new(default);
 
@@ -39,6 +39,7 @@ public class NotifyService
     {
         public static string ProjectExplorer = nameof(ProjectExplorer);
         public static string SelectProject = nameof(SelectProject);
+        public static string SelectMaterial = nameof(SelectMaterial);
     }
 
     public class NotificationExt : Notification

@@ -95,7 +95,7 @@ public partial class ProjectExplorerWindow : WindowBase<ProjectExplorerWindowVie
     #region -- Materials --
 
     private async Task DoShowSelectMaterialDialogAsync(
-        IInteractionContext<SelectMaterialViewModel?, MaterialViewModel?> interaction)
+        IInteractionContext<SelectMaterialWindowViewModel?, MaterialViewModel?> interaction)
     {
         var dialog = new SelectMaterialWindow
         {

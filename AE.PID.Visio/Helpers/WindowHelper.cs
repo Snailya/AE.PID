@@ -28,7 +28,10 @@ public static class WindowHelper
 
     [DllImport("user32.dll")]
     private static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
-
+    
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+    
     public static void Show<TWindow, TViewModel>(IntPtr? parent = null)
         where TWindow : Window where TViewModel : ViewModelBase
     {

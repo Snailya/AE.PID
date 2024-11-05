@@ -3,13 +3,13 @@ using DynamicData;
 
 namespace AE.PID.Visio.Core.Interfaces;
 
-public interface IMaterialLocationStore : IStore
+public interface IMaterialLocationStore : IStore,ILazyLoad
 {
     /// <summary>
     ///     Get the dynamic material locations
     /// </summary>
     IObservableCache<MaterialLocation, CompositeId> MaterialLocations { get; }
-
+    
     /// <summary>
     /// Locate the material on the drawing if there exists one.
     /// </summary>

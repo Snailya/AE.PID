@@ -12,9 +12,9 @@ public abstract class WindowViewModelBase : ViewModelBase
     {
     }
 
-    protected WindowViewModelBase(NotifyService? notifyService, string? route = null)
+    protected WindowViewModelBase(NotificationHelper? notificationHelper, string? route = null)
     {
-        notifyService?
+        notificationHelper?
             .Notifications
             .WhereNotNull()
             .Where(x => x.Route == null || x.Route == route)

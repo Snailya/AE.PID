@@ -3,7 +3,7 @@ using DynamicData;
 
 namespace AE.PID.Visio.Core.Interfaces;
 
-public interface IFunctionLocationStore : IStore
+public interface IFunctionLocationStore : IStore,ILazyLoad
 {
     /// <summary>
     ///     Get the dynamic locations
@@ -23,4 +23,6 @@ public interface IFunctionLocationStore : IStore
     /// <param name="id"></param>
     /// <returns></returns>
     FunctionLocation? Find(CompositeId id);
+
+
 }

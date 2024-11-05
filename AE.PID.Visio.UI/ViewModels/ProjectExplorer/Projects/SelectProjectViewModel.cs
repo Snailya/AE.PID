@@ -16,7 +16,7 @@ namespace AE.PID.Visio.UI.Avalonia.ViewModels;
 public class SelectProjectViewModel : WindowViewModelBase
 {
     private readonly ReadOnlyObservableCollection<ProjectViewModel> _data;
-    private readonly NotifyService _notifyService;
+    private readonly NotificationHelper _notificationHelper;
 
     private readonly IProjectService _projectService;
     private CancellationTokenSource? _cancellationTokenSource;
@@ -76,7 +76,7 @@ public class SelectProjectViewModel : WindowViewModelBase
         }
         catch (Exception e)
         {
-            _notifyService.Error("加载项目列表失败", e.Message, NotifyService.Routes.SelectProject);
+            _notificationHelper.Error("加载项目列表失败", e.Message, NotificationHelper.Routes.SelectProject);
         }
         finally
         {
@@ -88,11 +88,11 @@ public class SelectProjectViewModel : WindowViewModelBase
 
     #region -- Constructor--
 
-    public SelectProjectViewModel(NotifyService notifyService, IProjectService projectService) : base(
-        notifyService, NotifyService.Routes.SelectProject)
+    public SelectProjectViewModel(NotificationHelper notificationHelper, IProjectService projectService) : base(
+        notificationHelper, NotificationHelper.Routes.SelectProject)
     {
         _projectService = projectService;
-        _notifyService = notifyService;
+        _notificationHelper = notificationHelper;
 
         #region -- Commands --
 

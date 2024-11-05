@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using AE.PID.Visio.Core.Interfaces;
@@ -18,6 +20,8 @@ public class MaterialLocationStore : DisposableBase, IMaterialLocationStore
 {
     private readonly IFunctionLocationStore _functionLocationStore;
     private readonly ILocalCacheService _localCacheService;
+    private readonly Lazy<IDisposable> _locationLoader;
+    private readonly SourceCache<MaterialLocation, CompositeId> _materialLocations = new(t => t.LocationId);
     private readonly IMaterialResolver _materialResolver;
     private readonly IStorageService _storageService;
     private readonly IVisioService _visioService;
@@ -38,7 +42,7 @@ public class MaterialLocationStore : DisposableBase, IMaterialLocationStore
         IMaterialResolver materialResolver,
         ILocalCacheService localCacheService,
         IStorageService storageService
-        )
+    )
     {
         _visioService = visioService;
         _localCacheService = localCacheService;
@@ -46,33 +50,45 @@ public class MaterialLocationStore : DisposableBase, IMaterialLocationStore
         _materialResolver = materialResolver;
         _storageService = storageService;
 
-        // initialize the data
-        MaterialLocations = visioService.MaterialLocations.Value;
+        MaterialLocations = _materialLocations.AsObservableCache();
+        
+        // the function locations is implemented as lazy load by invoke the Load method, because for a drawing there might be hundreds of material locations which takes a lot of time to load  
+        // we should also consider to implement the load method into an async method with cancellation
+        _locationLoader = new Lazy<IDisposable>(() => visioService.Shapes.Value
+            .Connect()
+            .Filter(x => x.Types.Contains(VisioShape.ShapeType.MaterialLocation))
+            .Transform(visioService.ToMaterialLocation)
+            // after the shape is transformed into the model, switch the forward working into background scheduler
+            .ObserveOn(TaskPoolScheduler.Default)
+            .PopulateInto(_materialLocations)
+        );
+
+        CleanUp.Add(Disposable.Create(() =>
+        {
+            if (_locationLoader.IsValueCreated)
+                _locationLoader.Value.Dispose();
+        }));
 
         // observable property changes and propagate to Visio shape
-        var propagateChangeToVisio = MaterialLocations.Connect()
+        var propagateChangeToVisio = _materialLocations.Connect()
             .AutoRefresh(propertyChangeThrottle: TimeSpan.FromMilliseconds(400))
-            .WhereReasonsAre(ChangeReason.Refresh) // 当通过addorupdate更新sourcecache中的某个对象时，如果对象不存在，则reason为add，如果存在，则为update。当直接修改item时，则reason为refresh。
-            .ObserveOn(SchedulerManager.VisioScheduler)
+            .WhereReasonsAre(ChangeReason
+                .Refresh) // 当通过addorupdate更新sourcecache中的某个对象时，如果对象不存在，则reason为add，如果存在，则为update。当直接修改item时，则reason为refresh。
             .Subscribe(changes =>
             {
-                foreach (var change in changes)
-                {
-                    visioService.UpdateShapeProperties(change.Key,
-                        [
-                            new ValuePatch(CellNameDict.MaterialCode, change.Current.Code, true),
-                            new ValuePatch(CellNameDict.UnitQuantity, change.Current.UnitQuantity)
-                        ]
-                    );
-                }
+                foreach (var change in changes) UpdateInVisio(change);
             });
-
 
         CleanUp.Add(propagateChangeToVisio);
     }
 
+    public void Load()
+    {
+        var _ = _locationLoader.Value;
+    }
+
     /// <inheritdoc />
-    public IObservableCache<MaterialLocation, CompositeId> MaterialLocations { get; }
+    public IObservableCache<MaterialLocation, CompositeId> MaterialLocations { get; } 
 
     /// <inheritdoc />
     public Task Locate(CompositeId id)
@@ -176,6 +192,16 @@ public class MaterialLocationStore : DisposableBase, IMaterialLocationStore
             // todo: not implement
             Debugger.Break();
         }
+    }
+
+    private void UpdateInVisio(Change<MaterialLocation, CompositeId> change)
+    {
+        _visioService.UpdateShapeProperties(change.Key,
+            [
+                new ValuePatch(CellNameDict.MaterialCode, change.Current.Code, true),
+                new ValuePatch(CellNameDict.UnitQuantity, change.Current.UnitQuantity)
+            ]
+        );
     }
 
 

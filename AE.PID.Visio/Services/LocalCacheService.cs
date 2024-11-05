@@ -27,17 +27,6 @@ public class LocalCacheService : ILocalCacheService, IEnableLogger
         Initialize();
     }
 
-    private void Initialize()
-    {
-        try
-        {
-            _materialCache.AddOrUpdate(ReadFromSolutionXml<List<Material>>("materials"));
-        }
-        catch (FileNotFoundException e)
-        {
-        }
-    }
-
     public void Dispose()
     {
     }
@@ -50,7 +39,7 @@ public class LocalCacheService : ILocalCacheService, IEnableLogger
     public Material? GetMaterialByCode(string code)
     {
         if (string.IsNullOrEmpty(code)) throw new ArgumentNullException(nameof(code));
-        
+
         var material = _materialCache.Lookup(code);
         return material.HasValue ? material.Value : null;
     }
@@ -68,8 +57,10 @@ public class LocalCacheService : ILocalCacheService, IEnableLogger
                 solutionItems = ReadFromSolutionXml<List<TObject>>(keyword);
 
                 foreach (var item in items)
-                    solutionItems.ReplaceOrAdd(
-                        solutionItems.SingleOrDefault(x => Equals(keySelector(x), keySelector(item))), item);
+                    if (solutionItems.SingleOrDefault(x => Equals(keySelector(x), keySelector(item))) is { } original)
+                        solutionItems.Replace(original, item);
+                    else
+                        solutionItems.Add(item);
             }
             catch (FileNotFoundException e)
             {
@@ -100,6 +91,17 @@ public class LocalCacheService : ILocalCacheService, IEnableLogger
     {
         var project = _projectCache.Lookup(id);
         return project.HasValue ? project.Value : null;
+    }
+
+    private void Initialize()
+    {
+        try
+        {
+            _materialCache.AddOrUpdate(ReadFromSolutionXml<List<Material>>("materials"));
+        }
+        catch (FileNotFoundException e)
+        {
+        }
     }
 
     private T ReadFromSolutionXml<T>(string name)

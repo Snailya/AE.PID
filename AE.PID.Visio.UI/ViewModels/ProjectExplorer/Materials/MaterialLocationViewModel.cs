@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reactive.Disposables;
 using AE.PID.Visio.Core.Models;
+using AE.PID.Visio.Core.Models.Projects;
 using DynamicData.Binding;
 using ReactiveUI;
 
@@ -37,7 +38,7 @@ public class MaterialLocationViewModel : ReactiveObject
         get => _isSelected;
         set => this.RaiseAndSetIfChanged(ref _isSelected, value);
     }
-
+    
     public string ProcessArea => _function?.Zone ?? string.Empty;
     public string FunctionalGroup => _function?.Group ?? string.Empty;
     public string FunctionalElement => _function?.Element ?? string.Empty;

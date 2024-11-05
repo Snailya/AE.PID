@@ -13,8 +13,8 @@ namespace AE.PID.Server.Controllers;
 [ApiController]
 [Route("api/v{apiVersion:apiVersion}/[controller]")]
 [ApiVersion(3)]
-public class RecommendsController(
-    ILogger<RecommendsController> logger,
+public class RecommendationsController(
+    ILogger<RecommendationsController> logger,
     AppDbContext dbContext,
     IRecommendService recommendService,
     IMaterialService materialService,

@@ -216,7 +216,7 @@ public class MaterialService(IApiFactory<IMaterialApi> apiFactory)
             RecommendationCollectionId = collectionId,
             SelectedRecommendationId = recommendationId
         };
-        await apiFactory.Api.FeedbackMaterialSelectionsAsync(dto);
+        await apiFactory.Api.FeedbackMaterialSelectionsAsync([dto]);
     }
 
 

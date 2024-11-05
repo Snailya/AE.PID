@@ -18,6 +18,8 @@ public class WindowBase<T> : ReactiveWindow<T> where T : WindowViewModelBase
 {
     protected WindowBase()
     {
+        Topmost = true;
+        
         this.Events().KeyUp.Where(x => x.Key == Key.Enter).Subscribe(_ =>
         {
             if (FocusManager?.GetFocusedElement() is TextBox) FocusManager.ClearFocus();

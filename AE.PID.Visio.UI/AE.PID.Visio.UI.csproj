@@ -20,6 +20,10 @@
 
     <ItemGroup>
       <Compile Remove="Views\ProjectExplorer\Materials\MaterialPropertyView.axaml.cs" />
+      <Compile Update="Views\ProjectExplorer\Materials\RecommendMaterialView.axaml.cs">
+        <DependentUpon>RecommendMaterialView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
     </ItemGroup>
 
     <ItemGroup>

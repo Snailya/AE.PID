@@ -4,9 +4,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using AE.PID.Core.Models;
 using AE.PID.Visio.Core.Exceptions;
 using AE.PID.Visio.Core.Interfaces;
 using AE.PID.Visio.Core.Models;
+using AE.PID.Visio.Shared.Extensions;
 using AE.PID.Visio.UI.Avalonia.Models;
 using AE.PID.Visio.UI.Avalonia.Services;
 using Avalonia.Platform.Storage;
@@ -22,7 +24,7 @@ public class MaterialsViewModel : ViewModelBase
     private readonly ReadOnlyObservableCollection<MaterialLocationViewModel> _selectedLocations;
 
     private ValueTuple<string, string>? _clipboard;
-    private bool _isLoading;
+    private bool _isLoading = true;
     private bool _isMaterialVisible;
     private MaterialViewModel? _material;
     private MaterialLocationViewModel? _selectedLocation;
@@ -60,7 +62,6 @@ public class MaterialsViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _isMaterialVisible, value);
     }
 
-
     private void ResetIsEnabled(MaterialLocationViewModel x)
     {
         if (SelectedLocations.Any()) return;
@@ -79,7 +80,7 @@ public class MaterialsViewModel : ViewModelBase
     #region -- Interactions --
 
     public Interaction<SyncMaterialsViewModel, Unit> ShowSyncMaterialsDialog { get; } = new();
-    public Interaction<SelectMaterialViewModel?, MaterialViewModel?> ShowSelectMaterialDialog { get; } = new();
+    public Interaction<SelectMaterialWindowViewModel?, MaterialViewModel?> ShowSelectMaterialDialog { get; } = new();
     public Interaction<Unit, IStorageFile?> SaveFilePicker { get; } = new();
 
     #endregion
@@ -107,11 +108,16 @@ public class MaterialsViewModel : ViewModelBase
         // Design
     }
 
-    public MaterialsViewModel(NotifyService notifyService,
+    public MaterialsViewModel(NotificationHelper notificationHelper,
+        IProjectStore projectStore,
         IFunctionLocationStore functionLocationStore,
         IMaterialLocationStore materialLocationStore,
         IMaterialService materialService)
     {
+#if DEBUG
+        DebugExt.Log("Initializing MaterialsViewModel",null, nameof(MaterialsViewModel));
+#endif
+
         #region -- Commands --
 
         Export = ReactiveCommand.CreateFromTask<OutputType, Unit>(async type =>
@@ -143,7 +149,7 @@ public class MaterialsViewModel : ViewModelBase
 
             return Unit.Default;
         });
-        Export.ThrownExceptions.Subscribe(e => { notifyService.Error(e.Message); });
+        Export.ThrownExceptions.Subscribe(e => { notificationHelper.Error(e.Message); });
 
         Sync = ReactiveCommand.CreateFromTask(async _ =>
         {
@@ -158,7 +164,16 @@ public class MaterialsViewModel : ViewModelBase
 
         SelectMaterial = ReactiveCommand.CreateFromTask<MaterialLocationViewModel>(async location =>
         {
-            var viewModel = new SelectMaterialViewModel(materialService, location.MaterialType);
+            var context = new MaterialLocationContext
+            {
+                ProjectId = projectStore.GetCurrentProject()?.Id,
+                FunctionZone = location.ProcessArea,
+                FunctionGroup = location.FunctionalGroup,
+                FunctionElement = location.FunctionalElement,
+                MaterialLocationType = location.MaterialType
+            };
+
+            var viewModel = new SelectMaterialWindowViewModel(notificationHelper, materialService, context);
             var dialogResult = await ShowSelectMaterialDialog.Handle(viewModel);
             if (dialogResult == null) return;
 
@@ -177,10 +192,10 @@ public class MaterialsViewModel : ViewModelBase
         LoadMaterial = ReactiveCommand.CreateFromTask<MaterialLocationViewModel>(async location =>
         {
             var result = await materialService.GetByCodeAsync(location.MaterialCode);
-            Material = result == null ? null : new MaterialViewModel(result);
+            Material = new MaterialViewModel(result);
         });
         LoadMaterial.ThrownExceptions
-            .Subscribe(v => { notifyService.Error("加载物料信息失败", v!.Message); });
+            .Subscribe(v => { notificationHelper.Error("加载物料信息失败", v!.Message); });
 
         Locate = ReactiveCommand.Create<MaterialLocationViewModel>(location =>
         {
@@ -190,7 +205,8 @@ public class MaterialsViewModel : ViewModelBase
         var canCopy = this.WhenAnyValue(x => x.SelectedLocation)
             .Select(x => !string.IsNullOrEmpty(x?.MaterialCode));
         CopyMaterial =
-            ReactiveCommand.Create<MaterialLocationViewModel>(location => Clipboard = (location.MaterialType, location.MaterialCode), canCopy);
+            ReactiveCommand.Create<MaterialLocationViewModel>(
+                location => Clipboard = (location.MaterialType, location.MaterialCode), canCopy);
 
         var canPaste = this.WhenAnyValue(x => x.SelectedLocation, x => x.Clipboard,
             (location, clipboard) => location?.MaterialType == clipboard?.Item1);
@@ -204,32 +220,47 @@ public class MaterialsViewModel : ViewModelBase
                     location.MaterialCode = Clipboard?.Item2 ?? string.Empty;
                 }, canPaste);
         PasteMaterial.ThrownExceptions
-            .Subscribe(v => { notifyService.Error("粘贴物料失败", v!.Message); });
+            .Subscribe(v => { notificationHelper.Error("粘贴物料失败", v!.Message); });
 
         #endregion
 
         #region -- Subscriptions --
 
-        materialLocationStore.MaterialLocations.Connect()
+        /* 注意这里必须首先把changeset存成本地变量，否则join之后当发生变化时，会莫名触发removed。*/
+        var observeMaterial = materialLocationStore.MaterialLocations.Connect()
+            .AutoRefresh()
+#if DEBUG
+            .OnItemAdded(x => DebugExt.Log("MaterialLocations.OnItemAdded", x.LocationId, nameof(MaterialsViewModel)))
+            .OnItemUpdated((cur, prev, _) =>
+                DebugExt.Log("MaterialLocations.OnItemUpdated", cur.LocationId, nameof(MaterialsViewModel)))
+            .OnItemRefreshed(x => DebugExt.Log("MaterialLocations.OnItemRefreshed", x.LocationId, nameof(MaterialsViewModel)))
+            .OnItemRemoved(x => DebugExt.Log("MaterialLocations.OnItemRemoved", x.LocationId, nameof(MaterialsViewModel)))
+#endif
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Do(_ => IsLoading = true)
-            .ObserveOn(RxApp.TaskpoolScheduler)
-            .LeftJoin<MaterialLocation, CompositeId, FunctionLocation, CompositeId, MaterialLocationViewModel>(
-                functionLocationStore.FunctionLocations.Connect(),
+            .Do(x => { IsLoading = false; });
+
+        var observeFunction = functionLocationStore.FunctionLocations.Connect()
+            .AutoRefresh()
+#if DEBUG
+            .OnItemAdded(x => DebugExt.Log("FunctionLocations.OnItemAdded", x.Id, nameof(MaterialsViewModel)))
+            .OnItemUpdated((cur, prev, _) =>
+                DebugExt.Log("FunctionLocations.OnItemUpdated", cur.Id, nameof(MaterialsViewModel)))
+            .OnItemRefreshed(x => DebugExt.Log("FunctionLocations.OnItemRefreshed", x.Id, nameof(MaterialsViewModel)))
+            .OnItemRemoved(x => DebugExt.Log("FunctionLocations.OnItemRemoved", x.Id, nameof(MaterialsViewModel)))
+#endif
+            .ObserveOn(RxApp.MainThreadScheduler);
+
+        observeMaterial
+            .InnerJoin<MaterialLocation, CompositeId, FunctionLocation, CompositeId, MaterialLocationViewModel>(
+                observeFunction,
                 right => right.Id,
-                (left, right) =>
-                    right == null
-                        ? new MaterialLocationViewModel(left)
-                        : new MaterialLocationViewModel(left, right.Value)
+                (left, right) => new MaterialLocationViewModel(left, right)
             )
-            .ObserveOn(RxApp.MainThreadScheduler)
             .SortAndBind(out _locations,
                 SortExpressionComparer<MaterialLocationViewModel>.Ascending(x => x.ProcessArea)
                     .ThenByAscending(x => x.FunctionalGroup)
                     .ThenByAscending(x => x.FunctionalElement)
             )
-            .DisposeMany()
-            .Do(_ => IsLoading = false)
             .Subscribe();
 
         Locations.ToObservableChangeSet()
@@ -247,7 +278,7 @@ public class MaterialsViewModel : ViewModelBase
                 IsMaterialVisible = false;
                 IsMaterialVisible = true;
             });
-        
+
         #endregion
     }
 

@@ -2,9 +2,12 @@
 
 public static class CellNameDict
 {
+    public const string ShapeCategories = "User.msvShapeCategories";
+    
     #region -- Projects --
 
     public const string ProjectId = "User.ProjectId";
+    public const string ProjectCode = "User.ProjectCode";
 
     #endregion
 

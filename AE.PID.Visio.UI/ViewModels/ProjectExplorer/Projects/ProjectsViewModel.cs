@@ -35,13 +35,13 @@ public class ProjectsViewModel : ViewModelBase
 
     #region -- Constructors --
 
-    public ProjectsViewModel(NotifyService notifyService, IProjectService projectService, IProjectStore projectStore)
+    public ProjectsViewModel(NotificationHelper notificationHelper, IProjectService projectService, IProjectStore projectStore)
     {
         #region Commands
 
         SelectProject = ReactiveCommand.CreateFromTask(async () =>
         {
-            var viewModel = new SelectProjectViewModel(notifyService, projectService);
+            var viewModel = new SelectProjectViewModel(notificationHelper, projectService);
             var dialogResult = await ShowSelectProjectDialog.Handle(viewModel);
             if (dialogResult == null) return;
 
@@ -50,7 +50,7 @@ public class ProjectsViewModel : ViewModelBase
             projectStore.Update(project);
         });
         SelectProject.ThrownExceptions
-            .Subscribe(v => { notifyService.Error("选择项目失败", v.Message, NotifyService.Routes.ProjectExplorer); });
+            .Subscribe(v => { notificationHelper.Error("选择项目失败", v.Message, NotificationHelper.Routes.ProjectExplorer); });
 
         #endregion
 
@@ -61,9 +61,9 @@ public class ProjectsViewModel : ViewModelBase
             .Do(x =>
             {
                 if (!x.IsSuccess)
-                    notifyService.Error("加载项目信息失败", x.Exception!.Message, NotifyService.Routes.ProjectExplorer);
+                    notificationHelper.Error("加载项目信息失败", x.Exception!.Message, NotificationHelper.Routes.ProjectExplorer);
                 else if (!string.IsNullOrEmpty(x.Message))
-                    notifyService.Warning(message: x.Message, route: NotifyService.Routes.ProjectExplorer);
+                    notificationHelper.Warning(message: x.Message, route: NotificationHelper.Routes.ProjectExplorer);
             })
             .Select(x => x.Value)
             .Select(x => x == null ? null : new ProjectViewModel(x))

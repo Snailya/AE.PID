@@ -76,7 +76,7 @@ public class ProjectStore : DisposableBase, IProjectStore
         {
             this.Log().Error($"Unable to parse User.ProjectId value {idStr} to int, failed to load project.");
             _projectSubject.OnNext(
-                Result<Project?>.Failure(new InvalidShapeSheetPropertyValueException(CellNameDict.ProjectId, idStr)));
+                Result<Project?>.Failure(new ShapeSheetPropertyValueNotInvalidException(CellNameDict.ProjectId, idStr)));
         }
 
         // if it does is an int value, 

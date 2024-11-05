@@ -3,17 +3,16 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewModels="using:AE.PID.Visio.UI.Avalonia.ViewModels"
-             xmlns:views="clr-namespace:AE.PID.Visio.UI.Avalonia.Views"
              xmlns:attachedProperties="clr-namespace:AE.PID.Visio.UI.Avalonia.AttachedProperties"
              xmlns:converters="clr-namespace:AE.PID.Visio.UI.Avalonia.Converters"
              mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="528"
-             x:Class="AE.PID.Visio.UI.Avalonia.Views.SelectMaterialView"
-             x:DataType="viewModels:SelectMaterialViewModel">
+             x:Class="AE.PID.Visio.UI.Avalonia.Views.RecommendMaterialView"
+             x:DataType="viewModels:RecommendMaterialViewModel">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <viewModels:SelectMaterialViewModel />
+        <viewModels:StandardMaterialViewModel />
     </Design.DataContext>
 
     <DockPanel>
@@ -21,42 +20,30 @@
             <Button Content="确认" Command="{Binding Confirm}" />
             <Button Content="取消" Command="{Binding Cancel}" />
         </StackPanel>
-        <DockPanel>
-            <TreeView DockPanel.Dock="Left" MinWidth="256"
-                      ItemsSource="{Binding ValidCategories}"
-                      SelectedItem="{Binding SelectedCategory}">
-                <TreeView.ItemTemplate>
-                    <TreeDataTemplate ItemsSource="{Binding Inferiors}">
-                        <StackPanel>
-                            <TextBlock Text="{Binding Name}" />
-                        </StackPanel>
-                    </TreeDataTemplate>
-                </TreeView.ItemTemplate>
-            </TreeView>
-            <StackPanel DockPanel.Dock="Top">
-                <TextBox Text="{Binding SearchText}" Watermark="搜索物料" />
-                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
-            </StackPanel>
-            <views:PageNavigator DockPanel.Dock="Bottom"
-                                 DataContext="{Binding PageNavigator}" />
-            <DataGrid ItemsSource="{Binding Data}"
-                      SelectedItem="{Binding SelectedMaterial}"
+
+        <Grid>
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">即将上线</TextBlock>
+
+            <DataGrid IsVisible="False"
+                      ItemsSource="{Binding Data}"
+                      SelectedItem="{Binding Selected}"
                       IsReadOnly="True"
                       GridLinesVisibility="All">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="名称" Binding="{Binding Name}" />
-                    <DataGridTextColumn Header="品牌" Binding="{Binding Brand}" />
-                    <DataGridTextColumn Header="型号" Binding="{Binding Type}" />
-                    <DataGridTextColumn Header="规格" Binding="{Binding  Specifications}" />
-                    <DataGridTextColumn Header="技术参数" Binding="{Binding TechnicalData}" />
-                    <DataGridTextColumn Header="物料号" Binding="{Binding Code}" />
+                    <DataGridTextColumn Header="名称" Binding="{Binding Value.Name}" />
+                    <DataGridTextColumn Header="品牌" Binding="{Binding Value.Brand}" />
+                    <DataGridTextColumn Header="型号" Binding="{Binding Value.Type}" />
+                    <DataGridTextColumn Header="规格" Binding="{Binding  Value.Specifications}" />
+                    <DataGridTextColumn Header="技术参数" Binding="{Binding Value.TechnicalData}" />
+                    <DataGridTextColumn Header="物料号" Binding="{Binding Value.Code}" />
                 </DataGrid.Columns>
                 <DataGrid.RowDetailsTemplate>
-                    <DataTemplate x:DataType="{x:Type viewModels:MaterialViewModel}">
-                        <ItemsControl ItemsSource="{Binding Properties, Converter={x:Static converters:SimpleConverters.UsefulProperties}}">
+                    <DataTemplate x:DataType="{x:Type viewModels:MaterialRecommendationViewModel}">
+                        <ItemsControl
+                            ItemsSource="{Binding Value.Properties, Converter={x:Static converters:SimpleConverters.UsefulProperties}}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <StackPanel Margin="12 4"/>
+                                    <StackPanel Margin="12 4" />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
@@ -72,6 +59,6 @@
                     </DataTemplate>
                 </DataGrid.RowDetailsTemplate>
             </DataGrid>
-        </DockPanel>
+        </Grid>
     </DockPanel>
 </UserControl>

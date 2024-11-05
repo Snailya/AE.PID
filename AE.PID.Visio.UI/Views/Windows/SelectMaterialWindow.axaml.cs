@@ -5,7 +5,7 @@ using ReactiveUI;
 
 namespace AE.PID.Visio.UI.Avalonia.Views;
 
-public partial class SelectMaterialWindow : ReactiveWindow<SelectMaterialViewModel>
+public partial class SelectMaterialWindow : ReactiveWindow<SelectMaterialWindowViewModel>
 {
     public SelectMaterialWindow()
     {

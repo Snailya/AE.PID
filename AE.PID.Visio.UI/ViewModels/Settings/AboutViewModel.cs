@@ -23,7 +23,7 @@ public class AboutViewModel : ViewModelBase
 
     #region -- Constructors --
 
-    public AboutViewModel(NotifyService notifyService, IConfigurationService configurationService,
+    public AboutViewModel(NotificationHelper notificationHelper, IConfigurationService configurationService,
         IAppUpdateService appUpdateService)
     {
         #region Commands
@@ -48,7 +48,7 @@ public class AboutViewModel : ViewModelBase
 
         CheckUpdate.ThrownExceptions.Subscribe(exception =>
         {
-            if (exception is NetworkNotValidException) notifyService.Error("检查更新失败", exception.Message);
+            if (exception is NetworkNotValidException) notificationHelper.Error("检查更新失败", exception.Message);
         });
 
         #endregion

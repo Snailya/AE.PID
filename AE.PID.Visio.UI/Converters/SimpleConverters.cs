@@ -58,4 +58,5 @@ public abstract class SimpleConverters
     public static FuncValueConverter<IEnumerable<MaterialPropertyViewModel>?, IEnumerable<MaterialPropertyViewModel>?>
         UsefulProperties { get; } =
         new(list => list?.Where(x => !string.IsNullOrEmpty(x.Value)));
+    
 }

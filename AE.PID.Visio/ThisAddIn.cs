@@ -34,6 +34,12 @@ public partial class ThisAddIn : IEnableLogger
 
     private void ThisAddIn_Startup(object sender, EventArgs e)
     {
+#if DEBUG
+
+        DebugExt.Log("This AddIn Startup");
+
+#endif
+
         // register logger
         Locator.CurrentMutable.UseNLogWithWrappingFullLogger();
 
@@ -75,6 +81,10 @@ public partial class ThisAddIn : IEnableLogger
                     .SetupWithoutStarting();
 
                 avaloniaSetupUpDone.OnCompleted();
+
+#if DEBUG
+                DebugExt.Log("UI setup up done.");
+#endif
 
                 Dispatcher.Run();
             })
@@ -131,11 +141,13 @@ public partial class ThisAddIn : IEnableLogger
         services.AddApi<IProjectApi>();
         services.AddApi<IFunctionApi>();
         services.AddApi<IMaterialApi>();
+        services.AddApi<ISelectionApi>();
 
         // register service for background service
         services.AddSingleton<IAppUpdateService, AppUpdateService>();
         services.AddSingleton<StencilUpdateService>();
         services.AddSingleton<IDocumentUpdateService, DocumentUpdateService>();
+        services.AddSingleton<IRecommendedService, RecommendedService>();
 
         // register for hosted service
         services.AddHostedService<AppUpdateHostedService>();
@@ -174,7 +186,7 @@ public partial class ThisAddIn : IEnableLogger
         services.AddScoped<IToolService, ToolService>();
 
         // register for ViewModels
-        services.AddScoped<NotifyService, NotifyService>();
+        services.AddScoped<NotificationHelper, NotificationHelper>();
         services.AddScoped<ProjectExplorerWindowViewModel, ProjectExplorerWindowViewModel>();
         services.AddScoped<ToolsWindowViewModel, ToolsWindowViewModel>();
         services.AddScoped<SettingsWindowViewModel, SettingsWindowViewModel>();

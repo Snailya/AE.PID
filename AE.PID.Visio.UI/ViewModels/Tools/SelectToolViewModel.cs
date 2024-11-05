@@ -14,6 +14,7 @@ namespace AE.PID.Visio.UI.Avalonia.ViewModels;
 
 public class SelectToolViewModel : ViewModelBase
 {
+    private readonly IToolService _toolService;
     private readonly ReadOnlyObservableCollection<SymbolViewModel> _symbols;
     private bool _isLoading;
 
@@ -32,6 +33,8 @@ public class SelectToolViewModel : ViewModelBase
 
     public SelectToolViewModel(IToolService toolService)
     {
+        _toolService = toolService;
+
         #region -- Commands --
 
         Confirm = ReactiveCommand.CreateRunInBackground(
@@ -65,4 +68,11 @@ public class SelectToolViewModel : ViewModelBase
     }
 
     #endregion
+
+    protected override void SetupStart()
+    {
+        base.SetupStart();
+        
+        _toolService.Load();
+    }
 }

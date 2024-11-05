@@ -7,24 +7,29 @@ using System.Reactive.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using AE.PID.Core.Models;
 using AE.PID.Visio.Core.Interfaces;
 using AE.PID.Visio.Core.Models;
+using AE.PID.Visio.UI.Avalonia.Services;
 using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
 
 namespace AE.PID.Visio.UI.Avalonia.ViewModels;
 
-public class SelectMaterialViewModel : ViewModelBase
+public class StandardMaterialViewModel : ViewModelBase
 {
     private readonly ReadOnlyObservableCollection<MaterialViewModel> _data;
+
+    private readonly ReadOnlyObservableCollection<MaterialCategoryViewModel> _filteredCategories;
     private readonly IMaterialService _materialService;
-    private readonly ReadOnlyObservableCollection<MaterialCategoryViewModel> _validCategories;
+
+
     private CancellationTokenSource? _cancellationTokenSource;
     private bool _isBusy;
     private string? _searchText;
     private MaterialCategoryViewModel? _selectedCategory;
-    private MaterialViewModel? _selectedMaterial;
+    private MaterialViewModel? _selectedData;
 
     public bool IsBusy
     {
@@ -38,7 +43,8 @@ public class SelectMaterialViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _searchText, value);
     }
 
-    public ReactiveCommand<Unit, MaterialViewModel?> Confirm { get; private set; }
+    public ReactiveCommand<Unit, MaterialViewModel> Confirm { get; private set; }
+    public ReactiveCommand<Unit, Unit> Cancel { get; }
 
     public MaterialCategoryViewModel? SelectedCategory
     {
@@ -46,21 +52,34 @@ public class SelectMaterialViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _selectedCategory, value);
     }
 
-    public MaterialViewModel? SelectedMaterial
+    /// <summary>
+    ///     The material in the standard collection that the user has selected
+    /// </summary>
+    public MaterialViewModel? SelectedData
     {
-        get => _selectedMaterial;
-        set => this.RaiseAndSetIfChanged(ref _selectedMaterial, value);
+        get => _selectedData;
+        set => this.RaiseAndSetIfChanged(ref _selectedData, value);
     }
 
-    public ReadOnlyObservableCollection<MaterialCategoryViewModel> ValidCategories => _validCategories;
+    /// <summary>
+    ///     The filtered categories that matches this material location type.
+    /// </summary>
+    public ReadOnlyObservableCollection<MaterialCategoryViewModel> FilteredCategories => _filteredCategories;
+
+    /// <summary>
+    ///     The materials that matches the current page and conditions.
+    /// </summary>
     public ReadOnlyObservableCollection<MaterialViewModel> Data => _data;
 
-    public string Seed { get; set; } = string.Empty;
+    /// <summary>
+    ///     The type of the material location, this value is used to filter the material category.
+    /// </summary>
+    public string Type { get; set; } = string.Empty;
 
     public PageNavigatorViewModel PageNavigator { get; } = new(1, 15);
-    public ReactiveCommand<Unit, Unit> Cancel { get; }
 
-    private async Task<IEnumerable<MaterialViewModel>> LoadAsync(LoadCondition condition,
+
+    private async Task<IEnumerable<MaterialViewModel>> LoadAsync((int? CategoryId, string? SearchText) condition,
         PageRequest pageRequest)
     {
         IsBusy = true;
@@ -71,11 +90,11 @@ public class SelectMaterialViewModel : ViewModelBase
 
         var result = new List<MaterialViewModel>();
 
-        if (condition.Id.HasValue)
+        if (condition.CategoryId.HasValue)
         {
             var response = string.IsNullOrEmpty(condition.SearchText)
-                ? await _materialService.GetAsync(condition.Id, pageRequest, cancellationToken)
-                : await _materialService.SearchAsync(condition.SearchText!, condition.Id, pageRequest,
+                ? await _materialService.GetAsync(condition.CategoryId, pageRequest, cancellationToken)
+                : await _materialService.SearchAsync(condition.SearchText!, condition.CategoryId, pageRequest,
                     cancellationToken);
 
             result.AddRange(response.Items.Select(material => new MaterialViewModel(material)));
@@ -87,34 +106,37 @@ public class SelectMaterialViewModel : ViewModelBase
         return result;
     }
 
-    private class LoadCondition
+    #region -- Constructors --
+
+    public StandardMaterialViewModel(NotificationHelper notificationHelper, IMaterialService materialService,
+        MaterialLocationContext context)
     {
-        public int? Id { get; set; }
-        public string? SearchText { get; set; }
-    }
+        _materialService = materialService;
 
 
-    #region Constructors
-
-    public SelectMaterialViewModel(IMaterialService materialMaterialService, string seed)
-    {
-        _materialService = materialMaterialService;
-
-        Seed = seed;
+        Type = context.MaterialLocationType;
 
         #region Commands
 
-        Confirm = ReactiveCommand.Create(() => SelectedMaterial);
+        var canConfirm = this.WhenAnyValue(x => x.SelectedData)
+            .Select(x => x != null);
+        Confirm = ReactiveCommand.Create(() =>
+        {
+            // whenever user select material, send the feedback to the server. no need to wait.
+
+            materialService.FeedbackAsync(context, SelectedData!.Source.Id);
+            return SelectedData;
+        }, canConfirm);
         Cancel = ReactiveCommand.Create(() => { });
 
         #endregion
 
         #region Subscriptions
 
-        var categoryPredicate = Observable.StartAsync(async () => await materialMaterialService.GetCategoryMapAsync())
+        var categoryPredicate = Observable.StartAsync(async () => await materialService.GetCategoryMapAsync())
             .Select<Dictionary<string, string[]>, Func<Node<MaterialCategory, int>, bool>>(v =>
             {
-                return node => v!.ContainsKey(Seed) ? v[Seed]!.Contains(node.Item.Code) : node.IsRoot;
+                return node => v!.ContainsKey(Type) ? v[Type]!.Contains(node.Item.Code) : node.IsRoot;
             });
 
         // load the categories from task
@@ -128,7 +150,7 @@ public class SelectMaterialViewModel : ViewModelBase
             .TransformToTree(x => x.ParentId, categoryPredicate)
             .Transform(node => new MaterialCategoryViewModel(node))
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Bind(out _validCategories)
+            .Bind(out _filteredCategories)
             .DisposeMany()
             .Subscribe();
 
@@ -144,7 +166,7 @@ public class SelectMaterialViewModel : ViewModelBase
         this.WhenAnyValue(x => x.PageNavigator.CurrentPage, x => x.PageNavigator.PageSize,
                 (page, size) => new PageRequest(page, size)).CombineLatest(this.WhenAnyValue(x => x.SelectedCategory,
                 x => x.SearchText,
-                (category, searchText) => new LoadCondition { Id = category?.Id, SearchText = searchText }))
+                (category, searchText) => new ValueTuple<int?, string?>(category?.Id, searchText)))
             .Select(x =>
                 ObservableChangeSet.Create<MaterialViewModel>(async list =>
                 {
@@ -161,6 +183,8 @@ public class SelectMaterialViewModel : ViewModelBase
 
         #endregion
 
+        return;
+
         Func<MaterialViewModel, bool> BuildFilter(string? searchText)
         {
             if (string.IsNullOrEmpty(searchText)) return _ => true;
@@ -170,7 +194,7 @@ public class SelectMaterialViewModel : ViewModelBase
     }
 
 
-    internal SelectMaterialViewModel()
+    internal StandardMaterialViewModel()
     {
         // design
     }

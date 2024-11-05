@@ -31,7 +31,7 @@
             </ExperimentalAcrylicBorder.Material>
         </ExperimentalAcrylicBorder>
         <Panel Classes="content">
-            <TabControl>
+            <TabControl SelectedIndex="{Binding ViewIndex}">
                 <TabItem Header="项目">
                     <views:ProjectsView DataContext="{Binding Projects}" />
                 </TabItem>
