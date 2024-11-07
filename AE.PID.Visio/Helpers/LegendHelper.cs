@@ -9,9 +9,9 @@ namespace AE.PID.Visio.Helpers;
 
 public abstract class LegendHelper
 {
-    private const int Columns = 3;
+    private const int Columns = 4;
     private const int RowSpacing = 10;
-    private const int ColSpacing = 180 / Columns;
+    private const int ColSpacing = 240 / Columns;
 
     public static void Insert(IVPage page)
     {
@@ -37,7 +37,7 @@ public abstract class LegendHelper
             var basePosition = GetBasePoint(page);
             var rows = (int)Math.Ceiling((double)legendItems.Count / Columns);
 
-            var container = page.DrawRectangleMetric(basePosition.Item1, basePosition.Item2, basePosition.Item1 + 180,
+            var container = page.DrawRectangleMetric(basePosition.Item1, basePosition.Item2, basePosition.Item1 + 240,
                 basePosition.Item2 + rows * 10);
             container.AddSection((short)VisSectionIndices.visSectionUser);
             container.AddRow((short)VisSectionIndices.visSectionUser, (short)VisRowIndices.visRowLast,

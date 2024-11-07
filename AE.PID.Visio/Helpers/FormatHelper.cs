@@ -80,13 +80,15 @@ public abstract class FormatHelper
     {
         const string baseId = "{7811D65E-9633-4E98-9FCD-B496A8B823A7}";
 
-        if (page.Shapes.OfType<Shape>().Any(x => x.Master.BaseID == baseId)) return null;
+        var frame = page.Shapes.OfType<Shape>().FirstOrDefault(x => x.Master.BaseID == baseId);
+
+        if (frame != null) return frame;
 
         try
         {
             var frameObject = page.Document.GetMaster(baseId);
 
-            var frame = page.DropMetric(frameObject, (0, 0));
+            frame = page.DropMetric(frameObject, (0, 0));
             page.AutoSizeDrawing();
 
             return frame;
@@ -119,8 +121,8 @@ public abstract class FormatHelper
             var table1Object = page.Document.GetMaster(table1BaseId);
             var table2Object = page.Document.GetMaster(table2BaseId);
 
-            var table1 = page.DropMetric(table1Object, (right - 130, top - 76));
-            var table2 = page.DropMetric(table2Object, (right - 130, top - 316));
+            var table1 = page.DropMetric(table1Object, (right - 130, top - 63));
+            var table2 = page.DropMetric(table2Object, (right - 130, top - 229));
 
             return (table1, table2);
         }

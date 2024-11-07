@@ -31,7 +31,7 @@ public class DocumentService(ILogger<DocumentService> logger) : IDocumentService
 
         // 修正替换后的namespace
         RemoveNamespace(source);
-
+        
         return source;
     }
 
@@ -44,6 +44,7 @@ public class DocumentService(ILogger<DocumentService> logger) : IDocumentService
             if (fillStyle.HasValue) shapeElement.Attribute("FillStyle")!.SetValue(fillStyle);
 
             if (textStyle.HasValue) shapeElement.Attribute("TextStyle")!.SetValue(textStyle);
+            
         }
 
         return snapshot;
@@ -67,8 +68,7 @@ public class DocumentService(ILogger<DocumentService> logger) : IDocumentService
             // 如果模具的新版本与旧版本相比增加了新的形状，会导致更新后的绘图页的形状显示异常，例如调节阀的开关箭头消失，所以这种情况需要补充缺少的子形状
             var sourceElement = shapeElement.Element(_mainNs + "Shapes");
             if (sourceElement == null) continue;
-
-
+            
             var targetElement = new XElement(_mainNs + "Shapes");
             foreach (var xElement in snapshot.Elements(_mainNs + "MasterContents")
                          .Elements(_mainNs + "Shapes")
@@ -180,7 +180,7 @@ public class DocumentService(ILogger<DocumentService> logger) : IDocumentService
 
         var masterDocument = BuildMasterDocument(targetDocument, lineStyle, fillStyle, textStyle);
         XmlHelper.SaveXDocumentToPart(masterPart, masterDocument);
-
+        
         /* ----------------------------------------
          * 准备pages{i}.xml中缺少的子形状
          * ----------------------------------------
@@ -198,7 +198,7 @@ public class DocumentService(ILogger<DocumentService> logger) : IDocumentService
             XmlHelper.SaveXDocumentToPart(pagePart, pageDocument);
         }
 
-        logger.LogInformation("{snapshot} is update to date.", snapshot.BaseId);
+        logger.LogInformation("{snapshot} update done.", snapshot.BaseId);
     }
 
     public void UpdateStyles(Package package)

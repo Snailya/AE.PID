@@ -95,7 +95,7 @@ public class MaterialLocationViewModel : ReactiveObject
     
     public bool Contains(string text){
         var lowercaseText = text.ToLower();
-        return ProcessArea.ToLower().Contains(text) || FunctionalGroup.ToLower().Contains(text) || FunctionalElement.ToLower().Contains(text) || MaterialType.ToLower().Contains(text) || KeyParameters.ToLower().Contains(text) || Description.ToLower().Contains(text) || Remarks.ToLower().Contains(text);
+        return ProcessArea.ToLower().Contains(lowercaseText) || FunctionalGroup.ToLower().Contains(lowercaseText) || FunctionalElement.ToLower().Contains(lowercaseText) || MaterialType.ToLower().Contains(lowercaseText) || KeyParameters.ToLower().Contains(lowercaseText) || Description.ToLower().Contains(lowercaseText) || Remarks.ToLower().Contains(lowercaseText);
         }
 
     public MaterialLocationViewModel(MaterialLocation material)

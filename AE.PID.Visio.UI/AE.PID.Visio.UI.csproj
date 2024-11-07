@@ -156,7 +156,6 @@
         <AdditionalFiles Include="Views\ProjectExplorer\Functions\SyncFunctionGroupsView.axaml" />
         <AdditionalFiles Include="Views\ProjectExplorer\Materials\MaterialsView.axaml" />
         <AdditionalFiles Include="Views\ProjectExplorer\Materials\MaterialView.axaml" />
-        <AdditionalFiles Include="Views\ProjectExplorer\Materials\SelectMaterialView.axaml" />
         <AdditionalFiles Include="Views\ProjectExplorer\Materials\SyncMaterialsView.axaml" />
         <AdditionalFiles Include="Views\ProjectExplorer\Projects\ProjectsView.axaml" />
         <AdditionalFiles Include="Views\ProjectExplorer\Projects\SelectProjectView.axaml" />
