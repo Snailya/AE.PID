@@ -37,7 +37,7 @@ public abstract class FormatHelper
             // insert the frame at the 0,0 potion
             var frame = InsertFrameIfNotExist(page);
             if (frame != null)
-                InsertTableIfNotExist(page, frame);
+                InsertPCITables(page, frame);
 
             // set the view to make the frame center in the window
             Globals.ThisAddIn.Application.ActiveWindow.ViewFit = (int)VisWindowFit.visFitPage;
@@ -65,7 +65,7 @@ public abstract class FormatHelper
             (short)VisCellIndices.visXGridOrigin].FormulaU = "0mm";
         page.PageSheet.CellsSRC[(short)VisSectionIndices.visSectionObject, (short)VisRowIndices.visRowRulerGrid,
             (short)VisCellIndices.visYGridOrigin].FormulaU = "0mm";
-        
+
         LogHost.Default.Info($"Grid setup for {page.Name} finished");
     }
 
@@ -76,17 +76,18 @@ public abstract class FormatHelper
         LogHost.Default.Info($"Layout and routing setup for {page.Name} finished");
     }
 
+    public const string FrameBaseId = "{7811D65E-9633-4E98-9FCD-B496A8B823A7}";
+
     private static Shape? InsertFrameIfNotExist(IVPage page)
     {
-        const string baseId = "{7811D65E-9633-4E98-9FCD-B496A8B823A7}";
 
-        var frame = page.Shapes.OfType<Shape>().FirstOrDefault(x => x.Master.BaseID == baseId);
+        var frame = page.Shapes.OfType<Shape>().FirstOrDefault(x => x.Master.BaseID == FrameBaseId);
 
         if (frame != null) return frame;
 
         try
         {
-            var frameObject = page.Document.GetMaster(baseId);
+            var frameObject = page.Document.GetMaster(FrameBaseId);
 
             frame = page.DropMetric(frameObject, (0, 0));
             page.AutoSizeDrawing();
@@ -95,7 +96,7 @@ public abstract class FormatHelper
         }
         catch (MasterNotValidException)
         {
-            MessageBox.Show(@"未能找到图框，请检查AE逻辑.vssx文件。");
+            MessageBox.Show(@"未能找到图框，请检查AE逻辑.vssx文件。", "初始化");
         }
         catch (Exception e)
         {
@@ -106,29 +107,79 @@ public abstract class FormatHelper
         return null;
     }
 
-    private static (Shape? Table1, Shape? Table2) InsertTableIfNotExist(IVPage page, Shape frame)
+    public static (Shape? Table1, Shape? Table2) InsertPCITables(IVPage page, Shape frame)
     {
         const string table1BaseId = "{D1A49D75-2A8B-4F4B-9A3A-27A0BC63D08D}";
         const string table2BaseId = "{4B7CA2AC-E82E-4382-80F8-D2E0CC85B151}";
 
-        if (page.Shapes.OfType<Shape>().Any(x => x.Master.BaseID == table1BaseId)) return (null, null);
-        if (page.Shapes.OfType<Shape>().Any(x => x.Master.BaseID == table2BaseId)) return (null, null);
+        Shape? table1 = null;
+        Shape? table2 = null;
 
         try
         {
-            var (_, _, right, top) = frame.BoundingBoxMetric((short)VisBoundingBoxArgs.visBBoxDrawingCoords +
-                                                             (short)VisBoundingBoxArgs.visBBoxExtents);
-            var table1Object = page.Document.GetMaster(table1BaseId);
-            var table2Object = page.Document.GetMaster(table2BaseId);
+            var frameBox = frame.BoundingBoxMetric((short)VisBoundingBoxArgs.visBBoxDrawingCoords +
+                                                   (short)VisBoundingBoxArgs.visBBoxExtents);
+            if (!page.Shapes.OfType<Shape>().Any(x =>
+                    x.Master.BaseID == table1BaseId &&
+                    x.BoundingBoxInside((short)VisBoundingBoxArgs.visBBoxExtents, frameBox)))
+            {
+                var table1Object = page.Document.GetMaster(table1BaseId);
+                table1 = page.DropMetric(table1Object, (frameBox.Right - 130, frameBox.Top - 63));
 
-            var table1 = page.DropMetric(table1Object, (right - 130, top - 63));
-            var table2 = page.DropMetric(table2Object, (right - 130, top - 229));
+                // set the table location bind to frame
+                var srcStream1 = Array.CreateInstance(typeof(short), 6);
+                srcStream1.SetValue((short)VisSectionIndices.visSectionObject, 0);
+                srcStream1.SetValue((short)VisRowIndices.visRowXFormOut, 1);
+                srcStream1.SetValue((short)VisCellIndices.visXFormPinX, 2);
 
+                srcStream1.SetValue((short)VisSectionIndices.visSectionObject, 3);
+                srcStream1.SetValue((short)VisRowIndices.visRowXFormOut, 4);
+                srcStream1.SetValue((short)VisCellIndices.visXFormPinY, 5);
+
+                var formulas1 = Array.CreateInstance(typeof(object), 2);
+                formulas1.SetValue($"=Sheet.{frame.ID}!PinX + Sheet.{frame.ID}!Width - 10 mm - Width * 0.5", 0);
+                formulas1.SetValue($"=Sheet.{frame.ID}!PinY + Sheet.{frame.ID}!Height - 10 mm - Height * 0.5", 1);
+
+                table1.SetFormulas(ref srcStream1, ref formulas1, 0);
+            }
+            else
+            {
+                table1 = page.Shapes.OfType<Shape>().SingleOrDefault(x =>
+                    x.Master.BaseID == table1BaseId &&
+                    x.BoundingBoxInside((short)VisBoundingBoxArgs.visBBoxExtents, frameBox));
+            }
+
+            if (!page.Shapes.OfType<Shape>().Any(x =>
+                    x.Master.BaseID == table2BaseId &&
+                    x.BoundingBoxInside((short)VisBoundingBoxArgs.visBBoxExtents, frameBox)))
+            {
+                var table2Object = page.Document.GetMaster(table2BaseId);
+
+                table2 = page.DropMetric(table2Object, (frameBox.Right - 130, frameBox.Top - 229));
+                
+                var srcStream2 = Array.CreateInstance(typeof(short), 6);
+                srcStream2.SetValue((short)VisSectionIndices.visSectionObject, 0);
+                srcStream2.SetValue((short)VisRowIndices.visRowXFormOut, 1);
+                srcStream2.SetValue((short)VisCellIndices.visXFormPinX, 2);
+
+                srcStream2.SetValue((short)VisSectionIndices.visSectionObject, 3);
+                srcStream2.SetValue((short)VisRowIndices.visRowXFormOut, 4);
+                srcStream2.SetValue((short)VisCellIndices.visXFormPinY, 5);
+
+                var formulas2 = Array.CreateInstance(typeof(object), 2);
+                formulas2.SetValue($"=Sheet.{frame.ID}!PinX + Sheet.{frame.ID}!Width - 10 mm - Width * 0.5", 0);
+                formulas2.SetValue(
+                    $"=Sheet.{frame.ID}!PinY + Sheet.{frame.ID}!Height - 10 mm - Sheet.{table1.ID}!Height - Height * 0.5",
+                    1);
+
+                table2.SetFormulas(ref srcStream2, ref formulas2, 0);
+            }
+            
             return (table1, table2);
         }
         catch (MasterNotValidException)
         {
-            MessageBox.Show(@"未能找到PCI符号说明，请检查AE标识.vssx文件是否已打开。");
+            MessageBox.Show(@"未能找到PCI符号说明，请检查AE标识.vssx文件是否已打开。", "初始化");
         }
         catch (Exception e)
         {
@@ -136,7 +187,7 @@ public abstract class FormatHelper
                 "Failed to insert frame at origin");
         }
 
-        return (null, null);
+        return (table1, table2);
     }
 
     private static void SetupStyles(IVDocument document, Font? font = null)

@@ -47,10 +47,26 @@ public static class ShapeExt
     /// <param name="shape"></param>
     /// <param name="flags"></param>
     /// <returns></returns>
-    public static (double Left, double Bottom, double Right, double Top) BoundingBoxMetric(this IVShape shape, short flags)
+    public static (double Left, double Bottom, double Right, double Top) BoundingBoxMetric(this IVShape shape,
+        short flags)
     {
         shape.BoundingBox(flags, out var left, out var bottom, out var right, out var top);
         return (left * 25.4, bottom * 25.4, right * 25.4, top * 25.4);
+    }
+
+    /// <summary>
+    /// If a shape's bounding box is completely inside the specified area.
+    /// </summary>
+    /// <param name="shape"></param>
+    /// <param name="flags"></param>
+    /// <param name="area"></param>
+    /// <returns></returns>
+    public static bool BoundingBoxInside(this IVShape shape, short flags,
+        (double Left, double Bottom, double Right, double Top) area)
+    {
+        var boundingBox = shape.BoundingBoxMetric(flags);
+        return boundingBox.Left >= area.Left && boundingBox.Right <= area.Right && boundingBox.Top <= area.Top &&
+               boundingBox.Bottom >= area.Bottom;
     }
 
     /// <summary>

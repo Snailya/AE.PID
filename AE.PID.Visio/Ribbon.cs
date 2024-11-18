@@ -19,6 +19,7 @@ using Microsoft.Office.Interop.Excel;
 using Microsoft.Office.Interop.Visio;
 using Splat;
 using Office = Microsoft.Office.Core;
+using Path = System.IO.Path;
 using Shape = Microsoft.Office.Interop.Visio.Shape;
 
 // TODO:  Follow these steps to enable the Ribbon (XML) item:
@@ -105,7 +106,7 @@ public class Ribbon : Office.IRibbonExtensibility
 
     public void Debug(Office.IRibbonControl control)
     {
-        string[,] dataArray = new string[2, 9]
+        var dataArray = new string[2, 9]
         {
             { "1", "2", "3", "4", "5", "6", "7", "8", "9" },
             { "1", "2", "3", "4", "5", "6", "7", "8", "9" }
@@ -185,9 +186,11 @@ public class Ribbon : Office.IRibbonExtensibility
         //remove hidden information to reduce size
         doc.RemoveHiddenInformation((int)VisRemoveHiddenInfoItems.visRHIMasters);
 
-        var filePath = string.Empty;
-        // close the document
-        doc.DocumentSaved += d => { filePath = d.FullName; };
+        // 文档可能有两种情况：
+        // 1. 文档是新建的，此时没有FullName，但是这种情况不应该发生，因为没有检查一个新建的文档，因为该文档随时可被丢弃。
+        // 2. 文档曾经被保存过，此时才有检查更新的必要
+        // 所以此处假定文档一定有fullname。
+        var filePath = doc.FullName;
         doc.Close();
 
         try
@@ -197,11 +200,11 @@ public class Ribbon : Office.IRibbonExtensibility
         }
         catch (DocumentNotRecognizedException e)
         {
-            MessageBox.Show(@"更新失败，文档无法被识别。");
+            MessageBox.Show(@"更新失败，文档无法被识别。", "文档更新");
         }
         catch (Exception e)
         {
-            MessageBox.Show($"更新失败，{e.Message}");
+            MessageBox.Show($"更新失败，{e.Message}", "文档更新");
         }
 
         // reopen after updated
@@ -214,6 +217,9 @@ public class Ribbon : Office.IRibbonExtensibility
 
         // check if the document is the visDrawing, not the stencil or other type
         if (Globals.ThisAddIn.Application.ActiveDocument.Type != VisDocumentTypes.visTypeDrawing) return false;
+
+        // 如果文档从来没有被存储过，则不检查
+        if (!Path.IsPathRooted(Globals.ThisAddIn.Application.ActiveDocument.FullName)) return false;
 
         // check if the AE style exist, if the AE style exist, means this is a target drawing.
         if (Globals.ThisAddIn.Application.ActiveDocument.Styles.OfType<IVStyle>()
@@ -316,6 +322,12 @@ public class Ribbon : Office.IRibbonExtensibility
             !string.IsNullOrEmpty(x.Cells[CellNameDict.MaterialCode].ResultStr[VisUnitCodes.visUnitsString]));
     }
 
+    public bool AreMaterialLocations(Office.IRibbonControl control)
+    {
+        return Globals.ThisAddIn.Application.ActiveWindow.Selection.OfType<IVShape>()
+            .All(x => x.HasCategory("Equipment") || x.HasCategory("Instrument") || x.HasCategory("FunctionalElement"));
+    }
+    
     #endregion
 
     #region -- Proxy Context Menu --
@@ -345,9 +357,9 @@ public class Ribbon : Office.IRibbonExtensibility
         if (!IsSingleShapeSelection()) return false;
 
         return Globals.ThisAddIn.Application.ActiveWindow.Selection.OfType<IVShape>()
-            .All(x => !x.HasCategory("FunctionalGroup") && !x.HasCategory("Equipment") &&
-                      !x.HasCategory("Instrument") &&
-                      !x.HasCategory("FunctionalElement"));
+            .All(x => !x.HasCategory("Frame") && !x.HasCategory("FunctionalGroup") && !x.HasCategory("Equipment") &&
+                                                         !x.HasCategory("Instrument") &&
+                                                         !x.HasCategory("FunctionalElement"));
     }
 
     public void InsertFunctionElement(Office.IRibbonControl control)
@@ -362,6 +374,24 @@ public class Ribbon : Office.IRibbonExtensibility
 
         return Globals.ThisAddIn.Application.ActiveWindow.Selection.OfType<IVShape>()
             .All(x => x.HasCategory("Equipment") || (x.HasCategory("Instrument") && !x.HasCategory("Proxy")));
+    }
+
+    #endregion
+
+    #region -- Frame Context Menu --
+
+    public void InsertPCIDescription(Office.IRibbonControl control)
+    {
+        var frame = Globals.ThisAddIn.Application.ActiveWindow.Selection[1];
+        FormatHelper.InsertPCITables(frame.ContainingPage, frame!);
+    }
+
+    public bool IsFrame(Office.IRibbonControl control)
+    {
+        if (!IsSingleShapeSelection()) return false;
+
+        var selection = Globals.ThisAddIn.Application.ActiveWindow.Selection[1];
+        return selection != null && selection.Master.BaseID == FormatHelper.FrameBaseId;
     }
 
     #endregion

@@ -60,7 +60,7 @@
                         getEnabled="IsInsertFunctionElementValid"
                 />
             </menu>
-            <menu id="Material" label="物料">
+            <menu id="Material" label="物料" getVisible="AreMaterialLocations">
                 <button id="MaterialData"
                         label="物料数据"
                         onAction="ShowMaterialDataPane"
@@ -72,6 +72,11 @@
                         getEnabled="HasMaterial"
                 />
             </menu>
+            <button id="InsertPCIDescription"
+                    label="插入PCI说明"
+                    onAction="InsertPCIDescription"
+                    getVisible="IsFrame"
+            />
         </contextMenu>
     </contextMenus>
 </customUI>
