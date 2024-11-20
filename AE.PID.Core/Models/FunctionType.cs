@@ -8,5 +8,5 @@ public enum FunctionType
     Equipment = 3,
     Instrument = 4,
     FunctionElement = 5,
-    
+    External = 6
 }

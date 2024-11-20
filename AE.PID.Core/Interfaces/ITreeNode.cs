@@ -13,7 +13,7 @@ public interface ITreeNode<T>
     public T ParentId { get; set; }
 
     /// <summary>
-    ///     The user-oriented name of the element.
+    ///     The default label used in the tree structure.
     /// </summary>
     public string NodeName { get; }
 }

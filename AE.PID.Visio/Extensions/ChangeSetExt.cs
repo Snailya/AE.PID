@@ -14,7 +14,7 @@ namespace AE.PID.Visio.Extensions;
 
 public static class ChangeSetExt
 {
-    private static readonly string[] CellsToMonitor =
+    private static readonly string[] CellValuesToMonitor =
     {
         CellNameDict.FunctionZone, CellNameDict.FunctionZoneName, CellNameDict.FunctionZoneEnglishName,
         CellNameDict.FunctionGroup, CellNameDict.FunctionGroupName, CellNameDict.FunctionZoneEnglishName,
@@ -22,14 +22,22 @@ public static class ChangeSetExt
         CellNameDict.FunctionElement, CellNameDict.ElementName, CellNameDict.Description,
         CellNameDict.Remarks,
         CellNameDict.SubClass, CellNameDict.KeyParameters, CellNameDict.UnitQuantity, CellNameDict.Quantity,
-        CellNameDict.MaterialCode
+        CellNameDict.MaterialCode,
+        CellNameDict.Customer
     };
 
+    /// <summary>
+    ///     Create a change set that monitors maters add and removed event of the document.
+    /// </summary>
+    /// <param name="document"></param>
+    /// <returns></returns>
     public static IObservable<IChangeSet<VisioMaster, string>> ToMasterChangeSet(
         this Document document)
     {
         return ObservableChangeSet.Create<VisioMaster, string>(cache =>
         {
+            var subscription = new CompositeDisposable();
+
             var observeAdded = Observable.FromEvent<EDocument_MasterAddedEventHandler, Master>(
                     handler => document.MasterAdded += handler,
                     handler => document.MasterAdded -= handler,
@@ -50,10 +58,12 @@ public static class ChangeSetExt
 #endif
                 .Do(master => cache.RemoveKey(master.BaseId));
 
-            var subscription = observeAdded.Merge(observeRemoved)
-                .Subscribe();
+            observeAdded.Merge(observeRemoved)
+                .Subscribe()
+                .DiffWith(subscription);
 
             // load initial values
+            // todo：最理想的情况是在需要的时候才加载
             var initials = document.Masters.OfType<IVMaster>()
                 .Select(master => new VisioMaster(master.BaseID, master.Name))
                 .ToList();
@@ -63,6 +73,11 @@ public static class ChangeSetExt
         }, t => t.BaseId);
     }
 
+    /// <summary>
+    ///     Create a change set that monitors shape add, update and removed event of the document.
+    /// </summary>
+    /// <param name="document"></param>
+    /// <returns></returns>
     public static IObservable<IChangeSet<VisioShape, CompositeId>> ToShapeChangeSet(
         this Document document)
     {
@@ -109,7 +124,8 @@ public static class ChangeSetExt
                                 observePageChange.Dispose(); // Dispose observe the shape change on that page
                             })
                             .DisposeWith(subscription);
-                    }).DisposeWith(subscription);
+                    })
+                    .DisposeWith(subscription);
                 // Return the Disposable that controls the subscription
                 return subscription;
             },
@@ -124,23 +140,10 @@ public static class ChangeSetExt
             source.HasCategory("Equipment") ? FunctionType.Equipment :
             source.HasCategory("Instrument") ? FunctionType.Instrument :
             source.HasCategory("FunctionalElement") ? FunctionType.FunctionElement :
+            source.HasCategory("Exclude") ? FunctionType.External :
             throw new ArgumentException();
     }
 
-    /// <summary>
-    ///     Convert a <see cref="IVMaster" /> to <see cref="Symbol" />.
-    /// </summary>
-    /// <param name="source"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public static Symbol ToSymbol(this IVMaster source)
-    {
-        return new Symbol
-        {
-            Id = source.BaseID,
-            Name = source.Name
-        };
-    }
 
     /// <summary>
     ///     Convert a <see cref="IVShape" /> to <see cref="FunctionLocation" />.
@@ -157,11 +160,11 @@ public static class ChangeSetExt
         var functionIdStr = source.TryGetValue("User.FunctionId");
         var functionId = double.TryParse(functionIdStr, out var functionIdDouble) ? (int)functionIdDouble : 0;
 
-        var containers = source.MemberOfContainers.OfType<int>().Select(x => source.ContainingPage.Shapes.ItemFromID[x])
-            .Select(x => new { Type = GetFunctionType(x), Id = new CompositeId(x.ContainingPageID, x.ID) })
-            .ToArray();
-        var parentId = containers.Where(x => x.Type <= type).OrderBy(x => x.Type).LastOrDefault()?.Id ??
-                       new CompositeId(source.ContainingPageID);
+        var parent = source.MemberOfContainers.OfType<int>().Select(x =>
+                new { Id = x, ContainerCount = source.ContainingPage.Shapes.ItemFromID[x].MemberOfContainers.Length })
+            .OrderByDescending(x => x.ContainerCount)
+            .FirstOrDefault();
+        var parentId = new CompositeId(source.ContainingPageID, parent?.Id ?? 0);
 
         var zone = source.TryGetFormatValue(CellNameDict.FunctionZone) ?? string.Empty;
         var zoneName = source.TryGetFormatValue(CellNameDict.FunctionZoneName) ?? string.Empty;
@@ -180,6 +183,7 @@ public static class ChangeSetExt
             FunctionType.Instrument => source.TryGetFormatValue(CellNameDict.FunctionElement),
             FunctionType.FunctionElement => source.TryGetValue("Prop.RefEquipment") + "-" +
                                             source.TryGetFormatValue(CellNameDict.FunctionElement),
+            FunctionType.External => string.Empty,
             _ => throw new ArgumentOutOfRangeException()
         } ?? string.Empty;
 
@@ -191,6 +195,7 @@ public static class ChangeSetExt
             FunctionType.Equipment => source.TryGetValue(CellNameDict.SubClass),
             FunctionType.Instrument => source.TryGetValue(CellNameDict.SubClass),
             FunctionType.FunctionElement => source.TryGetValue(CellNameDict.ElementName),
+            FunctionType.External => string.Empty,
             _ => throw new ArgumentOutOfRangeException()
         } ?? string.Empty;
 
@@ -198,14 +203,17 @@ public static class ChangeSetExt
 
         var description = type switch
         {
-            FunctionType.ProcessZone => string.Empty,
             FunctionType.FunctionGroup => source.TryGetValue(CellNameDict.FunctionGroupDescription),
             FunctionType.FunctionUnit => source.TryGetValue(CellNameDict.FunctionGroupDescription),
             FunctionType.Equipment => source.TryGetValue(CellNameDict.Description),
             FunctionType.Instrument => source.TryGetValue(CellNameDict.Description),
             FunctionType.FunctionElement => source.TryGetValue(CellNameDict.Description),
-            _ => throw new ArgumentOutOfRangeException()
+            _ => string.Empty
         } ?? string.Empty;
+
+        var responsibility = type == FunctionType.External
+            ? source.TryGetValue(CellNameDict.Customer) ?? string.Empty
+            : string.Empty;
 
         return new FunctionLocation(id, type)
         {
@@ -220,7 +228,8 @@ public static class ChangeSetExt
             Element = element,
             Name = name,
             Remarks = remarks,
-            Description = description
+            Description = description,
+            Responsibility = responsibility
         };
     }
 
@@ -251,20 +260,27 @@ public static class ChangeSetExt
                 .Do(x => DebugExt.Log("BeforeShapeDelete", x))
                 .Do(visioShape => cache.RemoveKey(visioShape.Id));
 
-            var observeUpdated =
-                Observable.FromEvent<EPage_CellChangedEventHandler, Cell>(
-                        handler => page.CellChanged += handler,
-                        handler => page.CellChanged -= handler,
-                        SchedulerManager.VisioScheduler)
-                    .Where(cell => CellsToMonitor.Contains(cell.Name))
-                    .Select(cell => cell.Shape)
-                    .Where(predicate)
-                    .Select(shape =>
-                        new VisioShape(new CompositeId(shape.ContainingPageID, shape.ID), GetShapeTypes(shape)))
-                    .QuiescentBuffer(TimeSpan.FromMilliseconds(400), SchedulerManager.VisioScheduler)
-                    .SelectMany(x => x.Distinct())
-                    .Do(x => DebugExt.Log("CellChanged", x))
-                    .Do(cache.AddOrUpdate);
+            var observeCellUpdated = Observable.FromEvent<EPage_CellChangedEventHandler, Cell>(
+                    handler => page.CellChanged += handler,
+                    handler => page.CellChanged -= handler,
+                    SchedulerManager.VisioScheduler)
+                .Where(cell => CellValuesToMonitor.Contains(cell.Name))
+                .Select(cell => cell.Shape);
+            var observeFormulaUpdated = Observable.FromEvent<EPage_FormulaChangedEventHandler, Cell>(
+                    handler => page.FormulaChanged += handler,
+                    handler => page.FormulaChanged -= handler,
+                    SchedulerManager.VisioScheduler)
+                .Where(cell => cell.Name == CellNameDict.Relationships)
+                .Select(cell => cell.Shape);
+            var observeUpdated = observeCellUpdated
+                .Merge(observeFormulaUpdated)
+                .Where(predicate)
+                .Select(shape =>
+                    new VisioShape(new CompositeId(shape.ContainingPageID, shape.ID), GetShapeTypes(shape)))
+                .QuiescentBuffer(TimeSpan.FromMilliseconds(400), SchedulerManager.VisioScheduler)
+                .SelectMany(x => x.Distinct())
+                .Do(x => DebugExt.Log("CellChanged", x))
+                .Do(cache.AddOrUpdate);
 
             var subscription = Observable.Merge(observeAdded, observeRemoved, observeUpdated)
                 .Subscribe();
@@ -308,11 +324,11 @@ public static class ChangeSetExt
         return new MaterialLocation(locationId)
         {
             LocationId = locationId,
-            UnitQuantity = unitQuantity,
-            Quantity = quantity,
+            Quantity = unitQuantity,
+            ComputedQuantity = quantity,
             Code = materialCode ?? string.Empty,
             KeyParameters = keyParameters ?? string.Empty,
-            Type = type ?? string.Empty
+            Category = type ?? string.Empty
         };
     }
 
@@ -323,7 +339,7 @@ public static class ChangeSetExt
 
         return shapeCategories switch
         {
-            "Frame" or "FunctionalGroup" or "Unit" => [VisioShape.ShapeType.FunctionLocation],
+            "Frame" or "FunctionalGroup" or "Unit" or "Exclude" => [VisioShape.ShapeType.FunctionLocation],
             "Equipment" or "Instrument" or "FunctionalElement" =>
             [
                 VisioShape.ShapeType.FunctionLocation, VisioShape.ShapeType.MaterialLocation

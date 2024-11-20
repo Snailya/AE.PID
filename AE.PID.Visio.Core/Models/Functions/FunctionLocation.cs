@@ -4,6 +4,12 @@ using DynamicData.Binding;
 
 namespace AE.PID.Visio.Core.Models;
 
+/// <summary>
+/// A function location is a site designated for implementing a specific function, either physically or logically.
+/// A function location can be further subdivided into more locations.
+/// </summary>
+/// <param name="id"></param>
+/// <param name="type"></param>
 public class FunctionLocation(CompositeId id, FunctionType type)
     : AbstractNotifyPropertyChanged, ITreeNode<CompositeId>
 {
@@ -16,6 +22,7 @@ public class FunctionLocation(CompositeId id, FunctionType type)
     private string _name = string.Empty;
     private CompositeId _parentId = new();
     private string _remarks = string.Empty;
+    private string _responsibility = string.Empty;
     private string _zone = string.Empty;
     private string _zoneEnglishName = string.Empty;
     private string _zoneName = string.Empty;
@@ -125,6 +132,17 @@ public class FunctionLocation(CompositeId id, FunctionType type)
     }
 
     /// <summary>
+    ///     The responsibility for this function location.
+    /// </summary>
+    public string Responsibility
+    {
+        get => _responsibility;
+        set => SetAndRaise(ref _responsibility, value);
+    }
+
+    #region -- ITreeNode<CompositeId> --
+
+    /// <summary>
     ///     The id that used to find the shape proxy in Visio drawing.
     /// </summary>
     public CompositeId Id { get; } = id;
@@ -150,8 +168,11 @@ public class FunctionLocation(CompositeId id, FunctionType type)
                 FunctionType.Equipment => Element,
                 FunctionType.Instrument => Element,
                 FunctionType.FunctionElement => Element,
+                FunctionType.External => Responsibility,
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
     }
+
+    #endregion
 }

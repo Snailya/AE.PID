@@ -39,6 +39,9 @@ public static class CellNameDict
     public const string Description = "Prop.Description";
 
     public const string Remarks = "Prop.Remarks";
-
+    
+    public const string Customer = "Prop.Customer";
+    
     #endregion
+
 }

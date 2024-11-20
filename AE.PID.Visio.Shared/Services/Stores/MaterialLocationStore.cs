@@ -199,7 +199,7 @@ public class MaterialLocationStore : DisposableBase, IMaterialLocationStore
         _visioService.UpdateShapeProperties(change.Key,
             [
                 new ValuePatch(CellNameDict.MaterialCode, change.Current.Code, true),
-                new ValuePatch(CellNameDict.UnitQuantity, change.Current.UnitQuantity)
+                new ValuePatch(CellNameDict.UnitQuantity, change.Current.Quantity)
             ]
         );
     }
@@ -257,7 +257,7 @@ public class MaterialLocationStore : DisposableBase, IMaterialLocationStore
             Description = functionLocation?.Description ?? string.Empty,
 
             MaterialNo = location.Code,
-            Count = location.Quantity,
+            Count = location.ComputedQuantity,
 
             Specification = material?.Value.Specifications ?? string.Empty,
             Type = material?.Value.Type ?? string.Empty,
