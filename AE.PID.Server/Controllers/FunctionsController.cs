@@ -133,7 +133,7 @@ public partial class FunctionsController : ControllerBase
                     {
                         Id = x.Id.ToString(),
                         Number = match.Groups[2].Value,
-                        IsEnabled = false,
+                        IsEnabled = x.IsEnabled,
                         TemplatedId = template.HasValue ? template.Value.Id.ToString() : string.Empty
                     };
                 }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using AE.PID.Core.Models;
 using AE.PID.Visio.Core.Interfaces;
 using AE.PID.Visio.Core.Models;
 using AE.PID.Visio.UI.Design.Design;
@@ -10,17 +12,68 @@ namespace AE.PID.Visio.UI.Design.Services;
 
 public class MoqVisioService : IVisioService
 {
+    private readonly SourceCache<VisioMaster, string> _masters = new(x => x.BaseId);
+    private readonly SourceCache<VisioShape, CompositeId> _shapes = new(x => x.Id);
+
     public MoqVisioService()
     {
-        FunctionLocations = new Lazy<IObservableCache<FunctionLocation, CompositeId>>(() =>
-            DesignData.FunctionLocations.AsObservableChangeSet(t => t.Id).AsObservableCache());
-        MaterialLocations = new Lazy<IObservableCache<MaterialLocation, CompositeId>>(() =>
-            DesignData.MaterialLocations.AsObservableChangeSet(t => t.LocationId).AsObservableCache());
+        Shapes = new Lazy<IObservableCache<VisioShape, CompositeId>>(() =>
+        {
+            // add initial data
+            _shapes.AddOrUpdate(
+                DesignData.Shapes.Select(x => new VisioShape(new CompositeId(1, x.Id), ResolveShapeTypes(x))));
+            return _shapes.AsObservableCache();
+        });
+
+        Masters = new Lazy<IObservableCache<VisioMaster, string>>(() => _masters.AsObservableCache());
     }
 
-    public Lazy<IObservableCache<FunctionLocation, CompositeId>> FunctionLocations { get; }
-    public Lazy<IObservableCache<MaterialLocation, CompositeId>> MaterialLocations { get; }
-    public Lazy<IObservableCache<Symbol, string>> Symbols { get; }
+    public CompositeId[] GetAdjacent(CompositeId compositeId)
+    {
+        return [new CompositeId(compositeId.PageId, 10)];
+    }
+
+    public Lazy<IObservableCache<VisioMaster, string>> Masters { get; }
+
+    public FunctionLocation ToFunctionLocation(VisioShape shape)
+    {
+        var source = DesignData.Shapes.SingleOrDefault(x => x.Id == shape.Id.ShapeId);
+        if (source != null)
+            return new FunctionLocation(shape.Id, ResolveFunctionType(source))
+            {
+                Zone = source.Zone,
+                ZoneName = source.ZoneName,
+                ZoneEnglishName = source.ZoneNameEnglish,
+                Group = source.Group,
+                GroupName = source.GroupName,
+                GroupEnglishName = source.GroupNameEnglish,
+                Element = source.Element,
+                Description = source.Description,
+                Name = "",
+                Remarks = source.Remarks,
+                FunctionId = source.PDMSFunctionId,
+                ParentId = new CompositeId(1, source.ParentId)
+            };
+
+        throw new ArgumentOutOfRangeException(nameof(shape));
+    }
+
+    public MaterialLocation ToMaterialLocation(VisioShape shape)
+    {
+        var source = DesignData.Shapes.SingleOrDefault(x => x.Id == shape.Id.ShapeId);
+        if (source != null)
+            return new MaterialLocation(shape.Id)
+            {
+                Code = source.MaterialCode,
+                Quantity = 1,
+                ComputedQuantity = 1,
+                KeyParameters = "",
+                Category = source.MaterialType
+            };
+
+        throw new ArgumentOutOfRangeException(nameof(shape));
+    }
+
     public void SelectAndCenterView(CompositeId id)
     {
         Debug.WriteLine($"Located {id}");
@@ -28,12 +81,12 @@ public class MoqVisioService : IVisioService
 
     public string? GetDocumentProperty(string propName)
     {
-        throw new NotImplementedException();
+        return DesignData.DocumentSheet.GetValueOrDefault(propName);
     }
 
     public string? GetPageProperty(int id, string propName)
     {
-        throw new NotImplementedException();
+        return DesignData.PageSheet.GetValueOrDefault((id, propName));
     }
 
     public string? GetShapeProperty(CompositeId id, string propName)
@@ -43,12 +96,14 @@ public class MoqVisioService : IVisioService
 
     public void UpdateDocumentProperties(IEnumerable<ValuePatch> patches)
     {
-        throw new NotImplementedException();
+        foreach (var patch in patches)
+            DesignData.DocumentSheet[patch.PropertyName] = patch.Value.ToString() ?? string.Empty;
     }
 
     public void UpdatePageProperties(int id, IEnumerable<ValuePatch> patches)
     {
-        throw new NotImplementedException();
+        foreach (var patch in patches)
+            DesignData.PageSheet[(id, patch.PropertyName)] = patch.Value?.ToString() ?? string.Empty;
     }
 
     public void UpdateShapeProperties(CompositeId id, IEnumerable<ValuePatch> patches)
@@ -56,25 +111,39 @@ public class MoqVisioService : IVisioService
         Debug.WriteLine("Updated");
     }
 
-    public void PersistAsSolutionXml<TObject, TKey>(string keyword, TObject[] items, Func<TObject, TKey> keySelector,
-        bool overwrite = false) where TKey : notnull
-    {
-        throw new NotImplementedException();
-    }
+    public Lazy<IObservableCache<VisioShape, CompositeId>> Shapes { get; }
 
-    public T ReadFromSolutionXml<T>(string name)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void InsertAsExcelSheet(string[,] toDataArray)
+    public void InsertAsExcelSheet(string[,] dataArray)
     {
         Debug.WriteLine("Inserted");
     }
 
-
-    public void SaveAsSolutionXml<T>(string name, T data)
+    private static VisioShape.ShapeType[] ResolveShapeTypes(ShapeProxy shape)
     {
-        throw new NotImplementedException();
+        if (string.IsNullOrEmpty(shape.ShapeCategory)) return [VisioShape.ShapeType.None];
+
+        return shape.ShapeCategory switch
+        {
+            "Frame" or "FunctionalGroup" or "Unit" => [VisioShape.ShapeType.FunctionLocation],
+            "Equipment" or "Instrument" or "FunctionalElement" =>
+            [
+                VisioShape.ShapeType.FunctionLocation, VisioShape.ShapeType.MaterialLocation
+            ],
+            _ => [VisioShape.ShapeType.None]
+        };
+    }
+
+    private static FunctionType ResolveFunctionType(ShapeProxy shape)
+    {
+        return shape.ShapeCategory switch
+        {
+            "Frame" => FunctionType.ProcessZone,
+            "FunctionalGroup" => FunctionType.FunctionGroup,
+            "Unit" => FunctionType.FunctionUnit,
+            "Equipment" => FunctionType.Equipment,
+            "Instrument" => FunctionType.Instrument,
+            "FunctionalElement" => FunctionType.FunctionElement,
+            _ => throw new ArgumentOutOfRangeException()
+        };
     }
 }

@@ -34,4 +34,9 @@ public class Function
     ///     The description for the function
     /// </summary>
     public string Description { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Is this function in use
+    /// </summary>
+    public bool IsEnabled { get; set; }
 }

@@ -43,7 +43,7 @@
 
         <Style Selector="StackPanel.actions">
             <Setter Property="Orientation" Value="Horizontal" />
-            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
             <Setter Property="Spacing" Value="4" />
         </Style>
 
@@ -66,15 +66,12 @@
             <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
             <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
         </Style>
-
-        <!-- <Style Selector="DataGridRow"> -->
-        <!--     <Setter Property="Height" Value="32" /> -->
-        <!-- </Style> -->
-
+        
         <Style Selector="DataGridRow TextBlock">
             <Setter Property="FontSize" Value="12" />
         </Style>
 
         <StyleInclude Source="Views/Controls/LoadingIndicator.axaml" />
+        <StyleInclude Source="Views/Controls/Tag.axaml"/>
     </Application.Styles>
 </Application>

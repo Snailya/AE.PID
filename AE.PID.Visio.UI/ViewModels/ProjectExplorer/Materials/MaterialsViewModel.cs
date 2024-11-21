@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Text.Json;
 using AE.PID.Core.Models;
 using AE.PID.Visio.Core.Exceptions;
 using AE.PID.Visio.Core.Interfaces;
@@ -12,6 +11,7 @@ using AE.PID.Visio.Core.Models;
 using AE.PID.Visio.Shared.Extensions;
 using AE.PID.Visio.UI.Avalonia.Models;
 using AE.PID.Visio.UI.Avalonia.Services;
+using Avalonia.Collections;
 using Avalonia.Platform.Storage;
 using DynamicData;
 using DynamicData.Binding;
@@ -25,11 +25,14 @@ public class MaterialsViewModel : ViewModelBase
     private readonly ReadOnlyObservableCollection<MaterialLocationViewModel> _selectedLocations;
 
     private ValueTuple<string, string>? _clipboard;
+    private DataGridCollectionView _enhancedLocations;
+
     private bool _isLoading = true;
     private bool _isMaterialVisible;
     private MaterialViewModel? _material;
     private string? _searchText;
     private MaterialLocationViewModel? _selectedLocation;
+    public ObservableCollection<GroupDescriptionViewModel> GroupDescriptions { get; set; } = [];
 
     public string? SearchText
     {
@@ -62,7 +65,12 @@ public class MaterialsViewModel : ViewModelBase
     }
 
     public ReadOnlyObservableCollection<MaterialLocationViewModel> SelectedLocations => _selectedLocations;
-    public ReadOnlyObservableCollection<MaterialLocationViewModel> Locations => _locations;
+
+    public DataGridCollectionView EnhancedLocations
+    {
+        get => _enhancedLocations;
+        set => this.RaiseAndSetIfChanged(ref _enhancedLocations, value);
+    }
 
     public bool IsMaterialVisible
     {
@@ -73,17 +81,16 @@ public class MaterialsViewModel : ViewModelBase
     private void ResetIsEnabled(MaterialLocationViewModel x)
     {
         if (SelectedLocations.Any()) return;
-        foreach (var vm in Locations)
+        foreach (var vm in _locations)
             vm.IsEnabled = true;
     }
 
     private void UpdateIsEnabled(MaterialLocationViewModel x)
     {
         if (SelectedLocations.Count != 1) return;
-        foreach (var vm in Locations)
+        foreach (var vm in _locations)
             vm.IsEnabled = x.MaterialType == vm.MaterialType;
     }
-
 
     #region -- Interactions --
 
@@ -106,6 +113,8 @@ public class MaterialsViewModel : ViewModelBase
     public ReactiveCommand<MaterialLocationViewModel, Unit> Locate { get; private set; }
     public ReactiveCommand<OutputType, Unit> Export { get; }
     public ReactiveCommand<Unit, Unit> Sync { get; }
+    public ReactiveCommand<GroupDescriptionViewModel?, Unit> AddGroupDescription { get; }
+    public ReactiveCommand<GroupDescriptionViewModel?, Unit> RemoveGroupDescription { get; set; }
 
     #endregion
 
@@ -126,6 +135,7 @@ public class MaterialsViewModel : ViewModelBase
         DebugExt.Log("Initializing MaterialsViewModel", null, nameof(MaterialsViewModel));
 #endif
 
+
         #region -- Commands --
 
         Export = ReactiveCommand.CreateFromTask<OutputType, Unit>(async type =>
@@ -141,7 +151,7 @@ public class MaterialsViewModel : ViewModelBase
                         var filePath = file?.TryGetLocalPath();
                         if (filePath is null) return Unit.Default;
 
-                        await materialLocationStore.ExportAsWorkbook(filePath!);
+                        await materialLocationStore.ExportAsWorkbook(filePath);
                         Process.Start(new ProcessStartInfo
                         {
                             FileName = "explorer.exe",
@@ -161,13 +171,29 @@ public class MaterialsViewModel : ViewModelBase
 
         Sync = ReactiveCommand.CreateFromTask(async _ =>
         {
-            var viewModel = new SyncMaterialsViewModel(Locations);
+            var viewModel = new SyncMaterialsViewModel(_locations);
             return await ShowSyncMaterialsDialog.Handle(viewModel);
+        });
+
+        AddGroupDescription = ReactiveCommand.Create<GroupDescriptionViewModel?>(groupDescription =>
+        {
+            if (groupDescription == null || string.IsNullOrEmpty(groupDescription.PropertyName)) return;
+            if (GroupDescriptions.Any(x=>x.PropertyName == groupDescription.PropertyName)) return;
+
+            GroupDescriptions.Add(groupDescription);
+        });
+        RemoveGroupDescription = ReactiveCommand.Create<GroupDescriptionViewModel?>(groupDescription =>
+        {
+            if (groupDescription == null || string.IsNullOrEmpty(groupDescription.PropertyName)) return;
+            if (!GroupDescriptions.Contains(groupDescription)) return;
+
+            GroupDescriptions.Remove(groupDescription);
         });
 
         ClearSelection = ReactiveCommand.Create(() =>
         {
-            foreach (var vm in Locations.Where(x => x.IsSelected)) vm.IsSelected = false;
+            if (_locations == null) return;
+            foreach (var vm in _locations.Where(x => x.IsSelected)) vm.IsSelected = false;
         });
 
         SelectMaterial = ReactiveCommand.CreateFromTask<MaterialLocationViewModel>(async location =>
@@ -203,7 +229,7 @@ public class MaterialsViewModel : ViewModelBase
             Material = new MaterialViewModel(result);
         });
         LoadMaterial.ThrownExceptions
-            .Subscribe(v => { notificationHelper.Error("加载物料信息失败", v!.Message); });
+            .Subscribe(e => { notificationHelper.Error("加载物料信息失败", e!.Message); });
 
         Locate = ReactiveCommand.Create<MaterialLocationViewModel>(location =>
         {
@@ -228,7 +254,7 @@ public class MaterialsViewModel : ViewModelBase
                     location.MaterialCode = Clipboard?.Item2 ?? string.Empty;
                 }, canPaste);
         PasteMaterial.ThrownExceptions
-            .Subscribe(v => { notificationHelper.Error("粘贴物料失败", v!.Message); });
+            .Subscribe(e => { notificationHelper.Error("粘贴物料失败", e!.Message); });
 
         #endregion
 
@@ -239,7 +265,7 @@ public class MaterialsViewModel : ViewModelBase
             .AutoRefresh()
 #if DEBUG
             .OnItemAdded(x => DebugExt.Log("MaterialLocations.OnItemAdded", x.LocationId, nameof(MaterialsViewModel)))
-            .OnItemUpdated((cur, prev, _) =>
+            .OnItemUpdated((cur, _, _) =>
                 DebugExt.Log("MaterialLocations.OnItemUpdated", cur.LocationId, nameof(MaterialsViewModel)))
             .OnItemRefreshed(x =>
                 DebugExt.Log("MaterialLocations.OnItemRefreshed", x.LocationId, nameof(MaterialsViewModel)))
@@ -247,13 +273,13 @@ public class MaterialsViewModel : ViewModelBase
                 DebugExt.Log("MaterialLocations.OnItemRemoved", x.LocationId, nameof(MaterialsViewModel)))
 #endif
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Do(x => { IsLoading = false; });
+            .Do(_ => { IsLoading = false; });
 
         var observeFunction = functionLocationStore.FunctionLocations.Connect()
             .AutoRefresh()
 #if DEBUG
             .OnItemAdded(x => DebugExt.Log("FunctionLocations.OnItemAdded", x.Id, nameof(MaterialsViewModel)))
-            .OnItemUpdated((cur, prev, _) =>
+            .OnItemUpdated((cur, _, _) =>
                 DebugExt.Log("FunctionLocations.OnItemUpdated", cur.Id, nameof(MaterialsViewModel)))
             .OnItemRefreshed(x => DebugExt.Log("FunctionLocations.OnItemRefreshed", x.Id, nameof(MaterialsViewModel)))
             .OnItemRemoved(x => DebugExt.Log("FunctionLocations.OnItemRemoved", x.Id, nameof(MaterialsViewModel)))
@@ -277,9 +303,9 @@ public class MaterialsViewModel : ViewModelBase
                     .ThenByAscending(x => x.FunctionalGroup)
                     .ThenByAscending(x => x.FunctionalElement)
             )
-            .Subscribe();
+            .Subscribe(_ => { EnhancedLocations = new DataGridCollectionView(_locations); });
 
-        Locations.ToObservableChangeSet()
+        _locations.ToObservableChangeSet()
             .AutoRefresh(x => x.IsSelected)
             .Filter(x => x.IsSelected)
             .Bind(out _selectedLocations)
@@ -295,6 +321,21 @@ public class MaterialsViewModel : ViewModelBase
                 IsMaterialVisible = true;
             });
 
+        // observe the group description change to manage view group descriptions
+        GroupDescriptions.ToObservableChangeSet()
+            .OnItemAdded(v =>
+            {
+                EnhancedLocations.GroupDescriptions.Add(new DataGridPathGroupDescription(v.PropertyName));
+            })
+            .OnItemRemoved(v =>
+            {
+                var description =
+                    EnhancedLocations.GroupDescriptions.SingleOrDefault(x => x.PropertyName == v.PropertyName);
+                if (description != null)
+                    EnhancedLocations.GroupDescriptions.Remove(description);
+            })
+            .Subscribe();
+
         #endregion
 
         return;
@@ -303,7 +344,7 @@ public class MaterialsViewModel : ViewModelBase
         {
             if (string.IsNullOrEmpty(searchText)) return _ => true;
 
-            return material =>material.Contains(searchText!);
+            return material => material.Contains(searchText!);
         }
     }
 

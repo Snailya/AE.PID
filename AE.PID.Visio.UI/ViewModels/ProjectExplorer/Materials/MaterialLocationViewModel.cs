@@ -17,7 +17,7 @@ public class MaterialLocationViewModel : ReactiveObject
     private string _materialCode;
     private string _remarks = string.Empty;
     private double _unitQuantity;
-    private string _fullText;
+    private string _fullText= string.Empty;
 
     public CompositeId FunctionId { get; }
     public string MaterialType { get; set; }
@@ -102,18 +102,18 @@ public class MaterialLocationViewModel : ReactiveObject
     {
         FunctionId = material.LocationId;
 
-        _unitQuantity = material.UnitQuantity;
+        _unitQuantity = material.Quantity;
         _materialCode = material.Code;
 
-        Quantity = material.Quantity;
+        Quantity = material.ComputedQuantity;
         KeyParameters = material.KeyParameters;
-        MaterialType = material.Type;
+        MaterialType = material.Category;
 
         this.WhenAnyValue(x => x.MaterialCode)
             .Subscribe(x => { material.Code = x; })
             .DisposeWith(_cleanUp);
         this.WhenAnyValue(x => x.Quantity)
-            .Subscribe(x => { material.Quantity = x; })
+            .Subscribe(x => { material.ComputedQuantity = x; })
             .DisposeWith(_cleanUp);
     }
 

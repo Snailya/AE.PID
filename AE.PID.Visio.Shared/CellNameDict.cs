@@ -44,4 +44,5 @@ public static class CellNameDict
     
     #endregion
 
+    public const string Relationships = "Relationships";
 }

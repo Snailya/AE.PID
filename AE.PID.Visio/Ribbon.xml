@@ -73,10 +73,17 @@
                 />
             </menu>
             <button id="InsertPCIDescription"
-                    label="插入PCI说明"
-                    onAction="InsertPCIDescription"
-                    getVisible="IsFrame"
+                                  label="插入PCI说明"
+                                  onAction="InsertPCIDescription"
+                                  getVisible="IsFrame"
             />
+            <button id="PasteShapeData"
+                    label="粘贴属性"
+                    onAction="PasteShapeData"
+                    getVisible="CanPasteShapeData"
+                    insertAfterMso="Paste"
+            />
+<!--            <dynamicMenu id="Suggestion" label="建议" getContent="GetSuggestionContent"/>-->
         </contextMenu>
     </contextMenus>
 </customUI>

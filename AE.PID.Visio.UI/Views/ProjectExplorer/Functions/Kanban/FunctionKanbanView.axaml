@@ -54,7 +54,7 @@
                         <TextBlock Text="功能组" VerticalAlignment="Center" />
                         <TextBlock Grid.Column="1"
                                    Text="{Binding LastSynced, Converter={x:Static converters:SimpleConverters.LastSyncedText}}" />
-                        <!-- <Button Grid.Column="2" Content="同步" Command="{Binding SyncFunctionGroups}" /> -->
+                        <Button Grid.Column="2" Content="同步" Command="{Binding SyncFunctionGroups}" />
                     </Grid>
                 </Expander.Header>
                 <DataGrid ItemsSource="{Binding Groups}"

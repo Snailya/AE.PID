@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using AE.PID.Core.DTOs;
@@ -49,13 +52,16 @@ public class FunctionService
                 new FunctionDto
                 {
                     Id = x.Id,
-                    IsEnabled = true,
                     FunctionType = FunctionType.FunctionGroup,
                     Code = x.Code,
                     Name = x.Name,
                     EnglishName = x.EnglishName,
-                    Description = x.Description
+                    Description = x.Description,
+                    IsEnabled = x.IsEnabled,
                 }).ToArray());
+
+            Debug.WriteLine(JsonSerializer.Serialize(result));
+            
         }
         catch (ApiException e) when (e.StatusCode == HttpStatusCode.BadRequest)
         {

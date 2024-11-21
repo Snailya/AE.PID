@@ -26,7 +26,7 @@ public sealed class Program
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.
-    public static AppBuilder BuildAvaloniaApp()
+    private static AppBuilder BuildAvaloniaApp()
     {
         SchedulerManager.VisioScheduler = ThreadPoolScheduler.Instance;
 
@@ -46,8 +46,7 @@ public sealed class Program
         Locator.CurrentMutable.RegisterConstant<IStorageService>(new MoqStorageService());
 
         // register configurations
-        Locator.CurrentMutable.RegisterConstant<IConfigurationService>(
-            new ConfigurationService(Locator.Current.GetService<IStorageService>()!, "", ""));
+        Locator.CurrentMutable.RegisterLazySingleton<IConfigurationService>(()=> new MoqConfigurationService());
 
         // register for api services
         Locator.CurrentMutable.RegisterConstant<IProjectService>(
@@ -56,7 +55,6 @@ public sealed class Program
             new FunctionService(new ApiFactory<IFunctionApi>(Locator.Current.GetService<IConfigurationService>()!)));
         Locator.CurrentMutable.RegisterConstant<IMaterialService>(
             new MaterialService(new ApiFactory<IMaterialApi>(Locator.Current.GetService<IConfigurationService>()!)));
-
 
         // register for visio related
         Locator.CurrentMutable.Register<IVisioService>(() =>
@@ -79,18 +77,19 @@ public sealed class Program
         // register for tools
         Locator.CurrentMutable.Register<IToolService>(() => new MoqToolService());
 
-        Locator.CurrentMutable.Register(() => new NotifyService());
+        Locator.CurrentMutable.Register(() => new NotificationHelper());
 
         // register for ViewModels
 
         Locator.CurrentMutable.Register(() => new ProjectExplorerWindowViewModel(
-            Locator.Current.GetService<NotifyService>()!, Locator.Current.GetService<IProjectService>()!,
-            Locator.Current.GetService<IFunctionService>()!, Locator.Current.GetService<IMaterialService>()!,
+            Locator.Current.GetService<NotificationHelper>()!,
+            Locator.Current.GetService<IProjectService>()!, Locator.Current.GetService<IFunctionService>()!,
+            Locator.Current.GetService<IMaterialService>()!,
             Locator.Current.GetService<IProjectStore>()!, Locator.Current.GetService<IFunctionLocationStore>()!,
             Locator.Current.GetService<IMaterialLocationStore>()!));
         Locator.CurrentMutable.Register(() => new ToolsWindowViewModel(Locator.Current.GetService<IToolService>()!));
         Locator.CurrentMutable.Register(() =>
-            new SettingsWindowViewModel(Locator.Current.GetService<NotifyService>()!,
+            new SettingsWindowViewModel(Locator.Current.GetService<NotificationHelper>()!,
                 Locator.Current.GetService<IConfigurationService>()!,
                 Locator.Current.GetService<IAppUpdateService>()!));
     }

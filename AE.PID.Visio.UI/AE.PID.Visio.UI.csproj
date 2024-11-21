@@ -24,6 +24,10 @@
         <DependentUpon>RecommendMaterialView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
+      <Compile Update="Views\Controls\Tag.axaml.cs">
+        <DependentUpon>Tag.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
     </ItemGroup>
 
     <ItemGroup>

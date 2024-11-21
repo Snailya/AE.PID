@@ -21,13 +21,34 @@
     </UserControl.KeyBindings>
 
     <DockPanel>
-        <StackPanel DockPanel.Dock="Top"
-                    Classes="actions" Margin="0 0 0 4"
-                    HorizontalAlignment="Right">
+        <StackPanel Classes="actions"
+                    DockPanel.Dock="Top" Margin="0 0 0 4">
+            <StackPanel Orientation="Horizontal"
+                        IsVisible="{Binding Path=ItemCount, ElementName=Tags, Mode=OneWay,Converter={x:Static converters:SimpleConverters.NotZero}}">
+                <TextBlock Text="组标签: " VerticalAlignment="Center" />
+                <ItemsControl Name="Tags" ItemsSource="{Binding GroupDescriptions}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:GroupDescriptionViewModel">
+                            <views:Tag Content="{Binding Name}"
+                                       OnClose="{Binding  $parent[ItemsControl].((viewModels:MaterialsViewModel)DataContext).RemoveGroupDescription}">
+                                <views:Tag.CloseIcon>
+                                    <PathIcon Data="{StaticResource dismiss_regular}" />
+                                </views:Tag.CloseIcon>
+                            </views:Tag>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
             <TextBox Text="{Binding SearchText}" Watermark="搜索" Width="128" />
-            <SplitButton Content="导出"
-                         Command="{Binding Export}"
-                         CommandParameter="{x:Static models:OutputType.Page}">
+            <SplitButton
+                Content="导出"
+                Command="{Binding Export}"
+                CommandParameter="{x:Static models:OutputType.Page}">
                 <SplitButton.Flyout>
                     <MenuFlyout Placement="Bottom">
                         <MenuItem Header="导出到Excel"
@@ -36,9 +57,9 @@
                     </MenuFlyout>
                 </SplitButton.Flyout>
             </SplitButton>
-            <!-- <Button Content="同步" Command="{Binding Sync}" /> -->
+            <Button Content="同步" IsEnabled="False" Command="{Binding Sync}" />
         </StackPanel>
-        
+
         <Grid>
             <views:LoadingIndicator IsLoading="{Binding IsLoading}" />
             <SplitView
@@ -48,7 +69,7 @@
                 PanePlacement="Right">
                 <DataGrid SelectionMode="Extended" FrozenColumnCount="1"
                           CanUserReorderColumns="True" CanUserResizeColumns="True" CanUserSortColumns="True"
-                          ItemsSource="{Binding Locations}"
+                          ItemsSource="{Binding EnhancedLocations}"
                           SelectedItem="{Binding SelectedLocation}">
                     <DataGrid.KeyBindings>
                         <KeyBinding Gesture="Ctrl+C" Command="{Binding CopyMaterial}"
@@ -73,7 +94,17 @@
                                     <MenuItem
                                         Header="{Binding $parent[DataGrid].((viewModels:MaterialsViewModel)DataContext).Clipboard, Converter={x:Static converters:SimpleConverters.FormatPasteCommandLabel}}"
                                         Command="{Binding $parent[DataGrid].((viewModels:MaterialsViewModel)DataContext).PasteMaterial}"
-                                        CommandParameter="{Binding }" />
+                                        CommandParameter="{Binding  }" />
+                                </ContextMenu>
+                            </Setter>
+                        </Style>
+                        <Style Selector="DataGridColumnHeader">
+                            <Setter Property="ContextMenu">
+                                <ContextMenu x:DataType="viewModels:MaterialLocationViewModel">
+                                    <MenuItem
+                                        Header="{Binding $parent[DataGridColumnHeader].Content, StringFormat='组: {0}'}"
+                                        Command="{Binding $parent[DataGrid].((viewModels:MaterialsViewModel)DataContext).AddGroupDescription}"
+                                        CommandParameter="{Binding $parent[DataGridColumnHeader], Converter={x:Static converters:SimpleConverters.DataGridColumnHeaderToBindingPath}}" />
                                 </ContextMenu>
                             </Setter>
                         </Style>
@@ -94,23 +125,30 @@
                                 <DataTemplate>
                                     <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
                                               IsEnabled="{Binding IsEnabled}"
+                                              x:DataType="viewModels:MaterialLocationViewModel"
                                               HorizontalAlignment="Center" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <!-- <DataGridTextColumn Header="序号" -->
-                        <!--                     Binding="{Binding $parent[DataGridRow], Converter={x:Static converters:SimpleConverters.IndexConverter}}" /> -->
-                        <DataGridTextColumn Header="工艺区域" Binding="{Binding ProcessArea}" />
-                        <DataGridTextColumn Header="功能单元" Binding="{Binding FunctionalGroup}" />
-                        <DataGridTextColumn Header="功能元件" Binding="{Binding FunctionalElement}" />
-                        <DataGridTextColumn Header="类型" Binding="{Binding MaterialType}" />
-                        <DataGridTextColumn Header="描述" IsReadOnly="False" Binding="{Binding Description}" />
-                        <DataGridTextColumn Header="备注" IsReadOnly="False" Binding="{Binding Remarks}" />
-                        <DataGridTextColumn Header="关键参数" Binding="{Binding KeyParameters}" />
-                        <DataGridTextColumn Header="数量" IsReadOnly="False" Binding="{Binding Quantity}" />
+                        <DataGridTextColumn Header="工艺区域" Binding="{Binding ProcessArea}"
+                                            x:DataType="viewModels:MaterialLocationViewModel" />
+                        <DataGridTextColumn Header="功能单元" Binding="{Binding FunctionalGroup}"
+                                            x:DataType="viewModels:MaterialLocationViewModel" />
+                        <DataGridTextColumn Header="功能元件" Binding="{Binding FunctionalElement}"
+                                            x:DataType="viewModels:MaterialLocationViewModel" />
+                        <DataGridTextColumn Header="类型" Binding="{Binding MaterialType}"
+                                            x:DataType="viewModels:MaterialLocationViewModel" />
+                        <DataGridTextColumn Header="描述" IsReadOnly="False" Binding="{Binding Description}"
+                                            x:DataType="viewModels:MaterialLocationViewModel" />
+                        <DataGridTextColumn Header="备注" IsReadOnly="False" Binding="{Binding Remarks}"
+                                            x:DataType="viewModels:MaterialLocationViewModel" />
+                        <DataGridTextColumn Header="关键参数" Binding="{Binding KeyParameters}"
+                                            x:DataType="viewModels:MaterialLocationViewModel" />
+                        <DataGridTextColumn Header="数量" IsReadOnly="False" Binding="{Binding Quantity}"
+                                            x:DataType="viewModels:MaterialLocationViewModel" />
                         <DataGridTemplateColumn Header="物料号">
                             <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
+                                <DataTemplate x:DataType="viewModels:MaterialLocationViewModel">
                                     <!-- ReSharper disable once Xaml.PossibleNullReferenceException -->
                                     <Button Classes="link"
                                             IsVisible="{Binding MaterialCode, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
@@ -124,7 +162,7 @@
                         </DataGridTemplateColumn>
                         <DataGridTemplateColumn Header="操作">
                             <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
+                                <DataTemplate x:DataType="viewModels:MaterialLocationViewModel">
                                     <StackPanel Classes="actions">
                                         <!-- ReSharper disable once Xaml.PossibleNullReferenceException -->
                                         <Button Content="选择"

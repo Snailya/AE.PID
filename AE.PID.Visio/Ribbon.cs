@@ -1,10 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.IO.Packaging;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using AE.PID.Core.DTOs;
 using AE.PID.Core.Models;
 using AE.PID.Visio.Core.Exceptions;
@@ -15,7 +17,6 @@ using AE.PID.Visio.Shared;
 using AE.PID.Visio.UI.Avalonia.ViewModels;
 using AE.PID.Visio.UI.Avalonia.Views;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Office.Interop.Excel;
 using Microsoft.Office.Interop.Visio;
 using Splat;
 using Office = Microsoft.Office.Core;
@@ -106,17 +107,74 @@ public class Ribbon : Office.IRibbonExtensibility
 
     public void Debug(Office.IRibbonControl control)
     {
-        var dataArray = new string[2, 9]
+    }
+
+    public void PasteShapeData(Office.IRibbonControl control)
+    {
+        var selection = Globals.ThisAddIn.Application.ActiveWindow.Selection[1]!;
+
+        const string format = "Visio 15.0 Shapes";
+
+        var memoryStream = (MemoryStream)Clipboard.GetDataObject()!.GetData(format);
+        memoryStream.Seek(0, SeekOrigin.Begin);
+
+        using var package = Package.Open(memoryStream, FileMode.Open, FileAccess.Read);
+        var uri = new Uri("/visio/pages/page1.xml", UriKind.Relative);
+        var page1Part = package.GetPart(uri);
+
+        using var partStream = page1Part.GetStream();
+        var partXml = XDocument.Load(partStream);
+        XNamespace mainNs = @"http://schemas.microsoft.com/office/visio/2012/main";
+
+        foreach (var cell in (partXml.Root.Element(mainNs + "Shapes").Element(mainNs + "Shape")
+                     .Elements(mainNs + "Section")
+                     .SingleOrDefault(i => i.Attribute("N")!.Value == "Property")?
+                     .Elements(mainNs + "Row")
+                     .Where(i => i.Attribute("N")?.Value != "FunctionalElement" && i.Attribute("N")?.Value != "Class" &&
+                                 i.Attribute("N")?.Value != "SubClass")
+                     .Select(x => x.Elements(mainNs + "Cell").SingleOrDefault(i => i.Attribute("N")?.Value == "Value"))
+                     .Where(x => x != null))
+                 .Where(x => !string.IsNullOrWhiteSpace(x.Attribute("V")?.Value)))
         {
-            { "1", "2", "3", "4", "5", "6", "7", "8", "9" },
-            { "1", "2", "3", "4", "5", "6", "7", "8", "9" }
-        };
+            var name = $"Prop.{cell!.Parent!.Attribute("N")!.Value}";
+            var value = cell.Attribute("V")!.Value;
 
-        var worksheet = new Worksheet();
-        worksheet.Range["A1", "C1"].Merge();
-        worksheet.Range["A1"].Value2 = "Letter code for process variables and control functions (ISO 15519-2)";
+            selection.TrySetValue(name, value);
+        }
+    }
 
-        FormatHelper.InsertWorkSheet(worksheet);
+    public bool CanPasteShapeData(Office.IRibbonControl control)
+    {
+        if (!IsSingleShapeSelection()) return false;
+
+        // if it is a visio shape in clipboard
+        const string format = "Visio 15.0 Shapes";
+        var clipboardData = Clipboard.GetDataObject();
+        if (clipboardData == null) return false;
+        if (!clipboardData.GetDataPresent(format)) return false;
+
+        // check if there is only one shape copied
+        var memoryStream = (MemoryStream)clipboardData.GetData(format);
+        memoryStream.Seek(0, SeekOrigin.Begin);
+
+        using var package = Package.Open(memoryStream, FileMode.Open, FileAccess.Read);
+        var uri = new Uri("/visio/pages/page1.xml", UriKind.Relative);
+        var page1Part = package.GetPart(uri);
+
+        using var partStream = page1Part.GetStream();
+        var partXml = XDocument.Load(partStream);
+        XNamespace mainNs = @"http://schemas.microsoft.com/office/visio/2012/main";
+        return partXml.Root?.Element(mainNs + "Shapes")?.Elements(mainNs + "Shape").Count() == 1;
+    }
+
+    public string GetSuggestionContent(Office.IRibbonControl control)
+    {
+        var content = @"
+    <menu xmlns='http://schemas.microsoft.com/office/2009/07/customui'>
+      <button id='buttonA' label='Dynamic Button 1' />
+      <button id='buttonB' label='Dynamic Button 2' />
+    </menu>";
+        return content;
     }
 
 
@@ -327,7 +385,7 @@ public class Ribbon : Office.IRibbonExtensibility
         return Globals.ThisAddIn.Application.ActiveWindow.Selection.OfType<IVShape>()
             .All(x => x.HasCategory("Equipment") || x.HasCategory("Instrument") || x.HasCategory("FunctionalElement"));
     }
-    
+
     #endregion
 
     #region -- Proxy Context Menu --
@@ -358,8 +416,8 @@ public class Ribbon : Office.IRibbonExtensibility
 
         return Globals.ThisAddIn.Application.ActiveWindow.Selection.OfType<IVShape>()
             .All(x => !x.HasCategory("Frame") && !x.HasCategory("FunctionalGroup") && !x.HasCategory("Equipment") &&
-                                                         !x.HasCategory("Instrument") &&
-                                                         !x.HasCategory("FunctionalElement"));
+                      !x.HasCategory("Instrument") &&
+                      !x.HasCategory("FunctionalElement"));
     }
 
     public void InsertFunctionElement(Office.IRibbonControl control)

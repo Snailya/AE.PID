@@ -20,12 +20,12 @@
             <Button Content="取消" Command="{Binding Cancel}" />
         </StackPanel>
 
-        <StackPanel DockPanel.Dock="Top">
+        <StackPanel DockPanel.Dock="Top" Margin="0 0 0 4">
             <TextBox Text="{Binding SearchText}" Watermark="搜索项目" />
             <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
         </StackPanel>
 
-        <DockPanel>
+        <DockPanel Margin="0 4 0 0">
             <views:PageNavigator DockPanel.Dock="Bottom"
                                  DataContext="{Binding PageNavigator}" />
             <DataGrid ItemsSource="{Binding Data}"

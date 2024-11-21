@@ -14,7 +14,17 @@ public class MoqToolService : IToolService
         throw new NotImplementedException();
     }
 
+    public void Select(CompositeId id)
+    {
+        throw new NotImplementedException();
+    }
+
     public void Select(Symbol[] items)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Load()
     {
         throw new NotImplementedException();
     }

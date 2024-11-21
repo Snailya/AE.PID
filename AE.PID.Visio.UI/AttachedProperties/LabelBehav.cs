@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -11,6 +12,8 @@ namespace AE.PID.Visio.UI.Avalonia.AttachedProperties;
 
 public class LabelBehav
 {
+    private const string Name = nameof(LabelBehav);
+
     public static readonly AttachedProperty<string> ValueProperty =
         AvaloniaProperty.RegisterAttached<LabelBehav, Control, string>("Value");
 
@@ -42,12 +45,14 @@ public class LabelBehav
     private static void Wrap(Control control)
     {
         if (control.GetVisualParent() is not Control parent) return;
-        if (parent.Name is { } s && s.StartsWith("Attach")) return;
+        if (parent.Name is { } s && s.StartsWith(Name)) return;
+
+        Debug.WriteLine($"Wrap: {GetValue(control)}");
 
         // 创建一个新的 Grid
         var wrapper = new Grid
         {
-            Name = $"Attach_{Guid.NewGuid()}" // this name is used to avoid circular loop when the parent is also a grid.
+            Name = $"{Name}_{Guid.NewGuid()}" // this name is used to avoid circular loop when the parent is also a grid.
         };
 
         // 定义两列，第一列用于 Label，第二列用于原控件
@@ -61,16 +66,9 @@ public class LabelBehav
             Text = GetValue(control),
             VerticalAlignment = VerticalAlignment.Center,
             Margin = new Thickness(0, 0, 8, 0),
-            FontSize = control switch
-            {
-                // because sometimes the input element has custom fontsize, make the attached label with the same size
-                TextBox textBox => textBox.FontSize,
-                TextBlock textBlock => textBlock.FontSize,
-                _ => TextBlock.FontSizeProperty.GetDefaultValue(typeof(double))
-            },
             FontWeight = FontWeight.Bold
         };
-        
+
         Grid.SetColumn(label, 0); // 将 TextBlock 放在第一列
         wrapper.Children.Add(label);
 
@@ -111,14 +109,41 @@ public class LabelBehav
                 break;
         }
 
-        control.AttachedToLogicalTree += OnAttachedToLogicalTree;
+        control.AttachedToLogicalTree += OnAttachedToLogicalTree; // Margin must be set after attached to logical tree.
+        control.AttachedToVisualTree += OnAttachedToVisualTree; // font style must be set after attached to visual tree.
+    }
+
+    private static void OnAttachedToVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+    {
+        if (sender is Control { Parent: Grid { Name: { } name } wrapper } control && name.StartsWith(Name))
+        {
+            var label = (TextBlock)wrapper.Children[0];
+
+            switch (control)
+            {
+                case TextBox textBox:
+                    Debug.WriteLine($"OnAttachedToLogicalTree: {GetValue(control)}, FontSize: {textBox.FontSize}");
+
+                    label.FontSize = textBox.FontSize;
+                    label.TextAlignment = textBox.TextAlignment;
+                    break;
+                case TextBlock textBlock:
+                    Debug.WriteLine($"OnAttachedToLogicalTree: {GetValue(control)}, FontSize: {textBlock.FontSize}");
+
+                    label.FontSize = textBlock.FontSize;
+                    label.TextAlignment = textBlock.TextAlignment;
+                    break;
+            }
+        }
     }
 
     private static void OnAttachedToLogicalTree(object sender, LogicalTreeAttachmentEventArgs args)
     {
-        if (sender is Control { Parent: Grid grid } control)
+        if (sender is Control { Parent: Grid { Name: { } name } wrapper } control && name.StartsWith(Name))
         {
-            grid.Margin = control.Margin;
+            // erase the margin of the control
+            // Margin must be set after attached to logical tree.
+            wrapper.Margin = control.Margin;
             control.Margin = new Thickness(0);
         }
     }

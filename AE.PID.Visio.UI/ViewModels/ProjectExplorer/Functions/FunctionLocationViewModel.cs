@@ -16,21 +16,12 @@ public class FunctionLocationViewModel : ReactiveObject, IDisposable, IEquatable
     private readonly ReadOnlyObservableCollection<FunctionLocationViewModel> _inferiors;
     private bool _isExpanded;
     private bool _isSelected;
-    private string _name;
+    private string _name = string.Empty;
 
-    public FunctionLocationViewModel(Node<FunctionLocation, CompositeId> node, FunctionLocationViewModel parent = null)
+    public FunctionLocationViewModel(Node<FunctionLocation, CompositeId> node, FunctionLocationViewModel? parent = null)
     {
         Id = node.Key;
-        Name = node.Item.Type switch
-        {
-            FunctionType.ProcessZone => node.Item.Zone,
-            FunctionType.FunctionGroup => node.Item.Group,
-            FunctionType.FunctionUnit => "单元",
-            FunctionType.Equipment => node.Item.Element,
-            FunctionType.Instrument => node.Item.Element,
-            FunctionType.FunctionElement => node.Item.Element,
-            _ => throw new ArgumentOutOfRangeException()
-        };
+        Name = node.Item.NodeName;
 
         Depth = node.Depth;
         Parent = parent;

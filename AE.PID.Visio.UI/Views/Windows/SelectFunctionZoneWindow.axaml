@@ -17,7 +17,7 @@
         <ExperimentalAcrylicBorder IsHitTestVisible="False">
             <ExperimentalAcrylicBorder.Material>
                 <ExperimentalAcrylicMaterial BackgroundSource="Digger"
-                                             TintColor="{Binding ActualThemeVariant, Source={x:Static Application.Current}, Converter={x:Static converters:SimpleConverters.ThemeToColorConverter} }"
+                                             TintColor="{Binding ActualThemeVariant, Source={x:Static Application.Current}, Converter={x:Static converters:SimpleConverters.ThemeToTintColorConverter} }"
                                              TintOpacity="1"
                                              MaterialOpacity="0.65" />
             </ExperimentalAcrylicBorder.Material>
