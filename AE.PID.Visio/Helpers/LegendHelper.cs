@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using AE.PID.Visio.Extensions;
 using Microsoft.Office.Interop.Visio;
@@ -33,7 +34,6 @@ public abstract class LegendHelper
             // loop to get all shapes with different subclass
             var legendItems = PopulateLegendItems(page);
 
-            // get the center of the screen as the base point
             var basePosition = GetBasePoint(page);
             var rows = (int)Math.Ceiling((double)legendItems.Count / Columns);
 
@@ -60,10 +60,13 @@ public abstract class LegendHelper
                 var xPos = colIndex * ColSpacing + basePosition.Item1 + 5;
                 var yPos = rowIndex * RowSpacing + basePosition.Item2 + 5;
 
-                var shape = page.DropMetric(item.VisMaster, (basePosition.Item1, basePosition.Item2));
+                var shape = page.DropMetric(item.Source.Master, (basePosition.Item1, basePosition.Item2));
 
                 // correct the properties, legend item should have count 0
-                shape.CellsU["Prop.SubClass"].FormulaForce = $"\"{item.SubclassName}\"";
+                // because the subclass value might be a derived result from many other cells, if directly copy the value, the shape will not change as expect
+                // so firstly check if it is a derived result.
+                SetRecursively(shape.CellsU["Prop.SubClass"], item.Source);
+
                 shape.CellsU["Prop.Quantity"].FormulaForce = "0";
 
                 // replace the category to legend
@@ -105,6 +108,22 @@ public abstract class LegendHelper
         return (rowIndex, colIndex);
     }
 
+    private static void SetRecursively(Cell cell, Shape source)
+    {
+        var precedents = cell.Precedents;
+        if (precedents == null || precedents.Length == 0)
+            cell.FormulaForceU = source.CellsU[cell.Name].FormulaU;
+        else
+            foreach (Cell precedentCell in precedents)
+            {
+                Debug.WriteLine($"precedentCell is {precedentCell.Name}");
+                Debug.WriteLine($"cell is {cell.Name}");
+
+                if (precedentCell.Row == cell.Row) continue;
+                SetRecursively(precedentCell, source);
+            }
+    }
+
     private static (double, double) GetBasePoint(IVPage page)
     {
         const string baseId = "{7811D65E-9633-4E98-9FCD-B496A8B823A7}";
@@ -116,7 +135,7 @@ public abstract class LegendHelper
         {
             var (_, bottom, right, _) = frame.BoundingBoxMetric((short)VisBoundingBoxArgs.visBBoxDrawingCoords +
                                                                 (short)VisBoundingBoxArgs.visBBoxExtents);
-            return new ValueTuple<double, double>(right - 190, bottom + 52);
+            return new ValueTuple<double, double>(right - 250, bottom + 52);
         }
 
         // if not, get the center screen
@@ -136,7 +155,7 @@ public abstract class LegendHelper
                     Class = x.CellsU["Prop.Class"].ResultStr[tagVisUnitCodes.visUnitsString],
                     SubClassName = x.CellsU["Prop.SubClass"].ResultStr[tagVisUnitCodes.visUnitsString]
                 })
-                .Select(x => new LegendItem(x.Key.Class, x.Key.SubClassName, x.First().Master))
+                .Select(x => new LegendItem(x.Key.Class, x.Key.SubClassName, x.First()))
                 .OrderBy(x => x.Category)
                 .ThenBy(x => x.SubclassName)
         ];
@@ -204,10 +223,11 @@ public abstract class LegendHelper
         return callout;
     }
 
-    private class LegendItem(string category, string subclassName, IVMaster visMaster)
+    private class LegendItem(string category, string subclassName, Shape source)
     {
         public string Category { get; } = category;
         public string SubclassName { get; } = subclassName;
-        public IVMaster VisMaster { get; } = visMaster;
+
+        public Shape Source { get; } = source;
     }
 }
