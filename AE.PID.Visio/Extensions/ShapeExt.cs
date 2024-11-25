@@ -55,7 +55,7 @@ public static class ShapeExt
     }
 
     /// <summary>
-    /// If a shape's bounding box is completely inside the specified area.
+    ///     If a shape's bounding box is completely inside the specified area.
     /// </summary>
     /// <param name="shape"></param>
     /// <param name="flags"></param>

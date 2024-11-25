@@ -164,7 +164,7 @@ public class VisioService : DisposableBase, IVisioService
     {
         return _document.Pages.ItemFromID[id.PageId].Shapes.ItemFromID[id.ShapeId];
     }
-    
+
     public static void SelectAndCenterView(string[] baseIds)
     {
         var shapeIds = new List<int>();

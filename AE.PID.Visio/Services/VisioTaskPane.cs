@@ -1,6 +1,5 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
-using Avalonia.Interactivity;
 using Avalonia.Win32.Interoperability;
 using UserControl = System.Windows.Forms.UserControl;
 
@@ -10,7 +9,7 @@ public class VisioTaskPane : UserControl
 {
     private readonly WinFormsAvaloniaControlHost _avaloniaHost = new()
     {
-        Dock = DockStyle.Fill,
+        Dock = DockStyle.Fill
     };
 
     public VisioTaskPane(Avalonia.Controls.UserControl control)
@@ -26,9 +25,9 @@ public class VisioTaskPane : UserControl
 
         AutoSize = true;
         Size = new Size(460, 400);
-        
+
         Controls.Add(_avaloniaHost);
-        
+
         ResumeLayout(false);
     }
 }

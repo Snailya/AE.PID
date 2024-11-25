@@ -10,9 +10,9 @@ namespace AE.PID.Visio.Services;
 
 public class ToolService : DisposableBase, IToolService
 {
-    private readonly IVisioService _visioService;
     private readonly Lazy<IDisposable> _loader;
     private readonly SourceCache<Symbol, string> _symbols = new(t => t.Id);
+    private readonly IVisioService _visioService;
 
     public ToolService(IVisioService visioService)
     {

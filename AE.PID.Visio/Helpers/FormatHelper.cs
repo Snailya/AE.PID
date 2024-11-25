@@ -18,6 +18,8 @@ public abstract class FormatHelper
     public const string NormalStyleName = "AE Normal";
     private const string PipelineStyleName = "AE PipeLine";
 
+    public const string FrameBaseId = "{7811D65E-9633-4E98-9FCD-B496A8B823A7}";
+
     public static void FormatPage(Page page)
     {
         var document = page.Document;
@@ -76,11 +78,8 @@ public abstract class FormatHelper
         LogHost.Default.Info($"Layout and routing setup for {page.Name} finished");
     }
 
-    public const string FrameBaseId = "{7811D65E-9633-4E98-9FCD-B496A8B823A7}";
-
     private static Shape? InsertFrameIfNotExist(IVPage page)
     {
-
         var frame = page.Shapes.OfType<Shape>().FirstOrDefault(x => x.Master.BaseID == FrameBaseId);
 
         if (frame != null) return frame;
@@ -156,7 +155,7 @@ public abstract class FormatHelper
                 var table2Object = page.Document.GetMaster(table2BaseId);
 
                 table2 = page.DropMetric(table2Object, (frameBox.Right - 130, frameBox.Top - 229));
-                
+
                 var srcStream2 = Array.CreateInstance(typeof(short), 6);
                 srcStream2.SetValue((short)VisSectionIndices.visSectionObject, 0);
                 srcStream2.SetValue((short)VisRowIndices.visRowXFormOut, 1);
@@ -174,7 +173,7 @@ public abstract class FormatHelper
 
                 table2.SetFormulas(ref srcStream2, ref formulas2, 0);
             }
-            
+
             return (table1, table2);
         }
         catch (MasterNotValidException)
