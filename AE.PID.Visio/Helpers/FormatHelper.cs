@@ -120,7 +120,7 @@ public abstract class FormatHelper
             var frameBox = frame.BoundingBoxMetric((short)VisBoundingBoxArgs.visBBoxDrawingCoords +
                                                    (short)VisBoundingBoxArgs.visBBoxExtents);
             if (!page.Shapes.OfType<Shape>().Any(x =>
-                    x.Master.BaseID == table1BaseId &&
+                    x.Master?.BaseID == table1BaseId &&
                     x.BoundingBoxInside((short)VisBoundingBoxArgs.visBBoxExtents, frameBox)))
             {
                 var table1Object = page.Document.GetMaster(table1BaseId);
@@ -150,7 +150,7 @@ public abstract class FormatHelper
             }
 
             if (!page.Shapes.OfType<Shape>().Any(x =>
-                    x.Master.BaseID == table2BaseId &&
+                    x.Master?.BaseID == table2BaseId &&
                     x.BoundingBoxInside((short)VisBoundingBoxArgs.visBBoxExtents, frameBox)))
             {
                 var table2Object = page.Document.GetMaster(table2BaseId);
