@@ -112,4 +112,6 @@ public class RuntimeConfiguration
     public string ProductName { get; set; } = string.Empty;
     public string Version { get; set; } = string.Empty;
     public string UUID { get; set; } = string.Empty;
+
+    public string AppDataFolder { get; set; } = string.Empty;
 }

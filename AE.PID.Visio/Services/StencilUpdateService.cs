@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Threading.Tasks;
 using AE.PID.Visio.Core.Exceptions;
 using AE.PID.Visio.Core.Interfaces;
@@ -24,9 +23,8 @@ public class StencilUpdateService : ApiFactory<IStencilApi>, IEnableLogger
     {
         _configurationService = configurationService;
 
-        var productName = Assembly.GetExecutingAssembly()
-            .GetCustomAttribute<AssemblyProductAttribute>().Product ?? "Unknown Product";
-        _folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), productName,
+        _folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            configurationService.RuntimeConfiguration.AppDataFolder,
             "libraries");
 
         if (!Directory.Exists(_folder)) Directory.CreateDirectory(_folder);

@@ -3,7 +3,7 @@ using AE.PID.Visio.Core.Models;
 
 namespace AE.PID.Visio.Core.Interfaces;
 
-public interface IConfigurationService
+public interface IConfigurationService : IDisposable
 {
     RuntimeConfiguration RuntimeConfiguration { get; }
 

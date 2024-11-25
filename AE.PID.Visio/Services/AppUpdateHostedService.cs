@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AE.PID.Visio.Core.Exceptions;
 using AE.PID.Visio.Core.Interfaces;
 using AE.PID.Visio.Core.Models;
 using AE.PID.Visio.UI.Avalonia.ViewModels;
@@ -11,13 +13,15 @@ using Microsoft.Extensions.Hosting;
 using ReactiveUI;
 using Splat;
 
-namespace AE.PID.Visio.UI.Avalonia.Services;
+namespace AE.PID.Visio.Services;
 
 public class AppUpdateHostedService(
     IAppUpdateService appUpdateService,
     IConfigurationService configurationService)
-    : IHostedService, IEnableLogger
+    : IHostedService, IEnableLogger, IDisposable
 {
+    private CompositeDisposable _cleanUp = new();
+    
     public Task StartAsync(CancellationToken cancellationToken)
     {
         this.Log().Info(
@@ -48,18 +52,22 @@ public class AppUpdateHostedService(
                     .Do(x => configurationService.UpdateProperty(i => i.PendingAppUpdate!, x));
 
             var observeDownload = observeUpdate
-                .SelectMany(x => appUpdateService.DownloadAsync(x.DownloadUrl)).Do(x =>
-                    configurationService.UpdateProperty(i => i.PendingAppUpdate!.InstallerPath, x));
+                .SelectMany(x => appUpdateService.DownloadAsync(x.DownloadUrl))
+                .Do(x => configurationService.UpdateProperty(i => i.PendingAppUpdate!.InstallerPath, x));
 
             var observeUserDecision = observeUpdate
                 .SelectMany(async x => await AskForInstallAsync(x));
 
             observeDownload.Zip(observeUserDecision)
                 .Where(x => x.Second && !string.IsNullOrEmpty(x.First))
-                .Subscribe(x => { appUpdateService.InstallAsync(x.First); });
+                .Subscribe(x => { appUpdateService.InstallAsync(x.First); }, e =>
+                {
+                    if (e is UrlNotValidException)
+                        configurationService.UpdateProperty(i => i.PendingAppUpdate!.InstallerPath, string.Empty);
+                })
+                .DisposeWith(_cleanUp);
         }
-
-
+        
         return Task.CompletedTask;
     }
 
@@ -74,26 +82,33 @@ public class AppUpdateHostedService(
         var taskCompletionSource = new TaskCompletionSource<bool>();
         var task = taskCompletionSource.Task;
         // prompt a window to ask for updates
-        RxApp.MainThreadScheduler.Schedule(() =>
-        {
-            var viewModel = new NewVersionViewModel
-            {
-                Version = pendingAppUpdate.Version,
-                ReleaseNotes = pendingAppUpdate.ReleaseNotes
-            };
-            var window = new NewVersionWindow
-            {
-                DataContext = viewModel
-            };
-            window.Show();
 
-            // if user choose to update right now, invoke the installation
-            viewModel.Confirm.Subscribe(_ => { taskCompletionSource.SetResult(true); });
+        ThisAddIn.AvaloniaSetupUpDone.Subscribe(_ => { }, e => { }, () =>
+            RxApp.MainThreadScheduler.Schedule(() =>
+            {
+                var viewModel = new NewVersionViewModel
+                {
+                    Version = pendingAppUpdate.Version,
+                    ReleaseNotes = pendingAppUpdate.ReleaseNotes
+                };
+                var window = new NewVersionWindow
+                {
+                    DataContext = viewModel
+                };
+                window.Show();
 
-            // if the user choose to not, save the update to the configuration and pending until next time open the application
-            viewModel.Cancel.Subscribe(_ => { taskCompletionSource.SetResult(false); });
-        });
+                // if user choose to update right now, invoke the installation
+                viewModel.Confirm.Subscribe(_ => { taskCompletionSource.SetResult(true); });
+
+                // if the user choose to not, save the update to the configuration and pending until next time open the application
+                viewModel.Cancel.Subscribe(_ => { taskCompletionSource.SetResult(false); });
+            }));
 
         return task;
+    }
+
+    public void Dispose()
+    {
+        _cleanUp.Dispose();
     }
 }
