@@ -3,20 +3,22 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AE.PID.Visio.Core.Interfaces;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Office.Interop.Visio;
 using Splat;
 
-namespace AE.PID.Visio.Services;
+namespace AE.PID.Visio.Services.Tasks;
 
-public class StencilUpdateBackgroundService(
+public class StencilUpdateTask(
     IConfigurationService configurationService,
     StencilUpdateService stencilUpdateService,
-    Application application)
-    : BackgroundService, IEnableLogger
+    Application application) : BackgroundTaskBase, IEnableLogger
 {
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    public override string TaskName { get; } = "Stencil Update Task";
+
+    public override async Task ExecuteAsync(CancellationToken cts)
     {
+        await base.ExecuteAsync(cts);
+
         var stencilsInConfiguration =
             configurationService.GetCurrentConfiguration().Stencils.ToList();
         var openedDocuments = application.Documents.OfType<Document>()
