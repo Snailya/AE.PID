@@ -1,0 +1,4 @@
+﻿ViewModel分为两类，一类是子视图的ViewModel，继承自ViewModelBase，并且在Parent View的构造函数中初始化，未来只允许修改其属性值。
+另一类则是组件中的ViewModel，例如ListBoxItemViewModel，继承自ReactiveObject，每次当Model变化时，生成新的ViewModel，不重用。
+
+所有ui上的操作涉及到属性修改的，都应该先反映在UI上，然后通过观察viewmodelchange反馈回源头。从源头传来的数据，应该比较是否与已有的数据一致，如果不一致再更新。

@@ -1,0 +1,33 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:AE.PID.UI.Shared.Converters"
+        xmlns:shared="clr-namespace:AE.PID.UI.Shared">
+    <Design.PreviewWith>
+        <shared:Page />
+    </Design.PreviewWith>
+
+    <Style Selector="shared|Page">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Panel>
+                    <ExperimentalAcrylicBorder IsHitTestVisible="False">
+                        <ExperimentalAcrylicBorder.Material>
+                            <ExperimentalAcrylicMaterial BackgroundSource="Digger"
+                                                         TintColor="{Binding ActualThemeVariant, Source={x:Static Application.Current}, Converter={x:Static converters:ThemeConverters.ThemeToTintColorConverter} }"
+                                                         TintOpacity="1"
+                                                         MaterialOpacity="0.65" />
+                        </ExperimentalAcrylicBorder.Material>
+                    </ExperimentalAcrylicBorder>
+                    <Panel Classes="content">
+                        <ContentPresenter Name="PART_ContentPresenter"
+                                          Content="{TemplateBinding Content}" />
+                    </Panel>
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <Style Selector="Panel.content">
+        <Setter Property="Margin" Value="32" />
+    </Style>
+</Styles>

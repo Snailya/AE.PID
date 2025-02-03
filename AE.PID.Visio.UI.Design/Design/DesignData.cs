@@ -4,8 +4,9 @@ namespace AE.PID.Visio.UI.Design.Design;
 
 public class DesignData
 {
-    
-    
+    public static Dictionary<string, string> DocumentSheet = new();
+    public static Dictionary<(int, string), string> PageSheet = new();
+
     static DesignData()
     {
         Shapes =
@@ -117,12 +118,45 @@ public class DesignData
                 MaterialCode = "",
                 Description = "",
                 Remarks = ""
+            },
+            new ShapeProxy
+            {
+                Id = 7,
+                ParentId = 2,
+                PDMSFunctionId = 0,
+                ShapeCategory = "Equipment",
+                Zone = "",
+                ZoneName = "",
+                ZoneNameEnglish = "",
+                Group = "WG501",
+                GroupName = "废气焚烧炉燃气阀组",
+                GroupNameEnglish = "",
+                Element = "QM182",
+                MaterialType = "球阀",
+                MaterialCode = "",
+                Description = "",
+                Remarks = ""
+            },
+            new ShapeProxy
+            {
+                Id = 8,
+                ParentId = 2,
+                PDMSFunctionId = 0,
+                ShapeCategory = "Equipment",
+                Zone = "",
+                ZoneName = "",
+                ZoneNameEnglish = "",
+                Group = "WG501",
+                GroupName = "废气焚烧炉燃气阀组",
+                GroupNameEnglish = "",
+                Element = "QN183",
+                MaterialType = "蝶阀",
+                MaterialCode = "",
+                Description = "",
+                Remarks = ""
             }
         ];
     }
 
     public static ShapeProxy[] Shapes { get; set; }
-
-    public static Dictionary<string, string> DocumentSheet = new();
-    public static Dictionary<(int, string), string> PageSheet = new();
 }

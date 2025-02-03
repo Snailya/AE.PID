@@ -1,0 +1,143 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:views="clr-namespace:AE.PID.UI.Avalonia.Views"
+             xmlns:shared="clr-namespace:AE.PID.UI.Shared;assembly=AE.PID.UI.Shared"
+             xmlns:avalonia1="clr-namespace:AE.PID.Client.UI.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="AE.PID.UI.Avalonia.Views.FunctionLocationPropertiesView"
+             x:DataType="avalonia1:FunctionLocationPropertiesViewModel">
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <avalonia1:FunctionLocationPropertiesViewModel />
+    </Design.DataContext>
+
+    <UserControl.DataTemplates>
+        <views:FunctionLocationPropertiesSelector>
+            <DataTemplate x:Key="ProcessZone" x:DataType="avalonia1:FunctionLocationPropertiesViewModel">
+                <UniformGrid Columns="3">
+                    <TextBox Margin="4 4 8 4"
+                             shared:LabelBehav.Value="工艺区域"
+                             Text="{Binding Zone, UpdateSourceTrigger=LostFocus}" />
+                    <TextBox Margin="8 4 8 4"
+                             shared:LabelBehav.Value="工艺区域名称"
+                             Text="{Binding ZoneName, UpdateSourceTrigger=LostFocus}" />
+                    <TextBox Margin="8 4 8 4"
+                             shared:LabelBehav.Value="工艺区域英文名称"
+                             Text="{Binding ZoneEnglishName, UpdateSourceTrigger=LostFocus}" />
+                </UniformGrid>
+            </DataTemplate>
+            <DataTemplate x:Key="FunctionGroup" x:DataType="avalonia1:FunctionLocationPropertiesViewModel">
+                <UniformGrid Columns="3">
+                    <TextBox Margin="4 4 8 4"
+                             shared:LabelBehav.Value="工艺区域" Text="{Binding Zone}" IsEnabled="False" />
+                    <TextBox Margin="8 4 8 4"
+                             shared:LabelBehav.Value="工艺区域名称" Text="{Binding ZoneName}" IsEnabled="False" />
+                    <TextBox Margin="8 4 8 4"
+                             shared:LabelBehav.Value="工艺区域英文名称" Text="{Binding ZoneEnglishName}"
+                             IsEnabled="False" />
+                    <TextBox Margin="4 4 8 4"
+                             shared:LabelBehav.Value="功能组"
+                             Text="{Binding Group, UpdateSourceTrigger=LostFocus}" />
+                    <TextBox Margin="8 4 8 4"
+                             shared:LabelBehav.Value="功能组名称"
+                             Text="{Binding GroupName, UpdateSourceTrigger=LostFocus}" />
+                    <TextBox Margin="8 4 8 4"
+                             shared:LabelBehav.Value="功能组英文名称"
+                             Text="{Binding GroupEnglishName, UpdateSourceTrigger=LostFocus}" />
+                </UniformGrid>
+            </DataTemplate>
+            <DataTemplate x:Key="FunctionUnit" x:DataType="avalonia1:FunctionLocationPropertiesViewModel">
+                <UniformGrid Columns="3">
+                    <TextBox Margin="4 4 8 4"
+                             shared:LabelBehav.Value="工艺区域" Text="{Binding Zone}" IsEnabled="False" />
+                    <TextBox Margin="8 4 8 4"
+                             shared:LabelBehav.Value="工艺区域名称" Text="{Binding ZoneName}" IsEnabled="False" />
+                    <TextBox Margin="8 4 8 4"
+                             shared:LabelBehav.Value="工艺区域英文名称" Text="{Binding ZoneEnglishName}"
+                             IsEnabled="False" />
+                    <TextBox Margin="4 4 8 4"
+                             shared:LabelBehav.Value="功能组" Text="{Binding Group}" IsEnabled="False" />
+                    <TextBox Margin="8 4 8 4"
+                             shared:LabelBehav.Value="功能组名称" Text="{Binding GroupName}" IsEnabled="False" />
+                    <TextBox Margin="8 4 8 4"
+                             shared:LabelBehav.Value="功能组英文名称" Text="{Binding GroupEnglishName}"
+                             IsEnabled="False" />
+                </UniformGrid>
+            </DataTemplate>
+            <DataTemplate x:Key="Equipment" x:DataType="avalonia1:FunctionLocationPropertiesViewModel">
+                <UniformGrid Columns="3">
+                    <TextBox Margin="4 4 8 4"
+                             shared:LabelBehav.Value="工艺区域" Text="{Binding Zone}" IsEnabled="False" />
+                    <TextBox Margin="8 4 8 4"
+                             shared:LabelBehav.Value="工艺区域名称" Text="{Binding ZoneName}" IsEnabled="False" />
+                    <TextBox Margin="8 4 8 4"
+                             shared:LabelBehav.Value="工艺区域英文名称" Text="{Binding ZoneEnglishName}"
+                             IsEnabled="False" />
+                    <TextBox Margin="4 4 8 4"
+                             shared:LabelBehav.Value="功能组" Text="{Binding Group}" IsEnabled="False" />
+                    <TextBox Margin="8 4 8 4"
+                             shared:LabelBehav.Value="功能组名称" Text="{Binding GroupName}" IsEnabled="False" />
+                    <TextBox Margin="8 4 8 4"
+                             shared:LabelBehav.Value="功能组英文名称" Text="{Binding GroupEnglishName}"
+                             IsEnabled="False" />
+                    <TextBox Margin="4 4 8 4"
+                             shared:LabelBehav.Value="功能位"
+                             Text="{Binding Element, UpdateSourceTrigger=LostFocus}" />
+                </UniformGrid>
+            </DataTemplate>
+            <DataTemplate x:Key="Instrument" x:DataType="avalonia1:FunctionLocationPropertiesViewModel">
+                <UniformGrid Columns="3">
+                    <TextBox Margin="4 4 8 4"
+                             shared:LabelBehav.Value="工艺区域" Text="{Binding Zone}" IsEnabled="False" />
+                    <TextBox Margin="8 4 8 4"
+                             shared:LabelBehav.Value="工艺区域名称" Text="{Binding ZoneName}" IsEnabled="False" />
+                    <TextBox Margin="8 4 8 4"
+                             shared:LabelBehav.Value="工艺区域英文名称" Text="{Binding ZoneEnglishName}"
+                             IsEnabled="False" />
+                    <TextBox Margin="4 4 8 4"
+                             shared:LabelBehav.Value="功能组" Text="{Binding Group}" IsEnabled="False" />
+                    <TextBox Margin="8 4 8 4"
+                             shared:LabelBehav.Value="功能组名称" Text="{Binding GroupName}" IsEnabled="False" />
+                    <TextBox Margin="8 4 8 4"
+                             shared:LabelBehav.Value="功能组英文名称" Text="{Binding GroupEnglishName}"
+                             IsEnabled="False" />
+                    <TextBox Margin="4 4 8 4"
+                             shared:LabelBehav.Value="功能位"
+                             Text="{Binding Element, UpdateSourceTrigger=LostFocus}" />
+                </UniformGrid>
+            </DataTemplate>
+            <DataTemplate x:Key="FunctionElement" x:DataType="avalonia1:FunctionLocationPropertiesViewModel">
+                <UniformGrid Columns="3">
+                    <TextBox Margin="4 4 8 4"
+                             shared:LabelBehav.Value="工艺区域" Text="{Binding Zone}" IsEnabled="False" />
+                    <TextBox Margin="8 4 8 4"
+                             shared:LabelBehav.Value="工艺区域名称" Text="{Binding ZoneName}" IsEnabled="False" />
+                    <TextBox Margin="8 4 8 4"
+                             shared:LabelBehav.Value="工艺区域英文名称" Text="{Binding ZoneEnglishName}"
+                             IsEnabled="False" />
+                    <TextBox Margin="4 4 8 4"
+                             shared:LabelBehav.Value="功能组" Text="{Binding Group}" IsEnabled="False" />
+                    <TextBox Margin="8 4 8 4"
+                             shared:LabelBehav.Value="功能组名称" Text="{Binding GroupName}" IsEnabled="False" />
+                    <TextBox Margin="8 4 8 4"
+                             shared:LabelBehav.Value="功能组英文名称" Text="{Binding GroupEnglishName}"
+                             IsEnabled="False" />
+                    <TextBox Margin="4 4 8 4"
+                             shared:LabelBehav.Value="功能位"
+                             Text="{Binding Element, UpdateSourceTrigger=LostFocus}" />
+                </UniformGrid>
+            </DataTemplate>
+        </views:FunctionLocationPropertiesSelector>
+    </UserControl.DataTemplates>
+
+    <StackPanel Grid.IsSharedSizeScope="True" KeyboardNavigation.TabNavigation="Cycle">
+        <ContentControl Content="{Binding }" />
+        <TextBox Margin="4 4 8 4"
+                 shared:LabelBehav.Value="描述" Text="{Binding Description, UpdateSourceTrigger=LostFocus}" />
+        <TextBox Margin="4 4 8 4"
+                 shared:LabelBehav.Value="备注" Text="{Binding Remarks, UpdateSourceTrigger=LostFocus}" />
+    </StackPanel>
+</UserControl>

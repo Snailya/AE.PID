@@ -1,7 +1,7 @@
 using AE.PID.Core.DTOs;
 using AE.PID.Visio.Core.Exceptions;
 using AE.PID.Visio.Core.Interfaces;
-using AE.PID.Visio.Shared.Services;
+using AE.PID.Client.Infrastructure.VisioExt.Services;
 using FluentAssertions;
 using Moq;
 
@@ -28,8 +28,10 @@ public class AppUpdateServiceTest
 
         var apiFactoryMock = new Mock<IApiFactory<IAppApi>>();
         apiFactoryMock.Setup(x => x.Api).Returns(apiMock.Object);
+        
+        var configurationMock = new Mock<IConfigurationService>();
 
-        var appUpdateService = new AppUpdateService(apiFactoryMock.Object);
+        var appUpdateService = new AppUpdateService(configurationMock.Object,apiFactoryMock.Object);
 
         var result = await appUpdateService.CheckUpdateAsync(version);
         result?.Version.Should().Be(expectedVersion);
@@ -46,7 +48,9 @@ public class AppUpdateServiceTest
         var apiFactoryMock = new Mock<IApiFactory<IAppApi>>();
         apiFactoryMock.Setup(x => x.Api).Returns(apiMock.Object);
 
-        var appUpdateService = new AppUpdateService(apiFactoryMock.Object);
+        var configurationMock = new Mock<IConfigurationService>();
+
+        var appUpdateService = new AppUpdateService(configurationMock.Object,apiFactoryMock.Object);
 
         var action = async () => await appUpdateService.CheckUpdateAsync("0.0.0.0");
         await action.Should().ThrowAsync<NetworkNotValidException>();

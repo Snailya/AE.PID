@@ -1,0 +1,43 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:shared="clr-namespace:AE.PID.UI.Shared;assembly=AE.PID.UI.Shared"
+             xmlns:viewModels1="clr-namespace:AE.PID.Client.UI.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="AE.PID.UI.Avalonia.Views.FunctionsView"
+             x:DataType="viewModels1:FunctionsViewModel">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <viewModels1:FunctionsViewModel />
+    </Design.DataContext>
+
+    <DockPanel>
+        <Grid DockPanel.Dock="Left">
+            <shared:LoadingIndicator IsLoading="{Binding IsLoading}" />
+            <TreeView MinWidth="240"
+                      ItemsSource="{Binding Locations}"
+                      SelectedItem="{Binding SelectedLocation}">
+                <TreeView.Styles>
+                    <Style Selector="TreeViewItem" x:DataType="viewModels1:FunctionLocationTreeItemViewModel">
+                        <Setter Property="IsSelected"
+                                Value="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <Setter Property="IsExpanded"
+                                Value="{Binding IsExpanded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </Style>
+                </TreeView.Styles>
+                <TreeView.ItemTemplate>
+                    <TreeDataTemplate ItemsSource="{Binding Inferiors}">
+                        <StackPanel>
+                            <TextBlock Text="{Binding NodeName}" />
+                        </StackPanel>
+                    </TreeDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+        </Grid>
+
+        <viewModels1:FunctionKanbanView DataContext="{Binding Kanban}" />
+    </DockPanel>
+</UserControl>

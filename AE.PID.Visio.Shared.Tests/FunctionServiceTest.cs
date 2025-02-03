@@ -1,7 +1,7 @@
 ﻿using AE.PID.Core.DTOs;
 using AE.PID.Visio.Core.Exceptions;
 using AE.PID.Visio.Core.Interfaces;
-using AE.PID.Visio.Shared.Services;
+using AE.PID.Client.Infrastructure.VisioExt.Services;
 using FluentAssertions;
 using Moq;
 

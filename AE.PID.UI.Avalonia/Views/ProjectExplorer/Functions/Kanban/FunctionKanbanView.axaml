@@ -1,0 +1,97 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="clr-namespace:AE.PID.UI.Avalonia.Converters"
+             xmlns:views="clr-namespace:AE.PID.UI.Avalonia.Views"
+             xmlns:avalonia="clr-namespace:AE.PID.Client.UI.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="AE.PID.Client.UI.Avalonia.FunctionKanbanView"
+             x:DataType="avalonia:FunctionKanbanViewModel">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <avalonia:FunctionKanbanViewModel />
+    </Design.DataContext>
+
+    <!-- <ScrollViewer> -->
+    <ListBox Background="Transparent"
+             HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <ListBox.Styles>
+            <Style Selector="ListBoxItem">
+                <Setter Property="Padding" Value="0" />
+            </Style>
+            <Style Selector="Expander">
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                <Setter Property="IsExpanded" Value="True" />
+            </Style>
+        </ListBox.Styles>
+        <ListBoxItem>
+            <Expander>
+                <Expander.Header>
+                    <Grid ColumnDefinitions="*,Auto,Auto">
+                        <TextBlock Text="基本信息" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding LastSynced, Converter={x:Static converters:SimpleConverters.LastSyncedText}}" />
+                        <Button Grid.Column="2"
+                                IsVisible="{Binding   Properties, Converter={x:Static converters:SimpleConverters.IsZoneOrGroup}}"
+                                Content="选择" Command="{Binding SelectFunction}" />
+                    </Grid>
+                </Expander.Header>
+                <views:FunctionLocationPropertiesView DataContext="{Binding Properties}" />
+            </Expander>
+        </ListBoxItem>
+
+        <ListBoxItem>
+            <Expander
+                IsVisible="{Binding Properties, Converter={x:Static converters:SimpleConverters.IsZone}}">
+                <Expander.Header>
+                    <Grid ColumnDefinitions="*,Auto,Auto">
+                        <TextBlock Text="功能组" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding LastSynced, Converter={x:Static converters:SimpleConverters.LastSyncedText}}" />
+                        <Button Grid.Column="2" Content="同步" Command="{Binding SyncFunctionGroups}" />
+                    </Grid>
+                </Expander.Header>
+                <DataGrid ItemsSource="{Binding Groups}"
+                          CanUserResizeColumns="True" HeadersVisibility="All"
+                          Height="{Binding Groups.Count, Converter={x:Static converters:SimpleConverters.GetMinHeight}}"
+                          VerticalScrollBarVisibility="Auto">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="工艺区域" Binding="{Binding  Zone}" />
+                        <DataGridTextColumn Header="功能组" Binding="{Binding  Group}" />
+                        <DataGridTextColumn Header="功能组名称" Binding="{Binding  GroupName}" />
+                        <DataGridTextColumn Header="功能组英文名称" Binding="{Binding  GroupEnglishName}" />
+                        <DataGridTextColumn Header="功能组描述" Binding="{Binding Description}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Expander>
+        </ListBoxItem>
+        <ListBoxItem>
+            <Expander Header="物料"
+                      IsVisible="{Binding Properties, Converter={x:Static converters:SimpleConverters.IsNotEquipmentOrInstrumentOrFunctionElement}}">
+                <DataGrid ItemsSource="{Binding Materials}"
+                          CanUserResizeColumns="True"
+                          Height="{Binding Materials.Count, Converter={x:Static converters:SimpleConverters.GetMinHeight}}"
+                          VerticalScrollBarVisibility="Auto">
+                    <DataGrid.Columns>
+                        <!-- <DataGridTextColumn Header="序号" -->
+                        <!--                     Binding="{Binding $parent[DataGridRow], Converter={x:Static converters:SimpleConverters.IndexConverter}}" /> -->
+                        <DataGridTextColumn Header="工艺区域" Binding="{Binding ProcessArea}" />
+                        <DataGridTextColumn Header="功能单元" Binding="{Binding FunctionalGroup}" />
+                        <DataGridTextColumn Header="功能元件" Binding="{Binding FunctionalElement}" />
+                        <DataGridTextColumn Header="类型" Binding="{Binding MaterialType}" />
+                        <DataGridTextColumn Header="描述" Binding="{Binding Description}" />
+                        <DataGridTextColumn Header="关键参数" Binding="{Binding KeyParameters}" />
+                        <DataGridTextColumn Header="数量" Binding="{Binding ComputedQuantity}" />
+                        <DataGridTextColumn Header="物料号" Binding="{Binding  MaterialCode}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Expander>
+        </ListBoxItem>
+    </ListBox>
+    <!-- </ScrollViewer> -->
+</UserControl>

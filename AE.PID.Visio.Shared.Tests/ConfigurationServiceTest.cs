@@ -1,5 +1,5 @@
-﻿using AE.PID.Visio.Core.Interfaces;
-using AE.PID.Visio.Shared.Services;
+﻿using AE.PID.Client.Core;
+using AE.PID.Client.Infrastructure;
 using FluentAssertions;
 using Moq;
 

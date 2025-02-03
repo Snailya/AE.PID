@@ -10,7 +10,7 @@ public interface ITreeNode<T>
     /// <summary>
     ///     The id of the parent node.
     /// </summary>
-    public T ParentId { get; set; }
+    public T ParentId { get; }
 
     /// <summary>
     ///     The default label used in the tree structure.

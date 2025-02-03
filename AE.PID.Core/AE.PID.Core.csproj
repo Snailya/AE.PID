@@ -4,12 +4,13 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <LangVersion>12</LangVersion>
         <Nullable>enable</Nullable>
+        <AssemblyName>AE.PID.Shared</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DynamicData" Version="9.0.4"/>
+        <PackageReference Include="DynamicData" Version="9.1.1" />
         <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
-        <PackageReference Include="System.Text.Json" Version="8.0.5" />
+        <PackageReference Include="System.Text.Json" Version="9.0.0" />
     </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
+using AE.PID.Client.Core;
 using AE.PID.Core.Models;
-using AE.PID.Visio.Core.Models.Projects;
 using FluentAssertions;
 
 namespace AE.PID.Visio.UnitTest;

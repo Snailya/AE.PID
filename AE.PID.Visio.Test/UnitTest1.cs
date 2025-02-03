@@ -1,4 +1,3 @@
-using System.Reactive.Concurrency;
 using System.Runtime.InteropServices;
 using FluentAssertions;
 using Microsoft.Office.Interop.Visio;
@@ -14,7 +13,6 @@ public class IntegrationTest : IDisposable
 
     public IntegrationTest()
     {
-
         // 初始化 Visio 应用程序
         _visioApp = new Application();
 

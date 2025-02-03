@@ -1,0 +1,52 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Add Styles Here -->
+
+    <!-- FontSize  -->
+    <Style Selector="TextBlock.h1">
+        <Setter Property="FontSize" Value="38" />
+    </Style>
+    <Style Selector="TextBlock.h2">
+        <Setter Property="FontSize" Value="30" />
+    </Style>
+    <Style Selector="TextBlock.h3">
+        <Setter Property="FontSize" Value="24" />
+    </Style>
+    <Style Selector="TextBlock.h4">
+        <Setter Property="FontSize" Value="20" />
+    </Style>
+    <Style Selector="TextBlock.h5">
+        <Setter Property="FontSize" Value="16" />
+    </Style>
+
+    <Style Selector="StackPanel.actions">
+        <Setter Property="Orientation" Value="Horizontal" />
+        <Setter Property="HorizontalAlignment" Value="Right" />
+        <Setter Property="Spacing" Value="4" />
+    </Style>
+    <Style Selector="StackPanel.dialog">
+        <Setter Property="Orientation" Value="Horizontal" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Spacing" Value="4" />
+    </Style>
+
+    <Style Selector="Button.link">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Style Selector="^:pointerover">
+            <Setter Property="TextBlock.Foreground" Value="DeepSkyBlue" />
+        </Style>
+    </Style>
+
+    <Style Selector="DataGrid">
+        <Setter Property="GridLinesVisibility" Value="All" />
+        <Setter Property="HeadersVisibility" Value="All" />
+        <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
+        <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+    </Style>
+
+    <Style Selector="DataGridRow TextBlock">
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+</Styles>

@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net48</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>12</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="11.2.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Update="Views\ToolsWindow.axaml.cs">
+            <DependentUpon>ToolsWindow.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\DesignTools\SelectToolView.axaml.cs">
+          <DependentUpon>SelectToolView.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\ConfirmUpdateDocumentWindow.axaml.cs">
+          <DependentUpon>ConfirmUpdateDocumentWindow.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AE.PID.UI.Shared\AE.PID.UI.Shared.csproj"/>
+        <ProjectReference Include="..\AE.PID.Client.Infrastructure.VisioExt\AE.PID.Client.Infrastructure.VisioExt.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <AdditionalFiles Include="Views\TaskPanes\MaterialPaneView.axaml"/>
+    </ItemGroup>
+
+</Project>

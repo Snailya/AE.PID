@@ -1,10 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Threading.Tasks;
-using AE.PID.Visio.Core.Interfaces;
+using AE.PID.Client.Core;
 
-namespace AE.PID.Visio.UI.Design.Services;
+namespace AE.PID.Visio.UI.Design;
 
-public class MoqStorageService : IStorageService
+internal sealed class MoqStorageService : IStorageService
 {
     public Task SaveAsWorkbookAsync(string fileName, object data)
     {

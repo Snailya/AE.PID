@@ -1,0 +1,147 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net48</TargetFramework>
+        <Nullable>enable</Nullable>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+        <AssemblyName>AE.PID.Client.UI.Avalonia</AssemblyName>
+        <RootNamespace>AE.PID.Client.UI.Avalonia</RootNamespace>
+        <LangVersion>12</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AvaloniaResource Include="Assets\**"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <AvaloniaXaml Remove="Views\ProjectExplorer\Materials\MaterialPropertyView.axaml"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Remove="Views\ProjectExplorer\Materials\MaterialPropertyView.axaml.cs"/>
+        <Compile Update="Views\ProjectExplorer\Materials\RecommendMaterialView.axaml.cs">
+            <DependentUpon>RecommendMaterialView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Edit\UpdateView.axaml.cs">
+          <DependentUpon>AboutView.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+        <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+        <PackageReference Include="Avalonia.Desktop" Version="11.2.0"/>
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.0"/>
+        <PackageReference Include="DynamicData" Version="9.1.1" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0"/>
+        <PackageReference Include="ReactiveMarbles.ObservableEvents.SourceGenerator" Version="1.3.1"/>
+        <PackageReference Include="ReactiveUI" Version="20.1.63"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Update="Views\Functions\FunctionsView.axaml.cs">
+            <DependentUpon>FunctionsView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Windows\ProjectExplorerWindow.axaml.cs">
+            <DependentUpon>MainWindow.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Windows\SelectMaterialWindow.axaml.cs">
+            <DependentUpon>SelectMaterialWindow.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Windows\SelectProjectWindow.axaml.cs">
+            <DependentUpon>SelectProjectWindow.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Windows\ConfirmSyncMaterialsWindow.axaml.cs">
+            <DependentUpon>SyncMaterialsWindow.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Functions\SyncFunctionGroupsView.axaml.cs">
+            <DependentUpon>SyncFunctionsView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Windows\ConfirmSyncFunctionGroupsWindow.axaml.cs">
+            <DependentUpon>SyncFunctionGroupsWindow.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Functions\Components\FunctionElementView.axaml.cs">
+            <DependentUpon>FunctionElementView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Functions\Components\FunctionGroupsView.axaml.cs">
+            <DependentUpon>FunctionGroupsView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Functions\Components\FunctionZoneView.axaml.cs">
+            <DependentUpon>FunctionZoneView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Functions\Components\FunctionGroupView.axaml.cs">
+            <DependentUpon>FunctionGroupView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Functions\Components\FunctionKanbanView.axaml.cs">
+            <DependentUpon>FunctionKanbanView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Functions\Components\FunctionMaterialsView.axaml.cs">
+            <DependentUpon>FunctionMaterialsView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Windows\SettingsWindow.axaml.cs">
+            <DependentUpon>SettingsWindow.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Settings\AccountSettingView.axaml.cs">
+            <DependentUpon>SelectToolView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Settings\AboutView.axaml.cs">
+            <DependentUpon>AboutView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Windows\NewVersionWindow.axaml.cs">
+            <DependentUpon>NewVersionWindow.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Windows\SelectFunctionZoneWindow.axaml.cs">
+            <DependentUpon>SelectProcessZoneWindow.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\ProjectExplorer\Functions\SelectFunctionZoneView.axaml.cs">
+            <DependentUpon>SelectProjectView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AE.PID.UI.Avalonia.VisioExt\AE.PID.UI.Avalonia.VisioExt.csproj"/>
+        <ProjectReference Include="..\AE.PID.UI.Shared\AE.PID.UI.Shared.csproj"/>
+        <ProjectReference Include="..\AE.PID.Client.Infrastructure.VisioExt\AE.PID.Client.Infrastructure.VisioExt.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Views\ProjectExplorer\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <AdditionalFiles Include="Views\ProjectExplorer\Functions\FunctionsView.axaml"/>
+        <AdditionalFiles Include="Views\ProjectExplorer\Functions\Kanban\FunctionKanbanView.axaml"/>
+        <AdditionalFiles Include="Views\ProjectExplorer\Functions\SyncFunctionGroupsView.axaml"/>
+        <AdditionalFiles Include="Views\ProjectExplorer\Materials\MaterialsView.axaml"/>
+        <AdditionalFiles Include="Views\ProjectExplorer\Materials\MaterialView.axaml"/>
+        <AdditionalFiles Include="Views\ProjectExplorer\Materials\SyncMaterialsView.axaml"/>
+        <AdditionalFiles Include="Views\ProjectExplorer\Projects\ProjectsView.axaml"/>
+        <AdditionalFiles Include="Views\ProjectExplorer\Projects\SelectProjectView.axaml"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <UpToDateCheckInput Remove="Views\DesignTools\UpdateView.axaml" />
+      <UpToDateCheckInput Remove="Assets\avalonia-logo.ico" />
+    </ItemGroup>
+</Project>

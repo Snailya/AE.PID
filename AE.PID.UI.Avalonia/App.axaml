@@ -1,0 +1,30 @@
+﻿<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Avalonia.Labs.Controls;assembly=Avalonia.Labs.Controls"
+             xmlns:shared="clr-namespace:AE.PID.UI.Shared;assembly=AE.PID.UI.Shared"
+             x:Class="AE.PID.Client.UI.Avalonia.AvaloniaApp"
+             RequestedThemeVariant="Default">
+    <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.DataTemplates>
+        <shared:ViewLocator />
+    </Application.DataTemplates>
+
+    <Application.Resources>
+        <ResourceDictionary />
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+        <controls:ControlThemes />
+        <StyleInclude Source="Icons.axaml" />
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+        <StyleInclude Source="avares://AE.PID.UI.Shared/Styles/Page.axaml" />
+        <StyleInclude Source="avares://AE.PID.UI.Shared/Styles/Tag.axaml" />
+        <StyleInclude Source="avares://AE.PID.UI.Shared/Styles/Styles.axaml"/>
+        
+        <Style Selector="WindowNotificationManager">
+            <Setter Property="Margin" Value="32" />
+        </Style>
+    </Application.Styles>
+</Application>

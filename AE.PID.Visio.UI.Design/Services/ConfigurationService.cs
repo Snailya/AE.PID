@@ -4,8 +4,7 @@ using System.Linq.Expressions;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
-using AE.PID.Visio.Core.Interfaces;
-using AE.PID.Visio.Core.Models;
+using AE.PID.Client.Core;
 
 namespace AE.PID.Visio.UI.Design.Services;
 
@@ -45,8 +44,13 @@ public class MoqConfigurationService : IConfigurationService
     {
         var configuration = (Configuration)_configurationSubject.Value.Clone();
 
-
         var propertyInfo = (PropertyInfo)((MemberExpression)propertyExpression.Body).Member;
         propertyInfo.SetValue(configuration, newValue);
+    }
+
+    public void Dispose()
+    {
+        _configurationSubject.Dispose();
+        _updateSubject.Dispose();
     }
 }

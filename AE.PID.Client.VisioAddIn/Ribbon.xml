@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<customUI onLoad="Ribbon_Load" xmlns="http://schemas.microsoft.com/office/2009/07/customui">
+    <ribbon>
+        <tabs>
+            <tab idMso="TabAddIns">
+                <group id="Design" label="设计">
+                    <button id="Libraries" onAction="LoadLibraries" label="库" screentip="加载库" size="large"
+                            getEnabled="IsLoadLibrariesValid"
+                    />
+                    <button id="FormatPage" onAction="FormatPage" label="初始化" screentip="设置文档的样式和网格"
+                            getEnabled="IsFormatPageValid"
+                    />
+                    <button id="InsertLegend" onAction="InsertLegend" label="图例" screentip="在当前绘图页中插入图例"
+                            getEnabled="IsInsertLegendValid"
+                    />
+                    <button id="UpdateDocument" onAction="UpdateDocument" label="更新" screentip="更新文档模具"
+                            getEnabled="IsUpdateDocumentValid"
+                    />
+                    <button id="Tools" onAction="OpenTools" label="工具" screentip="打开工具箱"/>
+                </group>
+                <group id="Check" label="检查">
+                    <button id="ValidateDesignationUnique" label="位号重复" onAction="ValidateDesignationUnique"
+                            screentip="检查位号唯一性" size="large" getEnabled="IsValidateDesignationUniqueValid"
+                    />
+                    <button id="ValidateMasterExist" label="主控形状缺失" onAction="ValidateMasterExist"
+                            screentip="检查主控形状没有缺失" size="large" getEnabled="IsValidateMasterExistValid"
+                    />
+                    <button id="ClearValidationMarks" label="清除" onAction="ClearValidationMarks"
+                            screentip="清除检查标记" size="large" getEnabled="IsClearValidationMarksValid"
+                    />
+                </group>
+                <group id="Project" label="项目">
+                    <button id="ProjectExplorer" onAction="OpenProjectExplorer" label="项目浏览器"/>
+                </group>
+                <group id="Administrator" label="管理员">
+                    <button id="AddResponsibleProperty" onAction="AddResponsibleProperty" label="增加采购方"/>
+                </group>
+                <group id="About" label="关于">
+                    <button id="Settings" onAction="OpenSettings" label="设置"/>
+                    <button id="button4" onAction="Debug" label="调试"/>
+                </group>
+            </tab>
+        </tabs>
+    </ribbon>
+
+    <!--This section defines custom context menu controls.-->
+    <contextMenus>
+        <contextMenu idMso="ContextMenuShape">
+            <menu id="Proxy" label="插入代理">
+                <button id="InsertFunctionGroup"
+                        label="代理功能组"
+                        onAction="InsertFunctionGroup"
+                        getEnabled="IsInsertFunctionGroupValid"
+                />
+                <button id="InsertEquipment"
+                        label="代理设备"
+                        onAction="InsertEquipment"
+                        getEnabled="IsInsertEquipmentValid"
+                />
+                <button id="InsertFunctionElement"
+                        label="代理功能元件"
+                        onAction="InsertFunctionElement"
+                        getEnabled="IsInsertFunctionElementValid"
+                />
+            </menu>
+            <menu id="Material" label="物料" getVisible="AreMaterialLocations">
+                <button id="MaterialData"
+                        label="详情"
+                        onAction="ShowMaterialDataPane"
+                        getEnabled="HasMaterial"
+                />
+                <button id="DeleteMaterial"
+                        label="删除"
+                        onAction="DeleteMaterial"
+                        getEnabled="HasMaterial"
+                />
+            </menu>
+            <button id="InsertPCIDescription"
+                    label="插入PCI说明"
+                    onAction="InsertPCIDescription"
+                    getVisible="IsFrame"
+            />
+            <button id="PasteShapeData"
+                    label="粘贴属性"
+                    onAction="PasteShapeData"
+                    getVisible="CanPasteShapeData"
+                    insertAfterMso="Paste"
+            />
+            <!--            <dynamicMenu id="Suggestion" label="建议" getContent="GetSuggestionContent"/>-->
+        </contextMenu>
+    </contextMenus>
+</customUI>
