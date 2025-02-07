@@ -2,8 +2,6 @@
 using AE.PID.Server.Data;
 using AE.PID.Server.Data.Recommendation;
 using AE.PID.Server.Interfaces;
-using AE.PID.Server.Models;
-using Microsoft.EntityFrameworkCore;
 using MaterialRecommendation = AE.PID.Server.Data.Recommendation.MaterialRecommendation;
 
 namespace AE.PID.Server.Services;

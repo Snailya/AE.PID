@@ -5,7 +5,6 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using AE.PID.Client.Core;
 using AE.PID.Client.Infrastructure.VisioExt;
 using AE.PID.Client.VisioAddIn.Services;
 using AE.PID.UI.Shared;
@@ -70,14 +69,14 @@ public static class WindowHelper
         }
     }
 
-    public static Task<TResult> ShowDialog<TWindow, TViewModel, TResult>()
+    public static Task<TResult> ShowDialog<TWindow, TViewModel, TResult>(TViewModel? viewModel = null)
         where TWindow : Window where TViewModel : ViewModelBase
     {
         var result = new TaskCompletionSource<TResult>();
-    
+
         var scope = ThisAddIn.Services.CreateScope();
-        var viewModel = scope.ServiceProvider.GetRequiredService<TViewModel>();
-    
+        viewModel ??= scope.ServiceProvider.GetRequiredService<TViewModel>();
+
         RxApp.MainThreadScheduler.Schedule(async void () =>
         {
             try
@@ -86,7 +85,7 @@ public static class WindowHelper
                 if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
                 {
                     var visioHandle = new IntPtr(Globals.ThisAddIn.Application.WindowHandle32);
-    
+
                     if (desktop.MainWindow is null)
                     {
                         var hostWindow = new Window
@@ -105,34 +104,34 @@ public static class WindowHelper
                         };
                         desktop.MainWindow = hostWindow;
                     }
-    
+
                     if (desktop.MainWindow.IsVisible == false)
                     {
                         // 首先通过setParent方法设置hostWindow的Parent为Visio
                         var hostWindowHandle = desktop.MainWindow.TryGetPlatformHandle()?.Handle;
                         // 设置Parent必须在Show之后吗？
                         User32.SetParent(hostWindowHandle!.Value, visioHandle);
-    
+
                         desktop.MainWindow.Show();
-    
+
                         // 顺手查看下当前应用的样式
                         var currentStyle = User32.GetWindowLong(hostWindowHandle.Value, User32.GWL_STYLE);
                         var currentStyleInt = currentStyle.ToInt32(); // 安全转换（样式是 32 位数值）
                         var newStyleInt = (currentStyleInt & ~User32.WS_CHILD) | User32.WS_POPUP;
                         var newStyle = new IntPtr(newStyleInt);
-    
+
                         // 然后通过SetWindowLong设置avaloniaWindow的样式
                         User32.SetWindowLongPtr(new HandleRef(desktop.MainWindow, hostWindowHandle.Value),
                             User32.GWL_STYLE,
                             newStyle);
-    
+
                         // 禁用父窗口
                         User32.EnableWindow(visioHandle, false);
                     }
-    
+
                     var dialogWindow = Activator.CreateInstance<TWindow>();
                     dialogWindow.DataContext = viewModel;
-    
+
                     // 2025.02.03: 关闭模态窗口时，因为关闭了当前激活的窗口，Windows会随机将一个窗口激活，而我们期望的是模态窗口的所有者被激活。
                     // 因此，这里在模态窗口激活之前，首先将所有者窗口激活，详情见https://blog.twofei.com/581/
                     dialogWindow.Closing += (_, _) =>
@@ -140,16 +139,16 @@ public static class WindowHelper
                         // 恢复父窗口
                         User32.EnableWindow(visioHandle, true);
                     };
-    
+
                     dialogWindow.Closed += (_, _) =>
                     {
                         // 不需要host了，关闭host窗口
                         desktop.MainWindow.Close();
-    
+
                         // Dispose the scope and any services tied to it when the window closes
                         scope.Dispose();
                     };
-    
+
                     // 显示dialog
                     var dialogResult = await dialogWindow.ShowDialog<TResult>(desktop.MainWindow);
                     result.SetResult(dialogResult);
@@ -196,6 +195,7 @@ public static class WindowHelper
                     view.DataContext = viewModel;
 
                     var pane = new VisioTaskPane(view);
+                    
                     pane.HandleDestroyed += (_, _) =>
                     {
                         // remove the window from the opened window list

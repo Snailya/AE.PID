@@ -25,7 +25,7 @@ public class MaterialRecommendationCollection : EntityBase
     ///     生成推荐结果时使用费的上下文, 多对多
     /// </summary>
     [Required]
-    public required  MaterialLocationContext Context { get; set; } = null!;
+    public required MaterialLocationContext Context { get; set; } = null!;
 
     #endregion
 }

@@ -52,9 +52,12 @@ public class VisioProvider : DisposableBase, IVisioDataProvider
 
         var current = new ProjectLocation(new VisioDocumentId(_document.ID),
             _document.DocumentSheet.TryGetValue<int>(CellNameDict.ProjectId));
+
+        // 2025.02.07: 必须在此处将documentSheet存储在一个变量中，否则后面可能会被回收，表现为选择项目后UI不更新
+        var documentSheet = _document.DocumentSheet;
         ProjectLocation = Observable.FromEvent<EShape_CellChangedEventHandler, Cell>(
-                handler => _document.DocumentSheet.CellChanged += handler,
-                handler => _document.DocumentSheet.CellChanged -= handler)
+                handler => documentSheet.CellChanged += handler,
+                handler => documentSheet.CellChanged -= handler)
             .Where(x => x.LocalName == CellNameDict.ProjectId)
             .Select(x => new ProjectLocation(new VisioDocumentId(_document.ID),
                 _document.DocumentSheet.TryGetValue<int>(CellNameDict.ProjectId)))

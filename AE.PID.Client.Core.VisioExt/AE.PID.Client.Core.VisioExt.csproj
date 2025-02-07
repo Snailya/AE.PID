@@ -17,4 +17,10 @@
         <ProjectReference Include="..\AE.PID.Core\AE.PID.Core.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="Microsoft.Office.Interop.Visio">
+        <HintPath>C:\Program Files (x86)\Microsoft Visual Studio\Shared\Visual Studio Tools for Office\PIA\Office15\Microsoft.Office.Interop.Visio.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

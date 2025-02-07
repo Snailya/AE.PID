@@ -23,18 +23,19 @@ public class ConfigurationService : DisposableBase, IConfigurationService
     private readonly Subject<(Expression<Func<Configuration, object>> PropertyExpression, object NewValue)>
         _updateSubject = new();
 
-    public ConfigurationService(IStorageService storageService, string productName, string version)
+    public ConfigurationService(IStorageService storageService, string companyName, string productName, string version)
     {
         this.Log().Info("Initializing configuration service...");
 
         _storageService = storageService;
 
+        RuntimeConfiguration.CompanyName = companyName;
         RuntimeConfiguration.ProductName = productName;
         RuntimeConfiguration.Version = version;
 
         // ensure app data folder exist
         RuntimeConfiguration.AppDataFolder = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), companyName,
             productName);
         if (!Directory.Exists(RuntimeConfiguration.AppDataFolder))
             Directory.CreateDirectory(RuntimeConfiguration.AppDataFolder);

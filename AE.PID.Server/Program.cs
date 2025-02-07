@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 using AE.PID.Server;
 using AE.PID.Server.Data;
-using AE.PID.Server.Interfaces;
+using AE.PID.Server.PDMS.Extensions;
 using AE.PID.Server.Services;
 using Asp.Versioning;
 using Microsoft.EntityFrameworkCore;
@@ -25,8 +25,7 @@ if (!Directory.Exists(Constants.StencilPath)) Directory.CreateDirectory(Constant
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddTransient<IDocumentService, DocumentService>();
-builder.Services.AddTransient<IMaterialService, MaterialService>();
-builder.Services.AddTransient<IRecommendService,RecommendService>();
+builder.Services.AddTransient<IRecommendService, RecommendService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -92,15 +91,7 @@ builder.Services.AddCors(options =>
         policy => policy.WithOrigins("http://172.18.0.0/22").AllowAnyMethod());
 });
 
-// register a httpclient for PDMS
-builder.Services.AddHttpClient("PDMS",
-    client => { client.BaseAddress = new Uri("http://172.18.168.57:8000/api/cube/restful/interface/"); });
-builder.Services.AddHttpClient("PDMSBip",
-    client =>
-    {
-        client.BaseAddress =
-            new Uri("http://172.18.168.58:10000/api/weaver/bip/unified/business/interface/protocol/dispatch/");
-    });
+builder.Services.AddPDMS();
 
 builder.Services.AddSignalR();
 
@@ -129,6 +120,5 @@ app.UseCors("AllowIntranetIPRange");
 app.UseAuthorization();
 
 app.MapControllers();
-
 
 app.Run();

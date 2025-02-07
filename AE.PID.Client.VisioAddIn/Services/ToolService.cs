@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reactive.Disposables;
+using AE.PID.Client.Core;
 using AE.PID.Client.Core.VisioExt;
 using AE.PID.Client.Core.VisioExt.Models;
 using AE.PID.Client.Infrastructure;
@@ -10,18 +11,20 @@ namespace AE.PID.Client.VisioAddIn;
 
 public class ToolService : DisposableBase, IToolService
 {
-    private readonly Lazy<IDisposable> _loader;
+    // 2025.02.05: 不在使用IVisioProvider，而是IDataProvider，以解决DI时只注册了IDataProvider而找不到IVisioDataProvider的问题。
+    private readonly IDataProvider _dataProvider;
+    private readonly Lazy<IDisposable>? _loader;
     private readonly SourceCache<VisioMaster, string> _masters = new(t => t.Id.BaseId);
-    private readonly IVisioDataProvider _visioService;
 
-    public ToolService(IVisioDataProvider visioService)
+    public ToolService(IDataProvider dataProvider)
     {
-        _visioService = visioService;
+        _dataProvider = dataProvider;
+        if (dataProvider is not IVisioDataProvider visioDataProvider) return;
+
         // initialize the data
-        _loader = new Lazy<IDisposable>(() => visioService.Masters.Value
+        _loader = new Lazy<IDisposable>(() => visioDataProvider.Masters.Value
             .Connect()
-            .PopulateInto(_masters)
-        );
+            .PopulateInto(_masters));
 
         CleanUp.Add(Disposable.Create(() =>
         {
@@ -34,16 +37,18 @@ public class ToolService : DisposableBase, IToolService
 
     public void Select(VisioShapeId id)
     {
-        _visioService.Select([id]);
+        if (_dataProvider is ISelectable selectable)
+            selectable.Select([id]);
     }
 
     public void Select(VisioMaster[] items)
     {
-        _visioService.Select(items.Select(x => x.Id).ToArray());
+        if (_dataProvider is ISelectable selectable)
+            selectable.Select(items.Select(x => x.Id).ToArray<ICompoundKey>());
     }
 
     public void Load()
     {
-        var _ = _loader.Value;
+        var _ = _loader?.Value;
     }
 }

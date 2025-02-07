@@ -13,7 +13,7 @@
         <avalonia:AboutViewModel />
     </Design.DataContext>
 
-    <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+    <StackPanel Spacing="8" HorizontalAlignment="Stretch" VerticalAlignment="Center">
         <TextBlock Classes="h1" TextAlignment="Center" Text="AE PID" FontWeight="Bold" />
         <TextBlock Text="{Binding Version}" TextAlignment="Center" />
         <Button Content="检查新版本" Command="{Binding CheckUpdate}" HorizontalAlignment="Center" />

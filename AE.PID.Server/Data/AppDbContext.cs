@@ -1,6 +1,4 @@
-﻿using AE.PID.Core.Models;
-using AE.PID.Server.Data.Recommendation;
-using AE.PID.Server.Models;
+﻿using AE.PID.Server.Data.Recommendation;
 using Microsoft.EntityFrameworkCore;
 
 namespace AE.PID.Server.Data;
@@ -24,7 +22,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Ignore<EntityBase>();
-    //     modelBuilder.Entity<UserMaterialSelection>().ComplexProperty(u => u.Context);
-    //     modelBuilder.Entity<MaterialRecommendationCollection>().ComplexProperty(u => u.Context);
+        //     modelBuilder.Entity<UserMaterialSelection>().ComplexProperty(u => u.Context);
+        //     modelBuilder.Entity<MaterialRecommendationCollection>().ComplexProperty(u => u.Context);
     }
 }

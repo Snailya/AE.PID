@@ -22,8 +22,13 @@ public class MastersController(ILogger<MastersController> logger, AppDbContext d
     public IActionResult GetSnapshots([FromQuery] SnapshotStatus status = SnapshotStatus.Published,
         [FromQuery] int? mode = 0)
     {
+        var tmp1 = dbContext.Masters.Include(x => x.MasterContentSnapshots).ToList();
+        var tmp2 = dbContext.Masters.Include(x => x.MasterContentSnapshots).Select(x =>
+            x.MasterContentSnapshots.Where(i => i.Status >= status)
+                .OrderByDescending(i => i.CreatedAt)
+                .FirstOrDefault()).ToList();
+
         var snapshots = dbContext.Masters.Include(x => x.MasterContentSnapshots)
-            .ThenInclude(x => x.Master)
             .Select(x =>
                 x.MasterContentSnapshots.Where(i => i.Status >= status)
                     .OrderByDescending(i => i.CreatedAt)
@@ -34,11 +39,15 @@ public class MastersController(ILogger<MastersController> logger, AppDbContext d
         return mode switch
         {
             0 => Ok(snapshots.Select(x => new MasterSnapshotDto
-                { Name = x.Master.Name, BaseId = x.BaseId, UniqueId = x.UniqueId })),
+            {
+                Name = x.Master.Name, BaseId = x.BaseId, UniqueId = x.UniqueId,
+                UniqueIdHistory = x.Master.MasterContentSnapshots.Select(m => m.UniqueId).ToArray()
+            })),
             1 => Ok(snapshots),
             _ => BadRequest()
         };
     }
+
 
     /// <summary>
     ///     批量更新属于某一个stencil snapshot的master状态。

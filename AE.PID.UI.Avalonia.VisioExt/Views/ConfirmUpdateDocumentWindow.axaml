@@ -18,22 +18,28 @@
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <local:ConfirmUpdateDocumentWindowViewModel />
     </Design.DataContext>
-    
+
     <Window.Styles>
         <StyleInclude Source="avares://AE.PID.UI.Shared/Styles/Styles.axaml" />
     </Window.Styles>
-    
+
     <shared:Page>
         <DockPanel>
+            <TextBlock DockPanel.Dock="Top" Text="请选择需要更新的模具：" />
             <StackPanel DockPanel.Dock="Bottom">
                 <StackPanel Classes="dialog">
                     <Button Content="确认" Command="{Binding Confirm}" />
                     <Button Content="取消" Command="{Binding Cancel}" />
                 </StackPanel>
             </StackPanel>
-            <ScrollViewer>
-                <Grid Margin="0 4 ">
-                    <ListBox ItemsSource="{Binding Symbols}">
+            <Grid RowDefinitions="Auto, *">
+                <StackPanel Orientation="Horizontal">
+                    <CheckBox IsChecked="{Binding AllSelected}" Command="{Binding ToggleSelectAll}" />
+                    <TextBlock Text="全选\取消全选" VerticalAlignment="Center" />
+                </StackPanel>
+                <Grid Grid.Row="1" Margin="0 4 ">
+                    <ListBox Name="ListBox" ItemsSource="{Binding DocumentMasters}"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto">
                         <ListBox.Styles>
                             <Style Selector="ListBoxItem">
                                 <Setter Property="Padding" Value="0" />
@@ -42,14 +48,14 @@
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
-                                    <CheckBox IsChecked="{Binding IsSelected}" />
+                                    <CheckBox IsChecked="{Binding IsSelected}" Margin="8 0 0 0" />
                                     <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
                                 </StackPanel>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
                 </Grid>
-            </ScrollViewer>
+            </Grid>
         </DockPanel>
     </shared:Page>
 </Window>

@@ -10,6 +10,7 @@ using System.Xml.Linq;
 using AE.PID.Client.Core;
 using AE.PID.Client.Core.Exceptions;
 using AE.PID.Client.Core.VisioExt;
+using AE.PID.Client.Core.VisioExt.Models;
 using AE.PID.Client.UI.Avalonia;
 using AE.PID.Core.DTOs;
 using AE.PID.Core.Models;
@@ -191,6 +192,9 @@ public class Ribbon : Office.IRibbonExtensibility
         RegisterUpdateForElements();
     }
 
+    // 2025.02.06: 增加一个上次刷新的时间，避免在空闲时频繁刷新。
+    private DateTime? _lastInvalidate;
+
     /// <summary>
     ///     Because the state of the buttons on ribbon will not re-compute once loaded.
     ///     So the re-computation needs to be triggered manually by calling _ribbon.Invalidate().
@@ -198,9 +202,23 @@ public class Ribbon : Office.IRibbonExtensibility
     /// </summary>
     private void RegisterUpdateForElements()
     {
-        Globals.ThisAddIn.Application.WindowOpened += _ => { _ribbon.Invalidate(); };
-        Globals.ThisAddIn.Application.WindowChanged += _ => { _ribbon.Invalidate(); };
-        Globals.ThisAddIn.Application.VisioIsIdle += _ => { _ribbon.Invalidate(); };
+        Globals.ThisAddIn.Application.WindowOpened += _ =>
+        {
+            _ribbon.Invalidate();
+            _lastInvalidate = DateTime.Now;
+        };
+        Globals.ThisAddIn.Application.WindowChanged += _ =>
+        {
+            _ribbon.Invalidate();
+            _lastInvalidate = DateTime.Now;
+        };
+        Globals.ThisAddIn.Application.VisioIsIdle += _ =>
+        {
+            if (_lastInvalidate != null && !(DateTime.Now - _lastInvalidate > TimeSpan.FromMinutes(5))) return;
+
+            _ribbon.Invalidate();
+            _lastInvalidate = DateTime.Now;
+        };
     }
 
     #endregion
@@ -209,7 +227,9 @@ public class Ribbon : Office.IRibbonExtensibility
 
     public void LoadLibraries(Office.IRibbonControl control)
     {
-        LibraryHelper.OpenLibraries();
+        // 2025.02.07: 使用RuntimePath
+        var service = ThisAddIn.Services.GetRequiredService<IConfigurationService>();
+        LibraryHelper.OpenLibraries(Path.Combine(service.RuntimeConfiguration.AppDataFolder, "libraries"));
     }
 
     public bool IsLoadLibrariesValid(Office.IRibbonControl control)
@@ -239,18 +259,29 @@ public class Ribbon : Office.IRibbonExtensibility
 
     public async Task UpdateDocument(Office.IRibbonControl control)
     {
-        // 2024.12.9更新：在更新时，一部分用户希望更新所有的模具，但一部分用户希望保留自己修改后的模具，所以此处弹出对话框请求用户选择哪些对象需要排除
-        var excludes = await WindowHelper
-            .ShowDialog<ConfirmUpdateDocumentWindow, ConfirmUpdateDocumentWindowViewModel, string[]?>();
-
-        if (excludes == null) return;
-
-        var service = ThisAddIn.Services.GetRequiredService<IDocumentUpdateService>();
-
         var doc = Globals.ThisAddIn.Application.ActiveDocument;
 
         //remove hidden information to reduce size
         doc.RemoveHiddenInformation((int)VisRemoveHiddenInfoItems.visRHIMasters);
+
+        var service = ThisAddIn.Services.GetRequiredService<IDocumentUpdateService>();
+
+        // 2024.12.9更新：在更新时，一部分用户希望更新所有的模具，但一部分用户希望保留自己修改后的模具，此处弹框要求用户选择哪些模具需要被更新
+        var mastersNeedUpdate = service.GetOutdatedMasters(Globals.ThisAddIn.Application.ActiveDocument)
+            .Select(x =>
+                new DocumentMasterViewModel(x)
+                {
+                    IsSelected = true
+                })
+            .ToArray();
+        // 2025.02.05： 用户如果点击了取消按钮，则返回null，用户如果点击了确定按钮，则获得待更新的清单
+        var mastersToUpdate = await WindowHelper
+            .ShowDialog<ConfirmUpdateDocumentWindow, ConfirmUpdateDocumentWindowViewModel, VisioMaster[]?>(
+                new ConfirmUpdateDocumentWindowViewModel(mastersNeedUpdate));
+
+        // 如果用户取消了，或者待更新清单为空，则取消操作
+        if (mastersToUpdate == null || !mastersToUpdate.Any()) return;
+
 
         // 文档可能有两种情况：
         // 1. 文档是新建的，此时没有FullName，但是这种情况不应该发生，因为没有检查一个新建的文档，因为该文档随时可被丢弃。
@@ -262,7 +293,10 @@ public class Ribbon : Office.IRibbonExtensibility
         try
         {
             // do update
-            await service.UpdateAsync(filePath, excludes);
+            await service.UpdateAsync(filePath, mastersToUpdate);
+
+            // 2025.02.06: 此处增加一个更新成功提示
+            MessageBox.Show("更新成功", "文档更新");
         }
         catch (DocumentFailedToUpdateException e)
         {
@@ -274,7 +308,7 @@ public class Ribbon : Office.IRibbonExtensibility
         }
 
         // reopen after updated
-        Globals.ThisAddIn.Application.Documents.Add(filePath);
+        Globals.ThisAddIn.Application.Documents.Open(filePath);
     }
 
     public bool IsUpdateDocumentValid(Office.IRibbonControl control)
@@ -335,17 +369,19 @@ public class Ribbon : Office.IRibbonExtensibility
         _ribbon.Invalidate();
     }
 
+    public void ValidatePipeline(Office.IRibbonControl control)
+    {
+        ErrorHelper.ScanPipeline(Globals.ThisAddIn.Application.ActivePage);
+        _ribbon.Invalidate();
+    }
+
     public void ClearValidationMarks(Office.IRibbonControl control)
     {
         ErrorHelper.ClearCheckMarks(Globals.ThisAddIn.Application.ActivePage);
+        _ribbon.Invalidate();
     }
 
-    public bool IsValidateDesignationUniqueValid(Office.IRibbonControl control)
-    {
-        return Globals.ThisAddIn.Application.ActiveDocument != null && !IsClearValidationMarksValid(control);
-    }
-
-    public bool IsValidateMasterExistValid(Office.IRibbonControl control)
+    public bool IsCheckValid(Office.IRibbonControl control)
     {
         return Globals.ThisAddIn.Application.ActiveDocument != null && !IsClearValidationMarksValid(control);
     }
@@ -368,8 +404,8 @@ public class Ribbon : Office.IRibbonExtensibility
         WindowHelper.ShowTaskPane<MaterialPaneView, MaterialPaneViewModel>("物料",
             (shape, vm) =>
             {
-                System.Diagnostics.Debug.WriteLine($"selected shape id : {shape.ID}");
-                vm.Code = shape.TryGetValue(CellNameDict.MaterialCode) ?? string.Empty;
+                if (shape != null)
+                    vm.Code = shape.TryGetValue(CellNameDict.MaterialCode) ?? string.Empty;
             });
     }
 

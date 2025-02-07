@@ -20,10 +20,13 @@
                 </group>
                 <group id="Check" label="检查">
                     <button id="ValidateDesignationUnique" label="位号重复" onAction="ValidateDesignationUnique"
-                            screentip="检查位号唯一性" size="large" getEnabled="IsValidateDesignationUniqueValid"
+                            screentip="检查位号唯一性" size="large" getEnabled="IsCheckValid"
                     />
                     <button id="ValidateMasterExist" label="主控形状缺失" onAction="ValidateMasterExist"
-                            screentip="检查主控形状没有缺失" size="large" getEnabled="IsValidateMasterExistValid"
+                            screentip="检查主控形状没有缺失" size="large" getEnabled="IsCheckValid"
+                    />
+                    <button id="ValidatePipeline" label="异常管线" onAction="ValidatePipeline"
+                            screentip="检查管线的数据是否异常，异常管路会导致文档更新后飞线" size="large" getEnabled="IsCheckValid"
                     />
                     <button id="ClearValidationMarks" label="清除" onAction="ClearValidationMarks"
                             screentip="清除检查标记" size="large" getEnabled="IsClearValidationMarksValid"
@@ -32,12 +35,12 @@
                 <group id="Project" label="项目">
                     <button id="ProjectExplorer" onAction="OpenProjectExplorer" label="项目浏览器"/>
                 </group>
-                <group id="Administrator" label="管理员">
-                    <button id="AddResponsibleProperty" onAction="AddResponsibleProperty" label="增加采购方"/>
-                </group>
+<!--                <group id="Administrator" label="管理员">-->
+<!--                    <button id="AddResponsibleProperty" onAction="AddResponsibleProperty" label="增加采购方"/>-->
+<!--                </group>-->
                 <group id="About" label="关于">
                     <button id="Settings" onAction="OpenSettings" label="设置"/>
-                    <button id="button4" onAction="Debug" label="调试"/>
+<!--                    <button id="button4" onAction="Debug" label="调试"/>-->
                 </group>
             </tab>
         </tabs>

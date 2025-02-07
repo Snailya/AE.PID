@@ -1,9 +1,7 @@
-﻿using AE.PID.Core.DTOs;
-using AE.PID.Core.Models;
+﻿using AE.PID.Core.Models;
 using AE.PID.Server.Data.Recommendation;
-using AE.PID.Server.Models;
 
-namespace AE.PID.Server.Interfaces;
+namespace AE.PID.Server;
 
 public interface IRecommendService
 {

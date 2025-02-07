@@ -18,6 +18,6 @@ public interface IDocumentApi
     [Multipart]
     [Post("/api/v3/documents/update")]
     // 2025.02.03: IFormFile在Refit中可以对应StreamPart,ByteArrayPart,FileInfoPart，无论是哪个都可以。
-    Task<Stream> Update([AliasAs("file")] ByteArrayPart file, [AliasAs("excludes")] string[]? excludes = null,
+    Task<Stream> Update([AliasAs("file")] ByteArrayPart file, [AliasAs("data")] string? data = null,
         [Query] int status = 1);
 }

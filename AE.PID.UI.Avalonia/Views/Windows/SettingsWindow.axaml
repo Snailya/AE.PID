@@ -9,7 +9,7 @@
         x:Class="AE.PID.UI.Avalonia.Views.SettingsWindow"
         x:DataType="avalonia:SettingsWindowViewModel"
         Height="384" Width="512"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="avares://AE.PID.UI.Shared/Assets/avalonia-logo.ico"
         Title="设置"
         TransparencyLevelHint="AcrylicBlur"
         Background="Transparent"

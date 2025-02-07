@@ -1,14 +1,15 @@
-﻿using System.Reflection;
+﻿using System.Resources;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("AE.PID.Client.VisioAddIn")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("AE PID")]
+[assembly: AssemblyDescription("中汽涂装装备原理图设计工具")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("AE.PID.Client.VisioAddIn")]
+[assembly: AssemblyCompany("AE")]
+[assembly: AssemblyProduct("AE PID Visio Client")]
 [assembly: AssemblyCopyright("Copyright ©  2024")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -31,4 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.*")]
+[assembly: AssemblyVersion("1.1.*")]
+[assembly: NeutralResourcesLanguage("zh-Hans")]

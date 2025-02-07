@@ -13,7 +13,7 @@ namespace AE.PID.UI.Avalonia.VisioExt;
 
 public class SelectToolViewModel : ViewModelBase
 {
-    private readonly ReadOnlyObservableCollection<SymbolViewModel> _symbols;
+    private readonly ReadOnlyObservableCollection<DocumentMasterViewModel> _symbols;
     private readonly IToolService _toolService;
     private bool _isLoading;
 
@@ -26,7 +26,7 @@ public class SelectToolViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> Confirm { get; set; }
     public ReactiveCommand<Unit, Unit> Cancel { get; set; }
 
-    public ReadOnlyObservableCollection<SymbolViewModel> Symbols => _symbols;
+    public ReadOnlyObservableCollection<DocumentMasterViewModel> Symbols => _symbols;
 
     protected override void SetupStart()
     {
@@ -46,10 +46,12 @@ public class SelectToolViewModel : ViewModelBase
         Confirm = ReactiveCommand.CreateRunInBackground(
             () =>
             {
-                toolService.Select(Symbols.Where(x => x.IsSelected).Select<SymbolViewModel, VisioMaster>(x => x.Source)
+                toolService.Select(Symbols.Where(x => x.IsSelected).Select<DocumentMasterViewModel, VisioMaster>(x => x.Source)
                     .ToArray());
             },
             backgroundScheduler: SchedulerManager.VisioScheduler);
+
+        Cancel = ReactiveCommand.Create(() => { });
 
         #endregion
 
@@ -59,9 +61,9 @@ public class SelectToolViewModel : ViewModelBase
             .ObserveOn(RxApp.MainThreadScheduler)
             .Do(_ => IsLoading = true)
             .ObserveOn(RxApp.TaskpoolScheduler)
-            .Transform(x => new SymbolViewModel(x))
+            .Transform(x => new DocumentMasterViewModel(x))
             .ObserveOn(RxApp.MainThreadScheduler)
-            .SortAndBind(out _symbols, SortExpressionComparer<SymbolViewModel>.Ascending(x => x.Name))
+            .SortAndBind(out _symbols, SortExpressionComparer<DocumentMasterViewModel>.Ascending(x => x.Name))
             .Do(_ => IsLoading = false)
             .Subscribe();
 

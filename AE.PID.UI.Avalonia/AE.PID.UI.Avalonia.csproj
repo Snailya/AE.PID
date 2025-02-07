@@ -28,6 +28,26 @@
           <DependentUpon>AboutView.axaml</DependentUpon>
           <SubType>Code</SubType>
         </Compile>
+        <Compile Update="Views\Windows\ConfirmSyncFunctionGroupsWindow.axaml.cs">
+          <DependentUpon>ConfirmSyncFunctionGroupsWindow.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Windows\ConfirmSyncMaterialsWindow.axaml.cs">
+          <DependentUpon>ConfirmSyncMaterialsWindow.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Windows\SelectFunctionZoneWindow.axaml.cs">
+          <DependentUpon>SelectFunctionZoneWindow.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Windows\SelectMaterialWindow.axaml.cs">
+          <DependentUpon>SelectMaterialWindow.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Windows\SelectProjectWindow.axaml.cs">
+          <DependentUpon>SelectProjectWindow.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
     </ItemGroup>
 
     <ItemGroup>
@@ -49,24 +69,8 @@
             <DependentUpon>MainWindow.axaml</DependentUpon>
             <SubType>Code</SubType>
         </Compile>
-        <Compile Update="Views\Windows\SelectMaterialWindow.axaml.cs">
-            <DependentUpon>SelectMaterialWindow.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
-        <Compile Update="Views\Windows\SelectProjectWindow.axaml.cs">
-            <DependentUpon>SelectProjectWindow.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
-        <Compile Update="Views\Windows\ConfirmSyncMaterialsWindow.axaml.cs">
-            <DependentUpon>SyncMaterialsWindow.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
         <Compile Update="Views\Functions\SyncFunctionGroupsView.axaml.cs">
             <DependentUpon>SyncFunctionsView.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
-        <Compile Update="Views\Windows\ConfirmSyncFunctionGroupsWindow.axaml.cs">
-            <DependentUpon>SyncFunctionGroupsWindow.axaml</DependentUpon>
             <SubType>Code</SubType>
         </Compile>
         <Compile Update="Views\Functions\Components\FunctionElementView.axaml.cs">
@@ -107,10 +111,6 @@
         </Compile>
         <Compile Update="Views\Windows\NewVersionWindow.axaml.cs">
             <DependentUpon>NewVersionWindow.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
-        <Compile Update="Views\Windows\SelectFunctionZoneWindow.axaml.cs">
-            <DependentUpon>SelectProcessZoneWindow.axaml</DependentUpon>
             <SubType>Code</SubType>
         </Compile>
         <Compile Update="Views\ProjectExplorer\Functions\SelectFunctionZoneView.axaml.cs">

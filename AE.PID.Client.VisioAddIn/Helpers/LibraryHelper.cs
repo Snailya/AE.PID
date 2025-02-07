@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
+using AE.PID.Client.Core;
+using AE.PID.Client.Infrastructure;
 using Microsoft.Office.Interop.Visio;
 using Splat;
 
@@ -11,13 +13,10 @@ namespace AE.PID.Client.VisioAddIn;
 
 public abstract class LibraryHelper
 {
-    private static readonly string Path = System.IO.Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductName, "Libraries");
-
-    public static void OpenLibraries()
+    public static void OpenLibraries(string path)
     {
-        var files = Directory.GetFiles(Path).Where(x => x.EndsWith("vssx")).ToArray();
+        
+        var files = Directory.GetFiles(path).Where(x => x.EndsWith("vssx")).ToArray();
 
         try
         {

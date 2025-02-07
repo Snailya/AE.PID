@@ -60,6 +60,26 @@ public partial class AppController(ILogger<AppController> logger, AppDbContext d
     }
 
     /// <summary>
+    ///     删除已经上传的安装包。
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpPost("{id:int?}/delete")]
+    public IActionResult Delete([FromRoute] int id = 0)
+    {
+        var version = dbContext.AppVersions.Find(id);
+        if (version == null) return NoContent();
+
+        dbContext.AppVersions.Remove(version);
+        dbContext.SaveChanges();
+
+        // delete the file
+        if (System.IO.File.Exists(version.PhysicalFile)) System.IO.File.Delete(version.PhysicalFile);
+
+        return NoContent();
+    }
+
+    /// <summary>
     ///     上传安装包。
     /// </summary>
     /// <param name="dto"></param>

@@ -3,7 +3,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace AE.PID.Server.Services;
+namespace AE.PID.Server;
 
 public abstract class XmlHelper
 {
@@ -102,7 +102,7 @@ public abstract class XmlHelper
         // define the characteristics for the XmlWriter
         var partWriterSettings = new XmlWriterSettings
         {
-            Encoding = Encoding.UTF8
+            Encoding = Encoding.UTF8,
         };
 
         // reset the stream length to 0 to clear the stream content, otherwise if might be remained content after overwrite when the new xdocument is longer than the previous
@@ -225,4 +225,5 @@ public abstract class XmlHelper
         // Save the Custom Properties package part back to the package.
         SaveXDocumentToPart(customPart, customPartXML);
     }
+
 }

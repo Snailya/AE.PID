@@ -113,6 +113,7 @@ public class PendingAppUpdate : ICloneable
 
 public class RuntimeConfiguration
 {
+    public string CompanyName { get; set; } = string.Empty;
     public string ProductName { get; set; } = string.Empty;
     public string Version { get; set; } = string.Empty;
     public string UUID { get; set; } = string.Empty;

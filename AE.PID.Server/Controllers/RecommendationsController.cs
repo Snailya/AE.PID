@@ -1,5 +1,6 @@
 ﻿using AE.PID.Core.DTOs;
 using AE.PID.Core.Models;
+using AE.PID.Server.Core;
 using AE.PID.Server.Data;
 using AE.PID.Server.Data.Recommendation;
 using AE.PID.Server.Interfaces;

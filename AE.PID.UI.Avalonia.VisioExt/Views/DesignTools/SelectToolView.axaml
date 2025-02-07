@@ -13,9 +13,13 @@
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <visioExt:SelectToolViewModel />
     </Design.DataContext>
+    
+    <UserControl.Styles>
+        <StyleInclude Source="avares://AE.PID.UI.Shared/Styles/Styles.axaml" />
+    </UserControl.Styles>
 
     <DockPanel>
-        <StackPanel Classes="actions" DockPanel.Dock="Bottom" Margin="0 4 0 0">
+        <StackPanel Classes="dialog" DockPanel.Dock="Bottom" Margin="0 4 0 0">
             <Button Content="确认" Command="{Binding Confirm}" />
             <Button Content="取消" Command="{Binding Cancel}" />
         </StackPanel>
@@ -32,7 +36,7 @@
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <CheckBox IsChecked="{Binding IsSelected}" />
+                                <CheckBox IsChecked="{Binding IsSelected}" Margin="4 0 0 0"/>
                                 <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
                             </StackPanel>
                         </DataTemplate>

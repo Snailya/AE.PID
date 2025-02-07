@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reactive.Subjects;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AE.PID.Client.Core;
@@ -12,6 +13,7 @@ using AE.PID.Client.Core.Exceptions;
 using AE.PID.Client.Core.VisioExt;
 using AE.PID.Client.Core.VisioExt.Models;
 using AE.PID.Core.DTOs;
+using Microsoft.Office.Interop.Visio;
 using Refit;
 using Splat;
 using Path = System.IO.Path;
@@ -34,11 +36,7 @@ public class DocumentUpdateService : DisposableBase, IDocumentUpdateService
 
     public IObservable<bool> Initialized => _initialized;
 
-
-    // <inheritdoc />
-    public List<VisioMaster> GetOutdatedMasters { get; set; }
-
-    public async Task UpdateAsync(string filePath, string[]? excludes = null)
+    public async Task UpdateAsync(string filePath, VisioMaster[]? mastersToUpdate = null)
     {
         if (string.IsNullOrEmpty(filePath)) throw new ArgumentNullException(nameof(filePath));
         if (Path.GetExtension(filePath) != ".vsdx")
@@ -52,16 +50,32 @@ public class DocumentUpdateService : DisposableBase, IDocumentUpdateService
 
         try
         {
+            // 2025.02.06: 首先尝试更新，如果顺利返回信息，则创建备份文件，然后将结果覆盖文件
             var filePart = new ByteArrayPart(fileBytes, Path.GetFileName(filePath));
 
-            var result = await _apiFactory.Api.Update(filePart, excludes);
-
+            // 2025.02.06: 由于refit不支持在form中传递复杂结构对象的数组，所以在此处将它序列化了。
+            Stream? result;
+            if (mastersToUpdate == null)
+            {
+                result = await _apiFactory.Api.Update(filePart);
+            }
+            else
+            {
+                var items
+                    = mastersToUpdate.Select(x => new MasterDto
+                            { Name = x.Name, BaseId = x.Id.BaseId, UniqueId = x.Id.UniqueId })
+                        .ToArray();
+                var itemsJson = JsonSerializer.Serialize(items);
+                result = await _apiFactory.Api.Update(filePart, itemsJson);
+            }
+            
             // create a copy of the source file
             var backup = Path.ChangeExtension(filePath, ".bak");
             if (File.Exists(backup))
                 backup = Path.Combine(Path.GetDirectoryName(backup) ?? string.Empty,
                     Path.GetFileNameWithoutExtension(backup) + DateTime.Now.ToString("yyyyMMddhhmmss") + ".bak");
             File.Copy(filePath, backup);
+            this.Log().Info($"Back file created at {backup}");
 
             // overwrite the origin file after a successful update
             using (var fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write))
@@ -72,6 +86,7 @@ public class DocumentUpdateService : DisposableBase, IDocumentUpdateService
         }
         catch (ApiException e) when (e.StatusCode == HttpStatusCode.BadRequest)
         {
+            this.Log().Error(e);
             throw new DocumentFailedToUpdateException(e.Message);
         }
         catch (ApiException e)
@@ -95,6 +110,24 @@ public class DocumentUpdateService : DisposableBase, IDocumentUpdateService
                 return excludes == null || !excludes.Contains(local.UniqueId);
 
         return false;
+    }
+
+
+    // <inheritdoc />
+    public List<VisioMaster> GetOutdatedMasters(IVDocument document)
+    {
+        if (!_masters.Any()) _masters = _apiFactory.Api.GetCurrentSnapshot().GetAwaiter().GetResult();
+
+        // get the masters of the document
+        var needUpdate = new List<VisioMaster>();
+        foreach (var master in document.Masters.OfType<IVMaster>())
+        {
+            var snapshot = _masters.SingleOrDefault(x => x.BaseId == master.BaseID);
+            if (snapshot != null && master.UniqueID != snapshot.UniqueId)
+                needUpdate.Add(new VisioMaster(master.BaseID, master.Name, master.UniqueID));
+        }
+
+        return needUpdate;
     }
 
     public override void Dispose()

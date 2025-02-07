@@ -1,4 +1,5 @@
-﻿using Avalonia;
+﻿using System.Reactive.Disposables;
+using Avalonia;
 using Avalonia.ReactiveUI;
 using ReactiveUI;
 
@@ -14,7 +15,7 @@ public partial class ToolsWindow : ReactiveWindow<ToolsWindowViewModel>
         this.AttachDevTools();
 #endif
 
-        this.WhenActivated(action => { }
+        this.WhenActivated(action => { ViewModel!.SelectTool.Cancel.Subscribe(_ => Close(null)).DisposeWith(action); }
         );
     }
 }

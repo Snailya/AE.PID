@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using AE.PID.Core.Models;
-using AE.PID.Server.Models;
 
 namespace AE.PID.Server.Data.Recommendation;
 
@@ -20,7 +19,7 @@ public class UserMaterialSelection : EntityBase
     /// </summary>
     [Required]
     public int MaterialId { get; set; }
-    
+
     /// <summary>
     ///     用户选择物料时执行的上下文。多对多
     /// </summary>

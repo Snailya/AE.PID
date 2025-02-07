@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "AE PID"
-#define MyAppVersion GetVersionNumbersString(".\bin\Release\AE.PID.Visio.dll")
+#define MyAppVersion GetVersionNumbersString(".\bin\Release\AE.PID.Client.VisioAddIn.dll")
 #define MyAppPublisher "AE"
 #define Description "中汽涂装装备原理图设计工具"
 
@@ -41,7 +41,7 @@ Root: HKA64; Subkey: "Software\Microsoft\Visio\Addins\AE.PID"; Flags: uninsdelet
 Root: HKA64; Subkey: "Software\Microsoft\Visio\Addins\AE.PID"; ValueType: string; ValueName: "Description"; ValueData: "{#Description}"
 Root: HKA64; Subkey: "Software\Microsoft\Visio\Addins\AE.PID"; ValueType: string; ValueName: "FriendlyName"; ValueData: "{#MyAppName}"
 Root: HKA64; Subkey: "Software\Microsoft\Visio\Addins\AE.PID"; ValueType: dword; ValueName: "LoadBehavior"; ValueData: "3"
-Root: HKA64; Subkey: "Software\Microsoft\Visio\Addins\AE.PID"; ValueType: string; ValueName: "Manifest"; ValueData: "file:///{app}\AE.PID.Visio.vsto|vstolocal"
+Root: HKA64; Subkey: "Software\Microsoft\Visio\Addins\AE.PID"; ValueType: string; ValueName: "Manifest"; ValueData: "file:///{app}\AE.PID.Client.VisioAddIn.vsto|vstolocal"
 
 ;[Code]
 ;function VstoRuntimeInstalled: Boolean;

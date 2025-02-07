@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Subjects;
@@ -28,7 +27,6 @@ using Avalonia.ReactiveUI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Office.Core;
-using Microsoft.Office.Interop.Visio;
 using Splat;
 using Splat.NLog;
 
@@ -155,8 +153,10 @@ public partial class ThisAddIn : IEnableLogger
 
         // register configurations
         var fvi = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
+        
         services.AddSingleton<IConfigurationService, ConfigurationService>(provider =>
-            new ConfigurationService(provider.GetRequiredService<IStorageService>(), fvi.ProductName, fvi.FileVersion));
+            new ConfigurationService(provider.GetRequiredService<IStorageService>(), fvi.CompanyName, fvi.ProductName,
+                fvi.FileVersion));
 
         // register apis
         services.AddApi<IAppApi>();
@@ -212,11 +212,6 @@ public partial class ThisAddIn : IEnableLogger
 
         // register for ViewModels
         services.AddScoped<NotificationHelper, NotificationHelper>();
-        services.AddScoped<ConfirmUpdateDocumentWindowViewModel, ConfirmUpdateDocumentWindowViewModel>(_ =>
-            new ConfirmUpdateDocumentWindowViewModel(Globals.ThisAddIn.Application.ActiveDocument.Masters
-                .OfType<IVMaster>().Select(x => new SymbolViewModel
-                    { Name = x.Name, UniqueId = x.UniqueID, IsSelected = true })
-                .ToArray()));
         services.AddScoped<ProjectExplorerWindowViewModel, ProjectExplorerWindowViewModel>();
         services.AddScoped<ToolsWindowViewModel, ToolsWindowViewModel>();
         services.AddScoped<SettingsWindowViewModel, SettingsWindowViewModel>();

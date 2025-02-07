@@ -28,6 +28,7 @@
         <Setter Property="Orientation" Value="Horizontal" />
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="Spacing" Value="4" />
+        <Setter Property="Margin" Value="4 " />
     </Style>
 
     <Style Selector="Button.link">

@@ -8,7 +8,7 @@
         x:Class="AE.PID.UI.Avalonia.Views.NewVersionWindow"
         x:DataType="viewModels:NewVersionViewModel"
         Height="512" Width="448"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="avares://AE.PID.UI.Shared/Assets/avalonia-logo.ico"
         Title="新版本"
         TransparencyLevelHint="AcrylicBlur"
         Background="Transparent"

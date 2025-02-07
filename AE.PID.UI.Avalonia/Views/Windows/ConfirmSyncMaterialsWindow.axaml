@@ -6,7 +6,7 @@
         xmlns:shared="clr-namespace:AE.PID.UI.Shared;assembly=AE.PID.UI.Shared"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="AE.PID.UI.Avalonia.Views.ConfirmSyncMaterialsWindow"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="avares://AE.PID.UI.Shared/Assets/avalonia-logo.ico"
         Title="物料同步"
         Width="1024" Height="528"
         TransparencyLevelHint="AcrylicBlur"
