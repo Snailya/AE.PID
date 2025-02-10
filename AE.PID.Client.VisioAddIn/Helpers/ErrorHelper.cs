@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Windows.Forms;
+using AE.PID.Client.Core;
 using Microsoft.Office.Interop.Visio;
 using Splat;
 using Page = Microsoft.Office.Interop.Visio.Page;
@@ -10,10 +11,6 @@ namespace AE.PID.Client.VisioAddIn;
 
 public abstract class ErrorHelper
 {
-    public const string ValidationLayerName = "Validation";
-    private const string PipeBaseId = "{C53C83CB-E71A-43EC-9D65-72CFAA3E02E8}";
-    private const string SignalBaseId = "{AA964FAF-E393-47F1-AFC9-AD74613F595E}";
-
     /// <summary>
     ///     The designation for equipments should be unique within a functional group.
     ///     To help user locate the equipment with the wrong designation number, a mask will be place don the duplicated
@@ -28,15 +25,15 @@ public abstract class ErrorHelper
         {
             var duplicated = page.Shapes.OfType<Shape>()
                 .Where(x => (x.HasCategory("Equipment") || x.HasCategory("Instrument")) &&
-                            !string.IsNullOrEmpty(x.CellsU["Prop.FunctionalElement"]
+                            !string.IsNullOrEmpty(x.CellsU[CellDict.FunctionElement]
                                 .ResultStr[VisUnitCodes.visUnitsString]) &&
-                            !string.IsNullOrEmpty(x.CellsU["Prop.FunctionalGroup"]
+                            !string.IsNullOrEmpty(x.CellsU[CellDict.FunctionGroup]
                                 .ResultStr[VisUnitCodes.visUnitsString]))
                 .Select(x => new
                 {
                     x.ID,
-                    FunctionalElement = x.CellsU["Prop.FunctionalElement"].TryGetFormatValue(),
-                    FunctionalGroup = x.CellsU["Prop.FunctionalGroup"].ResultStr[VisUnitCodes.visUnitsString]
+                    FunctionalElement = x.CellsU[CellDict.FunctionElement].TryGetFormatValue(),
+                    FunctionalGroup = x.CellsU[CellDict.FunctionGroup].ResultStr[VisUnitCodes.visUnitsString]
                 })
                 .GroupBy(x => new { x.FunctionalGroup, x.FunctionalElement })
                 .Where(x => x.Count() != 1)
@@ -75,7 +72,7 @@ public abstract class ErrorHelper
     public static void ClearCheckMarks(IVPage page)
     {
         var selection = page.CreateSelection(VisSelectionTypes.visSelTypeByLayer, VisSelectMode.visSelModeSkipSuper,
-            ValidationLayerName);
+            LayerDict.Validation);
         if (selection.Count > 0)
             selection.Delete();
     }
@@ -122,7 +119,8 @@ public abstract class ErrorHelper
         try
         {
             var pipelines = page.Shapes.OfType<Shape>()
-                .Where(x => x.Master != null && (x.Master.BaseID == PipeBaseId || x.Master.BaseID == SignalBaseId))
+                .Where(x => x.Master != null &&
+                            (x.Master.BaseID == BaseIdDict.Pipe || x.Master.BaseID == BaseIdDict.Signal))
                 .ToList();
 
             var validationLayer = EnsureEnvironment(page);
@@ -174,13 +172,13 @@ public abstract class ErrorHelper
     private static Layer EnsureEnvironment(IVPage page)
     {
         // create validation layer if not exist
-        var validationLayer =
-            page.Layers.OfType<Layer>().SingleOrDefault(x => x.Name == ValidationLayerName) ??
-            page.Layers.Add(ValidationLayerName);
-        validationLayer.CellsC[2].FormulaU = "2"; // set layer color
-        validationLayer.CellsC[11].FormulaU = "50%"; // set layer transparency
+        var layer =
+            page.Layers.OfType<Layer>().SingleOrDefault(x => x.Name == LayerDict.Validation) ??
+            page.Layers.Add(LayerDict.Validation);
+        layer.CellsC[2].FormulaU = "2"; // set layer color
+        layer.CellsC[11].FormulaU = "50%"; // set layer transparency
         ClearCheckMarks(page);
-        return validationLayer;
+        return layer;
     }
 
     private static void HighlightShape(IVPage page, int id, Layer validationLayer)
@@ -192,6 +190,7 @@ public abstract class ErrorHelper
         // set as transparent fill
         rect.CellsSRCN(VisSectionIndices.visSectionObject, VisRowIndices.visRowFill, VisCellIndices.visFillPattern)
             .FormulaU = "9";
+        
         // set layer
         rect.CellsSRCN(VisSectionIndices.visSectionObject, VisRowIndices.visRowLayerMem,
                 VisCellIndices.visLayerMember).FormulaU = $"\"{validationLayer.Index - 1}\"";

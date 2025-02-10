@@ -51,16 +51,16 @@ public class VisioProvider : DisposableBase, IVisioDataProvider
         });
 
         var current = new ProjectLocation(new VisioDocumentId(_document.ID),
-            _document.DocumentSheet.TryGetValue<int>(CellNameDict.ProjectId));
+            _document.DocumentSheet.TryGetValue<int>(CellDict.ProjectId));
 
         // 2025.02.07: 必须在此处将documentSheet存储在一个变量中，否则后面可能会被回收，表现为选择项目后UI不更新
         var documentSheet = _document.DocumentSheet;
         ProjectLocation = Observable.FromEvent<EShape_CellChangedEventHandler, Cell>(
                 handler => documentSheet.CellChanged += handler,
                 handler => documentSheet.CellChanged -= handler)
-            .Where(x => x.LocalName == CellNameDict.ProjectId)
+            .Where(x => x.LocalName == CellDict.ProjectId)
             .Select(x => new ProjectLocation(new VisioDocumentId(_document.ID),
-                _document.DocumentSheet.TryGetValue<int>(CellNameDict.ProjectId)))
+                _document.DocumentSheet.TryGetValue<int>(CellDict.ProjectId)))
             .StartWith(current);
 
         // convert the shapes to function locations and material locations. 
@@ -91,7 +91,7 @@ public class VisioProvider : DisposableBase, IVisioDataProvider
         ProjectLocationUpdater.Subscribe(location =>
             {
                 UpdateProperties([
-                    new PropertyPatch(location.Id, CellNameDict.ProjectId, location.ProjectId ?? 0, true)
+                    new PropertyPatch(location.Id, CellDict.ProjectId, location.ProjectId ?? 0, true)
                 ]);
             })
             .DisposeWith(CleanUp);
@@ -230,8 +230,8 @@ public class VisioProvider : DisposableBase, IVisioDataProvider
     {
         return
         [
-            new PropertyPatch(location.Id, CellNameDict.MaterialCode, location.Code, true),
-            new PropertyPatch(location.Id, CellNameDict.UnitQuantity, location.Quantity)
+            new PropertyPatch(location.Id, CellDict.MaterialCode, location.Code, true),
+            new PropertyPatch(location.Id, CellDict.UnitQuantity, location.Quantity)
         ];
     }
 
@@ -245,26 +245,26 @@ public class VisioProvider : DisposableBase, IVisioDataProvider
                 or FunctionType.FunctionElement:
                 var value = Regex.Match(location.Element, @"\d+").Value;
                 patches.AddRange([
-                    new PropertyPatch(location.Id, CellNameDict.FunctionElement, value),
-                    new PropertyPatch(location.Id, CellNameDict.Description, location.Description)
+                    new PropertyPatch(location.Id, CellDict.FunctionElement, value),
+                    new PropertyPatch(location.Id, CellDict.Description, location.Description)
                 ]);
                 break;
             case FunctionType.FunctionGroup:
                 patches.AddRange([
-                    new PropertyPatch(location.Id, CellNameDict.FunctionGroup, location.Group),
-                    new PropertyPatch(location.Id, CellNameDict.FunctionGroupName, location.GroupName),
-                    new PropertyPatch(location.Id, CellNameDict.FunctionGroupEnglishName,
+                    new PropertyPatch(location.Id, CellDict.FunctionGroup, location.Group),
+                    new PropertyPatch(location.Id, CellDict.FunctionGroupName, location.GroupName),
+                    new PropertyPatch(location.Id, CellDict.FunctionGroupEnglishName,
                         location.GroupEnglishName),
-                    new PropertyPatch(location.Id, CellNameDict.FunctionGroupDescription,
+                    new PropertyPatch(location.Id, CellDict.FunctionGroupDescription,
                         location.Description)
                 ]);
 
                 break;
             case FunctionType.ProcessZone:
                 patches.AddRange([
-                    new PropertyPatch(location.Id, CellNameDict.FunctionZone, location.Zone),
-                    new PropertyPatch(location.Id, CellNameDict.FunctionZoneName, location.ZoneName),
-                    new PropertyPatch(location.Id, CellNameDict.FunctionZoneEnglishName,
+                    new PropertyPatch(location.Id, CellDict.FunctionZone, location.Zone),
+                    new PropertyPatch(location.Id, CellDict.FunctionZoneName, location.ZoneName),
+                    new PropertyPatch(location.Id, CellDict.FunctionZoneEnglishName,
                         location.ZoneEnglishName)
                 ]);
 
@@ -272,8 +272,8 @@ public class VisioProvider : DisposableBase, IVisioDataProvider
         }
 
         if (location.FunctionId != null)
-            patches.Add(new PropertyPatch(location.Id, CellNameDict.FunctionId, location.FunctionId, true));
-        patches.Add(new PropertyPatch(location.Id, CellNameDict.Remarks, location.Remarks, true, "\"备注\""));
+            patches.Add(new PropertyPatch(location.Id, CellDict.FunctionId, location.FunctionId, true));
+        patches.Add(new PropertyPatch(location.Id, CellDict.Remarks, location.Remarks, true, "\"备注\""));
 
         return patches;
     }

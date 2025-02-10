@@ -17,14 +17,14 @@ public static class ChangeSetExt
 {
     private static readonly string[] CellValuesToMonitor =
     {
-        CellNameDict.FunctionZone, CellNameDict.FunctionZoneName, CellNameDict.FunctionZoneEnglishName,
-        CellNameDict.FunctionGroup, CellNameDict.FunctionGroupName, CellNameDict.FunctionZoneEnglishName,
-        CellNameDict.FunctionGroupDescription,
-        CellNameDict.FunctionElement, CellNameDict.ElementName, CellNameDict.Description,
-        CellNameDict.Remarks,
-        CellNameDict.SubClass, CellNameDict.KeyParameters, CellNameDict.UnitQuantity, CellNameDict.Quantity,
-        CellNameDict.MaterialCode,
-        CellNameDict.Customer
+        CellDict.FunctionZone, CellDict.FunctionZoneName, CellDict.FunctionZoneEnglishName,
+        CellDict.FunctionGroup, CellDict.FunctionGroupName, CellDict.FunctionZoneEnglishName,
+        CellDict.FunctionGroupDescription,
+        CellDict.FunctionElement, CellDict.ElementName, CellDict.Description,
+        CellDict.Remarks,
+        CellDict.SubClass, CellDict.KeyParameters, CellDict.UnitQuantity, CellDict.Quantity,
+        CellDict.MaterialCode,
+        CellDict.Customer
     };
 
     /// <summary>
@@ -135,7 +135,7 @@ public static class ChangeSetExt
 
     private static FunctionType GetFunctionType(IVShape source)
     {
-        var shapeCategories = source.TryGetValue(CellNameDict.ShapeCategories);
+        var shapeCategories = source.TryGetValue(CellDict.ShapeCategories);
         if (shapeCategories == null) throw new ArgumentNullException();
 
         return shapeCategories switch
@@ -163,7 +163,7 @@ public static class ChangeSetExt
 
         var type = GetFunctionType(source);
 
-        var functionIdStr = source.TryGetValue(CellNameDict.FunctionId);
+        var functionIdStr = source.TryGetValue(CellDict.FunctionId);
         var functionId = double.TryParse(functionIdStr, out var functionIdDouble) ? (int)functionIdDouble : 0;
 
         var parent = source.MemberOfContainers.OfType<int>().Select(x =>
@@ -172,23 +172,23 @@ public static class ChangeSetExt
             .FirstOrDefault();
         var parentId = new VisioShapeId(source.ContainingPageID, parent?.Id ?? 0);
 
-        var zone = source.TryGetFormatValue(CellNameDict.FunctionZone) ?? string.Empty;
-        var zoneName = source.TryGetFormatValue(CellNameDict.FunctionZoneName) ?? string.Empty;
-        var zoneEnglishName = source.TryGetFormatValue(CellNameDict.FunctionZoneEnglishName) ?? string.Empty;
+        var zone = source.TryGetFormatValue(CellDict.FunctionZone) ?? string.Empty;
+        var zoneName = source.TryGetFormatValue(CellDict.FunctionZoneName) ?? string.Empty;
+        var zoneEnglishName = source.TryGetFormatValue(CellDict.FunctionZoneEnglishName) ?? string.Empty;
 
-        var group = source.TryGetFormatValue(CellNameDict.FunctionGroup) ?? string.Empty;
-        var groupName = source.TryGetFormatValue(CellNameDict.FunctionGroupName) ?? string.Empty;
-        var groupEnglishName = source.TryGetFormatValue(CellNameDict.FunctionGroupEnglishName) ?? string.Empty;
+        var group = source.TryGetFormatValue(CellDict.FunctionGroup) ?? string.Empty;
+        var groupName = source.TryGetFormatValue(CellDict.FunctionGroupName) ?? string.Empty;
+        var groupEnglishName = source.TryGetFormatValue(CellDict.FunctionGroupEnglishName) ?? string.Empty;
 
         var element = type switch
         {
             FunctionType.ProcessZone => string.Empty,
             FunctionType.FunctionGroup => string.Empty,
             FunctionType.FunctionUnit => string.Empty,
-            FunctionType.Equipment => source.TryGetFormatValue(CellNameDict.FunctionElement),
-            FunctionType.Instrument => source.TryGetFormatValue(CellNameDict.FunctionElement),
-            FunctionType.FunctionElement => source.TryGetValue(CellNameDict.RefEquipment) + "-" +
-                                            source.TryGetFormatValue(CellNameDict.FunctionElement),
+            FunctionType.Equipment => source.TryGetFormatValue(CellDict.FunctionElement),
+            FunctionType.Instrument => source.TryGetFormatValue(CellDict.FunctionElement),
+            FunctionType.FunctionElement => source.TryGetValue(CellDict.RefEquipment) + "-" +
+                                            source.TryGetFormatValue(CellDict.FunctionElement),
             FunctionType.External => string.Empty,
             _ => throw new ArgumentOutOfRangeException()
         } ?? string.Empty;
@@ -198,27 +198,27 @@ public static class ChangeSetExt
             FunctionType.ProcessZone => zoneName,
             FunctionType.FunctionGroup => groupName,
             FunctionType.FunctionUnit => string.Empty,
-            FunctionType.Equipment => source.TryGetValue(CellNameDict.SubClass),
-            FunctionType.Instrument => source.TryGetValue(CellNameDict.SubClass),
-            FunctionType.FunctionElement => source.TryGetValue(CellNameDict.ElementName),
+            FunctionType.Equipment => source.TryGetValue(CellDict.SubClass),
+            FunctionType.Instrument => source.TryGetValue(CellDict.SubClass),
+            FunctionType.FunctionElement => source.TryGetValue(CellDict.ElementName),
             FunctionType.External => string.Empty,
             _ => throw new ArgumentOutOfRangeException()
         } ?? string.Empty;
 
-        var remarks = source.TryGetValue(CellNameDict.Remarks) ?? string.Empty;
+        var remarks = source.TryGetValue(CellDict.Remarks) ?? string.Empty;
 
         var description = type switch
         {
-            FunctionType.FunctionGroup => source.TryGetValue(CellNameDict.FunctionGroupDescription),
-            FunctionType.FunctionUnit => source.TryGetValue(CellNameDict.FunctionGroupDescription),
-            FunctionType.Equipment => source.TryGetValue(CellNameDict.Description),
-            FunctionType.Instrument => source.TryGetValue(CellNameDict.Description),
-            FunctionType.FunctionElement => source.TryGetValue(CellNameDict.Description),
+            FunctionType.FunctionGroup => source.TryGetValue(CellDict.FunctionGroupDescription),
+            FunctionType.FunctionUnit => source.TryGetValue(CellDict.FunctionGroupDescription),
+            FunctionType.Equipment => source.TryGetValue(CellDict.Description),
+            FunctionType.Instrument => source.TryGetValue(CellDict.Description),
+            FunctionType.FunctionElement => source.TryGetValue(CellDict.Description),
             _ => string.Empty
         } ?? string.Empty;
 
         var responsibility = type == FunctionType.External
-            ? source.TryGetValue(CellNameDict.Customer) ?? string.Empty
+            ? source.TryGetValue(CellDict.Customer) ?? string.Empty
             : string.Empty;
 
         return new FunctionLocation(id,
@@ -274,7 +274,7 @@ public static class ChangeSetExt
                     handler => page.FormulaChanged += handler,
                     handler => page.FormulaChanged -= handler,
                     SchedulerManager.VisioScheduler)
-                .Where(cell => cell.Name == CellNameDict.Relationships);
+                .Where(cell => cell.Name == CellDict.Relationships);
             var observeUpdated = observeCellUpdated
                 .Merge(observeFormulaUpdated)
                 .Where(x => predicate(x.Shape))
@@ -318,23 +318,45 @@ public static class ChangeSetExt
     {
         var locationId = new VisioShapeId(source.ContainingPageID, source.ID);
 
-        var materialCode = source.TryGetValue(CellNameDict.MaterialCode) ?? string.Empty;
-        var unitQuantity = source.TryGetValue<double>(CellNameDict.UnitQuantity) ?? 0;
-        var quantity = source.TryGetValue<int>(CellNameDict.Quantity) ?? 0;
+        var materialCode = source.TryGetValue(CellDict.MaterialCode) ?? string.Empty;
+        var unitQuantity = source.TryGetValue<double>(CellDict.UnitQuantity) ?? 0;
+        var quantity = source.TryGetValue<int>(CellDict.Quantity) ?? 0;
 
         var keyParameters = string.Empty;
-        if (source.CellExistsN(CellNameDict.KeyParameters, VisExistsFlags.visExistsAnywhere))
-            keyParameters = source.TryGetValue(CellNameDict.KeyParameters) ?? string.Empty;
+        if (source.CellExistsN(CellDict.KeyParameters, VisExistsFlags.visExistsAnywhere))
+            keyParameters = source.TryGetValue(CellDict.KeyParameters) ?? string.Empty;
 
-        var type = source.TryGetValue(CellNameDict.SubClass) ?? string.Empty;
+        var type = source.TryGetValue(CellDict.SubClass) ?? string.Empty;
 
-        return new MaterialLocation(locationId, materialCode, unitQuantity, quantity,
-            keyParameters, type);
+        return new MaterialLocation(locationId, materialCode, unitQuantity, quantity, type,
+            keyParameters);
+    }
+
+    /// <summary>
+    ///     Convert a <see cref="IVShape" /> to <see cref="MaterialLocation" />.
+    /// </summary>
+    /// <param name="source"></param>
+    /// <returns></returns>
+    public static Instrument ToInstrument(this IVShape source)
+    {
+        var locationId = new VisioShapeId(source.ContainingPageID, source.ID);
+
+        var materialCode = source.TryGetValue(CellDict.MaterialCode) ?? string.Empty;
+        var unitQuantity = source.TryGetValue<double>(CellDict.UnitQuantity) ?? 0;
+        var quantity = source.TryGetValue<int>(CellDict.Quantity) ?? 0;
+
+        // todo: get high, low
+        var high = string.Empty;
+        var low = string.Empty;
+        var type = source.TryGetValue(CellDict.SubClass) ?? string.Empty;
+
+        return new Instrument(locationId, materialCode, unitQuantity, quantity,
+            type, high, low);
     }
 
     private static LocationType[] GetShapeTypes(this IVShape x)
     {
-        var shapeCategories = x.TryGetValue(CellNameDict.ShapeCategories);
+        var shapeCategories = x.TryGetValue(CellDict.ShapeCategories);
         if (shapeCategories == null) return [LocationType.None];
 
         return shapeCategories switch

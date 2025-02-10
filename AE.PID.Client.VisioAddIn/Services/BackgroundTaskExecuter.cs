@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Splat;
 
-namespace AE.PID.Client.VisioAddIn.Services;
+namespace AE.PID.Client.VisioAddIn;
 
 public class BackgroundTaskExecutor(BackgroundTaskQueue taskQueue) : BackgroundService, IEnableLogger
 {

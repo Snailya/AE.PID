@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using AE.PID.Client.Core;
 using Microsoft.Office.Interop.Excel;
 using Microsoft.Office.Interop.Visio;
 using Splat;
@@ -13,11 +14,6 @@ namespace AE.PID.Client.VisioAddIn;
 
 public abstract class FormatHelper
 {
-    public const string NormalStyleName = "AE Normal";
-    private const string PipelineStyleName = "AE PipeLine";
-
-    public const string FrameBaseId = "{7811D65E-9633-4E98-9FCD-B496A8B823A7}";
-
     public static void FormatPage(Page page)
     {
         var document = page.Document;
@@ -78,13 +74,13 @@ public abstract class FormatHelper
 
     private static Shape? InsertFrameIfNotExist(IVPage page)
     {
-        var frame = page.Shapes.OfType<Shape>().FirstOrDefault(x => x.Master.BaseID == FrameBaseId);
+        var frame = page.Shapes.OfType<Shape>().FirstOrDefault(x => x.Master.BaseID == BaseIdDict.Frame);
 
         if (frame != null) return frame;
 
         try
         {
-            var frameObject = page.Document.GetMaster(FrameBaseId);
+            var frameObject = page.Document.GetMaster(BaseIdDict.Frame);
 
             frame = page.DropMetric(frameObject, (0, 0));
             page.AutoSizeDrawing();
@@ -106,9 +102,6 @@ public abstract class FormatHelper
 
     public static (Shape? Table1, Shape? Table2) InsertPCITables(IVPage page, Shape frame)
     {
-        const string table1BaseId = "{D1A49D75-2A8B-4F4B-9A3A-27A0BC63D08D}";
-        const string table2BaseId = "{4B7CA2AC-E82E-4382-80F8-D2E0CC85B151}";
-
         Shape? table1 = null;
         Shape? table2 = null;
 
@@ -117,10 +110,10 @@ public abstract class FormatHelper
             var frameBox = frame.BoundingBoxMetric((short)VisBoundingBoxArgs.visBBoxDrawingCoords +
                                                    (short)VisBoundingBoxArgs.visBBoxExtents);
             if (!page.Shapes.OfType<Shape>().Any(x =>
-                    x.Master?.BaseID == table1BaseId &&
+                    x.Master?.BaseID == BaseIdDict.Table1 &&
                     x.BoundingBoxInside((short)VisBoundingBoxArgs.visBBoxExtents, frameBox)))
             {
-                var table1Object = page.Document.GetMaster(table1BaseId);
+                var table1Object = page.Document.GetMaster(BaseIdDict.Table1);
                 table1 = page.DropMetric(table1Object, (frameBox.Right - 130, frameBox.Top - 63));
 
                 // set the table location bind to frame
@@ -142,15 +135,15 @@ public abstract class FormatHelper
             else
             {
                 table1 = page.Shapes.OfType<Shape>().SingleOrDefault(x =>
-                    x.Master.BaseID == table1BaseId &&
+                    x.Master.BaseID == BaseIdDict.Table2 &&
                     x.BoundingBoxInside((short)VisBoundingBoxArgs.visBBoxExtents, frameBox));
             }
 
             if (!page.Shapes.OfType<Shape>().Any(x =>
-                    x.Master?.BaseID == table2BaseId &&
+                    x.Master?.BaseID == BaseIdDict.Table2 &&
                     x.BoundingBoxInside((short)VisBoundingBoxArgs.visBBoxExtents, frameBox)))
             {
-                var table2Object = page.Document.GetMaster(table2BaseId);
+                var table2Object = page.Document.GetMaster(BaseIdDict.Table2);
 
                 table2 = page.DropMetric(table2Object, (frameBox.Right - 130, frameBox.Top - 229));
 
@@ -190,13 +183,13 @@ public abstract class FormatHelper
     private static void SetupStyles(IVDocument document, Font? font = null)
     {
         // setup or initialize ae styles
-        var normalStyle = document.Styles.OfType<IVStyle>().SingleOrDefault(x => x.Name == NormalStyleName) ??
-                          document.Styles.Add(NormalStyleName, "", 1, 1, 1);
+        var normalStyle = document.Styles.OfType<IVStyle>().SingleOrDefault(x => x.Name == StyleDict.Normal) ??
+                          document.Styles.Add(StyleDict.Normal, "", 1, 1, 1);
         normalStyle.CellsSRC[(short)VisSectionIndices.visSectionCharacter, (short)VisRowIndices.visRowCharacter,
             (short)VisCellIndices.visCharacterSize].FormulaU = "3mm";
 
-        var pipelineStyle = document.Styles.OfType<IVStyle>().SingleOrDefault(x => x.Name == PipelineStyleName) ??
-                            document.Styles.Add(PipelineStyleName, NormalStyleName, 1, 1, 1);
+        var pipelineStyle = document.Styles.OfType<IVStyle>().SingleOrDefault(x => x.Name == StyleDict.Pipeline) ??
+                            document.Styles.Add(StyleDict.Pipeline, StyleDict.Normal, 1, 1, 1);
 
 
         if (font != null)
@@ -229,5 +222,55 @@ public abstract class FormatHelper
         workbook.Close(false); // 关闭工作簿，但不保存改变
         Marshal.ReleaseComObject(worksheet);
         Marshal.ReleaseComObject(workbook);
+    }
+
+    /// <summary>
+    ///     将Shape放置在Optional图层，并设置颜色
+    /// </summary>
+    /// <param name="shape"></param>
+    public static void ToggleOptional(Shape shape)
+    {
+        var undoScope = Globals.ThisAddIn.Application.BeginUndoScope("SetAsOptional");
+
+        try
+        {
+            // get current type
+            var isOptional = false;
+            Layer? layer = null;
+            for (short i = 1; i < shape.LayerCount; i++)
+            {
+                if (shape.Layer[i].NameU != LayerDict.Optional) continue;
+
+                isOptional = true;
+                layer = shape.Layer[i];
+                break;
+            }
+
+            // ensure layer exist
+            if (layer == null)
+            {
+                layer = shape.ContainingPage.Layers.Add(LayerDict.Optional);
+                layer.CellsC[2].FormulaU = "2"; // set layer color
+            }
+
+            if (!isOptional)
+                // set layer
+                layer.Add(shape, 1);
+            else
+                layer.Remove(shape, 1);
+
+            //todo:颜色问题
+            Globals.ThisAddIn.Application.EndUndoScope(undoScope, true);
+        }
+        catch (Exception ex)
+        {
+            Globals.ThisAddIn.Application.EndUndoScope(undoScope, false);
+
+            // log
+            LogHost.Default.Error(ex, "Failed to toggle optional.");
+
+            // display error message
+            MessageBox.Show(ex.Message, "设置失败", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
     }
 }

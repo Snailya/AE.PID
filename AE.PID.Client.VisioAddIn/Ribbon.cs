@@ -323,7 +323,7 @@ public class Ribbon : Office.IRibbonExtensibility
 
         // check if the AE style exist, if the AE style exist, means this is a target drawing.
         if (Globals.ThisAddIn.Application.ActiveDocument.Styles.OfType<IVStyle>()
-                .SingleOrDefault(x => x.Name == FormatHelper.NormalStyleName) ==
+                .SingleOrDefault(x => x.Name == StyleDict.Normal) ==
             null) return false;
 
         LogHost.Default.Info(
@@ -391,7 +391,7 @@ public class Ribbon : Office.IRibbonExtensibility
         if (Globals.ThisAddIn.Application.ActivePage == null) return false;
 
         var selection = Globals.ThisAddIn.Application.ActivePage.CreateSelection(VisSelectionTypes.visSelTypeByLayer,
-            VisSelectMode.visSelModeSkipSuper, ErrorHelper.ValidationLayerName);
+            VisSelectMode.visSelModeSkipSuper, LayerDict.Validation);
         return selection.Count > 0;
     }
 
@@ -405,7 +405,7 @@ public class Ribbon : Office.IRibbonExtensibility
             (shape, vm) =>
             {
                 if (shape != null)
-                    vm.Code = shape.TryGetValue(CellNameDict.MaterialCode) ?? string.Empty;
+                    vm.Code = shape.TryGetValue(CellDict.MaterialCode) ?? string.Empty;
             });
     }
 
@@ -413,8 +413,8 @@ public class Ribbon : Office.IRibbonExtensibility
     {
         foreach (var shape in Globals.ThisAddIn.Application.ActiveWindow.Selection.OfType<Shape>())
         {
-            if (!shape.CellExistsN(CellNameDict.MaterialCode, VisExistsFlags.visExistsLocally)) continue;
-            shape.TrySetValue(CellNameDict.MaterialCode, "");
+            if (!shape.CellExistsN(CellDict.MaterialCode, VisExistsFlags.visExistsLocally)) continue;
+            shape.TrySetValue(CellDict.MaterialCode, "");
         }
     }
 
@@ -422,8 +422,8 @@ public class Ribbon : Office.IRibbonExtensibility
     {
         var selected = Globals.ThisAddIn.Application.ActiveWindow.Selection.OfType<IVShape>();
         return selected.Any(x =>
-            x.CellExistsN(CellNameDict.MaterialCode, VisExistsFlags.visExistsLocally) &&
-            !string.IsNullOrEmpty(x.Cells[CellNameDict.MaterialCode].ResultStr[VisUnitCodes.visUnitsString]));
+            x.CellExistsN(CellDict.MaterialCode, VisExistsFlags.visExistsLocally) &&
+            !string.IsNullOrEmpty(x.Cells[CellDict.MaterialCode].ResultStr[VisUnitCodes.visUnitsString]));
     }
 
     public bool AreMaterialLocations(Office.IRibbonControl control)
@@ -495,7 +495,30 @@ public class Ribbon : Office.IRibbonExtensibility
         if (!IsSingleShapeSelection()) return false;
 
         var selection = Globals.ThisAddIn.Application.ActiveWindow.Selection[1];
-        return selection != null && selection.Master?.BaseID == FormatHelper.FrameBaseId;
+        return selection != null && selection.Master?.BaseID == BaseIdDict.Frame;
+    }
+
+    #endregion
+
+    #region Shape Context Menu
+
+    public string GetToggleTypeLabel(Office.IRibbonControl control)
+    {
+        var target = Globals.ThisAddIn.Application.ActiveWindow.Selection[1];
+
+        for (short i = 1; i < target.LayerCount; i++)
+        {
+            var layer = target.Layer[i];
+            if (layer.NameU == LayerDict.Optional) return "设为标准";
+        }
+        
+        return "设为选配";
+    }
+
+    public void ToggleType(Office.IRibbonControl control)
+    {
+        var target = Globals.ThisAddIn.Application.ActiveWindow.Selection[1];
+        FormatHelper.ToggleOptional(target);
     }
 
     #endregion

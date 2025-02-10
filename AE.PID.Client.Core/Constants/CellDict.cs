@@ -1,6 +1,6 @@
 ﻿namespace AE.PID.Client.Core;
 
-public static class CellNameDict
+public static class CellDict
 {
     public const string ShapeCategories = "User.msvShapeCategories";
 
@@ -14,7 +14,8 @@ public static class CellNameDict
     #endregion
 
     #region -- Material Locations --
-
+    
+    public const string Class = "Prop.Class";
     public const string SubClass = "Prop.SubClass";
     public const string KeyParameters = "User.KeyParameters";
     public const string UnitQuantity = "Prop.Quantity";
