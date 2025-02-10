@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AE.PID.Client.Core;
 using Microsoft.Office.Interop.Visio;
 using Shape = Microsoft.Office.Interop.Visio.Shape;
 
@@ -67,13 +68,13 @@ public abstract class LegendHelper
             // correct the properties, legend item should have count 0
             // because the subclass value might be a derived result from many other cells, if directly copy the value, the shape will not change as expect
             // so firstly check if it is a derived result.
-            SetRecursively(shape.CellsU["Prop.SubClass"], item.Source);
+            SetRecursively(shape.CellsU[CellDict.SubClass], item.Source);
 
-            shape.CellsU["Prop.Quantity"].FormulaForce = "0";
+            shape.CellsU[CellDict.UnitQuantity].FormulaForce = "0";
 
             // replace the category to legend
             if (!shape.HasCategory("Legend"))
-                shape.CellsU["User.msvShapeCategories"].FormulaForce = "\"Legend\"";
+                shape.CellsU[CellDict.ShapeCategories].FormulaForce = "\"Legend\"";
 
             ResizeAtPin(shape);
             ReLocateToGeometricCenter(shape, xPos, yPos);
@@ -92,8 +93,8 @@ public abstract class LegendHelper
 
     private static IVLayer EnsureLegendLayerExist(IVPage page)
     {
-        var layer = page.Layers.OfType<IVLayer>().SingleOrDefault(x => x.Name == "Legends") ??
-                    page.Layers.Add("Legends");
+        var layer = page.Layers.OfType<IVLayer>().SingleOrDefault(x => x.Name == LayerDict.Legends) ??
+                    page.Layers.Add(LayerDict.Legends);
         return layer;
     }
 
@@ -110,15 +111,18 @@ public abstract class LegendHelper
         container.CellsSRC[(short)VisSectionIndices.visSectionUser, 0, (short)VisCellIndices.visUserValue]
             .FormulaU = "\"Container\"";
         container.CellsSRC[(short)VisSectionIndices.visSectionObject, (short)VisRowIndices.visRowLine,
-            (short)VisCellIndices.visLineWeight].FormulaU = "0.6mm";
+            (short)VisCellIndices.visLineWeight].FormulaU = "0.6 mm";
 
         // 2025.01.28: add title for the legend
+        // 2025.02.10: adjust title height to 12 and set font type to 等线
         var title = page.DrawRectangleMetric(basePosition.X, basePosition.Y + rows * 10,
             basePosition.X + 240,
-            basePosition.Y + rows * 10 + 16);
+            basePosition.Y + rows * 10 + 12);
         title.Text = "图例\nLegend";
+        title.Characters.CharProps[(short)VisCellIndices.visCharacterAsianFont] = 313;
+        title.Characters.CharProps[(short)VisCellIndices.visCharacterFont] = 313;
         title.CellsSRC[(short)VisSectionIndices.visSectionObject, (short)VisRowIndices.visRowLine,
-            (short)VisCellIndices.visLineWeight].FormulaU = "0.6mm";
+            (short)VisCellIndices.visLineWeight].FormulaU = "0.6 mm";
     }
 
     private static (int, int) ComputeIndex(int i, int rows)
@@ -143,11 +147,9 @@ public abstract class LegendHelper
 
     private static (double, double) GetBasePoint(IVPage page)
     {
-        const string baseId = "{7811D65E-9633-4E98-9FCD-B496A8B823A7}";
-
         // if there is a frame, get the top left corner of the block title
         var frame = page.Shapes.OfType<Shape>()
-            .FirstOrDefault(x => x.Master?.BaseID == baseId);
+            .FirstOrDefault(x => x.Master?.BaseID == BaseIdDict.Frame);
         if (frame != null)
         {
             var (_, bottom, right, _) = frame.BoundingBoxMetric((short)VisBoundingBoxArgs.visBBoxDrawingCoords +
@@ -170,8 +172,8 @@ public abstract class LegendHelper
                                                         x.HasCategory("Instrument") || x.HasCategory("Equipments")))
                 .GroupBy(x => new
                 {
-                    Class = x.CellsU["Prop.Class"].ResultStr[tagVisUnitCodes.visUnitsString],
-                    SubClassName = x.CellsU["Prop.SubClass"].ResultStr[tagVisUnitCodes.visUnitsString]
+                    Class = x.CellsU[CellDict.Class].ResultStr[tagVisUnitCodes.visUnitsString],
+                    SubClassName = x.CellsU[CellDict.SubClass].ResultStr[tagVisUnitCodes.visUnitsString]
                 })
                 .Select(x => new LegendItem(x.Key.Class, x.Key.SubClassName, x.First()))
                 .OrderBy(x => x.Category)
@@ -181,15 +183,15 @@ public abstract class LegendHelper
 
     private static void ReLocateToGeometricCenter(IVShape shape, double xPos, double yPos)
     {
-        shape.CellsU["PinX"].Formula = $"{xPos} mm";
-        shape.CellsU["PinY"].Formula = $"{yPos} mm";
+        shape.CellsU["PinX"].FormulaU = $"{xPos} mm";
+        shape.CellsU["PinY"].FormulaU = $"{yPos} mm";
 
         // after scaled, we should get the displacement between the center of the nominal bounding and bbox bounding, so that we could place the bbox center at the target position
         var alignBoxCenter = shape.GetPinLocation();
         var geoCenter = shape.GetGeometricCenter();
 
         var displacement = Math.Round(geoCenter.Item2 - alignBoxCenter.Item2, 4);
-        shape.CellsU["PinY"].Formula = $"{alignBoxCenter.Item2 - displacement} mm";
+        shape.CellsU["PinY"].FormulaU = $"{alignBoxCenter.Item2 - displacement} mm";
     }
 
     private static void ResizeAtPin(IVShape shape)
@@ -214,8 +216,8 @@ public abstract class LegendHelper
             ? nominalWidth / actualWidth * 5
             : nominalWidth / actualHeight * 5);
 
-        shape.CellsU["Width"].FormulaForce = $"GUARD({desiredNominalWidth} mm)";
-        shape.CellsU["Height"].FormulaForce = $"GUARD({desiredNominalHeight} mm)";
+        shape.CellsU["Width"].FormulaForceU = $"GUARD({desiredNominalWidth} mm)";
+        shape.CellsU["Height"].FormulaForceU = $"GUARD({desiredNominalHeight} mm)";
     }
 
     private static Shape InsertLabelAsCallout(Shape shape)
@@ -225,17 +227,17 @@ public abstract class LegendHelper
             VisMeasurementSystem.visMSMetric)];
         var callout = shape.ContainingPage.DropCallout(calloutDoc.Masters.ItemU["Text Callout"], shape);
 
-        callout.CellsU["LocPinX"].Formula = "Width*0";
-        callout.CellsU["PinX"].Formula = $"{shape.CellsU["PinX"].Result["mm"] + 5} mm";
+        callout.CellsU["LocPinX"].FormulaU = "Width*0";
+        callout.CellsU["PinX"].FormulaU = $"{shape.CellsU["PinX"].Result["mm"] + 5} mm";
 
         var (_, extentsBottom, _, extentsTop) = shape.BoundingBoxMetric(
             (short)VisBoundingBoxArgs.visBBoxDrawingCoords + (short)VisBoundingBoxArgs.visBBoxExtents);
-        callout.CellsU["PinY"].Formula = $"{Math.Round((extentsBottom + extentsTop) / 2)} mm";
+        callout.CellsU["PinY"].FormulaU = $"{Math.Round((extentsBottom + extentsTop) / 2)} mm";
 
         callout.DeleteSection((short)VisSectionIndices.visSectionFirstComponent + 1);
         callout.DeleteSection((short)VisSectionIndices.visSectionFirstComponent);
 
-        callout.Characters.AddCustomFieldU($"Sheet.{shape.ID}!Prop.SubClass",
+        callout.Characters.AddCustomFieldU($"Sheet.{shape.ID}!{CellDict.SubClass}",
             (short)VisFieldFormats.visFmtNumGenNoUnits);
 
         return callout;
@@ -245,7 +247,6 @@ public abstract class LegendHelper
     {
         public string Category { get; } = category;
         public string SubclassName { get; } = subclassName;
-
         public Shape Source { get; } = source;
     }
 }
