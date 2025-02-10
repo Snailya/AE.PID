@@ -116,14 +116,22 @@ public partial class ProjectExplorerWindow : WindowBase<ProjectExplorerWindowVie
         interaction.SetOutput(result);
     }
 
-    private async Task DoShowSaveFilePickerAsync(IInteractionContext<Unit, IStorageFile?> interaction)
+    private async Task DoShowSaveFilePickerAsync(IInteractionContext<string, IStorageFile?> interaction)
     {
+        // 2025.2.10：新增默认的文件后缀
         var result = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            Title = "Save Text File"
+            Title = "保存文件",
+            DefaultExtension  = interaction.Input,
+            FileTypeChoices = [ Workbook]
         });
         interaction.SetOutput(result);
     }
 
     #endregion
+    
+    private static FilePickerFileType Workbook { get; } = new("")
+    {
+        Patterns = ["*.xlsx"],
+    };
 }

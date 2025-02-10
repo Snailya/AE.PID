@@ -126,10 +126,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Views\ProjectExplorer\"/>
-    </ItemGroup>
-
-    <ItemGroup>
         <AdditionalFiles Include="Views\ProjectExplorer\Functions\FunctionsView.axaml"/>
         <AdditionalFiles Include="Views\ProjectExplorer\Functions\Kanban\FunctionKanbanView.axaml"/>
         <AdditionalFiles Include="Views\ProjectExplorer\Functions\SyncFunctionGroupsView.axaml"/>
@@ -143,5 +139,9 @@
     <ItemGroup>
       <UpToDateCheckInput Remove="Views\DesignTools\UpdateView.axaml" />
       <UpToDateCheckInput Remove="Assets\avalonia-logo.ico" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Views\ProjectExplorer\Instruments\" />
     </ItemGroup>
 </Project>

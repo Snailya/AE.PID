@@ -92,7 +92,7 @@ public class MaterialsViewModel : ViewModelBase
 
     public Interaction<SyncMaterialsViewModel, Unit> ShowSyncMaterialsDialog { get; } = new();
     public Interaction<SelectMaterialWindowViewModel?, MaterialViewModel?> ShowSelectMaterialDialog { get; } = new();
-    public Interaction<Unit, IStorageFile?> SaveFilePicker { get; } = new();
+    public Interaction<string, IStorageFile?> SaveFilePicker { get; } = new();
 
     #endregion
 
@@ -153,7 +153,7 @@ public class MaterialsViewModel : ViewModelBase
                     await materialLocationStore.ExportAsEmbeddedObject();
                     break;
                 case OutputType.Excel:
-                    using (var file = await SaveFilePicker.Handle(Unit.Default))
+                    using (var file = await SaveFilePicker.Handle("xlsx"))
                     {
                         var filePath = file?.TryGetLocalPath();
                         if (filePath is null) return Unit.Default;
