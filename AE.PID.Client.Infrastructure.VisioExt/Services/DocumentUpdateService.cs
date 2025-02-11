@@ -102,12 +102,12 @@ public class DocumentUpdateService : DisposableBase, IDocumentUpdateService
     }
 
     // <inheritdoc />
-    public bool HasUpdate(IEnumerable<MasterSnapshotDto> localMasters, string[]? excludes = null)
+    public bool HasUpdate(IEnumerable<MasterSnapshotDto> localMasters)
     {
         foreach (var local in localMasters)
             if (_masters.SingleOrDefault(x => x.BaseId == local.BaseId) is { } toCompare &&
                 toCompare.UniqueId != local.UniqueId)
-                return excludes == null || !excludes.Contains(local.UniqueId);
+                return true;
 
         return false;
     }

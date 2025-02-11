@@ -26,8 +26,7 @@ public interface IDocumentUpdateService
     ///     Check if the library used by document is out of date.
     /// </summary>
     /// <param name="localMasters"></param>
-    /// <param name="excludes">The unique id for the masters that need to be excluded when performing update check.</param>
     /// <returns></returns>
     /// <exception cref="NetworkNotValidException">There is a network error between server and local.</exception>
-    bool HasUpdate(IEnumerable<MasterSnapshotDto> localMasters, string[]? excludes = null);
+    bool HasUpdate(IEnumerable<MasterSnapshotDto> localMasters);
 }
