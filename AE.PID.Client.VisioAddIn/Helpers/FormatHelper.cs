@@ -237,7 +237,7 @@ public abstract class FormatHelper
             // get current type
             var isOptional = false;
             Layer? layer = null;
-            for (short i = 1; i < shape.LayerCount; i++)
+            for (short i = 1; i <= shape.LayerCount; i++)
             {
                 if (shape.Layer[i].NameU != LayerDict.Optional) continue;
 
@@ -250,14 +250,47 @@ public abstract class FormatHelper
             if (layer == null)
             {
                 layer = shape.ContainingPage.Layers.Add(LayerDict.Optional);
-                layer.CellsC[2].FormulaU = "2"; // set layer color
+                layer.CellsC[2].FormulaU = "8"; // set layer color
             }
 
             if (!isOptional)
+            {
                 // set layer
                 layer.Add(shape, 1);
+
+                // change the color
+                foreach (var subShape in shape.Shapes.OfType<Shape>())
+                {
+                    // set the line color
+                    subShape.CellsSRCN(VisSectionIndices.visSectionObject, VisRowIndices.visRowLine,
+                        VisCellIndices.visLineColor).FormulaU = "8";
+                    
+                    // set the text color
+                    subShape.CellsSRCN(VisSectionIndices.visSectionCharacter, 0, VisCellIndices.visCharacterColor)
+                        .FormulaU = "8";
+                }
+
+            }
+
             else
+            {
                 layer.Remove(shape, 1);
+
+                // change the color
+                foreach (var subShape in shape.Shapes.OfType<Shape>())
+                {
+                    // clear the line color
+                    if (subShape.CellsSRCN(VisSectionIndices.visSectionObject, VisRowIndices.visRowLine,
+                            VisCellIndices.visLineColor).ResultStr[VisUnitCodes.visUnitsString] == "8")
+                        subShape.CellsSRCN(VisSectionIndices.visSectionObject, VisRowIndices.visRowLine,
+                            VisCellIndices.visLineColor).FormulaU = "";     
+                    
+                    // clear the text color
+                    if (subShape.CellsSRCN(VisSectionIndices.visSectionCharacter, 0, VisCellIndices.visCharacterColor).ResultStr[VisUnitCodes.visUnitsString] == "8")
+                        subShape.CellsSRCN(VisSectionIndices.visSectionCharacter, 0, VisCellIndices.visCharacterColor)
+                            .FormulaU = "";
+                }
+            }
 
             //todo:颜色问题
             Globals.ThisAddIn.Application.EndUndoScope(undoScope, true);

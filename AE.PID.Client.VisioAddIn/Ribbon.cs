@@ -506,7 +506,7 @@ public class Ribbon : Office.IRibbonExtensibility
     {
         var target = Globals.ThisAddIn.Application.ActiveWindow.Selection[1];
 
-        for (short i = 1; i < target.LayerCount; i++)
+        for (short i = 1; i <= target.LayerCount; i++)
         {
             var layer = target.Layer[i];
             if (layer.NameU == LayerDict.Optional) return "设为标准";
