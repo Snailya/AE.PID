@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Packaging;
 using System.Linq;
@@ -107,8 +108,7 @@ public class Ribbon : Office.IRibbonExtensibility
 
     public async void Debug(Office.IRibbonControl control)
     {
-        var excludes = await WindowHelper
-            .ShowDialog<ConfirmUpdateDocumentWindow, ConfirmUpdateDocumentWindowViewModel, string[]>();
+
     }
 
     public void PasteShapeData(Office.IRibbonControl control)
@@ -132,9 +132,11 @@ public class Ribbon : Office.IRibbonExtensibility
                      .Elements(mainNs + "Section")
                      .SingleOrDefault(i => i.Attribute("N")!.Value == "Property")?
                      .Elements(mainNs + "Row")
-                     .Where(i => i.Attribute("N")?.Value != "FunctionalElement" && i.Attribute("N")?.Value != "Class" &&
+                     .Where(i => i.Attribute("N")?.Value != "FunctionalElement" &&
+                                 i.Attribute("N")?.Value != "Class" &&
                                  i.Attribute("N")?.Value != "SubClass")
-                     .Select(x => x.Elements(mainNs + "Cell").SingleOrDefault(i => i.Attribute("N")?.Value == "Value"))
+                     .Select(x =>
+                         x.Elements(mainNs + "Cell").SingleOrDefault(i => i.Attribute("N")?.Value == "Value"))
                      .Where(x => x != null))
                  .Where(x => !string.IsNullOrWhiteSpace(x.Attribute("V")?.Value)))
         {
@@ -177,6 +179,14 @@ public class Ribbon : Office.IRibbonExtensibility
       <button id='buttonB' label='Dynamic Button 2' />
     </menu>";
         return content;
+    }
+
+    private class CellData
+    {
+        public int Id { get; set; }
+        public short Section { get; set; }
+        public short Row { get; set; }
+        public short Cell { get; set; }
     }
 
 
@@ -359,19 +369,19 @@ public class Ribbon : Office.IRibbonExtensibility
 
     public void ValidateDesignationUnique(Office.IRibbonControl control)
     {
-        ErrorHelper.CheckDesignationUnique(Globals.ThisAddIn.Application.ActivePage);
+        ErrorHelper.HighlightShapeWithDuplicatedDesignationWithinGroup(Globals.ThisAddIn.Application.ActivePage);
         _ribbon.Invalidate();
     }
 
     public void ValidateMasterExist(Office.IRibbonControl control)
     {
-        ErrorHelper.ScanMaster(Globals.ThisAddIn.Application.ActivePage);
+        ErrorHelper.HighlightShapeLostMaster(Globals.ThisAddIn.Application.ActivePage);
         _ribbon.Invalidate();
     }
 
     public void ValidatePipeline(Office.IRibbonControl control)
     {
-        ErrorHelper.ScanPipeline(Globals.ThisAddIn.Application.ActivePage);
+        ErrorHelper.HighlightPipelineWithFormulaError(Globals.ThisAddIn.Application.ActivePage);
         _ribbon.Invalidate();
     }
 
@@ -511,7 +521,7 @@ public class Ribbon : Office.IRibbonExtensibility
             var layer = target.Layer[i];
             if (layer.NameU == LayerDict.Optional) return "设为标准";
         }
-        
+
         return "设为选配";
     }
 

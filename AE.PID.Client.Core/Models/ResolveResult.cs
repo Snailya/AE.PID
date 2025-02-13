@@ -15,7 +15,7 @@ public class ResolveResult<T>(T value, DataSource resolveFrom)
     /// <summary>
     ///     The information when resolving the data
     /// </summary>
-    public string Message { get; set; }
+    public string Message { get; set; } = string.Empty;
 }
 
 public enum DataSource
