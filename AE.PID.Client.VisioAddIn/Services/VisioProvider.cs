@@ -241,11 +241,25 @@ public class VisioProvider : DisposableBase, IVisioDataProvider
 
         switch (location.Type)
         {
-            case FunctionType.Equipment or FunctionType.Instrument
-                or FunctionType.FunctionElement:
-                var value = Regex.Match(location.Element, @"\d+").Value;
+            case FunctionType.Equipment:
+                var elementNumber = Regex.Match(location.Element, @"\d+").Value;
                 patches.AddRange([
-                    new PropertyPatch(location.Id, CellDict.FunctionElement, value),
+                    new PropertyPatch(location.Id, CellDict.FunctionElement, elementNumber),
+                    new PropertyPatch(location.Id, CellDict.Description, location.Description)
+                ]);
+                break;
+            // 2025.02.13: 仪表和功能单元不应该仅提取数字
+            case FunctionType.Instrument:
+                patches.AddRange([
+                    new PropertyPatch(location.Id, CellDict.FunctionElement, location.Element),
+                    new PropertyPatch(location.Id, CellDict.Description, location.Description)
+                ]);
+                break;
+            // 2025.02.13：function element 取最后一个“-”后面的全部内容
+            case FunctionType.FunctionElement:
+                var element = Regex.Match(location.Element, @"[^-]+$").Value;
+                patches.AddRange([
+                    new PropertyPatch(location.Id, CellDict.FunctionElement, element),
                     new PropertyPatch(location.Id, CellDict.Description, location.Description)
                 ]);
                 break;
@@ -267,7 +281,6 @@ public class VisioProvider : DisposableBase, IVisioDataProvider
                     new PropertyPatch(location.Id, CellDict.FunctionZoneEnglishName,
                         location.ZoneEnglishName)
                 ]);
-
                 break;
         }
 

@@ -154,7 +154,8 @@ public class FunctionKanbanViewModel : ViewModelBase
 
                     // update the properties
                     // there are two circumstance, the first is that the function group field is totally empty, then use the default function group code as input
-                    if (string.IsNullOrEmpty(Properties.Group))
+                    // 2025.02.13: use the default <功能组> to decide whether to overwrite the function group label or fix its code
+                    if (string.IsNullOrEmpty(Properties.Group) || Properties.Group == DefaultValueDict.FunctionGroup)
                     {
                         Properties.Group = dialogResult.Code;
                     }
@@ -165,7 +166,8 @@ public class FunctionKanbanViewModel : ViewModelBase
                         Properties.Group = prefix + number;
                     }
 
-                    Properties.GroupName = dialogResult.Code;
+                    Properties.GroupName = dialogResult.Name;
+                    Properties.GroupEnglishName = dialogResult.EnglishName;
                 }, canSelect);
         SelectFunction.ThrownExceptions
             .Subscribe(v => { notificationHelper.Error("选择失败", v!.Message); });
@@ -230,7 +232,7 @@ public class FunctionKanbanViewModel : ViewModelBase
                     .ThenByAscending(x => x.FunctionalElement)
             )
             .Subscribe();
-        
+
         // observe the viewmodel change and back to service
         this.WhenAnyValue(x => x.Properties.FunctionId,
                 x => x.Properties.Zone, x => x.Properties.ZoneName, x => x.Properties.ZoneEnglishName,
@@ -247,7 +249,8 @@ public class FunctionKanbanViewModel : ViewModelBase
             .Select(x => Properties.Source with
             {
                 FunctionId = x.functionId, Zone = x.zone, ZoneName = x.zoneName, Group = x.group,
-                GroupName = x.groupName,GroupEnglishName =x.groupEnglishName,  Element = x.element, Description = x.description, Remarks = x.remarks
+                GroupName = x.groupName, GroupEnglishName = x.groupEnglishName, Element = x.element,
+                Description = x.description, Remarks = x.remarks
             })
             .Subscribe(x => fLocStore.Update([x]));
 
@@ -266,8 +269,6 @@ public static class TreeExtensions
 {
     public static IEnumerable<FunctionLocationTreeItemViewModel> Flatten(this FunctionLocationTreeItemViewModel node)
     {
-
-
         return node.Inferiors.Any()
             ? new[] { node }.Concat(node.Inferiors.SelectMany(child => child.Flatten())) // 使用自身，结合子节点递归展平
             : [node];

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using AE.PID.Client.UI.Avalonia;
 using AE.PID.Core.Models;
+using AE.PID.UI.Avalonia;
 using AE.PID.UI.Avalonia.ViewModels;
 using AE.PID.UI.Shared;
 using Avalonia.Controls;
@@ -14,7 +14,7 @@ using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 
-namespace AE.PID.UI.Avalonia.Converters;
+namespace AE.PID.Client.UI.Avalonia;
 
 public class SimpleConverters
 {
@@ -22,7 +22,7 @@ public class SimpleConverters
         new(time => time == null ? string.Empty : $"上次同步: {time:yyyy-M-d hh:mm:ss}");
 
     public static FuncValueConverter<int?, double> GetMinHeight { get; } =
-        new(count => ((double)(count <= 10 ? count : 10) + 1) * 32);
+        new(count => ((double)(count <= 10 ? count : 10) + 1) * 32 + 8);
 
     public static FuncValueConverter<ValueTuple<string, string>?, string> FormatPasteCommandLabel { get; } =
         new(tuple => tuple != null && !string.IsNullOrEmpty(tuple.Value.Item2) ? $"粘贴：{tuple.Value.Item2}" : "粘贴");

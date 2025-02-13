@@ -153,7 +153,7 @@ public class MaterialsViewModel : ViewModelBase
                     await materialLocationStore.ExportAsEmbeddedObject();
                     break;
                 case OutputType.Excel:
-                    using (var file = await SaveFilePicker.Handle("xlsx"))
+                    using (var file = await SaveFilePicker.Handle(".xlsx"))
                     {
                         var filePath = file?.TryGetLocalPath();
                         if (filePath is null) return Unit.Default;

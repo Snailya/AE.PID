@@ -2,9 +2,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:converters="clr-namespace:AE.PID.UI.Avalonia.Converters"
              xmlns:shared="clr-namespace:AE.PID.UI.Shared;assembly=AE.PID.UI.Shared"
              xmlns:avalonia="clr-namespace:AE.PID.Client.UI.Avalonia"
+             xmlns:converters="clr-namespace:AE.PID.Client.UI.Avalonia"
              mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="528"
              x:Class="AE.PID.UI.Avalonia.Views.StandardMaterialView"
              x:DataType="avalonia:StandardMaterialViewModel">

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -25,6 +26,20 @@ public static class ChangeSetExt
         CellDict.SubClass, CellDict.KeyParameters, CellDict.UnitQuantity, CellDict.Quantity,
         CellDict.MaterialCode,
         CellDict.Customer
+    };
+
+    private static readonly Dictionary<string, FunctionType> CategoryFunctionTypeMap = new()
+    {
+        { "Frame", FunctionType.ProcessZone },
+        { "FunctionalGroup", FunctionType.FunctionGroup },
+        { "Unit", FunctionType.FunctionUnit },
+        { "Exclude", FunctionType.External },
+        { "Equipment", FunctionType.Equipment },
+        { "Equipments", FunctionType.Equipment },
+        { "Instrument", FunctionType.Instrument },
+        { "Instruments", FunctionType.Instrument },
+        { "FunctionalElement", FunctionType.FunctionElement },
+        { "FunctionalElements", FunctionType.FunctionElement }
     };
 
     /// <summary>
@@ -78,9 +93,10 @@ public static class ChangeSetExt
     ///     Create a change set that monitors shape add, update and removed event of the document.
     /// </summary>
     /// <param name="document"></param>
+    /// <param name="predicate"></param>
     /// <returns></returns>
     public static IObservable<IChangeSet<VisioShape, VisioShapeId>> ToShapeChangeSet(
-        this Document document)
+        this Document document,Func<IVShape, bool>? predicate = null)
     {
         return ObservableChangeSet.Create<VisioShape, VisioShapeId>(cache =>
             {
@@ -98,7 +114,7 @@ public static class ChangeSetExt
 #endif
                     .Subscribe(page =>
                     {
-                        var observePageChange = page.ToChangeSet()
+                        var observePageChange = page.ToChangeSet(predicate)
 #if DEBUG
                             .OnItemAdded(x => DebugExt.Log("OnItemAdded", x))
                             .OnItemRemoved(x => DebugExt.Log("OnItemRemoved", x))
@@ -133,23 +149,6 @@ public static class ChangeSetExt
             f => f.Id);
     }
 
-    private static FunctionType GetFunctionType(IVShape source)
-    {
-        var shapeCategories = source.TryGetValue(CellDict.ShapeCategories);
-        if (shapeCategories == null) throw new ArgumentNullException();
-
-        return shapeCategories switch
-        {
-            "Frame" => FunctionType.ProcessZone,
-            "FunctionalGroup" => FunctionType.FunctionGroup,
-            "Unit" => FunctionType.FunctionUnit,
-            "Exclude" => FunctionType.External,
-            "Equipment" or "Equipments" => FunctionType.Equipment,
-            "Instrument" or "Instruments" => FunctionType.Instrument,
-            "FunctionalElement" or "FunctionalElements" => FunctionType.FunctionElement,
-            _ => throw new ArgumentOutOfRangeException()
-        };
-    }
 
     /// <summary>
     ///     Convert a <see cref="IVShape" /> to <see cref="FunctionLocation" />.
@@ -166,12 +165,24 @@ public static class ChangeSetExt
         var functionIdStr = source.TryGetValue(CellDict.FunctionId);
         var functionId = double.TryParse(functionIdStr, out var functionIdDouble) ? (int)functionIdDouble : 0;
 
-        var parent = source.MemberOfContainers.OfType<int>().Select(x =>
-                new { Id = x, ContainerCount = source.ContainingPage.Shapes.ItemFromID[x].MemberOfContainers.Length })
-            .OrderByDescending(x => x.ContainerCount)
-            .FirstOrDefault();
-        var parentId = new VisioShapeId(source.ContainingPageID, parent?.Id ?? 0);
-
+        // 2025.02.13：如果是一般对象，则用容器判断Parent，如果是FunctionElement，则用Callout判断
+        VisioShapeId? parentId;
+        if (type == FunctionType.FunctionElement && source.IsCallout)
+        {
+            parentId = new VisioShapeId(source.ContainingPageID, source.CalloutTarget.ID);
+        }
+        else
+        {
+            var parent = source.MemberOfContainers.OfType<int>().Select(x =>
+                    new
+                    {
+                        Id = x, ContainerCount = source.ContainingPage.Shapes.ItemFromID[x].MemberOfContainers.Length
+                    })
+                .OrderByDescending(x => x.ContainerCount)
+                .FirstOrDefault();
+            parentId = new VisioShapeId(source.ContainingPageID, parent?.Id ?? 0);
+        }
+        
         var zone = source.TryGetFormatValue(CellDict.FunctionZone) ?? string.Empty;
         var zoneName = source.TryGetFormatValue(CellDict.FunctionZoneName) ?? string.Empty;
         var zoneEnglishName = source.TryGetFormatValue(CellDict.FunctionZoneEnglishName) ?? string.Empty;
@@ -241,7 +252,7 @@ public static class ChangeSetExt
     private static IObservable<IChangeSet<VisioShape, VisioShapeId>> ToChangeSet(
         this Page page, Func<IVShape, bool>? predicate = null)
     {
-        predicate ??= _ => true;
+        predicate ??= x => true;
 
         return ObservableChangeSet.Create<VisioShape, VisioShapeId>(cache =>
         {
@@ -354,20 +365,34 @@ public static class ChangeSetExt
             type, high, low);
     }
 
-    private static LocationType[] GetShapeTypes(this IVShape x)
+    private static LocationType[] GetShapeTypes(this IVShape shape)
     {
-        var shapeCategories = x.TryGetValue(CellDict.ShapeCategories);
-        if (shapeCategories == null) return [LocationType.None];
+        var shapeCategories = shape.TryGetValue(CellDict.ShapeCategories)?.Split(';');
+        if (shapeCategories == null || !shapeCategories.Any()) return [LocationType.None];
 
-        return shapeCategories switch
-        {
-            "Frame" or "FunctionalGroup" or "Unit" or "Exclude" => [LocationType.FunctionLocation],
-            "Equipment" or "Equipments" or "Instrument" or "Instruments" or "FunctionalElement"
-                or "FunctionalElements" =>
-                [
-                    LocationType.FunctionLocation, LocationType.MaterialLocation
-                ],
-            _ => [LocationType.None]
-        };
+        // 2025.02.13: use hashset to enhance comparison efficiency 
+        var shapeCategorySet = new HashSet<string>(shapeCategories);
+
+        if (shapeCategorySet.Overlaps(["Frame", "FunctionalGroup", "Unit", "Exclude"]))
+            return [LocationType.FunctionLocation];
+
+        if (shapeCategorySet.Overlaps([
+                "Equipment", "Equipments", "Instrument", "Instruments", "FunctionalElement", "FunctionalElements"
+            ]))
+            return [LocationType.FunctionLocation, LocationType.MaterialLocation];
+
+        return [LocationType.None];
+    }
+
+    private static FunctionType GetFunctionType(IVShape shape)
+    {
+        var shapeCategories = shape.TryGetValue(CellDict.ShapeCategories)?.Split(';');
+        if (shapeCategories == null || !shapeCategories.Any()) throw new ArgumentNullException();
+
+        foreach (var category in shapeCategories)
+            if (CategoryFunctionTypeMap.TryGetValue(category, out var functionType))
+                return functionType;
+
+        throw new ArgumentOutOfRangeException();
     }
 }
