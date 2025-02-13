@@ -215,5 +215,7 @@ public static class ShapeSheetExt
             source.FormulaU = d.ToString(CultureInfo.InvariantCulture);
         else if (value is decimal c)
             source.FormulaU = c.ToString(CultureInfo.InvariantCulture);
+        else if (value is bool b)
+            source.FormulaU = b.ToString();
     }
 }
