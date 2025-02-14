@@ -5,7 +5,7 @@
              xmlns:shared="clr-namespace:AE.PID.UI.Shared;assembly=AE.PID.UI.Shared"
              xmlns:viewModels1="clr-namespace:AE.PID.Client.UI.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="AE.PID.UI.Avalonia.Views.FunctionsView"
+             x:Class="AE.PID.Client.UI.Avalonia.FunctionsView"
              x:DataType="viewModels1:FunctionsViewModel">
 
     <Design.DataContext>
@@ -31,7 +31,10 @@
                 <TreeView.ItemTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Inferiors}">
                         <StackPanel>
-                            <TextBlock Text="{Binding NodeName}" />
+                            <TextBlock Text="{Binding NodeName}"
+                                       Foreground="{Binding IsOptional, Converter={x:Static viewModels1:SimpleConverters.FunctionGroupOptionalToTextColor}}"
+                                       >
+                            </TextBlock>
                         </StackPanel>
                     </TreeDataTemplate>
                 </TreeView.ItemTemplate>

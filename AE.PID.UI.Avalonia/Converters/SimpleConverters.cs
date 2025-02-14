@@ -5,6 +5,7 @@ using AE.PID.Core.Models;
 using AE.PID.UI.Avalonia;
 using AE.PID.UI.Avalonia.ViewModels;
 using AE.PID.UI.Shared;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
@@ -21,7 +22,12 @@ public class SimpleConverters
     public static FuncValueConverter<DateTime?, string> LastSyncedText { get; } =
         new(time => time == null ? string.Empty : $"上次同步: {time:yyyy-M-d hh:mm:ss}");
 
-    public static FuncValueConverter<int?, double> GetMinHeight { get; } =
+    /// <summary>
+    ///     Compute the minimum height used for better displaying of data grid.
+    ///     If the row count is smaller than 10, use the actual height needed to display the row, otherwise only display 10
+    ///     rows.
+    /// </summary>
+    public static FuncValueConverter<int?, double> GetMinHeightForDataGrid { get; } =
         new(count => ((double)(count <= 10 ? count : 10) + 1) * 32 + 8);
 
     public static FuncValueConverter<ValueTuple<string, string>?, string> FormatPasteCommandLabel { get; } =
@@ -31,7 +37,10 @@ public class SimpleConverters
         UsefulProperties { get; } =
         new(list => list?.Where(x => !string.IsNullOrEmpty(x.Value)));
 
-    public static FuncValueConverter<SyncStatus, IBrush> StatusToTextColorBrushConverter { get; } =
+    /// <summary>
+    ///     Highlight the text color based on synchronize status
+    /// </summary>
+    public static FuncValueConverter<SyncStatus, IBrush> SyncStatusToTextColorConverter { get; } =
         new(status => status switch
         {
             SyncStatus.Added => new SolidColorBrush(Color.Parse("#0A7700")),
@@ -75,9 +84,19 @@ public class SimpleConverters
 
     public static FuncValueConverter<int, bool> NotZero { get; } = new(value => value != 0);
 
+
     public static FuncValueConverter<ThemeVariant?, IBrush?> ThemeToSplitterColorBrushConverter { get; } =
         new(theme =>
             new SolidColorBrush(theme == null || (string)theme.Key == "Light" ? Colors.LightGray : Colors.DarkGray));
+
+    /// <summary>
+    ///     Highlight the optional function group with color #800000 (red)
+    /// </summary>
+    public static FuncValueConverter<bool, object?> FunctionGroupOptionalToTextColor { get; } =
+        new(isOptional => isOptional
+            ? new SolidColorBrush(Color.Parse("#800000"))
+            : AvaloniaProperty.UnsetValue);
+
 
     #region -- Function Types --
 

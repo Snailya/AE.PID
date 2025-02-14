@@ -1,7 +1,6 @@
-﻿using AE.PID.Client.UI.Avalonia;
-using Avalonia.ReactiveUI;
+﻿using Avalonia.ReactiveUI;
 
-namespace AE.PID.UI.Avalonia.Views;
+namespace AE.PID.Client.UI.Avalonia;
 
 public partial class FunctionsView : ReactiveUserControl<FunctionsViewModel>
 {

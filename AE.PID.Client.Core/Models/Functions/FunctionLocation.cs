@@ -23,7 +23,8 @@ public record FunctionLocation(
     string Element,
     string Description,
     string Remarks,
-    string Responsibility
+    string Responsibility,
+    bool IsOptional
 )
     : ILocation, ITreeNode<ICompoundKey>, IComparable<FunctionLocation>
 {
@@ -83,6 +84,11 @@ public record FunctionLocation(
     ///     The responsibility for this function location.
     /// </summary>
     public string Responsibility { get; set; } = Responsibility;
+
+    /// <summary>
+    ///     Whether the location is an optional location, which means no need to display
+    /// </summary>
+    public bool IsOptional { get; set; } = IsOptional;
 
     public int CompareTo(FunctionLocation other)
     {

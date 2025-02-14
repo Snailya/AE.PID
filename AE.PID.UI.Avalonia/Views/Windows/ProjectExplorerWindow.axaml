@@ -27,7 +27,7 @@
                 <avalonia:ProjectsView DataContext="{Binding Projects}" />
             </TabItem>
             <TabItem Header="功能">
-                <views:FunctionsView DataContext="{Binding Functions}" />
+                <avalonia:FunctionsView DataContext="{Binding Functions}" />
             </TabItem>
             <TabItem Header="物料">
                 <avalonia:MaterialsView DataContext="{Binding Materials }" />

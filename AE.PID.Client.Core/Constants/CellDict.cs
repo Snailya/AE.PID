@@ -27,6 +27,7 @@ public static class CellDict
     #region -- Function Locations --
 
     public const string FunctionId = "User.FunctionId";
+    public const string IsOptional = "User.IsOptional";
 
     public const string FunctionZone = "Prop.ProcessZone";
     public const string FunctionZoneName = "Prop.ProcessZoneName";
@@ -48,4 +49,5 @@ public static class CellDict
     public const string RefEquipment = "Prop.RefEquipment";
 
     #endregion
+
 }

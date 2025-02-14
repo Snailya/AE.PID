@@ -64,7 +64,7 @@
                         <Grid ColumnDefinitions="Auto, *">
                             <CheckBox IsChecked="{Binding IsSelected}" />
                             <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center"
-                                       Foreground="{Binding Status, Converter={x:Static converters:SimpleConverters.StatusToTextColorBrushConverter}}" />
+                                       Foreground="{Binding Status, Converter={x:Static converters:SimpleConverters.SyncStatusToTextColorConverter}}" />
                         </Grid>
                     </DataTemplate>
                 </ListBox.ItemTemplate>

@@ -32,9 +32,9 @@
                             screentip="清除检查标记" size="large" getEnabled="IsClearValidationMarksValid"
                     />
                 </group>
-                <group id="Debug" label="Debug">
-                    <button id="button4" onAction="Debug" label="调试"/>
-                </group>
+<!--                <group id="Debug" label="Debug">-->
+<!--                    <button id="button4" onAction="Debug" label="调试"/>-->
+<!--                </group>-->
                 <group id="Project" label="项目">
                     <button id="ProjectExplorer" onAction="OpenProjectExplorer" label="项目浏览器"/>
                 </group>

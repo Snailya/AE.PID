@@ -29,6 +29,7 @@ public class FunctionLocationTreeItemViewModel : ReactiveObject, IDisposable,
         ParentId = node.Item.ParentId;
 
         Type = node.Item.Type;
+        IsOptional = node.Item.IsOptional;
 
         // Wrap loader for the nested view model inside a lazy so we can control when it is invoked
         var observeChildren = node.Children.Connect()
@@ -47,6 +48,7 @@ public class FunctionLocationTreeItemViewModel : ReactiveObject, IDisposable,
     public ICompoundKey Id { get; }
     public ICompoundKey ParentId { get; set; }
     public FunctionType Type { get; set; }
+    public bool IsOptional { get; set; }
     public string NodeName { get; set; }
 
     public bool IsSelected

@@ -264,12 +264,14 @@ public abstract class FormatHelper
                     // set the line color
                     subShape.CellsSRCN(VisSectionIndices.visSectionObject, VisRowIndices.visRowLine,
                         VisCellIndices.visLineColor).FormulaU = "8";
-                    
+
                     // set the text color
                     subShape.CellsSRCN(VisSectionIndices.visSectionCharacter, 0, VisCellIndices.visCharacterColor)
                         .FormulaU = "8";
                 }
 
+                // 2025.02.13: 在user.IsOptional中写入True，标记为选配
+                shape.TrySetValue("User.IsOptional", true, true);
             }
 
             else
@@ -283,12 +285,15 @@ public abstract class FormatHelper
                     if (subShape.CellsSRCN(VisSectionIndices.visSectionObject, VisRowIndices.visRowLine,
                             VisCellIndices.visLineColor).ResultStr[VisUnitCodes.visUnitsString] == "8")
                         subShape.CellsSRCN(VisSectionIndices.visSectionObject, VisRowIndices.visRowLine,
-                            VisCellIndices.visLineColor).FormulaU = "";     
-                    
+                            VisCellIndices.visLineColor).FormulaU = "";
+
                     // clear the text color
-                    if (subShape.CellsSRCN(VisSectionIndices.visSectionCharacter, 0, VisCellIndices.visCharacterColor).ResultStr[VisUnitCodes.visUnitsString] == "8")
+                    if (subShape.CellsSRCN(VisSectionIndices.visSectionCharacter, 0, VisCellIndices.visCharacterColor)
+                            .ResultStr[VisUnitCodes.visUnitsString] == "8")
                         subShape.CellsSRCN(VisSectionIndices.visSectionCharacter, 0, VisCellIndices.visCharacterColor)
                             .FormulaU = "";
+
+                    shape.TrySetValue("User.IsOptional", false, true);
                 }
             }
 

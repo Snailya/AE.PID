@@ -96,7 +96,7 @@ public static class ChangeSetExt
     /// <param name="predicate"></param>
     /// <returns></returns>
     public static IObservable<IChangeSet<VisioShape, VisioShapeId>> ToShapeChangeSet(
-        this Document document,Func<IVShape, bool>? predicate = null)
+        this Document document, Func<IVShape, bool>? predicate = null)
     {
         return ObservableChangeSet.Create<VisioShape, VisioShapeId>(cache =>
             {
@@ -182,7 +182,7 @@ public static class ChangeSetExt
                 .FirstOrDefault();
             parentId = new VisioShapeId(source.ContainingPageID, parent?.Id ?? 0);
         }
-        
+
         var zone = source.TryGetFormatValue(CellDict.FunctionZone) ?? string.Empty;
         var zoneName = source.TryGetFormatValue(CellDict.FunctionZoneName) ?? string.Empty;
         var zoneEnglishName = source.TryGetFormatValue(CellDict.FunctionZoneEnglishName) ?? string.Empty;
@@ -232,6 +232,9 @@ public static class ChangeSetExt
             ? source.TryGetValue(CellDict.Customer) ?? string.Empty
             : string.Empty;
 
+        // 2025.02.13: add a is optional property to distinct standard function and optional function
+        var isOptional = source.TryGetValue<bool>(CellDict.IsOptional) ?? false;
+
         return new FunctionLocation(id,
             parentId,
             name,
@@ -246,7 +249,8 @@ public static class ChangeSetExt
             element,
             description,
             remarks,
-            responsibility);
+            responsibility,
+            isOptional);
     }
 
     private static IObservable<IChangeSet<VisioShape, VisioShapeId>> ToChangeSet(
