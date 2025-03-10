@@ -1,7 +1,7 @@
 ﻿using AE.PID.Client.Core;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AE.PID.Client.Infrastructure.Extensions;
+namespace AE.PID.Client.Infrastructure;
 
 public static class ServiceCollectionExt
 {

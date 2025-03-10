@@ -8,9 +8,8 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AE.PID.Client.Core;
-using AE.PID.Client.Infrastructure.Extensions;
+using AE.PID.Core;
 using AE.PID.Core.DTOs;
-using AE.PID.Core.Models;
 using DynamicData;
 using Refit;
 using Splat;
@@ -18,7 +17,7 @@ using Splat;
 namespace AE.PID.Client.Infrastructure;
 
 /// <summary>
-///     p.s. Service method only throw known exceptions.
+///     p.s. Service method only throws known exceptions.
 /// </summary>
 public class FunctionService
     : DisposableBase, IFunctionService

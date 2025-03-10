@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using AE.PID.Client.Core;
+using AE.PID.Core;
 using AE.PID.Core.DTOs;
-using AE.PID.Core.Models;
 using Splat;
 
 namespace AE.PID.Client.Infrastructure;

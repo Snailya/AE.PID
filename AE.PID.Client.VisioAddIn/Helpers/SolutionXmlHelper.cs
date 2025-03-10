@@ -2,7 +2,7 @@
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
-using AE.PID.Core.Models;
+using AE.PID.Core;
 using Microsoft.Office.Interop.Visio;
 
 namespace AE.PID.Client.VisioAddIn;

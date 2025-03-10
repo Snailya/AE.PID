@@ -1,6 +1,4 @@
-﻿using AE.PID.Core.Models;
-
-namespace AE.PID.Core.DTOs;
+﻿namespace AE.PID.Core.DTOs;
 
 public class FunctionDto
 {

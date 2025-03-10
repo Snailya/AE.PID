@@ -1,165 +1,165 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{14946931-1F72-454F-9927-5BEE2F99EA60}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AE.PID.Client.Infrastructure</RootNamespace>
-    <AssemblyName>AE.PID.Client.Infrastructure</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <LangVersion>12</LangVersion>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.9.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.9.0.0\lib\net462\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="mscorlib" />
-    <Reference Include="ReactiveUI, Version=20.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ReactiveUI.20.1.63\lib\net472\ReactiveUI.dll</HintPath>
-    </Reference>
-    <Reference Include="Refit, Version=8.0.0.0, Culture=neutral, PublicKeyToken=2f9b1262776509f5, processorArchitecture=MSIL">
-      <HintPath>..\packages\Refit.8.0.0\lib\net462\Refit.dll</HintPath>
-    </Reference>
-    <Reference Include="Splat, Version=15.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Splat.15.2.22\lib\netstandard2.0\Splat.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ComponentModel.Annotations, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ComponentModel.Annotations.5.0.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Net.Http.Json, Version=8.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Net.Http.Json.8.0.1\lib\net462\System.Net.Http.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive, Version=6.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reactive.6.0.1\lib\net472\System.Reactive.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Text.Json">
-      <HintPath>C:\Users\lijin\.nuget\packages\system.text.json\9.0.0\lib\netstandard2.0\System.Text.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web" />
-    <Reference Include="System.Windows" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
-    <Reference Include="WindowsBase" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Api\IAppApi.cs" />
-    <Compile Include="Api\IFunctionApi.cs" />
-    <Compile Include="Api\IMaterialApi.cs" />
-    <Compile Include="Api\IProjectApi.cs" />
-    <Compile Include="Api\ISelectionApi.cs" />
-    <Compile Include="Api\IStencilApi.cs" />
-    <Compile Include="CellPropertyOverwrite.cs" />
-    <Compile Include="Extensions\DebugExt.cs" />
-    <Compile Include="Extensions\DtoExt.cs" />
-    <Compile Include="Extensions\ObservableExt.cs" />
-    <Compile Include="Extensions\ServiceCollectionExt.cs" />
-    <Compile Include="Helpers\SystemInfoHelper.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\ApiFactory.cs" />
-    <Compile Include="Services\AppUpdateService.cs" />
-    <Compile Include="Services\ConfigurationService.cs" />
-    <Compile Include="Services\DisposableBase.cs" />
-    <Compile Include="Services\FunctionService.cs" />
-    <Compile Include="Services\MaterialService.cs" />
-    <Compile Include="Services\ProjectService.cs" />
-    <Compile Include="Services\RecommendedService.cs" />
-    <Compile Include="Services\Resolvers\FunctionResolver.cs" />
-    <Compile Include="Services\Resolvers\MaterialResolver.cs" />
-    <Compile Include="Services\Resolvers\ProjectResolver.cs" />
-    <Compile Include="Services\Stores\FunctionLocationStore.cs" />
-    <Compile Include="Services\Stores\MaterialLocationStore.cs" />
-    <Compile Include="Services\Stores\ProjectLocationStore.cs" />
-    <Compile Include="PropertyPatch.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\AE.PID.Client.Core\AE.PID.Client.Core.csproj">
-      <Project>{c62725d5-95d4-4ca9-a611-2c400eeabb5f}</Project>
-      <Name>AE.PID.Client.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\AE.PID.Core\AE.PID.Core.csproj">
-      <Project>{fdd1a666-00d2-4564-832d-a90fa20accb1}</Project>
-      <Name>AE.PID.Core</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Avalonia.Labs.Controls">
-      <Version>11.2.0</Version>
-    </PackageReference>
-    <PackageReference Include="Avalonia.Themes.Fluent">
-      <Version>11.2.0</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions">
-      <Version>9.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="ReactiveUI">
-      <Version>20.1.63</Version>
-    </PackageReference>
-    <PackageReference Include="Refit">
-      <Version>8.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="Splat">
-      <Version>15.2.22</Version>
-    </PackageReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-           Other similar extension points exist, see Microsoft.Common.targets.
-      <Target Name="BeforeBuild">
-      </Target>
-      <Target Name="AfterBuild">
-      </Target>
-      -->
+    <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"/>
+    <PropertyGroup>
+        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+        <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+        <ProjectGuid>{14946931-1F72-454F-9927-5BEE2F99EA60}</ProjectGuid>
+        <OutputType>Library</OutputType>
+        <AppDesignerFolder>Properties</AppDesignerFolder>
+        <RootNamespace>AE.PID.Client.Infrastructure</RootNamespace>
+        <AssemblyName>AE.PID.Client.Infrastructure</AssemblyName>
+        <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+        <FileAlignment>512</FileAlignment>
+        <LangVersion>12</LangVersion>
+        <NuGetPackageImportStamp>
+        </NuGetPackageImportStamp>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>full</DebugType>
+        <Optimize>false</Optimize>
+        <OutputPath>bin\Debug\</OutputPath>
+        <DefineConstants>DEBUG;TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugType>pdbonly</DebugType>
+        <Optimize>true</Optimize>
+        <OutputPath>bin\Release\</OutputPath>
+        <DefineConstants>TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+    <ItemGroup>
+        <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+            <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.9.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+        </Reference>
+        <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+            <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.9.0.0\lib\net462\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+        </Reference>
+        <Reference Include="mscorlib"/>
+        <Reference Include="ReactiveUI, Version=20.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+            <HintPath>..\packages\ReactiveUI.20.1.63\lib\net472\ReactiveUI.dll</HintPath>
+        </Reference>
+        <Reference Include="Refit, Version=8.0.0.0, Culture=neutral, PublicKeyToken=2f9b1262776509f5, processorArchitecture=MSIL">
+            <HintPath>..\packages\Refit.8.0.0\lib\net462\Refit.dll</HintPath>
+        </Reference>
+        <Reference Include="Splat, Version=15.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+            <HintPath>..\packages\Splat.15.2.22\lib\netstandard2.0\Splat.dll</HintPath>
+        </Reference>
+        <Reference Include="System"/>
+        <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+            <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+        </Reference>
+        <Reference Include="System.ComponentModel.Annotations, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+            <HintPath>..\packages\System.ComponentModel.Annotations.5.0.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
+        </Reference>
+        <Reference Include="System.ComponentModel.DataAnnotations"/>
+        <Reference Include="System.Core"/>
+        <Reference Include="System.Data"/>
+        <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+            <HintPath>..\packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Net.Http"/>
+        <Reference Include="System.Net.Http.Json, Version=8.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+            <HintPath>..\packages\System.Net.Http.Json.8.0.1\lib\net462\System.Net.Http.Json.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Numerics"/>
+        <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+            <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Reactive, Version=6.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+            <HintPath>..\packages\System.Reactive.6.0.1\lib\net472\System.Reactive.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+            <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Text.Json">
+            <HintPath>C:\Users\lijin\.nuget\packages\system.text.json\9.0.0\lib\netstandard2.0\System.Text.Json.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+            <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
+        </Reference>
+        <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+            <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Web"/>
+        <Reference Include="System.Windows"/>
+        <Reference Include="System.Windows.Forms"/>
+        <Reference Include="System.Xml"/>
+        <Reference Include="WindowsBase"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="Api\IAppApi.cs"/>
+        <Compile Include="Api\IFunctionApi.cs"/>
+        <Compile Include="Api\IMaterialApi.cs"/>
+        <Compile Include="Api\IProjectApi.cs"/>
+        <Compile Include="Api\ISelectionApi.cs"/>
+        <Compile Include="Api\IStencilApi.cs"/>
+        <Compile Include="CellPropertyOverwrite.cs"/>
+        <Compile Include="Extensions\DebugExt.cs"/>
+        <Compile Include="Extensions\DtoExt.cs"/>
+        <Compile Include="Extensions\ObservableExt.cs"/>
+        <Compile Include="Extensions\ServiceCollectionExt.cs"/>
+        <Compile Include="Helpers\SystemInfoHelper.cs"/>
+        <Compile Include="Properties\AssemblyInfo.cs"/>
+        <Compile Include="Services\ApiFactory.cs"/>
+        <Compile Include="Services\AppUpdateService.cs"/>
+        <Compile Include="Services\ConfigurationService.cs"/>
+        <Compile Include="Services\DisposableBase.cs"/>
+        <Compile Include="Services\FunctionService.cs"/>
+        <Compile Include="Services\MaterialService.cs"/>
+        <Compile Include="Services\ProjectService.cs"/>
+        <Compile Include="Services\RecommendedService.cs"/>
+        <Compile Include="Services\Resolvers\FunctionResolver.cs"/>
+        <Compile Include="Services\Resolvers\MaterialResolver.cs"/>
+        <Compile Include="Services\Resolvers\ProjectResolver.cs"/>
+        <Compile Include="Services\Stores\FunctionLocationStore.cs"/>
+        <Compile Include="Services\Stores\MaterialLocationStore.cs"/>
+        <Compile Include="Services\Stores\ProjectLocationStore.cs"/>
+        <Compile Include="PropertyPatch.cs"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\AE.PID.Client.Core\AE.PID.Client.Core.csproj">
+            <Project>{c62725d5-95d4-4ca9-a611-2c400eeabb5f}</Project>
+            <Name>AE.PID.Client.Core</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\AE.PID.Core\AE.PID.Core.csproj">
+            <Project>{fdd1a666-00d2-4564-832d-a90fa20accb1}</Project>
+            <Name>AE.PID.Core</Name>
+        </ProjectReference>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Labs.Controls">
+            <Version>11.2.0</Version>
+        </PackageReference>
+        <PackageReference Include="Avalonia.Themes.Fluent">
+            <Version>11.2.0</Version>
+        </PackageReference>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions">
+            <Version>9.0.0</Version>
+        </PackageReference>
+        <PackageReference Include="ReactiveUI">
+            <Version>20.1.63</Version>
+        </PackageReference>
+        <PackageReference Include="Refit">
+            <Version>8.0.0</Version>
+        </PackageReference>
+        <PackageReference Include="Splat">
+            <Version>15.2.22</Version>
+        </PackageReference>
+    </ItemGroup>
+    <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
+    <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+             Other similar extension points exist, see Microsoft.Common.targets.
+        <Target Name="BeforeBuild">
+        </Target>
+        <Target Name="AfterBuild">
+        </Target>
+        -->
 </Project>

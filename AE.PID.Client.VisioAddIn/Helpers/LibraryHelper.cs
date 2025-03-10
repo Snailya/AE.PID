@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Windows.Forms;
-using AE.PID.Client.Core;
-using AE.PID.Client.Infrastructure;
 using Microsoft.Office.Interop.Visio;
 using Splat;
 
@@ -15,7 +11,6 @@ public abstract class LibraryHelper
 {
     public static void OpenLibraries(string path)
     {
-        
         var files = Directory.GetFiles(path).Where(x => x.EndsWith("vssx")).ToArray();
 
         try

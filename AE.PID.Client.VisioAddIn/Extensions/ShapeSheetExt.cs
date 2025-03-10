@@ -118,7 +118,7 @@ public static class ShapeSheetExt
         // if the row is not the Shape Data section row, it will not contain any format, so return it directly.
         if (row.ContainingSection.Index != (short)VisSectionIndices.visSectionProp) return value;
 
-        // if it is the Shape Data section row, need to check if it need format
+        // if it is the Shape Data section row, need to check if it needs format
         var type = row.CellU[VisCellIndices.visCustPropsType].ResultStr[VisUnitCodes.visNoCast];
         var format = row.CellU[VisCellIndices.visCustPropsFormat].ResultStr[VisUnitCodes.visUnitsString];
 

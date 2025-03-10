@@ -24,6 +24,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\AE.PID.UI.Avalonia\AE.PID.UI.Avalonia.csproj"/>
+        <ProjectReference Include="..\AE.PID.Client.UI.Avalonia\AE.PID.Client.UI.Avalonia.csproj"/>
     </ItemGroup>
 </Project>

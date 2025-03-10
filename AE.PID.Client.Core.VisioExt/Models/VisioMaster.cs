@@ -1,4 +1,4 @@
-﻿namespace AE.PID.Client.Core.VisioExt.Models;
+﻿namespace AE.PID.Client.Core.VisioExt;
 
 public class VisioMaster(string baseId, string name, string uniqueId)
 {

@@ -1,4 +1,4 @@
-﻿namespace AE.PID.Core.Models;
+﻿namespace AE.PID.Core;
 
 public enum FunctionType
 {

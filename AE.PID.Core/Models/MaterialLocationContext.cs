@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace AE.PID.Core.Models;
+namespace AE.PID.Core;
 
 /// <summary>
 ///     物料位置上下文

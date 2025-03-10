@@ -1,5 +1,4 @@
-﻿using AE.PID.Client.Core.VisioExt.Models;
-using DynamicData;
+﻿using DynamicData;
 
 namespace AE.PID.Client.Core.VisioExt;
 

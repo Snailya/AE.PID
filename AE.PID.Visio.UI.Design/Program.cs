@@ -4,8 +4,7 @@ using AE.PID.Client.Core;
 using AE.PID.Client.Infrastructure;
 using AE.PID.Client.Infrastructure.VisioExt;
 using AE.PID.Client.UI.Avalonia;
-using AE.PID.UI.Avalonia;
-using AE.PID.UI.Shared;
+using AE.PID.Client.UI.Avalonia.Shared;
 using AE.PID.Visio.UI.Design.Services;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -27,11 +26,11 @@ public sealed class Program
 
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            var window = new ProjectExplorerWindow()
+            var window = new ProjectExplorerWindow
             {
                 DataContext = ViewModelLocator.Create<ProjectExplorerWindowViewModel>()
             };
-            
+
             window.Show(desktop.MainWindow);
         }
     }

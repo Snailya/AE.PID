@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using AE.PID.Client.Core;
-using AE.PID.Client.Infrastructure.Extensions;
 using AE.PID.Core.DTOs;
 using AE.PID.Visio.Core.DTOs;
 using DynamicData;
@@ -16,7 +15,7 @@ using Splat;
 namespace AE.PID.Client.Infrastructure;
 
 /// <summary>
-///     p.s. Service method only throw known exceptions.
+///     p.s. Service method only throws known exceptions.
 /// </summary>
 public class ProjectService(IApiFactory<IProjectApi> apiFactory)
     : IProjectService, IEnableLogger

@@ -5,12 +5,11 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AE.PID.Client.Core;
-using AE.PID.UI.Avalonia.ViewModels;
-using AE.PID.UI.Avalonia.Views;
+using AE.PID.Client.UI.Avalonia;
 using ReactiveUI;
 using Splat;
 
-namespace AE.PID.Client.VisioAddIn.Services.Tasks;
+namespace AE.PID.Client.VisioAddIn;
 
 public class AppUpdateTask(
     IAppUpdateService appUpdateService,
@@ -58,7 +57,11 @@ public class AppUpdateTask(
 
         observeDownload.Zip(observeUserDecision)
             .Where(x => x.Second && !string.IsNullOrEmpty(x.First))
-            .Subscribe(x => { appUpdateService.InstallAsync(x.First); }, e =>
+            .Subscribe(x =>
+            {
+                this.Log().Info("The installation process is going to start.");
+                appUpdateService.InstallAsync(x.First);
+            }, e =>
             {
                 if (e is UrlNotValidException)
                     configurationService.UpdateProperty(i => i.PendingAppUpdate!.InstallerPath, string.Empty);
@@ -87,7 +90,7 @@ public class AppUpdateTask(
                 };
                 window.Show();
 
-                // if user choose to update right now, invoke the installation
+                // if a user chooses to update right now, invoke the installation
                 viewModel.Confirm.Subscribe(_ => { taskCompletionSource.SetResult(true); });
 
                 // if the user choose to not, save the update to the configuration and pending until next time open the application

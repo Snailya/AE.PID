@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Forms;
 using AE.PID.Client.Core;
 using Microsoft.Office.Interop.Visio;
+using Splat;
 using Shape = Microsoft.Office.Interop.Visio.Shape;
 
 namespace AE.PID.Client.VisioAddIn;
@@ -38,11 +40,15 @@ public abstract class LegendHelper
 
             page.Application.EndUndoScope(undoScope, true);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             page.Application.EndUndoScope(undoScope, false);
 
-            throw;
+            // log
+            LogHost.Default.Error(ex, "Failed to generate legend.");
+
+            // display error message
+            MessageBox.Show(ex.Message, "生成图例失败", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally
         {

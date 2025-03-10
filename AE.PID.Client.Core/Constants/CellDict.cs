@@ -6,6 +6,8 @@ public static class CellDict
 
     public const string Relationships = "Relationships";
 
+    public const string Tag = "Prop.DeviceTag";
+
     #region -- Projects --
 
     public const string ProjectId = "User.ProjectId";
@@ -14,7 +16,7 @@ public static class CellDict
     #endregion
 
     #region -- Material Locations --
-    
+
     public const string Class = "Prop.Class";
     public const string SubClass = "Prop.SubClass";
     public const string KeyParameters = "User.KeyParameters";
@@ -50,4 +52,18 @@ public static class CellDict
 
     #endregion
 
+    #region -- Instrument --
+
+    public const string ProcessVariableAndControlFunctions = "Prop.ProcessVariableAndControlFunctions";
+    public const string High1 = "Prop.High1";
+    public const string High2 = "Prop.High2";
+    public const string High3 = "Prop.High3";
+    public const string Low1 = "Prop.Low1";
+    public const string Low2 = "Prop.Low2";
+    public const string Low3 = "Prop.Low3";
+    public const string Function1 = "Prop.ControlFunction1";
+    public const string Function2 = "Prop.ControlFunction2";
+    public const string Function3 = "Prop.ControlFunction3";
+
+    #endregion
 }

@@ -26,21 +26,24 @@
                             screentip="检查主控形状没有缺失" size="large" getEnabled="IsCheckValid"
                     />
                     <button id="ValidatePipeline" label="异常管线" onAction="ValidatePipeline"
-                            screentip="检查管线的数据是否异常，异常管路会导致文档更新后飞线" size="large" getEnabled="IsCheckValid"
+                            screentip="检查管线的数据是否异常，异常管路会导致文档更新后飞线" size="large"
+                            getEnabled="IsCheckValid"
                     />
                     <button id="ClearValidationMarks" label="清除" onAction="ClearValidationMarks"
                             screentip="清除检查标记" size="large" getEnabled="IsClearValidationMarksValid"
                     />
                 </group>
-<!--                <group id="Debug" label="Debug">-->
-<!--                    <button id="button4" onAction="Debug" label="调试"/>-->
-<!--                </group>-->
+                <!--                <group id="Debug" label="Debug">-->
+                <!--                    <button id="button4" onAction="Debug" label="调试"/>-->
+                <!--                </group>-->
                 <group id="Project" label="项目">
                     <button id="ProjectExplorer" onAction="OpenProjectExplorer" label="项目浏览器"/>
+                    <button id="ElectricalControlSpecification" onAction="ExportElectricalControlSpecification"
+                            label="电控任务书"/>
                 </group>
-<!--                <group id="Administrator" label="管理员">-->
-<!--                    <button id="AddResponsibleProperty" onAction="AddResponsibleProperty" label="增加采购方"/>-->
-<!--                </group>-->
+                <!--                <group id="Administrator" label="管理员">-->
+                <!--                    <button id="AddResponsibleProperty" onAction="AddResponsibleProperty" label="增加采购方"/>-->
+                <!--                </group>-->
                 <group id="About" label="关于">
                     <button id="Settings" onAction="OpenSettings" label="设置"/>
                 </group>

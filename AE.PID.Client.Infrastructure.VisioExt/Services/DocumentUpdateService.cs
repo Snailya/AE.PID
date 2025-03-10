@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using AE.PID.Client.Core;
 using AE.PID.Client.Core.Exceptions;
 using AE.PID.Client.Core.VisioExt;
-using AE.PID.Client.Core.VisioExt.Models;
 using AE.PID.Core.DTOs;
 using Microsoft.Office.Interop.Visio;
 using Refit;
@@ -68,7 +67,7 @@ public class DocumentUpdateService : DisposableBase, IDocumentUpdateService
                 var itemsJson = JsonSerializer.Serialize(items);
                 result = await _apiFactory.Api.Update(filePart, itemsJson);
             }
-            
+
             // create a copy of the source file
             var backup = Path.ChangeExtension(filePath, ".bak");
             if (File.Exists(backup))

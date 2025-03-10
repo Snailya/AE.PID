@@ -2,7 +2,7 @@
 using AE.PID.Core.DTOs;
 using AE.PID.Visio.Core.DTOs;
 
-namespace AE.PID.Client.Infrastructure.Extensions;
+namespace AE.PID.Client.Infrastructure;
 
 public static class DtoExt
 {

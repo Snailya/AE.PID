@@ -1,6 +1,5 @@
 ﻿using System;
-using AE.PID.Core.Interfaces;
-using AE.PID.Core.Models;
+using AE.PID.Core;
 
 namespace AE.PID.Client.Core;
 

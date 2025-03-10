@@ -3,7 +3,7 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using Splat;
 
-namespace AE.PID.Client.Infrastructure.Helpers;
+namespace AE.PID.Client.Infrastructure;
 
 public static class SystemInfoHelper
 {

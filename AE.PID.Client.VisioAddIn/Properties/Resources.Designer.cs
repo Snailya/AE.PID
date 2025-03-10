@@ -62,6 +62,16 @@ namespace AE.PID.Client.VisioAddIn.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        internal static byte[] TEMPLATE_Electrical_Control_Specification {
+            get {
+                object obj = ResourceManager.GetObject("TEMPLATE_Electrical_Control_Specification", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         internal static byte[] TEMPLATE_Parts_List {
             get {
                 object obj = ResourceManager.GetObject("TEMPLATE_Parts_List", resourceCulture);

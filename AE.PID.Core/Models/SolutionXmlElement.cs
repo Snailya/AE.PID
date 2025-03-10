@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace AE.PID.Core.Models;
+namespace AE.PID.Core;
 
 [XmlRoot("SolutionXML")]
 public class SolutionXmlElement<T>

@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Subjects;
 using AE.PID.Client.Core;
-using AE.PID.Core.Models;
+using AE.PID.Core;
 using AE.PID.Visio.UI.Design.Design;
 using DynamicData;
 
@@ -66,7 +66,7 @@ internal sealed class MoqDataProvider : IDataProvider, IDisposable
         return new FunctionLocation(id, parentId, string.Empty, type, null, shape.Zone, shape.ZoneName,
             shape.ZoneNameEnglish,
             shape.Group, shape.GroupName, shape.GroupNameEnglish, shape.Element, shape.Description, shape.Remarks,
-            string.Empty);
+            string.Empty, false);
     }
 
     private static FunctionType ResolveFunctionType(ShapeProxy source)

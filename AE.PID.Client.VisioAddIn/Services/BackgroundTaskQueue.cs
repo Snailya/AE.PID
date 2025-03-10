@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using AE.PID.Client.VisioAddIn.Interfaces;
 
 namespace AE.PID.Client.VisioAddIn;
 

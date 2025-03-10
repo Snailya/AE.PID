@@ -1,0 +1,43 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:avalonia="clr-namespace:AE.PID.Client.UI.Avalonia"
+        xmlns:shared="clr-namespace:AE.PID.Client.UI.Avalonia.Shared;assembly=AE.PID.Client.UI.Avalonia.Shared"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="AE.PID.Client.UI.Avalonia.NewVersionWindow"
+        x:DataType="avalonia:NewVersionViewModel"
+        Height="512" Width="448"
+        Icon="avares://AE.PID.Client.UI.Avalonia.Shared/Assets/avalonia-logo.ico"
+        Title="新版本"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        ExtendClientAreaToDecorationsHint="True">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <avalonia:NewVersionViewModel />
+    </Design.DataContext>
+
+    <shared:Page>
+        <DockPanel>
+            <StackPanel DockPanel.Dock="Bottom">
+                <TextBlock Text="现在安装？" />
+                <StackPanel Classes="actions">
+                    <Button Content="确认" Command="{Binding Confirm}" />
+                    <Button Content="取消" Command="{Binding Cancel}" />
+                </StackPanel>
+            </StackPanel>
+            <ScrollViewer>
+                <Grid RowDefinitions="Auto,*">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="发现新版本" FontWeight="Bold" />
+                        <TextBlock Text="{Binding Version, StringFormat=({0})}" FontWeight="Light" />
+                    </StackPanel>
+                    <TextBlock Grid.Row="1" Text="{Binding ReleaseNotes}" />
+                </Grid>
+            </ScrollViewer>
+        </DockPanel>
+    </shared:Page>
+</Window>

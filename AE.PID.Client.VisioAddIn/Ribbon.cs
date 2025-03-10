@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Packaging;
 using System.Linq;
@@ -11,13 +10,10 @@ using System.Xml.Linq;
 using AE.PID.Client.Core;
 using AE.PID.Client.Core.Exceptions;
 using AE.PID.Client.Core.VisioExt;
-using AE.PID.Client.Core.VisioExt.Models;
 using AE.PID.Client.UI.Avalonia;
+using AE.PID.Client.UI.Avalonia.VisioExt;
+using AE.PID.Core;
 using AE.PID.Core.DTOs;
-using AE.PID.Core.Models;
-using AE.PID.UI.Avalonia;
-using AE.PID.UI.Avalonia.Views;
-using AE.PID.UI.Avalonia.VisioExt;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Office.Interop.Visio;
 using Splat;
@@ -97,18 +93,8 @@ public class Ribbon : Office.IRibbonExtensibility
 
     #endregion
 
-    #region -- Project Group --
-
-    public void OpenProjectExplorer(Office.IRibbonControl control)
-    {
-        WindowHelper.Show<ProjectExplorerWindow, ProjectExplorerWindowViewModel>();
-    }
-
-    #endregion
-
     public async void Debug(Office.IRibbonControl control)
     {
-
     }
 
     public void PasteShapeData(Office.IRibbonControl control)
@@ -188,6 +174,20 @@ public class Ribbon : Office.IRibbonExtensibility
         public short Row { get; set; }
         public short Cell { get; set; }
     }
+
+    #region -- Project Group --
+
+    public void OpenProjectExplorer(Office.IRibbonControl control)
+    {
+        WindowHelper.Show<ProjectExplorerWindow, ProjectExplorerWindowViewModel>();
+    }
+
+    public void ExportElectricalControlSpecification(Office.IRibbonControl control)
+    {
+        ElectricalControlSpecificationHelper.Generate(Globals.ThisAddIn.Application.ActiveDocument);
+    }
+
+    #endregion
 
 
     #region -- Ribbon Callbacks --

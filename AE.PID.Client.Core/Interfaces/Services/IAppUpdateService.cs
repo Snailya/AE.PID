@@ -14,7 +14,7 @@ public interface IAppUpdateService
     ///     An object that represents the application info if there is an update. null if there is no update.
     /// </returns>
     /// <exception cref="NetworkNotValidException">There is a network error between server and local.</exception>
-    Task<PendingAppUpdate> CheckUpdateAsync(string version);
+    Task<PendingAppUpdate?> CheckUpdateAsync(string version);
 
     /// <summary>
     ///     Download the installer from the specified url if it is not exist on local storage.

@@ -8,8 +8,6 @@ using System.Reactive.Subjects;
 using System.Reflection;
 using System.Text.Json;
 using AE.PID.Client.Core;
-using AE.PID.Client.Infrastructure.Extensions;
-using AE.PID.Client.Infrastructure.Helpers;
 using Splat;
 
 namespace AE.PID.Client.Infrastructure;

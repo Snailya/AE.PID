@@ -1,0 +1,36 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:shared="clr-namespace:AE.PID.Client.UI.Avalonia.Shared;assembly=AE.PID.Client.UI.Avalonia.Shared"
+        xmlns:local="clr-namespace:AE.PID.Client.UI.Avalonia"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="AE.PID.Client.UI.Avalonia.ProjectExplorerWindow"
+        x:DataType="local:ProjectExplorerWindowViewModel"
+        Height="768" Width="1366"
+        Icon="avares://AE.PID.Client.UI.Avalonia.Shared/Assets/avalonia-logo.ico"
+        Title="项目浏览器"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        ExtendClientAreaToDecorationsHint="True">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <local:ProjectExplorerWindowViewModel />
+    </Design.DataContext>
+
+    <shared:Page>
+        <TabControl SelectedIndex="{Binding ViewIndex}">
+            <TabItem Header="项目">
+                <local:ProjectsView DataContext="{Binding Projects}" />
+            </TabItem>
+            <TabItem Header="功能">
+                <local:FunctionsView DataContext="{Binding Functions}" />
+            </TabItem>
+            <TabItem Header="物料">
+                <local:MaterialsView DataContext="{Binding Materials }" />
+            </TabItem>
+        </TabControl>
+    </shared:Page>
+</Window>

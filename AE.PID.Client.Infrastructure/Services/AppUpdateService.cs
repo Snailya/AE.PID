@@ -26,7 +26,7 @@ public class AppUpdateService(IConfigurationService configurationService, IApiFa
             // get the lasted application info from the server
             var app = await apiFactory.Api.GetCurrentApp();
 
-            // if the server version is no larger thant the local one, treat as no update
+            // if the server version is no larger than the local one, treat as no update
             if (new Version(app.Version) <= new Version(version))
             {
                 this.Log().Info("No new app version available.");

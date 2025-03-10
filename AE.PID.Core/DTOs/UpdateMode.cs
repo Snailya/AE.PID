@@ -3,5 +3,5 @@
 public enum DocumentUpdateMode
 {
     Normal = 0,
-    Strict = 1,
+    Strict = 1
 }

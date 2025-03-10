@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AE.PID.Client.VisioAddIn.Interfaces;
+namespace AE.PID.Client.VisioAddIn;
 
 public interface IBackgroundTask
 {

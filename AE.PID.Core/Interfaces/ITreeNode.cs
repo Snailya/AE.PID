@@ -1,4 +1,4 @@
-﻿namespace AE.PID.Core.Interfaces;
+﻿namespace AE.PID.Core;
 
 public interface ITreeNode<T>
 {

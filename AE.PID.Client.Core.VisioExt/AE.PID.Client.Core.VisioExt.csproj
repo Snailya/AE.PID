@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DynamicData" Version="9.1.1" />
+        <PackageReference Include="DynamicData" Version="9.1.1"/>
         <PackageReference Include="System.Text.Json" Version="9.0.0"/>
     </ItemGroup>
 
@@ -18,9 +18,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Reference Include="Microsoft.Office.Interop.Visio">
-        <HintPath>C:\Program Files (x86)\Microsoft Visual Studio\Shared\Visual Studio Tools for Office\PIA\Office15\Microsoft.Office.Interop.Visio.dll</HintPath>
-      </Reference>
+        <Reference Include="Microsoft.Office.Interop.Visio">
+            <HintPath>C:\Program Files (x86)\Microsoft Visual Studio\Shared\Visual Studio Tools for Office\PIA\Office15\Microsoft.Office.Interop.Visio.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
 </Project>

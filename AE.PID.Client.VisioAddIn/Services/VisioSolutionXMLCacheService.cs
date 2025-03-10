@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using AE.PID.Client.Core;
-using AE.PID.Core.Models;
+using AE.PID.Core;
 using DynamicData;
 using Microsoft.Office.Interop.Visio;
 using Splat;

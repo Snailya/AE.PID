@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DynamicData" Version="9.1.1" />
+        <PackageReference Include="DynamicData" Version="9.1.1"/>
         <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.0"/>
         <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0"/>
         <PackageReference Include="MiniExcel" Version="1.36.0"/>
@@ -32,15 +32,16 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\AE.PID.Client.Core.VisioExt.Control\AE.PID.Client.Core.VisioExt.Control.csproj"/>
         <ProjectReference Include="..\AE.PID.Client.Core\AE.PID.Client.Core.csproj"/>
         <ProjectReference Include="..\AE.PID.Client.Infrastructure\AE.PID.Client.Infrastructure.csproj"/>
         <ProjectReference Include="..\AE.PID.Client.Core.VisioExt\AE.PID.Client.Core.VisioExt.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Reference Include="Microsoft.Office.Interop.Visio">
-        <HintPath>C:\Program Files (x86)\Microsoft Visual Studio\Shared\Visual Studio Tools for Office\PIA\Office15\Microsoft.Office.Interop.Visio.dll</HintPath>
-      </Reference>
+        <Reference Include="Microsoft.Office.Interop.Visio">
+            <HintPath>C:\Program Files (x86)\Microsoft Visual Studio\Shared\Visual Studio Tools for Office\PIA\Office15\Microsoft.Office.Interop.Visio.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
 </Project>

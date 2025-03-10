@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 
-namespace AE.PID.Client.Infrastructure.Extensions;
+namespace AE.PID.Client.Infrastructure;
 
 public static class ObservableExt
 {

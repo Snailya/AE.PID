@@ -6,7 +6,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AE.PID.Core", "AE.PID.Core\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AE.PID.Client.Core.VisioExt", "AE.PID.Client.Core.VisioExt\AE.PID.Client.Core.VisioExt.csproj", "{9BD67D16-187C-4BD5-A302-ABADF2734004}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AE.PID.UI.Avalonia", "AE.PID.UI.Avalonia\AE.PID.UI.Avalonia.csproj", "{A746F191-DFB5-42BA-AC6D-26685A924520}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AE.PID.Client.UI.Avalonia", "AE.PID.Client.UI.Avalonia\AE.PID.Client.UI.Avalonia.csproj", "{A746F191-DFB5-42BA-AC6D-26685A924520}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AE.PID.Client.VisioAddIn", "AE.PID.Client.VisioAddIn\AE.PID.Client.VisioAddIn.csproj", "{08838677-41C4-47EC-B48E-BCBF30E7ADBA}"
 EndProject
@@ -36,9 +36,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCA", "PCA\PCA.csproj", "{7
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AE.PID.Server", "AE.PID.Server\AE.PID.Server.csproj", "{85CDF9C6-BADA-4192-BD2D-886CB129DE10}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AE.PID.UI.Avalonia.VisioExt", "AE.PID.UI.Avalonia.VisioExt\AE.PID.UI.Avalonia.VisioExt.csproj", "{05086305-3EAA-449D-8969-98CF8AC89D44}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AE.PID.Client.UI.Avalonia.VisioExt", "AE.PID.Client.UI.Avalonia.VisioExt\AE.PID.Client.UI.Avalonia.VisioExt.csproj", "{05086305-3EAA-449D-8969-98CF8AC89D44}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AE.PID.UI.Shared", "AE.PID.UI.Shared\AE.PID.UI.Shared.csproj", "{9F76A07E-DE14-4FE4-9E8F-9280F717CEDD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AE.PID.Client.UI.Avalonia.Shared", "AE.PID.Client.UI.Avalonia.Shared\AE.PID.Client.UI.Avalonia.Shared.csproj", "{9F76A07E-DE14-4FE4-9E8F-9280F717CEDD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AE.PID.Client.Infrastructure", "AE.PID.Client.Infrastructure\AE.PID.Client.Infrastructure.csproj", "{14946931-1F72-454F-9927-5BEE2F99EA60}"
 EndProject
@@ -49,6 +49,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AE.PID.Server.PDMS", "AE.PID.Server.PDMS\AE.PID.Server.PDMS.csproj", "{75381A12-B2EE-4B16-A887-B65E6476D237}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AE.PID.Server.Core", "AE.PID.Server.Core\AE.PID.Server.Core.csproj", "{A721A5A6-140A-4BC6-9462-85401B154894}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AE.PID.Client.Core.VisioExt.Control", "AE.PID.Client.Core.VisioExt.Control\AE.PID.Client.Core.VisioExt.Control.csproj", "{2046FBAE-94B6-4680-BB07-37940C732835}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -300,6 +302,18 @@ Global
 		{A721A5A6-140A-4BC6-9462-85401B154894}.Release|x64.Build.0 = Release|Any CPU
 		{A721A5A6-140A-4BC6-9462-85401B154894}.Release|x86.ActiveCfg = Release|Any CPU
 		{A721A5A6-140A-4BC6-9462-85401B154894}.Release|x86.Build.0 = Release|Any CPU
+		{2046FBAE-94B6-4680-BB07-37940C732835}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2046FBAE-94B6-4680-BB07-37940C732835}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2046FBAE-94B6-4680-BB07-37940C732835}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2046FBAE-94B6-4680-BB07-37940C732835}.Debug|x64.Build.0 = Debug|Any CPU
+		{2046FBAE-94B6-4680-BB07-37940C732835}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2046FBAE-94B6-4680-BB07-37940C732835}.Debug|x86.Build.0 = Debug|Any CPU
+		{2046FBAE-94B6-4680-BB07-37940C732835}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2046FBAE-94B6-4680-BB07-37940C732835}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2046FBAE-94B6-4680-BB07-37940C732835}.Release|x64.ActiveCfg = Release|Any CPU
+		{2046FBAE-94B6-4680-BB07-37940C732835}.Release|x64.Build.0 = Release|Any CPU
+		{2046FBAE-94B6-4680-BB07-37940C732835}.Release|x86.ActiveCfg = Release|Any CPU
+		{2046FBAE-94B6-4680-BB07-37940C732835}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -324,6 +338,7 @@ Global
 		{F797EF89-8B58-4D81-88F9-F44D280948EE} = {87F7E2E0-5BCD-49EB-9482-B27C86A0DDAD}
 		{75381A12-B2EE-4B16-A887-B65E6476D237} = {50FF24AE-219B-4F17-A4CA-0052728719A7}
 		{A721A5A6-140A-4BC6-9462-85401B154894} = {50FF24AE-219B-4F17-A4CA-0052728719A7}
+		{2046FBAE-94B6-4680-BB07-37940C732835} = {5DB8C306-C7D8-4E9D-AB33-D0233D77100F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BBC947AD-E39D-478D-AD7E-99086F6F7B52}

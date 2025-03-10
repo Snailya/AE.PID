@@ -56,7 +56,7 @@ public record FunctionLocationDetail(
     public string Description { get; set; } = Description;
 
     /// <summary>
-    /// Remarks
+    ///     Remarks
     /// </summary>
     public string Remarks { get; set; } = Remarks;
 

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
-using AE.PID.Core.Models;
+using AE.PID.Core;
 using Splat;
 using Shape = Microsoft.Office.Interop.Visio.Shape;
 

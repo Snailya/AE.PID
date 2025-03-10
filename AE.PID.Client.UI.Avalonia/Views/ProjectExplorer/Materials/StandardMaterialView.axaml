@@ -1,0 +1,80 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:AE.PID.Client.UI.Avalonia"
+             xmlns:shared="clr-namespace:AE.PID.Client.UI.Avalonia.Shared;assembly=AE.PID.Client.UI.Avalonia.Shared"
+             mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="528"
+             x:Class="AE.PID.Client.UI.Avalonia.StandardMaterialView"
+             x:DataType="local:StandardMaterialViewModel">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <local:StandardMaterialViewModel />
+    </Design.DataContext>
+
+    <DockPanel>
+        <StackPanel Classes="actions" DockPanel.Dock="Bottom">
+            <Button Content="确认" Command="{Binding Confirm}" />
+            <Button Content="取消" Command="{Binding Cancel}" />
+        </StackPanel>
+        <DockPanel>
+            <TreeView DockPanel.Dock="Left" MinWidth="256"
+                      ItemsSource="{Binding FilteredCategories}"
+                      SelectedItem="{Binding SelectedCategory}">
+                <TreeView.ItemTemplate>
+                    <TreeDataTemplate ItemsSource="{Binding Inferiors}">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Name}" />
+                        </StackPanel>
+                    </TreeDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+            <StackPanel DockPanel.Dock="Top">
+                <TextBox Text="{Binding SearchText}" Watermark="搜索" />
+                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+            </StackPanel>
+            <shared:PageNavigator DockPanel.Dock="Bottom"
+                                  DataContext="{Binding PageNavigator}" />
+            <DataGrid ItemsSource="{Binding Data}"
+                      SelectedItem="{Binding SelectedData}"
+                      IsReadOnly="True"
+                      GridLinesVisibility="All">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="名称" Binding="{Binding Name}" />
+                    <DataGridTextColumn Header="品牌" Binding="{Binding Brand}" />
+                    <DataGridTextColumn Header="型号" Binding="{Binding Type}" />
+                    <DataGridTextColumn Header="规格" Binding="{Binding  Specifications}" />
+                    <DataGridTextColumn Header="技术参数" Binding="{Binding TechnicalData}" />
+                    <DataGridTextColumn Header="物料号" Binding="{Binding Code}" />
+                </DataGrid.Columns>
+                <DataGrid.RowDetailsTemplate>
+                    <DataTemplate x:DataType="{x:Type shared:MaterialViewModel}">
+                        <!-- 20250124 增加ScrollViewer以避免文字过长溢出，但是更优解应该是让文字自动换行-->
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto">
+                            <ItemsControl
+                                ItemsSource="{Binding Properties, Converter={x:Static local:SimpleConverters.UsefulProperties}}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Margin="12 4" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border>
+                                            <TextBlock Margin="4 " FontSize="12"
+                                                       shared:LabelBehav.Value="{Binding Name, StringFormat='\{0\}：'}"
+                                                       Text="{Binding Value}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </DataTemplate>
+                </DataGrid.RowDetailsTemplate>
+            </DataGrid>
+        </DockPanel>
+
+    </DockPanel>
+</UserControl>

@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-namespace AE.PID.Client.Infrastructure.Extensions;
+namespace AE.PID.Client.Infrastructure;
 
 public class DebugExt
 {

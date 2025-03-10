@@ -10,16 +10,10 @@ using System.Windows.Threading;
 using AE.PID.Client.Core;
 using AE.PID.Client.Core.VisioExt;
 using AE.PID.Client.Infrastructure;
-using AE.PID.Client.Infrastructure.Extensions;
 using AE.PID.Client.Infrastructure.VisioExt;
 using AE.PID.Client.UI.Avalonia;
-using AE.PID.Client.VisioAddIn.Interfaces;
-using AE.PID.Client.VisioAddIn.Services;
-using AE.PID.Client.VisioAddIn.Services.Tasks;
-using AE.PID.UI.Avalonia;
-using AE.PID.UI.Avalonia.Views;
-using AE.PID.UI.Avalonia.VisioExt;
-using AE.PID.UI.Shared;
+using AE.PID.Client.UI.Avalonia.Shared;
+using AE.PID.Client.UI.Avalonia.VisioExt;
 using AE.PID.Visio.Shared;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -153,7 +147,7 @@ public partial class ThisAddIn : IEnableLogger
 
         // register configurations
         var fvi = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
-        
+
         services.AddSingleton<IConfigurationService, ConfigurationService>(provider =>
             new ConfigurationService(provider.GetRequiredService<IStorageService>(), fvi.CompanyName, fvi.ProductName,
                 fvi.FileVersion));

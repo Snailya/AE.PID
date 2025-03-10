@@ -6,8 +6,8 @@ using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using AE.PID.Client.Infrastructure.VisioExt;
+using AE.PID.Client.UI.Avalonia.Shared;
 using AE.PID.Client.VisioAddIn.Services;
-using AE.PID.UI.Shared;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform;
@@ -195,7 +195,7 @@ public static class WindowHelper
                     view.DataContext = viewModel;
 
                     var pane = new VisioTaskPane(view);
-                    
+
                     pane.HandleDestroyed += (_, _) =>
                     {
                         // remove the window from the opened window list

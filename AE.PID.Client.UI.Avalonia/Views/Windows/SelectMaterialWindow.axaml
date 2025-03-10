@@ -1,0 +1,27 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:shared="clr-namespace:AE.PID.Client.UI.Avalonia.Shared;assembly=AE.PID.Client.UI.Avalonia.Shared"
+        xmlns:local="clr-namespace:AE.PID.Client.UI.Avalonia"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        Width="960" Height="704"
+        x:Class="AE.PID.Client.UI.Avalonia.SelectMaterialWindow"
+        x:DataType="local:SelectMaterialWindowViewModel"
+        Icon="avares://AE.PID.Client.UI.Avalonia.Shared/Assets/avalonia-logo.ico"
+        Title="选择物料"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        ExtendClientAreaToDecorationsHint="True"
+        WindowStartupLocation="CenterOwner">
+    <shared:Page>
+        <TabControl SelectedIndex="{Binding ViewIndex}">
+            <TabItem Header="全部">
+                <local:StandardMaterialView DataContext="{Binding StandardMaterials}" />
+            </TabItem>
+            <TabItem Header="推荐">
+                <local:RecommendMaterialView DataContext="{Binding RecommendMaterials}" />
+            </TabItem>
+        </TabControl>
+    </shared:Page>
+</Window>

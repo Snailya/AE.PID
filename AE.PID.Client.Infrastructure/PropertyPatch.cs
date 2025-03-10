@@ -12,8 +12,8 @@ public class PropertyPatch(
 {
     public bool CreateIfNotExists { get; set; } = createIfNotExists;
     public ICompoundKey? Target { get; set; } = target;
+
+    public string? LabelFormula { get; set; } = label;
     public string Name { get; set; } = name;
     public object Value { get; set; } = value;
-    
-    public string? LabelFormula { get; set; } = label;
 }

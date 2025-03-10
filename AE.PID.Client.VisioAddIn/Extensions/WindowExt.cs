@@ -24,7 +24,7 @@ public static class WindowExt
             {
                 if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
                     return;
-                
+
                 // create a host window if not exist
                 if (desktop.MainWindow is null)
                 {

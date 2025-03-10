@@ -1,5 +1,4 @@
 ﻿using System.Text.Json.Serialization;
-using AE.PID.Core.Interfaces;
 
 namespace AE.PID.Core.DTOs;
 

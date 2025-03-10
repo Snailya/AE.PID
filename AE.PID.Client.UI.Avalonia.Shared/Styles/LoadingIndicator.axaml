@@ -1,0 +1,88 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shared1="clr-namespace:AE.PID.Client.UI.Avalonia.Shared">
+    <Design.PreviewWith>
+        <shared1:LoadingIndicator />
+    </Design.PreviewWith>
+
+    <Style Selector="shared1|LoadingIndicator">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Spacing="6"
+                            IsVisible="{TemplateBinding IsLoading}">
+                    <StackPanel.Styles>
+                        <Style Selector="Rectangle#Rect1">
+                            <Style.Animations>
+                                <Animation IterationCount="Infinite" Duration="0:0:1">
+                                    <KeyFrame Cue="0%">
+                                        <Setter Property="TranslateTransform.Y" Value="-10" />
+                                    </KeyFrame>
+                                    <KeyFrame Cue="50%">
+                                        <Setter Property="TranslateTransform.Y" Value="0" />
+                                    </KeyFrame>
+                                    <KeyFrame Cue="100%">
+                                        <Setter Property="TranslateTransform.Y" Value="-10" />
+                                    </KeyFrame>
+                                </Animation>
+                            </Style.Animations>
+                        </Style>
+                        <Style Selector="Rectangle#Rect2">
+                            <Style.Animations>
+                                <Animation Delay="0.8" IterationCount="Infinite" Duration="0:0:1">
+                                    <KeyFrame Cue="0%">
+                                        <Setter Property="TranslateTransform.Y" Value="-10" />
+                                    </KeyFrame>
+                                    <KeyFrame Cue="50%">
+                                        <Setter Property="TranslateTransform.Y" Value="0" />
+                                    </KeyFrame>
+                                    <KeyFrame Cue="100%">
+                                        <Setter Property="TranslateTransform.Y" Value="-10" />
+                                    </KeyFrame>
+                                </Animation>
+                            </Style.Animations>
+                        </Style>
+                        <Style Selector="Rectangle#Rect3">
+                            <Style.Animations>
+                                <Animation Delay="1.6" IterationCount="Infinite" Duration="0:0:1">
+                                    <KeyFrame Cue="0%">
+                                        <Setter Property="TranslateTransform.Y" Value="-10" />
+                                    </KeyFrame>
+                                    <KeyFrame Cue="50%">
+                                        <Setter Property="TranslateTransform.Y" Value="0" />
+                                    </KeyFrame>
+                                    <KeyFrame Cue="100%">
+                                        <Setter Property="TranslateTransform.Y" Value="-10" />
+                                    </KeyFrame>
+                                </Animation>
+                            </Style.Animations>
+                        </Style>
+                    </StackPanel.Styles>
+                    <Rectangle x:Name="Rect1"
+                               Width="6"
+                               Height="30"
+                               Fill="{DynamicResource SystemAccentColor}">
+                        <Rectangle.RenderTransform>
+                            <TranslateTransform />
+                        </Rectangle.RenderTransform>
+                    </Rectangle>
+                    <Rectangle x:Name="Rect2"
+                               Width="6"
+                               Height="30"
+                               Fill="{DynamicResource SystemAccentColor}">
+                        <Rectangle.RenderTransform>
+                            <TranslateTransform Y="-10" />
+                        </Rectangle.RenderTransform>
+                    </Rectangle>
+                    <Rectangle x:Name="Rect3"
+                               Width="6"
+                               Height="30"
+                               Fill="{DynamicResource SystemAccentColor}">
+                        <Rectangle.RenderTransform>
+                            <TranslateTransform Y="-10" />
+                        </Rectangle.RenderTransform>
+                    </Rectangle>
+                </StackPanel>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+</Styles>

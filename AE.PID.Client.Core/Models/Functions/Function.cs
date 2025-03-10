@@ -1,4 +1,4 @@
-﻿using AE.PID.Core.Models;
+﻿using AE.PID.Core;
 
 namespace AE.PID.Client.Core;
 

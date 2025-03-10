@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net48</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>12</LangVersion>
+        <RootNamespace>AE.PID.Client.UI.Avalonia.Shared</RootNamespace>
+        <AssemblyName>AE.PID.Client.UI.Avalonia.Shared</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Diagnostics" Version="11.2.0"/>
+        <PackageReference Include="Avalonia.ReactiveUI" Version="11.2.0"/>
+        <PackageReference Include="ReactiveMarbles.ObservableEvents.SourceGenerator" Version="1.3.1" PrivateAssets="all"/>
+        <PackageReference Include="ReactiveUI" Version="20.1.63"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AE.PID.Client.Core.VisioExt\AE.PID.Client.Core.VisioExt.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <AdditionalFiles Include="Components\PageNavigator.axaml"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Update="Styles\Page.axaml.cs">
+            <DependentUpon>Page.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Styles\Tag.axaml.cs">
+            <DependentUpon>Tag.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Styles\LoadingIndicator.axaml.cs">
+            <DependentUpon>LoadingIndicator.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+        <AvaloniaResource Include="Assets\avalonia-logo.ico"/>
+    </ItemGroup>
+
+</Project>

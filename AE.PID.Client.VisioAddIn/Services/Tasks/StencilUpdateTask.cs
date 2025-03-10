@@ -6,7 +6,7 @@ using AE.PID.Client.Core;
 using Microsoft.Office.Interop.Visio;
 using Splat;
 
-namespace AE.PID.Client.VisioAddIn.Services.Tasks;
+namespace AE.PID.Client.VisioAddIn;
 
 public class StencilUpdateTask(
     IConfigurationService configurationService,

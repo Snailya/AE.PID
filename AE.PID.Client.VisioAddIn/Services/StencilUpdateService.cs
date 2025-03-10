@@ -10,7 +10,7 @@ using AE.PID.Client.Infrastructure;
 using Refit;
 using Splat;
 
-namespace AE.PID.Client.VisioAddIn.Services;
+namespace AE.PID.Client.VisioAddIn;
 
 public class StencilUpdateService : ApiFactory<IStencilApi>, IEnableLogger
 {

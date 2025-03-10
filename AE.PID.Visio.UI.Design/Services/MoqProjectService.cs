@@ -4,8 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AE.PID.Client.Core;
+using AE.PID.Core;
 using AE.PID.Core.DTOs;
-using AE.PID.Core.Models;
 using DynamicData;
 
 namespace AE.PID.Visio.UI.Design;
