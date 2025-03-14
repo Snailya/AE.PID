@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace AE.PID.Core.DTOs;
+namespace AE.PID.Core;
 
 public class MaterialDto
 {

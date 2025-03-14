@@ -1,6 +1,6 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
-using AE.PID.Core.DTOs;
+using AE.PID.Core;
 using AE.PID.Server.Core;
 using AE.PID.Server.PDMS.Extensions;
 
@@ -156,9 +156,8 @@ public class MaterialService(IHttpClientFactory httpClientFactory) : IMaterialSe
     {
         return GetMaterialsCountAsync("", "", "", category, "", "", "");
     }
-    
-    
-    
+
+
     private async Task<IEnumerable<SelectDesignMaterialCategoryResponseItemDto>> GetCategoryItems(string userId,
         string? name = null)
     {
@@ -172,7 +171,7 @@ public class MaterialService(IHttpClientFactory httpClientFactory) : IMaterialSe
         var response = await _client.PostAsync("getModeDataPageList/selectDesignMaterialCategory", data);
 
         response.EnsureSuccessStatusCode();
-        
+
         var responseData = await response.Content.ReadFromJsonAsync<ResponseDto>();
         // todo: 此处同其他位置
         if (string.IsNullOrEmpty(responseData?.Result)) return [];

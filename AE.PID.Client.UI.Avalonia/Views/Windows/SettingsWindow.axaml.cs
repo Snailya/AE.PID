@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.ReactiveUI;
 using ReactiveUI;
 
@@ -15,22 +14,7 @@ public partial class SettingsWindow : ReactiveWindow<SettingsWindowViewModel>
         this.AttachDevTools();
 #endif
 
-        this.WhenActivated(action =>
-            {
-                action(ViewModel!.About.ShowNewVersionView.RegisterHandler(DoShowNewVersionDialogAsync));
-            }
+        this.WhenActivated(action => { }
         );
-    }
-
-    private async Task DoShowNewVersionDialogAsync(
-        IInteractionContext<NewVersionViewModel, bool> interaction)
-    {
-        var dialog = new NewVersionWindow
-        {
-            DataContext = interaction.Input
-        };
-
-        var result = await dialog.ShowDialog<bool>(this);
-        interaction.SetOutput(result);
     }
 }

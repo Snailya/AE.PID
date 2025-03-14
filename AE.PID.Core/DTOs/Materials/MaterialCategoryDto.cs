@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace AE.PID.Core.DTOs;
+namespace AE.PID.Core;
 
 public class MaterialCategoryDto : ITreeNode
 {

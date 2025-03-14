@@ -95,6 +95,8 @@ public class SimpleConverters
             ? new SolidColorBrush(Color.Parse("#800000"))
             : AvaloniaProperty.UnsetValue);
 
+    public static FuncValueConverter<bool?, string> HasUpdateToText { get; } =
+        new(hasUpdate => hasUpdate == false ? "已经是最新版" : "检查更新");
 
     #region -- Function Types --
 

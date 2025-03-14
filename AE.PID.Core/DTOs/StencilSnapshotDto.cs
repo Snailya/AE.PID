@@ -1,18 +1,9 @@
-﻿namespace AE.PID.Core.DTOs;
+﻿namespace AE.PID.Core;
 
 public class StencilSnapshotDto
 {
     public int StencilId { get; set; }
-    public string StencilName { get; set; }
-    public string DownloadUrl { get; set; }
+    public string StencilName { get; set; } = string.Empty;
+    public string DownloadUrl { get; set; } = string.Empty;
     public int Id { get; set; }
-
-    // public OperationStatus  Status { get; set; }
-}
-
-public enum OperationStatus
-{
-    Added,
-    Modified,
-    Removed
 }

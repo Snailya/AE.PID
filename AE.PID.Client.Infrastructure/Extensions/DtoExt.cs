@@ -1,6 +1,6 @@
 ﻿using AE.PID.Client.Core;
+using AE.PID.Core;
 using AE.PID.Core.DTOs;
-using AE.PID.Visio.Core.DTOs;
 
 namespace AE.PID.Client.Infrastructure;
 

@@ -25,3 +25,7 @@ public class ViewLocator : IDataTemplate
         return data is ViewModelBase;
     }
 }
+
+public class WindowLocator
+{
+}

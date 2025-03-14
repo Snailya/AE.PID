@@ -22,7 +22,7 @@ public class StencilUpdateService : ApiFactory<IStencilApi>, IEnableLogger
         _configurationService = configurationService;
 
         _folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            configurationService.RuntimeConfiguration.AppDataFolder,
+            configurationService.RuntimeConfiguration.DataPath,
             "libraries");
 
         if (!Directory.Exists(_folder)) Directory.CreateDirectory(_folder);

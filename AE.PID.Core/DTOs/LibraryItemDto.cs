@@ -1,4 +1,4 @@
-﻿namespace AE.PID.Core.DTOs;
+﻿namespace AE.PID.Core;
 
 public class LibraryItemDto
 {
@@ -14,7 +14,7 @@ public class LibraryItemDto
     public string UniqueId { get; set; } = string.Empty;
 
     /// <summary>
-    ///     The id used for deciding which item in library is of the same origin with the item in document stencil.
+    ///     The id used for deciding which item in a library is of the same origin with the item in document stencil.
     /// </summary>
     public string BaseId { get; set; } = string.Empty;
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reactive;
-using System.Reactive.Linq;
 using AE.PID.Client.Core;
+using AE.PID.Client.Infrastructure;
 using AE.PID.Client.UI.Avalonia.Shared;
 using ReactiveUI;
 
@@ -9,53 +9,43 @@ namespace AE.PID.Client.UI.Avalonia;
 
 public class AboutViewModel : ViewModelBase
 {
-    #region -- Interactions --
-
-    public Interaction<NewVersionViewModel, bool> ShowNewVersionView { get; } = new();
-
-    #endregion
-
+    private bool? _hasUpdate;
     public string Version { get; set; }
     public string ProductName { get; set; }
-
     public ReactiveCommand<Unit, Unit> CheckUpdate { get; }
+
+    public bool? HasUpdate
+    {
+        get => _hasUpdate;
+        set => this.RaiseAndSetIfChanged(ref _hasUpdate, value);
+    }
+
 
     #region -- Constructors --
 
-    public AboutViewModel(NotificationHelper notificationHelper, IConfigurationService configurationService,
-        IAppUpdateService appUpdateService)
+    public AboutViewModel(NotificationHelper notificationHelper, IConfigurationService configuration,
+        UpdateChecker checker)
     {
+        #region Start
+
+        ProductName = configuration.RuntimeConfiguration.ProductName;
+        Version = configuration.RuntimeConfiguration.Version;
+
+        #endregion
+
         #region Commands
 
         CheckUpdate = ReactiveCommand.CreateFromTask(async () =>
-        {
-            var hasUpdate = await appUpdateService.CheckUpdateAsync(configurationService.RuntimeConfiguration.Version);
-            if (hasUpdate != null)
             {
-                var viewModel = new NewVersionViewModel
-                {
-                    Version = hasUpdate.Version,
-                    ReleaseNotes = hasUpdate.ReleaseNotes
-                };
-                if (await ShowNewVersionView.Handle(viewModel))
-                {
-                    var installerPath = await appUpdateService.DownloadAsync(hasUpdate.DownloadUrl);
-                    await appUpdateService.InstallAsync(installerPath);
-                }
+                if (!await checker.CheckAsync(Version, configuration.GetCurrentConfiguration().Server + "/api/v3/app"))
+                    HasUpdate = false;
             }
-        });
+        );
 
         CheckUpdate.ThrownExceptions.Subscribe(exception =>
         {
             if (exception is NetworkNotValidException) notificationHelper.Error("检查更新失败", exception.Message);
         });
-
-        #endregion
-
-        #region Start
-
-        ProductName = configurationService.RuntimeConfiguration.ProductName;
-        Version = configurationService.RuntimeConfiguration.Version;
 
         #endregion
     }

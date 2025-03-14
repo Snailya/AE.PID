@@ -12,12 +12,9 @@
     <ItemGroup>
         <PackageReference Include="Avalonia.Diagnostics" Version="11.2.0"/>
         <PackageReference Include="Avalonia.ReactiveUI" Version="11.2.0"/>
+        <PackageReference Include="Markdown.Avalonia" Version="11.0.2" />
         <PackageReference Include="ReactiveMarbles.ObservableEvents.SourceGenerator" Version="1.3.1" PrivateAssets="all"/>
         <PackageReference Include="ReactiveUI" Version="20.1.63"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\AE.PID.Client.Core.VisioExt\AE.PID.Client.Core.VisioExt.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -37,10 +34,19 @@
             <DependentUpon>LoadingIndicator.axaml</DependentUpon>
             <SubType>Code</SubType>
         </Compile>
+        <Compile Update="Views\SimpleDialog.axaml.cs">
+          <DependentUpon>SettingsWindow.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
     </ItemGroup>
 
     <ItemGroup>
         <AvaloniaResource Include="Assets\avalonia-logo.ico"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AE.PID.Client.Core\AE.PID.Client.Core.csproj"/>
+        <ProjectReference Include="..\AE.PID.Core\AE.PID.Core.csproj"/>
     </ItemGroup>
 
 </Project>

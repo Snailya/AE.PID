@@ -2,7 +2,7 @@
 using System.Text.Json.Serialization;
 using DynamicData.Operators;
 
-namespace AE.PID.Core.DTOs;
+namespace AE.PID.Core;
 
 public class Paged<T> : IPageResponse
 {

@@ -2,7 +2,6 @@
 using System.Xml.Linq;
 using AE.PID.Server.Data;
 using AE.PID.Server.Extensions;
-using AE.PID.Server.Interfaces;
 using AE.PID.Server.Models;
 
 namespace AE.PID.Server.Services;
@@ -136,7 +135,7 @@ public class DocumentService(ILogger<DocumentService> logger) : IDocumentService
                 .Select(x => (int?)int.Parse(x.Attribute("ID")!.Value))
                 .DefaultIfEmpty(null) // 如果集合为空，则返回 null
                 .Max() ?? 0;
-            
+
             foreach (var shapeElementInPagePart in pageDocument.Descendants(MainNs + "Shape")
                          .Where(x => x.Attribute("Master")?.Value == id))
             {

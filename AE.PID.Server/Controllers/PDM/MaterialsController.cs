@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
 using AE.PID.Server.Core;
-using AE.PID.Server.Interfaces;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 

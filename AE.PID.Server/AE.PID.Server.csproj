@@ -21,15 +21,15 @@
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0"/>
         <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.4"/>
-        <PackageReference Include="NLog" Version="5.4.0" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
+        <PackageReference Include="NLog" Version="5.4.0"/>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0"/>
         <PackageReference Include="System.IO.Packaging" Version="9.0.0"/>
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\AE.PID.Core\AE.PID.Core.csproj"/>
-        <ProjectReference Include="..\AE.PID.Server.Core\AE.PID.Server.Core.csproj" />
-        <ProjectReference Include="..\AE.PID.Server.PDMS\AE.PID.Server.PDMS.csproj" />
+        <ProjectReference Include="..\AE.PID.Server.Core\AE.PID.Server.Core.csproj"/>
+        <ProjectReference Include="..\AE.PID.Server.PDMS\AE.PID.Server.PDMS.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

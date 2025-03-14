@@ -1,9 +1,8 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
-using AE.PID.Core.DTOs;
+using AE.PID.Core;
 using AE.PID.Server.Core;
 using AE.PID.Server.PDMS.Extensions;
-using AE.PID.Visio.Core.DTOs;
 
 namespace AE.PID.Server.PDMS;
 
@@ -30,7 +29,8 @@ public class ProjectService(IHttpClientFactory httpClientFactory) : IProjectServ
         response.EnsureSuccessStatusCode();
 
         var responseData = await response.Content.ReadFromJsonAsync<ResponseDto>();
-        if (string.IsNullOrEmpty(responseData?.Result)) throw new HttpRequestException("API response content is empty.");
+        if (string.IsNullOrEmpty(responseData?.Result))
+            throw new HttpRequestException("API response content is empty.");
 
         var projects = JsonSerializer
             .Deserialize<IEnumerable<SelectNewProjectInfoResponseItemDto>>(responseData.Result)
@@ -63,7 +63,8 @@ public class ProjectService(IHttpClientFactory httpClientFactory) : IProjectServ
 
         var responseData = await response.Content.ReadFromJsonAsync<ResponseDto>();
         // todo: 20250127 需要检查PDMS输入不存在的id的时候返回的是null，还是报错，如果返回的是null，则此处不应该认为是异常。
-        if (string.IsNullOrEmpty(responseData?.Result)) throw new HttpRequestException("API response content is empty.");
+        if (string.IsNullOrEmpty(responseData?.Result))
+            throw new HttpRequestException("API response content is empty.");
 
         var project = JsonSerializer
             .Deserialize<IEnumerable<SelectNewProjectInfoResponseItemDto>>(responseData.Result)
@@ -86,12 +87,13 @@ public class ProjectService(IHttpClientFactory httpClientFactory) : IProjectServ
 
         var response = await _client.PostAsync("getModeDataPageCount/countNewProject", content);
         response.EnsureSuccessStatusCode();
-        
+
         var responseData = await response.Content.ReadFromJsonAsync<ResponseDto>();
-        
+
         // todo: 此处也是需要确定会不会返回错误的结果，如果确定不会，则
-        if (string.IsNullOrEmpty(responseData?.Result)) throw new HttpRequestException("API response content is empty.");
-        
+        if (string.IsNullOrEmpty(responseData?.Result))
+            throw new HttpRequestException("API response content is empty.");
+
         var pageCountDto =
             JsonSerializer.Deserialize<PageCountDto>(responseData.Result);
 

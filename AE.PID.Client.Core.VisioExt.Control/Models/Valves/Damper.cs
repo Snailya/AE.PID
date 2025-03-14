@@ -11,13 +11,13 @@ public class Damper : ElectricalControlSpecificationItemBase
     ///     电压类型
     /// </summary>
     [XLColumn(Order = 10)]
-    [ShapeSheetCell("VoltageType")]
+    [ShapeSheetCell("Prop.VoltageType")]
     public string? VoltageType { get; set; } = string.Empty;
 
     /// <summary>
     ///     额定电压[V]
     /// </summary>
-    [ShapeSheetCell("Voltage")]
+    [ShapeSheetCell("Prop.Voltage")]
     [XLColumn(Order = 11)]
     public double? RatedVoltage { get; set; }
 

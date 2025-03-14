@@ -1,5 +1,5 @@
 ﻿using System.Text.RegularExpressions;
-using AE.PID.Core.DTOs;
+using AE.PID.Core;
 using AE.PID.Server.Data;
 using AE.PID.Server.DTOs;
 using Asp.Versioning;
@@ -31,6 +31,8 @@ public partial class AppController(ILogger<AppController> logger, AppDbContext d
                                   ControllerContext.ActionDescriptor.ControllerName,
                                   new { id = version.Id, apiVersion = "3" }) ??
                               string.Empty,
+                FileHash = version.Hash,
+                FileName = Path.GetFileName(version.PhysicalFile),
                 ReleaseNotes = version.ReleaseNotes
             }
         );
@@ -106,7 +108,8 @@ public partial class AppController(ILogger<AppController> logger, AppDbContext d
         {
             Version = versionStr,
             ReleaseNotes = dto.ReleaseNotes,
-            PhysicalFile = filePath
+            PhysicalFile = filePath,
+            Hash = HashHelper.ComputeSHA256Hash(filePath)
         };
         dbContext.AppVersions.Add(version);
         dbContext.SaveChanges();

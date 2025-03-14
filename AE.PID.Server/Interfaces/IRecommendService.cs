@@ -1,4 +1,4 @@
-﻿using AE.PID.Core.Models;
+﻿using AE.PID.Core;
 using AE.PID.Server.Data.Recommendation;
 
 namespace AE.PID.Server;

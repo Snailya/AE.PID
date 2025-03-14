@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using AE.PID.Core;
-using AE.PID.Core.DTOs;
 using DynamicData;
 
 namespace AE.PID.Client.Core;

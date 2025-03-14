@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Reflection;
+using AE.PID.Client.Core.VisioExt.Control.SocketsAndLightings;
 using ClosedXML;
 using ClosedXML.Attributes;
 using Force.DeepCloner;
@@ -129,7 +130,12 @@ public abstract class ElectricalControlSpecificationItemBase : IDataRow
 
     public IEnumerable<ElectricalControlSpecificationItemBase> Flatten()
     {
-        if (Quantity == 1) return [this];
+        if (Quantity == 1
+            || Type == typeof(Lighting)
+            || Type == typeof(Socket)
+            || (Type == typeof(Instrument) &&
+                Designation.StartsWith("BG"))) // 位置开关，在Visio中有可能使用仪表对象表示（首字母BG），也可能直接使用接近开关表示
+            return [this];
 
         var list = new List<ElectricalControlSpecificationItemBase>();
         for (var i = 0; i < Quantity; i++)

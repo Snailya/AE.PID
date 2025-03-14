@@ -13,7 +13,8 @@ public class FunctionDto
     public bool IsEnabled { get; set; }
 
     /// <summary>
-    ///     As the function zone, function group is saved as different table in PDMS, so the id might overlap between different
+    ///     As the function zone, a function group is saved as different table in PDMS, so the id might overlap between
+    ///     different
     ///     function and the Type property matters.
     /// </summary>
     public FunctionType FunctionType { get; set; }

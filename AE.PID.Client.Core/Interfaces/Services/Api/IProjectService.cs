@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using AE.PID.Core.DTOs;
+using AE.PID.Core;
 using DynamicData;
 
 namespace AE.PID.Client.Core;

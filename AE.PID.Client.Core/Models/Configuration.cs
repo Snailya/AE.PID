@@ -26,11 +26,6 @@ public class Configuration : ICloneable
     /// </summary>
     public IEnumerable<Stencil> Stencils { get; set; } = [];
 
-    /// <summary>
-    ///     The update pending to download or install.
-    /// </summary>
-    public PendingAppUpdate? PendingAppUpdate { get; set; }
-
     public object Clone()
     {
         return new Configuration
@@ -38,8 +33,7 @@ public class Configuration : ICloneable
             Server = Server,
             UserId = UserId,
             SkippedVersions = SkippedVersions,
-            Stencils = Stencils.Select(x => (Stencil)x.Clone()).ToArray(),
-            PendingAppUpdate = PendingAppUpdate is { } update ? (PendingAppUpdate)update.Clone() : null
+            Stencils = Stencils.Select(x => (Stencil)x.Clone()).ToArray()
         };
     }
 }
@@ -72,45 +66,6 @@ public class Stencil : ICloneable
     }
 }
 
-public class PendingAppUpdate : ICloneable
-{
-    /// <summary>
-    ///     The version of pending update.
-    /// </summary>
-    public string Version { get; set; } = string.Empty;
-
-    /// <summary>
-    ///     The description of updated features.
-    /// </summary>
-    public string ReleaseNotes { get; set; } = string.Empty;
-
-    /// <summary>
-    ///     The download url for the installer.
-    /// </summary>
-    public string DownloadUrl { get; set; } = string.Empty;
-
-    /// <summary>
-    ///     Indicates whether the installer has been saved
-    /// </summary>
-    public bool IsDownloaded { get; set; }
-
-    /// <summary>
-    ///     The executable path.
-    /// </summary>
-    public string InstallerPath { get; set; } = string.Empty;
-
-    public object Clone()
-    {
-        return new PendingAppUpdate
-        {
-            Version = Version,
-            InstallerPath = InstallerPath,
-            IsDownloaded = IsDownloaded,
-            DownloadUrl = DownloadUrl
-        };
-    }
-}
-
 public class RuntimeConfiguration
 {
     public string CompanyName { get; set; } = string.Empty;
@@ -118,5 +73,6 @@ public class RuntimeConfiguration
     public string Version { get; set; } = string.Empty;
     public string UUID { get; set; } = string.Empty;
 
-    public string AppDataFolder { get; set; } = string.Empty;
+    public string InstallationPath { get; set; } = string.Empty;
+    public string DataPath { get; set; } = string.Empty;
 }

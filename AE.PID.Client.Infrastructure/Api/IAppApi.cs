@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using AE.PID.Core.DTOs;
+using AE.PID.Core;
 using Refit;
 
 namespace AE.PID.Client.Infrastructure;

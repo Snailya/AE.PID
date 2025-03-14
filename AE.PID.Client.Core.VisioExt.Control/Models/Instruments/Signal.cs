@@ -40,7 +40,7 @@ public class Signal : ElectricalControlSpecificationItemBase
     /// <summary>
     ///     连接的设备
     /// </summary>
-    [Connected(null, [BaseIdDict.Instrument])]
+    [Connected(null, [BaseIdDict.Instrument, BaseIdDict.Switch])]
     [XLColumn(Ignore = true)]
     public ElectricalControlSpecificationItemBase? TargetDevice { get; set; }
 }

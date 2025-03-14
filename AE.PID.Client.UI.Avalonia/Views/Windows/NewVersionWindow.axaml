@@ -6,7 +6,7 @@
         xmlns:shared="clr-namespace:AE.PID.Client.UI.Avalonia.Shared;assembly=AE.PID.Client.UI.Avalonia.Shared"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="AE.PID.Client.UI.Avalonia.NewVersionWindow"
-        x:DataType="avalonia:NewVersionViewModel"
+        x:DataType="avalonia:NewVersionWindowViewModel"
         Height="512" Width="448"
         Icon="avares://AE.PID.Client.UI.Avalonia.Shared/Assets/avalonia-logo.ico"
         Title="新版本"
@@ -17,7 +17,7 @@
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <avalonia:NewVersionViewModel />
+        <avalonia:NewVersionWindowViewModel />
     </Design.DataContext>
 
     <shared:Page>

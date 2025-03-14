@@ -1,7 +1,6 @@
-﻿using AE.PID.Core.Models;
+﻿using AE.PID.Core;
 using AE.PID.Server.Data;
 using AE.PID.Server.Data.Recommendation;
-using AE.PID.Server.Interfaces;
 using MaterialRecommendation = AE.PID.Server.Data.Recommendation.MaterialRecommendation;
 
 namespace AE.PID.Server.Services;

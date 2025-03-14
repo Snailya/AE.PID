@@ -1,4 +1,4 @@
-﻿using AE.PID.Core.DTOs;
+﻿using AE.PID.Core;
 
 namespace AE.PID.Server.DTOs;
 

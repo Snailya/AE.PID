@@ -13,7 +13,6 @@ using AE.PID.Client.Core.VisioExt;
 using AE.PID.Client.UI.Avalonia;
 using AE.PID.Client.UI.Avalonia.VisioExt;
 using AE.PID.Core;
-using AE.PID.Core.DTOs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Office.Interop.Visio;
 using Splat;
@@ -88,7 +87,10 @@ public class Ribbon : Office.IRibbonExtensibility
 
     public void OpenSettings(Office.IRibbonControl control)
     {
-        WindowHelper.Show<SettingsWindow, SettingsWindowViewModel>();
+        var vm = ThisAddIn.Services.GetRequiredService<SettingsWindowViewModel>();
+        var ui = ThisAddIn.Services.GetRequiredService<IUserInteractionService>();
+
+        ui.Show(vm, ThisAddIn.GetApplicationHandle());
     }
 
     #endregion
@@ -167,19 +169,14 @@ public class Ribbon : Office.IRibbonExtensibility
         return content;
     }
 
-    private class CellData
-    {
-        public int Id { get; set; }
-        public short Section { get; set; }
-        public short Row { get; set; }
-        public short Cell { get; set; }
-    }
-
     #region -- Project Group --
 
     public void OpenProjectExplorer(Office.IRibbonControl control)
     {
-        WindowHelper.Show<ProjectExplorerWindow, ProjectExplorerWindowViewModel>();
+        var vm = ThisAddIn.Services.GetRequiredService<ProjectExplorerWindowViewModel>();
+        var ui = ThisAddIn.Services.GetRequiredService<IUserInteractionService>();
+
+        ui.Show(vm, new IntPtr(Globals.ThisAddIn.Application.WindowHandle32));
     }
 
     public void ExportElectricalControlSpecification(Office.IRibbonControl control)
@@ -239,7 +236,7 @@ public class Ribbon : Office.IRibbonExtensibility
     {
         // 2025.02.07: 使用RuntimePath
         var service = ThisAddIn.Services.GetRequiredService<IConfigurationService>();
-        LibraryHelper.OpenLibraries(Path.Combine(service.RuntimeConfiguration.AppDataFolder, "libraries"));
+        LibraryHelper.OpenLibraries(Path.Combine(service.RuntimeConfiguration.DataPath, "libraries"));
     }
 
     public bool IsLoadLibrariesValid(Office.IRibbonControl control)
@@ -285,9 +282,10 @@ public class Ribbon : Office.IRibbonExtensibility
                 })
             .ToArray();
         // 2025.02.05： 用户如果点击了取消按钮，则返回null，用户如果点击了确定按钮，则获得待更新的清单
-        var mastersToUpdate = await WindowHelper
-            .ShowDialog<ConfirmUpdateDocumentWindow, ConfirmUpdateDocumentWindowViewModel, VisioMaster[]?>(
-                new ConfirmUpdateDocumentWindowViewModel(mastersNeedUpdate));
+        var ui = ThisAddIn.Services.GetRequiredService<IUserInteractionService>();
+        var mastersToUpdate = await ui
+            .ShowDialog<ConfirmUpdateDocumentWindowViewModel, VisioMaster[]?>(
+                new ConfirmUpdateDocumentWindowViewModel(mastersNeedUpdate), ThisAddIn.GetApplicationHandle());
 
         // 如果用户取消了，或者待更新清单为空，则取消操作
         if (mastersToUpdate == null || !mastersToUpdate.Any()) return;
@@ -331,7 +329,7 @@ public class Ribbon : Office.IRibbonExtensibility
         // 如果文档从来没有被存储过，则不检查
         if (!Path.IsPathRooted(Globals.ThisAddIn.Application.ActiveDocument.FullName)) return false;
 
-        // check if the AE style exist, if the AE style exist, means this is a target drawing.
+        // check if the AE style exists, if the AE style exists, means this is a target drawing.
         if (Globals.ThisAddIn.Application.ActiveDocument.Styles.OfType<IVStyle>()
                 .SingleOrDefault(x => x.Name == StyleDict.Normal) ==
             null) return false;
@@ -360,7 +358,10 @@ public class Ribbon : Office.IRibbonExtensibility
 
     public void OpenTools(Office.IRibbonControl control)
     {
-        WindowHelper.Show<ToolsWindow, ToolsWindowViewModel>();
+        var vm = ThisAddIn.Services.GetRequiredService<ToolsWindowViewModel>();
+        var ui = ThisAddIn.Services.GetRequiredService<IUserInteractionService>();
+
+        ui.Show(vm, ThisAddIn.GetApplicationHandle());
     }
 
     #endregion

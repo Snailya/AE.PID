@@ -88,8 +88,7 @@ public class SelectProjectViewModel : WindowViewModelBase
 
     #region -- Constructor--
 
-    public SelectProjectViewModel(NotificationHelper notificationHelper, IProjectService projectService) : base(
-        notificationHelper, NotificationHelper.Routes.SelectProject)
+    public SelectProjectViewModel(NotificationHelper notificationHelper, IProjectService projectService)
     {
         _projectService = projectService;
         _notificationHelper = notificationHelper;

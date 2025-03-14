@@ -1,9 +1,11 @@
-﻿using System.Security.Cryptography;
+﻿using System;
+using System.IO;
+using System.Security.Cryptography;
 using System.Text;
 
-namespace AE.PID.Server.Services;
+namespace AE.PID.Core;
 
-public class MD5Helper
+public abstract class HashHelper
 {
     public static string ComputeMD5Hash(string input)
     {
@@ -17,5 +19,13 @@ public class MD5Helper
             for (var i = 0; i < hashBytes.Length; i++) sb.Append(hashBytes[i].ToString("x2"));
             return sb.ToString();
         }
+    }
+
+    public static string ComputeSHA256Hash(string filePath)
+    {
+        using var stream = File.OpenRead(filePath);
+        using var sha256 = SHA256.Create();
+        var hashBytes = sha256.ComputeHash(stream);
+        return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
     }
 }

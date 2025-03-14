@@ -1,4 +1,4 @@
-﻿namespace AE.PID.Core.DTOs;
+﻿namespace AE.PID.Core;
 
 public class MaterialRecommendationDto
 {

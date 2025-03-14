@@ -1,6 +1,5 @@
-﻿using AE.PID.Core.DTOs;
-using AE.PID.Core.Models;
-using AE.PID.Visio.Core.DTOs;
+﻿using AE.PID.Core;
+using AE.PID.Core.DTOs;
 
 namespace AE.PID.Server.PDMS.Extensions;
 

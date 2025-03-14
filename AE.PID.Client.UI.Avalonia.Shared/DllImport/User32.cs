@@ -1,7 +1,6 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
-namespace AE.PID.Client.VisioAddIn;
+namespace AE.PID.Client.UI.Avalonia.VisioExt;
 
 public static class User32
 {

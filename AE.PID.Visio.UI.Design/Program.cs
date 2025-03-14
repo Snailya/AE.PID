@@ -98,6 +98,8 @@ public sealed class Program
 
         // register for tools
         Locator.CurrentMutable.Register(() => new NotificationHelper());
+        Locator.CurrentMutable.Register(() =>
+            new UpdateChecker(Locator.Current.GetService<IUserInteractionService>()!));
 
         // register for ViewModels
 
@@ -109,7 +111,6 @@ public sealed class Program
             Locator.Current.GetService<IMaterialLocationStore>()!));
         Locator.CurrentMutable.Register(() =>
             new SettingsWindowViewModel(Locator.Current.GetService<NotificationHelper>()!,
-                Locator.Current.GetService<IConfigurationService>()!,
-                Locator.Current.GetService<IAppUpdateService>()!));
+                Locator.Current.GetService<IConfigurationService>()!, Locator.Current.GetService<UpdateChecker>()!));
     }
 }

@@ -1,6 +1,6 @@
-﻿using AE.PID.Client.Core;
-using AE.PID.Client.Core.VisioExt.Control;
-using ClosedXML.Attributes;
+﻿using ClosedXML.Attributes;
+
+namespace AE.PID.Client.Core.VisioExt.Control;
 
 [ElectricalControlSpecificationItem("3.电机和加热器类", "2.4 电加热器", [BaseIdDict.Heater])]
 public class Heater : ElectricalControlSpecificationItemBase

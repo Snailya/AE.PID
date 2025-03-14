@@ -14,8 +14,7 @@ public class MoqConfigurationService : IConfigurationService
     {
         Server = "http://localhost:32768",
         UserId = "6470",
-        Stencils = [],
-        PendingAppUpdate = null
+        Stencils = []
     });
 
     private readonly Subject<(Expression<Func<Configuration, object>> PropertyExpression, object NewValue)>

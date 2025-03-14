@@ -1,4 +1,4 @@
-﻿namespace AE.PID.Core.DTOs;
+﻿namespace AE.PID.Core;
 
 /// <summary>
 ///     用户对于推荐物料的选择结果，用作模型的训练输入。

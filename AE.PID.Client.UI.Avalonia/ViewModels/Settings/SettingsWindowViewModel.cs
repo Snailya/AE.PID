@@ -1,4 +1,5 @@
 ﻿using AE.PID.Client.Core;
+using AE.PID.Client.Infrastructure;
 using AE.PID.Client.UI.Avalonia.Shared;
 
 namespace AE.PID.Client.UI.Avalonia;
@@ -11,9 +12,9 @@ public class SettingsWindowViewModel : ViewModelBase
     #region -- Constructors --
 
     public SettingsWindowViewModel(NotificationHelper notificationHelper, IConfigurationService configurationService,
-        IAppUpdateService appUpdateService)
+        UpdateChecker checker)
     {
-        About = new AboutViewModel(notificationHelper, configurationService, appUpdateService);
+        About = new AboutViewModel(notificationHelper, configurationService, checker);
         Account = new AccountSettingViewModel(configurationService);
     }
 

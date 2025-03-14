@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using AE.PID.Client.Core;
 using AE.PID.Client.Core.Exceptions;
 using AE.PID.Client.Core.VisioExt;
-using AE.PID.Core.DTOs;
+using AE.PID.Core;
 using Microsoft.Office.Interop.Visio;
 using Refit;
 using Splat;

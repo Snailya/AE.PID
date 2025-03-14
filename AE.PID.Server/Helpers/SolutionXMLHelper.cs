@@ -2,7 +2,7 @@
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
-using AE.PID.Core.Models;
+using AE.PID.Core;
 using AE.PID.Server.Extensions;
 using Version = AE.PID.Core.Models.Version;
 

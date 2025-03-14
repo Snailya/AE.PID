@@ -35,6 +35,15 @@ public partial class ThisAddIn : IEnableLogger
     public static Subject<Unit> AvaloniaSetupUpDone { get; } = new();
     public static IServiceProvider Services { get; private set; }
 
+    /// <summary>
+    ///     Get the handle of the visio application
+    /// </summary>
+    /// <returns></returns>
+    public static IntPtr GetApplicationHandle()
+    {
+        return new IntPtr(Globals.ThisAddIn.Application.WindowHandle32);
+    }
+
     private void ThisAddIn_Startup(object sender, EventArgs e)
     {
         // register logger
@@ -95,8 +104,16 @@ public partial class ThisAddIn : IEnableLogger
         {
             // 如果当前的用户ID是空值，提示用户输入UserId
             var configuration = Services.GetRequiredService<IConfigurationService>();
+            var ui = Services.GetRequiredService<IUserInteractionService>();
+            var vm = Services.GetRequiredService<SettingsWindowViewModel>();
             if (string.IsNullOrEmpty(configuration.GetCurrentConfiguration().UserId))
-                WindowHelper.Show<SettingsWindow, SettingsWindowViewModel>();
+                ui.Show(vm, GetApplicationHandle());
+
+            // 检查更新
+            var checker = Services.GetRequiredService<UpdateChecker>();
+            _ = checker.CheckAsync(
+                configuration.RuntimeConfiguration.Version,
+                configuration.GetCurrentConfiguration().Server + "/api/v3/app");
         });
 
         _ = PrepareTasks();
@@ -162,7 +179,6 @@ public partial class ThisAddIn : IEnableLogger
         services.AddApi<ISelectionApi>();
 
         // register service for background service
-        services.AddSingleton<IAppUpdateService, AppUpdateService>();
         services.AddSingleton<StencilUpdateService>();
         services.AddSingleton<IDocumentUpdateService, DocumentUpdateService>();
         services.AddSingleton<IRecommendedService, RecommendedService>();
@@ -171,7 +187,6 @@ public partial class ThisAddIn : IEnableLogger
         services.AddSingleton<BackgroundTaskQueue>();
         services.AddHostedService<BackgroundTaskExecutor>();
 
-        services.AddSingleton<IBackgroundTask, AppUpdateTask>();
         services.AddSingleton<IBackgroundTask, StencilUpdateTask>(provider =>
         {
             var configuration = Services.GetRequiredService<IConfigurationService>();
@@ -179,6 +194,10 @@ public partial class ThisAddIn : IEnableLogger
 
             return new StencilUpdateTask(configuration, stencilUpdateService, Globals.ThisAddIn.Application);
         });
+
+        // register user interaction service
+        services.AddSingleton<IUserInteractionService, UserInteractionService>();
+        services.AddSingleton<UpdateChecker, UpdateChecker>();
 
         // register for api services
         services.AddSingleton<IProjectService, ProjectService>();

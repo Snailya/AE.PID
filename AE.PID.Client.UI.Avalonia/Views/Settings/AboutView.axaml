@@ -2,21 +2,22 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:avalonia1="clr-namespace:AE.PID.Client.UI.Avalonia"
+             xmlns:local="clr-namespace:AE.PID.Client.UI.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="AE.PID.Client.UI.Avalonia.AboutView"
-             x:DataType="avalonia1:AboutViewModel">
+             x:DataType="local:AboutViewModel">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <avalonia1:AboutViewModel />
+        <local:AboutViewModel />
     </Design.DataContext>
 
     <StackPanel Spacing="8" HorizontalAlignment="Stretch" VerticalAlignment="Center">
         <TextBlock Classes="h1" TextAlignment="Center" Text="AE PID" FontWeight="Bold" />
         <TextBlock Text="{Binding Version}" TextAlignment="Center" />
-        <Button Content="检查新版本" Command="{Binding CheckUpdate}" HorizontalAlignment="Center" />
+        <Button Content="{Binding HasUpdate, Converter={x:Static local:SimpleConverters.HasUpdateToText}}"
+                IsEnabled="{Binding HasUpdate}" Command="{Binding CheckUpdate}" HorizontalAlignment="Center" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
             <HyperlinkButton x:Name="EnabledHyperlinkButton"
                              VerticalAlignment="Center"

@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using AE.PID.Core.Models;
+using AE.PID.Core;
 
 namespace AE.PID.Server.Data.Recommendation;
 

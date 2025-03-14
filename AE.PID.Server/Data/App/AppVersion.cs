@@ -10,11 +10,13 @@ public class AppVersion : EntityBase
     /// <summary>
     ///     The version string like (major, minor, build, revision)
     /// </summary>
+    [MaxLength(50)]
     public string Version { get; set; } = new Version(0, 0, 0, 0).ToString();
 
     /// <summary>
     ///     The version description.
     /// </summary>
+    [MaxLength(8192)]
     public string ReleaseNotes { get; set; } = string.Empty;
 
     /// <summary>
@@ -22,4 +24,6 @@ public class AppVersion : EntityBase
     /// </summary>
     [MaxLength(4096)]
     public string PhysicalFile { get; set; } = string.Empty;
+
+    [MaxLength(64)] public string Hash { get; set; } = string.Empty;
 }

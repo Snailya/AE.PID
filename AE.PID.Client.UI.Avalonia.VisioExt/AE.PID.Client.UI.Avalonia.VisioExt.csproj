@@ -14,16 +14,16 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Update="Views\ToolsWindow.axaml.cs">
-            <DependentUpon>ToolsWindow.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
         <Compile Update="Views\DesignTools\SelectToolView.axaml.cs">
             <DependentUpon>SelectToolView.axaml</DependentUpon>
             <SubType>Code</SubType>
         </Compile>
-        <Compile Update="Views\ConfirmUpdateDocumentWindow.axaml.cs">
+        <Compile Update="Views\Windows\ConfirmUpdateDocumentWindow.axaml.cs">
             <DependentUpon>ConfirmUpdateDocumentWindow.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Windows\ToolsWindow.axaml.cs">
+            <DependentUpon>ToolsWindow.axaml</DependentUpon>
             <SubType>Code</SubType>
         </Compile>
     </ItemGroup>

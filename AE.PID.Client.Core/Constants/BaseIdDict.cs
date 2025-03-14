@@ -10,7 +10,7 @@ public static class BaseIdDict
 
     public const string Pump = "{664C2F7C-9EA3-4342-935D-861C148E3D52}";
     public const string Fan = "{89CB06B4-BF46-49B3-B4FD-607E935B0481}";
-    public const string Heater = "26DA5B79-CE28-41EE-A31E-06D6422994B4";
+    public const string Heater = "{26DA5B79-CE28-41EE-A31E-06D6422994B4}";
     public const string Mixer = "{FC76B226-5563-4C27-A684-2E6000057386}";
 
     public const string Valve = "{44F96032-DB81-406C-B5CC-94B2336CAA15}";
@@ -26,4 +26,5 @@ public static class BaseIdDict
     public const string Instrument = "{3D899D40-0931-4E24-9B9A-08165BE65B12}";
 
     public const string FunctionElement = "{B28A5C75-E7CB-4700-A060-1A6D0A777A94}";
+    public const string Switch = "{3340FE95-A2E0-4F55-869B-F2997802CAD7}";
 }

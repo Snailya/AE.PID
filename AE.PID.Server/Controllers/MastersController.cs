@@ -1,4 +1,4 @@
-﻿using AE.PID.Core.DTOs;
+﻿using AE.PID.Core;
 using AE.PID.Server.Data;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;

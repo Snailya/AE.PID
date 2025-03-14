@@ -7,12 +7,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\AE.PID.Server.Core\AE.PID.Server.Core.csproj" />
+        <ProjectReference Include="..\AE.PID.Server.Core\AE.PID.Server.Core.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
-      <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0"/>
+        <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.1"/>
     </ItemGroup>
 
 </Project>

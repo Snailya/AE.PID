@@ -4,7 +4,7 @@ using ReactiveUI;
 
 namespace AE.PID.Client.UI.Avalonia;
 
-public class NewVersionViewModel : ViewModelBase
+public class NewVersionWindowViewModel : WindowViewModelBase
 {
     public string ReleaseNotes { get; set; }
     public string Version { get; set; }

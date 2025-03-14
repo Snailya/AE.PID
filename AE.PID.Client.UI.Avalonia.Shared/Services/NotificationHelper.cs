@@ -6,7 +6,7 @@ namespace AE.PID.Client.UI.Avalonia.Shared;
 
 public class NotificationHelper
 {
-    private readonly BehaviorSubject<NotificationExt?> _subject = new(default);
+    private readonly BehaviorSubject<NotificationExt?> _subject = new(null);
 
     public IObservable<NotificationExt?> Notifications => _subject.AsObservable();
 

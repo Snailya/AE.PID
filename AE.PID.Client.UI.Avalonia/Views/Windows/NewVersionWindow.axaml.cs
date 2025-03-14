@@ -4,7 +4,7 @@ using ReactiveUI;
 
 namespace AE.PID.Client.UI.Avalonia;
 
-public partial class NewVersionWindow : ReactiveWindow<NewVersionViewModel>
+public partial class NewVersionWindow : ReactiveWindow<NewVersionWindowViewModel>
 {
     public NewVersionWindow()
     {
@@ -12,8 +12,8 @@ public partial class NewVersionWindow : ReactiveWindow<NewVersionViewModel>
 
         this.WhenActivated(d =>
         {
-            d(ViewModel!.Confirm.Subscribe(_ => Close()));
-            d(ViewModel!.Cancel.Subscribe(_ => Close()));
+            d(ViewModel!.Confirm.Subscribe(_ => Close(true)));
+            d(ViewModel!.Cancel.Subscribe(_ => Close(false)));
         });
     }
 }

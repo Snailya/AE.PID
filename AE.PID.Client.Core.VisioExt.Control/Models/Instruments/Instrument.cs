@@ -2,7 +2,7 @@
 
 namespace AE.PID.Client.Core.VisioExt.Control;
 
-[ElectricalControlSpecificationItem("4.仪表类设备", "3.1 电流检测 BC21~BC29", [BaseIdDict.Instrument])]
+[ElectricalControlSpecificationItem("4.仪表类设备", [BaseIdDict.Instrument, BaseIdDict.Switch])]
 public class Instrument : ElectricalControlSpecificationItemBase
 {
     private const string CustomOrder = "IRCSZAV";
@@ -97,42 +97,42 @@ public class Instrument : ElectricalControlSpecificationItemBase
     /// <summary>
     ///     高位输出/输入功能指示1
     /// </summary>
-    [ShapeSheetCell(CellDict.High1, "(?<=^.)[A-Z]*")]
+    [ShapeSheetCell(CellDict.High1)]
     [XLColumn(Ignore = true)]
     public string? High1 { get; set; }
 
     /// <summary>
     ///     高位输出/输入功能指示2
     /// </summary>
-    [ShapeSheetCell(CellDict.High2, "(?<=^.)[A-Z]*")]
+    [ShapeSheetCell(CellDict.High2)]
     [XLColumn(Ignore = true)]
     public string? High2 { get; set; }
 
     /// <summary>
     ///     高位输出/输入功能指示3
     /// </summary>
-    [ShapeSheetCell(CellDict.High3, "(?<=^.)[A-Z]*")]
+    [ShapeSheetCell(CellDict.High3)]
     [XLColumn(Ignore = true)]
     public string? High3 { get; set; }
 
     /// <summary>
     ///     低位输出/输入功能指示1
     /// </summary>
-    [ShapeSheetCell(CellDict.Low1, "(?<=^.)[A-Z]*")]
+    [ShapeSheetCell(CellDict.Low1)]
     [XLColumn(Ignore = true)]
     public string? Low1 { get; set; }
 
     /// <summary>
     ///     低位输出/输入功能指示2
     /// </summary>
-    [ShapeSheetCell(CellDict.Low2, "(?<=^.)[A-Z]*")]
+    [ShapeSheetCell(CellDict.Low2)]
     [XLColumn(Ignore = true)]
     public string? Low2 { get; set; }
 
     /// <summary>
     ///     低位输出/输入功能指示3
     /// </summary>
-    [ShapeSheetCell(CellDict.Low3, "(?<=^.)[A-Z]*")]
+    [ShapeSheetCell(CellDict.Low3)]
     [XLColumn(Ignore = true)]
     public string? Low3 { get; set; }
 
@@ -143,15 +143,15 @@ public class Instrument : ElectricalControlSpecificationItemBase
     public string Function1 => string.Join("、",
         (ControlFunctions?.Select(x => x.ToString()) ?? [])
         .OrderBy(x => CustomOrder.IndexOf(x, StringComparison.Ordinal))
-        .Concat(new[] { High1, High2, High3, Low1, Low2, Low3 }.Where(x => !string.IsNullOrEmpty(x)))
-        .Cast<string>()
-        .Select(ControlFunctionsToText));
+        .Concat(new[] { High1, High2, High3, Low1, Low2, Low3 }.Where(x => !string.IsNullOrEmpty(x))
+            .Select(x => x!.Substring(0, 1)))
+        .Select(ControlFunctionsToText)); // 2025.3.14： 高低位只允许写A、S、Z，此处不做校验，如果后面有需求再在attribute中用正则表示。
 
     /// <summary>
     ///     控制功能2
     /// </summary>
     [XLColumn(Order = 24)]
-    public string? Function2 => string.Join("\n", Signals?.Cast<Signal>().Select(x => x.AggregationFunction) ?? []);
+    public string Function2 => string.Join("\n", Signals?.Cast<Signal>().Select(x => x.AggregationFunction) ?? []);
 
     /// <summary>
     ///     运行模式

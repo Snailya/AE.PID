@@ -1,4 +1,4 @@
-﻿namespace AE.PID.Visio.Core.DTOs;
+﻿namespace AE.PID.Core;
 
 public class ProjectDto
 {

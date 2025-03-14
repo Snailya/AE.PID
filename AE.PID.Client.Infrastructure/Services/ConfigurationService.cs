@@ -8,6 +8,7 @@ using System.Reactive.Subjects;
 using System.Reflection;
 using System.Text.Json;
 using AE.PID.Client.Core;
+using Microsoft.Win32;
 using Splat;
 
 namespace AE.PID.Client.Infrastructure;
@@ -31,14 +32,17 @@ public class ConfigurationService : DisposableBase, IConfigurationService
         RuntimeConfiguration.ProductName = productName;
         RuntimeConfiguration.Version = version;
 
+        // 2025.3.12： 获取应用程序根目录
+        RuntimeConfiguration.InstallationPath = AppDomain.CurrentDomain.BaseDirectory;
+
         // ensure app data folder exist
-        RuntimeConfiguration.AppDataFolder = Path.Combine(
+        RuntimeConfiguration.DataPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), companyName,
             productName);
-        if (!Directory.Exists(RuntimeConfiguration.AppDataFolder))
-            Directory.CreateDirectory(RuntimeConfiguration.AppDataFolder);
+        if (!Directory.Exists(RuntimeConfiguration.DataPath))
+            Directory.CreateDirectory(RuntimeConfiguration.DataPath);
 
-        var configurationPath = Path.Combine(RuntimeConfiguration.AppDataFolder, "config.json");
+        var configurationPath = Path.Combine(RuntimeConfiguration.DataPath, "config.json");
 
         _configurationSubject = new BehaviorSubject<Configuration>(Load(configurationPath));
         Configuration = _configurationSubject.AsObservable();
@@ -209,5 +213,28 @@ public class ConfigurationService : DisposableBase, IConfigurationService
                 this.Log().Error(ex, "Failed to save configuration.");
             }
         }
+    }
+
+    private string? GetBaseDirectory()
+    {
+        // 在DEBUG时，Visual Studio直接加载的是Build的路径，这个时候的AddIn名称是项目的名称；
+        // 在安装后，则是获取Product Name。
+#if DEBUG
+        var addInName = Assembly.GetExecutingAssembly().GetName().Name;
+#else
+        var addInName = "AE.PID";
+#endif
+        var registryPath = $"HKEY_CURRENT_USER\\Software\\Microsoft\\Visio\\AddIns\\{addInName}";
+        var manifest = Registry.GetValue(registryPath, "Manifest", null) as string;
+
+        if (string.IsNullOrEmpty(manifest)) return null;
+
+        // 解析路径（例如：file:///C:/路径/AddIn.vsto|vstolocal）
+        if (manifest!.Contains("|")) manifest = manifest.Split('|')[0];
+
+        var vstoPath = Uri.UnescapeDataString(new Uri(manifest).LocalPath);
+        var baseDirectory = Path.GetDirectoryName(vstoPath)!;
+
+        return baseDirectory;
     }
 }

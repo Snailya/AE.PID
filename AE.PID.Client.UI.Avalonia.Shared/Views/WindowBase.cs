@@ -1,4 +1,3 @@
-using System.Reactive.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
@@ -6,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.ReactiveUI;
 using ReactiveMarbles.ObservableEvents;
+using System.Reactive.Linq;
 
 namespace AE.PID.Client.UI.Avalonia.Shared;
 

@@ -1,8 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using AE.PID.Core.DTOs;
-using AE.PID.Server.Data;
-using AE.PID.Server.PDMS;
+﻿using AE.PID.Server.PDMS;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,5 +14,4 @@ public class DebugController(ILogger<DebugController> logger) : ControllerBase
     {
         return Ok(PDMSApiResolver.CreateHeader());
     }
-
 }

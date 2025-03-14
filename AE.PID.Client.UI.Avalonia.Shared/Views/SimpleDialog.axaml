@@ -1,0 +1,31 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mdxaml="https://github.com/whistyun/Markdown.Avalonia.Tight"
+        xmlns:shared="clr-namespace:AE.PID.Client.UI.Avalonia.Shared"
+        x:Class="AE.PID.Client.UI.Avalonia.Shared.SimpleDialog"
+        x:DataType="shared:SimpleDialogViewModel"
+        Icon="avares://AE.PID.Client.UI.Avalonia.Shared/Assets/avalonia-logo.ico"
+		SizeToContent="WidthAndHeight"
+        Title="{Binding Title}"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        ExtendClientAreaToDecorationsHint="True">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <shared:SimpleDialogViewModel />
+    </Design.DataContext>
+
+    <shared:Page>
+        <DockPanel>
+            <StackPanel DockPanel.Dock="Bottom">
+                <StackPanel Classes="actions">
+                    <Button Content="确认" Command="{Binding Confirm}" />
+                    <Button Content="取消" Command="{Binding Cancel}" />
+                </StackPanel>
+            </StackPanel>
+            <mdxaml:MarkdownScrollViewer Markdown="{Binding Message}"/>
+        </DockPanel>
+    </shared:Page>
+</Window>

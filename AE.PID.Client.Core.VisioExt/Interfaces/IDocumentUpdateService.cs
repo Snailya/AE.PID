@@ -1,4 +1,4 @@
-﻿using AE.PID.Core.DTOs;
+﻿using AE.PID.Core;
 using Microsoft.Office.Interop.Visio;
 
 namespace AE.PID.Client.Core.VisioExt;

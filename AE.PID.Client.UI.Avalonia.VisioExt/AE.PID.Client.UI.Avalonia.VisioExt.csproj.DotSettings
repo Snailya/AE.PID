@@ -13,4 +13,6 @@
     <s:Boolean
             x:Key="/Default/CodeInspection/NamespaceProvider/NamespaceFoldersToSkip/=views_005Cdesigntools/@EntryIndexedValue">True</s:Boolean>
     <s:Boolean
-            x:Key="/Default/CodeInspection/NamespaceProvider/NamespaceFoldersToSkip/=views_005Ctaskpanes/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>
+            x:Key="/Default/CodeInspection/NamespaceProvider/NamespaceFoldersToSkip/=views_005Ctaskpanes/@EntryIndexedValue">True</s:Boolean>
+    <s:Boolean
+            x:Key="/Default/CodeInspection/NamespaceProvider/NamespaceFoldersToSkip/=views_005Cwindows/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>

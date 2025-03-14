@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using AE.PID.Client.Core;
 using AE.PID.Core;
-using AE.PID.Core.DTOs;
 using AE.PID.Visio.Shared;
 using DynamicData;
 using Refit;
