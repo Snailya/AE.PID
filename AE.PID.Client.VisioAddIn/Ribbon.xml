@@ -33,13 +33,13 @@
                             screentip="清除检查标记" size="large" getEnabled="IsClearValidationMarksValid"
                     />
                 </group>
-                <!--                <group id="Debug" label="Debug">-->
-                <!--                    <button id="button4" onAction="Debug" label="调试"/>-->
-                <!--                </group>-->
                 <group id="Project" label="项目">
                     <button id="ProjectExplorer" onAction="OpenProjectExplorer" label="项目浏览器"/>
                     <button id="ElectricalControlSpecification" onAction="ExportElectricalControlSpecification"
                             label="电控任务书"/>
+                </group>
+                <group id="Fix" label="修复">
+                    <button id="EndOfFile" onAction="FixEndOfFile" label="意外的文件尾"/>
                 </group>
                 <!--                <group id="Administrator" label="管理员">-->
                 <!--                    <button id="AddResponsibleProperty" onAction="AddResponsibleProperty" label="增加采购方"/>-->
