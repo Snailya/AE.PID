@@ -35,14 +35,17 @@ if (new Version(serverVersionInfo.Version) <= new Version(currentVersion))
 }
 
 // Download the packages if not exist
-var localFilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "tmp",
+var tmpDirectory = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "tmp");
+if (!Directory.Exists(tmpDirectory))
+    Directory.CreateDirectory(tmpDirectory);
+var localFilePath = Path.Combine(tmpDirectory, "tmp",
     serverVersionInfo.FileName);
 if (!File.Exists(localFilePath) || !VerifyFileHash(localFilePath, serverVersionInfo.FileHash))
 {
     Console.WriteLine($"DOWNLOADING: {serverVersionInfo.FileName}");
 
     await DownloadFileAsync(serverVersionInfo.DownloadUrl, localFilePath);
-    if (VerifyFileHash(localFilePath, serverVersionInfo.FileHash))
+    if (!VerifyFileHash(localFilePath, serverVersionInfo.FileHash))
     {
         Console.WriteLine("STATUS: UPDATE_CHECK_FAILED");
 
