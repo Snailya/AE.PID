@@ -33,7 +33,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
 Source: ".\bin\Release\*"; DestDir: "{app}"; Excludes: "*.pdb,\arm\*,\arm64\*,\musl-x64\*";Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\3rd\SourceHanSansSC-Regular.otf"; DestDir: "{autofonts}"; FontInstall: "Source Han Sans SC"; Flags: onlyifdoesntexist uninsneveruninstall
+; Source: "..\3rd\SourceHanSansSC-Regular.otf"; DestDir: "{autofonts}"; FontInstall: "Source Han Sans SC"; Flags: onlyifdoesntexist uninsneveruninstall
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]
