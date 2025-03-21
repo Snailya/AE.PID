@@ -39,6 +39,51 @@ public partial class AppController(ILogger<AppController> logger, AppDbContext d
     }
 
     /// <summary>
+    ///     Update the release notes because the upload method uses form which not allow multiple line release notes.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="releaseNotes"></param>
+    /// <returns></returns>
+    [HttpPost("{id:int}")]
+    public IActionResult UpdateReleaseNotes(int id, string releaseNotes)
+    {
+        var version = id == 0
+            ? dbContext.AppVersions.AsEnumerable().MaxBy(v => new Version(v.Version))
+            : dbContext.AppVersions.Find(id);
+
+        if (version != null)
+        {
+            version.ReleaseNotes = releaseNotes;
+            dbContext.AppVersions.Update(version);
+            dbContext.SaveChanges();
+            
+            return Ok(version);
+        }
+
+        return NotFound(); // Or handle the case when the file is not found
+    }
+
+    [HttpPost("{id:int}/hash")]
+    public IActionResult UpdateFileHash(int id)
+    {
+        var version = id == 0
+            ? dbContext.AppVersions.AsEnumerable().MaxBy(v => new Version(v.Version))
+            : dbContext.AppVersions.Find(id);
+        
+        if (version != null)
+        {
+            version.Hash = HashHelper.ComputeSHA256Hash(version.PhysicalFile);
+            dbContext.AppVersions.Update(version);
+            dbContext.SaveChanges();
+            
+            return Ok(version);
+        }
+
+        return NotFound(); // Or handle the case when the file is not found
+    }
+
+
+    /// <summary>
     ///     下载安装包。
     /// </summary>
     /// <param name="id"></param>
