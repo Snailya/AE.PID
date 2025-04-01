@@ -45,9 +45,7 @@ public class LabelBehav
     {
         if (control.GetVisualParent() is not Control parent) return;
         if (parent.Name is { } s && s.StartsWith(Name)) return;
-
-        Debug.WriteLine($"Wrap: {GetValue(control)}");
-
+        
         // 创建一个新的 Grid
         var wrapper = new Grid
         {
@@ -121,14 +119,10 @@ public class LabelBehav
             switch (control)
             {
                 case TextBox textBox:
-                    Debug.WriteLine($"OnAttachedToLogicalTree: {GetValue(control)}, FontSize: {textBox.FontSize}");
-
                     label.FontSize = textBox.FontSize;
                     label.TextAlignment = textBox.TextAlignment;
                     break;
                 case TextBlock textBlock:
-                    Debug.WriteLine($"OnAttachedToLogicalTree: {GetValue(control)}, FontSize: {textBlock.FontSize}");
-
                     label.FontSize = textBlock.FontSize;
                     label.TextAlignment = textBlock.TextAlignment;
                     break;
@@ -141,7 +135,7 @@ public class LabelBehav
         if (sender is Control { Parent: Grid { Name: { } name } wrapper } control && name.StartsWith(Name))
         {
             // erase the margin of the control
-            // Margin must be set after attached to logical tree.
+            // Margin must be set after attached to a logical tree.
             wrapper.Margin = control.Margin;
             control.Margin = new Thickness(0);
         }

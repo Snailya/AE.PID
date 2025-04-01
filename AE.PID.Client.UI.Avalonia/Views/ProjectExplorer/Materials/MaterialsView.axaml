@@ -113,8 +113,8 @@
                                 <DataTemplate>
                                     <!-- ReSharper disable once Xaml.PossibleNullReferenceException -->
                                     <CheckBox
-                                        IsVisible="{Binding $parent[DataGrid].((local:MaterialsViewModel)DataContext).SelectedLocations.Count, FallbackValue=False}"
-                                        IsChecked="{Binding $parent[DataGrid].((local:MaterialsViewModel)DataContext).SelectedLocations.Count, FallbackValue=False}"
+                                        IsVisible="{Binding $parent[DataGrid].((local:MaterialsViewModel)DataContext).SelectedLocations.Count, TargetNullValue=False}"
+                                        IsChecked="{Binding $parent[DataGrid].((local:MaterialsViewModel)DataContext).SelectedLocations.Count, TargetNullValue=False}"
                                         Command="{Binding $parent[DataGrid].((local:MaterialsViewModel)DataContext).ClearSelection}"
                                         HorizontalAlignment="Center" />
                                 </DataTemplate>
@@ -136,15 +136,18 @@
                                             x:DataType="local:MaterialLocationViewModel" />
                         <DataGridTextColumn Header="类型" Binding="{Binding MaterialType}"
                                             x:DataType="local:MaterialLocationViewModel" />
-                        <DataGridTextColumn Header="描述" IsReadOnly="False" Binding="{Binding Description}"
+                        <DataGridTextColumn Header="描述" IsReadOnly="False"
+                                            Binding="{Binding Description, UpdateSourceTrigger=LostFocus}"
                                             x:DataType="local:MaterialLocationViewModel" />
-                        <DataGridTextColumn Header="备注" IsReadOnly="False" Binding="{Binding Remarks}"
+                        <DataGridTextColumn Header="备注" IsReadOnly="False"
+                                            Binding="{Binding Remarks, UpdateSourceTrigger=LostFocus}"
                                             x:DataType="local:MaterialLocationViewModel" />
                         <DataGridTextColumn Header="关键参数" Binding="{Binding KeyParameters}"
                                             x:DataType="local:MaterialLocationViewModel" />
-                        <DataGridTextColumn Header="数量" IsReadOnly="False" Binding="{Binding Quantity}"
+                        <DataGridTextColumn Header="数量" IsReadOnly="False"
+                                            Binding="{Binding Quantity, UpdateSourceTrigger=LostFocus}"
                                             x:DataType="local:MaterialLocationViewModel" />
-                        <DataGridTextColumn Header="合计数量" IsReadOnly="True" Binding="{Binding ComputedQuantity}"
+                        <DataGridTextColumn Header="合计数量" Binding="{Binding ComputedQuantity}"
                                             x:DataType="local:MaterialLocationViewModel" />
                         <DataGridTemplateColumn Header="物料号">
                             <DataGridTemplateColumn.CellTemplate>

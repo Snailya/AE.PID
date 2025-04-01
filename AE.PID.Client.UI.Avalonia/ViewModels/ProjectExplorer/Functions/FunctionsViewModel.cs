@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
 using System.Reactive.Linq;
 using AE.PID.Client.Core;
-using AE.PID.Client.Infrastructure;
 using AE.PID.Client.UI.Avalonia.Shared;
 using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
+using Splat;
 
 namespace AE.PID.Client.UI.Avalonia;
 
@@ -66,22 +68,22 @@ public class FunctionsViewModel : ViewModelBase
 
         functionLocationStore.FunctionLocations.Connect()
             .Transform(x => x.Location)
-#if DEBUG
-            .OnItemAdded(x => DebugExt.Log("FunctionLocations.OnItemAdded", x.Id, nameof(FunctionsViewModel)))
-            .OnItemUpdated((cur, prev, _) =>
-                DebugExt.Log("FunctionLocations.OnItemUpdated", cur.Id, nameof(FunctionsViewModel)))
-            .OnItemRefreshed(x => DebugExt.Log("FunctionLocations.OnItemRefreshed", x.Id, nameof(FunctionsViewModel)))
-            .OnItemRemoved(x => DebugExt.Log("FunctionLocations.OnItemRemoved", x.Id, nameof(FunctionsViewModel)))
-#endif
             // switch to the UI thread to handle view models
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Do(x => { IsLoading = false; })
-            .TransformToTree<FunctionLocation, ICompoundKey>(x => x.ParentId, Observable.Return(DefaultPredicate))
+            .Do(changes =>
+            {
+                if (changes.Any(x => x.Current.ParentId == null))
+                    this.Log().Debug(
+                        "The parent id is null for some of the function location item, please check from IDE. The exceptional data will no be fitlered to ensure the TransformToTree method works normally.");
+            })
+            .Filter(x => x.ParentId != null)
+            .TransformToTree<FunctionLocation, ICompoundKey>(x => x.ParentId!, Observable.Return(DefaultPredicate))
             .Transform(node => new FunctionLocationTreeItemViewModel(node))
             .SortAndBind(out _locations,
                 SortExpressionComparer<FunctionLocationTreeItemViewModel>.Ascending(x => x.NodeName)
                     .ThenBy(x => x.Id))
             .DisposeMany()
+            .Do(_ => { IsLoading = false; })
             .Subscribe();
 
         this.WhenValueChanged(x => x.SelectedLocation)

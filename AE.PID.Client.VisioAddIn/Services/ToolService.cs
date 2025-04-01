@@ -3,7 +3,6 @@ using System.Linq;
 using System.Reactive.Disposables;
 using AE.PID.Client.Core;
 using AE.PID.Client.Core.VisioExt;
-using AE.PID.Client.Core.VisioExt.Models;
 using AE.PID.Client.Infrastructure;
 using DynamicData;
 

@@ -1,7 +1,7 @@
 ﻿using System.Reactive;
 using DynamicData.Binding;
-using DynamicData.Operators;
 using ReactiveUI;
+using IPageResponse = AE.PID.Core.IPageResponse;
 
 namespace AE.PID.Client.UI.Avalonia.Shared;
 

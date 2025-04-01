@@ -4,7 +4,7 @@ using DynamicData;
 
 namespace AE.PID.Client.Core;
 
-public interface IMaterialLocationStore : IStore, ILazyLoad
+public interface IMaterialLocationStore : IStore
 {
     /// <summary>
     ///     Get the dynamic material locations
@@ -27,15 +27,17 @@ public interface IMaterialLocationStore : IStore, ILazyLoad
     Task Locate(ICompoundKey id);
 
     /// <summary>
-    ///     Export the material locations to an Excel workbook.
+    ///     Convert to the part list and save as an Excel file or as an embedded object.
     /// </summary>
     /// <param name="fileName"></param>
     /// <returns></returns>
-    Task ExportAsWorkbook(string fileName);
+    Task ExportPartList(string? fileName = null);
 
+    
     /// <summary>
-    ///     Export the material locations as an embedded object in Visio.
+    /// Convert to the procurement list and save as an Excel file.
     /// </summary>
+    /// <param name="fileName"></param>
     /// <returns></returns>
-    Task ExportAsEmbeddedObject();
+    Task ExportProcurementList(string fileName);
 }

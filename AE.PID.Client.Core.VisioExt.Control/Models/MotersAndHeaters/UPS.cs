@@ -2,6 +2,7 @@
 
 namespace AE.PID.Client.Core.VisioExt.Control;
 
+    [ElectricalControlSpecificationItem("3.电机和加热器类", "2.5 UPS电源", [BaseIdDict.UPS])]
 public class UPS : ElectricalControlSpecificationItemBase
 {
     public override Type Type { get; } = typeof(UPS);

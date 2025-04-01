@@ -34,7 +34,7 @@
                     />
                 </group>
                 <group id="Project" label="项目">
-                    <button id="ProjectExplorer" onAction="OpenProjectExplorer" label="项目浏览器"/>
+                    <button id="ProjectExplorer" onAction="OpenProjectExplorer" getEnabled="CanOpenProjectExplorer" label="项目浏览器"/>
                     <button id="ElectricalControlSpecification" onAction="ExportElectricalControlSpecification"
                             label="电控任务书"/>
                 </group>

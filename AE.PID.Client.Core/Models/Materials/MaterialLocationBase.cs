@@ -4,8 +4,11 @@ public abstract record MaterialLocationBase(
     ICompoundKey Id,
     string Code,
     double Quantity,
-    double ComputedQuantity,
-    string Category) : ILocation
+    int UnitMultiplier,
+    string Category,
+    bool IsVirtual,
+    ICompoundKey? ProxyGroupId = null,
+    ICompoundKey? TargetId = null) : ILocation
 {
     /// <summary>
     ///     The user-input quantity that bound with this material location. The actual quantity will be quantity x unit
@@ -16,7 +19,7 @@ public abstract record MaterialLocationBase(
     /// <summary>
     ///     The actual quantity of the material, which is the quantity x unit multiplier.
     /// </summary>
-    public double ComputedQuantity { get; } = ComputedQuantity;
+    public double ComputedQuantity => Quantity * UnitMultiplier;
 
     /// <summary>
     ///     The category that the material fails into.
@@ -32,6 +35,13 @@ public abstract record MaterialLocationBase(
     ///     The code of the material that assigned to this location.
     /// </summary>
     public string Code { get; set; } = Code;
+
+    public bool IsVirtual { get; set; } = IsVirtual;
+
+    public ICompoundKey? ProxyGroupId { get; } = ProxyGroupId;
+    public ICompoundKey? TargetId { get; } = TargetId;
+
+    public int UnitMultiplier { get; set; } = UnitMultiplier;
 
     public ICompoundKey Id { get; } = Id;
 }

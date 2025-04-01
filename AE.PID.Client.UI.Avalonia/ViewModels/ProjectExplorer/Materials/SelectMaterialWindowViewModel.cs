@@ -30,11 +30,6 @@ public class SelectMaterialWindowViewModel : WindowViewModelBase
 
     #region -- Constructors --
 
-    internal SelectMaterialWindowViewModel()
-    {
-        // Design
-    }
-
     public SelectMaterialWindowViewModel(NotificationHelper notificationHelper,
         IMaterialService materialService, MaterialLocationContext context
     ) : base(notificationHelper,

@@ -12,7 +12,8 @@ public static class BaseIdDict
     public const string Fan = "{89CB06B4-BF46-49B3-B4FD-607E935B0481}";
     public const string Heater = "{26DA5B79-CE28-41EE-A31E-06D6422994B4}";
     public const string Mixer = "{FC76B226-5563-4C27-A684-2E6000057386}";
-
+    public const string UPS = "{032B9C1A-363B-4ECF-8DA8-0F991EEB82C2}";
+    
     public const string Valve = "{44F96032-DB81-406C-B5CC-94B2336CAA15}";
     public const string CheckValve = "{615FEC6B-1A4C-4986-AE2A-DCAC48AF4BF6}";
     public const string SafetyValve = "{BA82B40B-08B8-4A3F-9A4F-3B6D37F09436}";
@@ -27,4 +28,5 @@ public static class BaseIdDict
 
     public const string FunctionElement = "{B28A5C75-E7CB-4700-A060-1A6D0A777A94}";
     public const string Switch = "{3340FE95-A2E0-4F55-869B-F2997802CAD7}";
+
 }

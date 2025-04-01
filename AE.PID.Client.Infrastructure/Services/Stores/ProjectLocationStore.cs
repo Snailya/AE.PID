@@ -32,7 +32,7 @@ public class ProjectLocationStore : DisposableBase, IProjectLocationStore
 
     public void Update(ProjectLocation location)
     {
-        _dataProvider.ProjectLocationUpdater.OnNext(location);
+        _dataProvider.UpdateProjectLocation(location);
     }
 
     public void Save()

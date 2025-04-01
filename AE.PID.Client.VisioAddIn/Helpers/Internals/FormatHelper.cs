@@ -12,7 +12,7 @@ using Shape = Microsoft.Office.Interop.Visio.Shape;
 
 namespace AE.PID.Client.VisioAddIn;
 
-public abstract class FormatHelper
+internal abstract class FormatHelper
 {
     public static void FormatPage(Page page)
     {

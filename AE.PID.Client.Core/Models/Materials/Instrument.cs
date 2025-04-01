@@ -4,11 +4,12 @@ public record Instrument(
     ICompoundKey Id,
     string Code,
     double Quantity,
-    double ComputedQuantity,
+    int UnitMultiplier,
     string Category,
     string High,
-    string Low
-) : MaterialLocationBase(Id, Code, Quantity, ComputedQuantity, Category)
+    string Low,
+    bool IsVirtual
+) : MaterialLocationBase(Id, Code, Quantity, UnitMultiplier, Category, IsVirtual)
 {
     /// <summary>
     ///     The technical data that provides hints when processing material selection.

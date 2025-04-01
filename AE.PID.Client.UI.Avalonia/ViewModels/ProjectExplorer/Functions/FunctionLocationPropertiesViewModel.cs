@@ -7,17 +7,19 @@ namespace AE.PID.Client.UI.Avalonia;
 
 public class FunctionLocationPropertiesViewModel : ViewModelBase
 {
-    private string _description;
-    private string _element;
+    private string _description = string.Empty;
+    private string _element = string.Empty;
     private int? _functionId;
-    private string _group;
-    private string _groupEnglishName;
-    private string _groupName;
-    private string _remarks;
+    private string _group = string.Empty;
+    private string _groupEnglishName = string.Empty;
+    private string _groupName = string.Empty;
+    private bool _isVirtual;
+    private string _remarks = string.Empty;
+    private int _unitMultiplier;
 
-    private string _zone;
-    private string _zoneEnglishName;
-    private string _zoneName;
+    private string _zone = string.Empty;
+    private string _zoneEnglishName = string.Empty;
+    private string _zoneName = string.Empty;
 
     public FunctionLocationPropertiesViewModel(FunctionLocation source)
     {
@@ -34,6 +36,14 @@ public class FunctionLocationPropertiesViewModel : ViewModelBase
         Element = source.Element;
         Description = source.Description;
         Remarks = source.Remarks;
+        IsVirtual = source.IsVirtual;
+        UnitMultiplier = source.UnitMultiplier;
+    }
+
+    public bool IsVirtual
+    {
+        get => _isVirtual;
+        set => this.RaiseAndSetIfChanged(ref _isVirtual, value);
     }
 
     public int? FunctionId
@@ -100,4 +110,10 @@ public class FunctionLocationPropertiesViewModel : ViewModelBase
     }
 
     public FunctionType FunctionType { get; set; }
+
+    public int UnitMultiplier
+    {
+        get => _unitMultiplier;
+        set => this.RaiseAndSetIfChanged(ref _unitMultiplier, value);
+    }
 }

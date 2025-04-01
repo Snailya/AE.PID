@@ -7,7 +7,7 @@ using Splat;
 
 namespace AE.PID.Client.VisioAddIn;
 
-public abstract class LibraryHelper
+internal abstract class LibraryHelper
 {
     public static void OpenLibraries(string path)
     {

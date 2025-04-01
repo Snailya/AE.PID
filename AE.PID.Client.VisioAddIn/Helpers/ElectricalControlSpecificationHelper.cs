@@ -45,7 +45,7 @@ public static class ElectricalControlSpecificationHelper
                     {
                         var type = grouping.Key;
 
-                        if (type == typeof(Instrument) )
+                        if (type == typeof(Instrument))
                         {
                             // search the sheet to find the index
                             var attr = type.GetCustomAttribute<ElectricalControlSpecificationItem>();

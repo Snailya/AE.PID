@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
@@ -23,91 +22,8 @@ public class FunctionKanbanViewModel : ViewModelBase
         ObservableAsPropertyHelper<FunctionLocationPropertiesViewModel>.Default();
 
     private DateTime? _lastSynced;
-    private FunctionLocationTreeItemViewModel _location;
+    private FunctionLocationTreeItemViewModel? _location;
     private Project? _project;
-
-    public DateTime? LastSynced
-    {
-        get => _lastSynced;
-        set => this.RaiseAndSetIfChanged(ref _lastSynced, value);
-    }
-
-    /// <summary>
-    ///     The basic information for the function location. Parts of these information could be synchronized from the server
-    ///     by selecting the target function in PDMS.
-    /// </summary>
-    public FunctionLocationPropertiesViewModel Properties => _properties.Value;
-
-    /// <summary>
-    ///     The bill of materials belongs to this function location if the location is either Function Zone or Function Group.
-    /// </summary>
-    public ReadOnlyObservableCollection<MaterialLocationViewModel> Materials => _materials;
-
-    /// <summary>
-    ///     The current location that the Kanban is presenting.
-    /// </summary>
-    public FunctionLocationTreeItemViewModel Location
-    {
-        get => _location;
-        set
-        {
-            this.RaiseAndSetIfChanged(ref _location, value);
-            this.RaisePropertyChanged();
-        }
-    }
-
-    /// <summary>
-    ///     The function groups under the function location if the location is the Function Zone.
-    /// </summary>
-    public ReadOnlyObservableCollection<FunctionGroupViewModel> Groups => _groups;
-
-    /// <summary>
-    ///     The project info, which is not presented in the View, but to provide information when calling some of the APIs.
-    /// </summary>
-    private Project? Project
-    {
-        get => _project;
-        set => this.RaiseAndSetIfChanged(ref _project, value);
-    }
-
-    private static bool IsDescendant(IObservableCache<FunctionLocation, ICompoundKey> cache, FunctionLocation obj,
-        ICompoundKey parentId)
-    {
-        while (true)
-        {
-            // Recursive check: If the object itself is a direct child
-            if (obj.ParentId.Equals(parentId)) return true;
-
-            // Check if the object's parent is a descendant of the given parentId
-            if (!cache.Lookup(obj.ParentId).HasValue) return false;
-            var parent = cache.Lookup(obj.ParentId).Value;
-            obj = parent;
-        }
-    }
-
-    #region -- Commands --
-
-    public ReactiveCommand<Unit, Unit> SelectFunction { get; }
-    public ReactiveCommand<Unit, Unit> SyncFunctionGroups { get; }
-
-    #endregion
-
-    #region -- Interactions --
-
-    /// <summary>
-    ///     When user want to synchronize basic information for the function from server, a prompted window should be
-    ///     displayed, this interaction is used to telling the hosted window to open that prompt window.
-    /// </summary>
-    public Interaction<SelectFunctionViewModel?, FunctionViewModel?> ShowSelectFunctionDialog { get; } =
-        new();
-
-    /// <summary>
-    ///     Before actually syn function groups to the server, the user should check and confirm the change as the change might
-    ///     lead to unrecoverable changes in the server.
-    /// </summary>
-    public Interaction<ConfirmSyncFunctionGroupsViewModel?, Function[]?> ShowSyncFunctionGroupsDialog { get; } = new();
-
-    #endregion
 
     #region -- Constructors --
 
@@ -119,17 +35,12 @@ public class FunctionKanbanViewModel : ViewModelBase
 
         // for the function zone, the selection is allowed when there is a project specified
         // but for a function group, it could happen any time
-        var canSelect = this.WhenAnyValue(x => x.Project)
+        var canSelect = this.WhenAnyValue(x => x.Project, x => x.Properties.FunctionType)
             // switch to UI thread
             .ObserveOn(RxApp.MainThreadScheduler)
-            .CombineLatest(this.WhenAnyValue(x => x.Properties.FunctionType))
-            .Select(x =>
-            {
-                var (project, type) = x;
-                if (project != null && type == FunctionType.ProcessZone) return true;
-                if (type == FunctionType.FunctionGroup) return true;
-                return false;
-            });
+            .Select(x => x is { Item1: not null, Item2: FunctionType.ProcessZone } ||
+                         x.Item2 == FunctionType.FunctionGroup);
+
         SelectFunction =
             ReactiveCommand.CreateFromTask(
                 async kanban =>
@@ -152,7 +63,7 @@ public class FunctionKanbanViewModel : ViewModelBase
                     Properties.Source.FunctionId = dialogResult.Id;
 
                     // update the properties
-                    // there are two circumstance, the first is that the function group field is totally empty, then use the default function group code as input
+                    // there are two circumstances, the first is that the function group field is totally empty, then use the default function group code as input
                     // 2025.02.13: use the default <功能组> to decide whether to overwrite the function group label or fix its code
                     if (string.IsNullOrEmpty(Properties.Group) || Properties.Group == DefaultValueDict.FunctionGroup)
                     {
@@ -196,6 +107,7 @@ public class FunctionKanbanViewModel : ViewModelBase
         var functionObservable = fLocStore.FunctionLocations.Connect()
             .ObserveOn(RxApp.MainThreadScheduler)
             .Transform(x => x.Location);
+
         this.WhenAnyValue(x => x.Location)
             .WhereNotNull()
             .Select(x => x.Id)
@@ -205,7 +117,8 @@ public class FunctionKanbanViewModel : ViewModelBase
             .ToProperty(this, x => x.Properties, out _properties);
 
         var groupFilter = this.WhenAnyValue(x => x.Location.Id)
-            .Select<ICompoundKey, Func<FunctionLocation, bool>>(x => loc => loc.ParentId.Equals(x));
+            .DistinctUntilChanged()
+            .Select<ICompoundKey, Func<FunctionLocation, bool>>(x => loc => loc.ParentId!.Equals(x));
         functionObservable
             .Filter(groupFilter)
             .Transform(x => new FunctionGroupViewModel(x))
@@ -232,50 +145,105 @@ public class FunctionKanbanViewModel : ViewModelBase
             )
             .Subscribe();
 
-        // observe the viewmodel change and back to service
-        this.WhenAnyValue(x => x.Properties.FunctionId,
-                x => x.Properties.Zone, x => x.Properties.ZoneName, x => x.Properties.ZoneEnglishName,
-                x => x.Properties.Group, x => x.Properties.GroupName, x => x.Properties.GroupEnglishName,
-                x => x.Properties.Element,
-                x => x.Properties.Description, x => x.Properties.Remarks,
-                (functionId, zone, zoneName, zoneEnglishName, group, groupName, groupEnglishName, element, description,
-                        remarks) =>
-                    new
-                    {
-                        functionId, zone, zoneName, zoneEnglishName, group, groupName, groupEnglishName, element,
-                        description, remarks
-                    })
+        // 2025.04.07：传递数量变化
+        var observeChange = _materials.ToObservableChangeSet(t => t.Id);
+
+        observeChange
+            .WhenAnyPropertyChanged(nameof(MaterialLocationViewModel.Quantity),
+                nameof(MaterialLocationViewModel.MaterialCode))
+            .WhereNotNull()
+            .Select(x => x.MaterialSource with { Quantity = x.Quantity, Code = x.MaterialCode })
+            .Subscribe(x => mLocStore.Update([x]));
+        observeChange.WhenAnyPropertyChanged(nameof(MaterialLocationViewModel.Description),
+                nameof(MaterialLocationViewModel.Remarks))
+            .WhereNotNull()
+            .Select(x => x.FunctionSource! with { Description = x.Description, Remarks = x.Remarks })
+            .Subscribe(x => fLocStore.Update([x]));
+
+        // 2025.03.28: 使用WhenAnyValue(x=>x.Properties)仅在Properties指向新的地址时发射通知，也就是Properties被重新赋值，对应于Location变化。而当Properties.SubProperty变化时，不会发出新的通知。
+        // 当Properties被重新设置后，开始观察Properties的属性变化。
+        this.WhenAnyValue(x => x.Properties)
+            .WhereNotNull()
+            .SelectMany(props => props.WhenAnyPropertyChanged())
+            .WhereNotNull()
             .Select(x => Properties.Source with
             {
-                FunctionId = x.functionId, Zone = x.zone, ZoneName = x.zoneName, Group = x.group,
-                GroupName = x.groupName, GroupEnglishName = x.groupEnglishName, Element = x.element,
-                Description = x.description, Remarks = x.remarks
+                FunctionId = x.FunctionId, Zone = x.Zone, ZoneName = x.ZoneName, Group = x.Group,
+                GroupName = x.GroupName, GroupEnglishName = x.GroupEnglishName, Element = x.Element,
+                Description = x.Description, Remarks = x.Remarks, UnitMultiplier = x.UnitMultiplier
             })
-            .Subscribe(x => fLocStore.Update([x]));
+            .Subscribe(x => { fLocStore.Update([x]); });
 
         #endregion
     }
 
-    internal FunctionKanbanViewModel()
+    #endregion
+
+    public DateTime? LastSynced
     {
-        // Design
+        get => _lastSynced;
+        set => this.RaiseAndSetIfChanged(ref _lastSynced, value);
     }
+
+    /// <summary>
+    ///     The basic information for the function location. Parts of these information could be synchronized from the server
+    ///     by selecting the target function in PDMS.
+    /// </summary>
+    public FunctionLocationPropertiesViewModel Properties => _properties.Value;
+
+    /// <summary>
+    ///     The bill of materials belongs to this function location if the location is either Function Zone or Function Group.
+    /// </summary>
+    public ReadOnlyObservableCollection<MaterialLocationViewModel> Materials => _materials;
+
+    /// <summary>
+    ///     The current location that the Kanban is presenting.
+    /// </summary>
+    public FunctionLocationTreeItemViewModel? Location
+    {
+        get => _location;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _location, value);
+            this.RaisePropertyChanged();
+        }
+    }
+
+    /// <summary>
+    ///     The function groups under the function location if the location is the Function Zone.
+    /// </summary>
+    public ReadOnlyObservableCollection<FunctionGroupViewModel> Groups => _groups;
+
+    /// <summary>
+    ///     The project info, which is not presented in the View, but to provide information when calling some of the APIs.
+    /// </summary>
+    private Project? Project
+    {
+        get => _project;
+        set => this.RaiseAndSetIfChanged(ref _project, value);
+    }
+
+    #region -- Commands --
+
+    public ReactiveCommand<Unit, Unit> SelectFunction { get; }
+    public ReactiveCommand<Unit, Unit> SyncFunctionGroups { get; }
 
     #endregion
-}
 
-public static class TreeExtensions
-{
-    public static IEnumerable<FunctionLocationTreeItemViewModel> Flatten(this FunctionLocationTreeItemViewModel node)
-    {
-        return node.Inferiors.Any()
-            ? new[] { node }.Concat(node.Inferiors.SelectMany(child => child.Flatten())) // 使用自身，结合子节点递归展平
-            : [node];
-    }
+    #region -- Interactions --
 
-    public static IEnumerable<FunctionLocationTreeItemViewModel> Flatten<TObject, TKey>(
-        this IEnumerable<FunctionLocationTreeItemViewModel> nodes)
-    {
-        return nodes.SelectMany(node => node.Flatten());
-    }
+    /// <summary>
+    ///     When user wants to synchronize basic information for the function from server, a prompted window should be
+    ///     displayed, this interaction is used to telling the hosted window to open that prompt window.
+    /// </summary>
+    public Interaction<SelectFunctionViewModel?, FunctionViewModel?> ShowSelectFunctionDialog { get; } =
+        new();
+
+    /// <summary>
+    ///     Before actually syn function groups to the server, the user should check and confirm the change as the change might
+    ///     lead to unrecoverable changes in the server.
+    /// </summary>
+    public Interaction<ConfirmSyncFunctionGroupsViewModel?, Function[]?> ShowSyncFunctionGroupsDialog { get; } = new();
+
+    #endregion
 }

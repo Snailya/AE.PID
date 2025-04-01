@@ -4,9 +4,9 @@ using System.Collections.Generic;
 namespace AE.PID.Client.Core;
 
 /// <summary>
-///     This service manage the data used by the program, reading the history data and save the newly built data.
+///     This service manages the data used by the program, reading the history data and saves the newly built data.
 ///     The newly used data will be saved through this class either by period or before disposed, so that the program could
-///     still have limited feature if lost network connect.
+///     still have limited feature if lost network connects.
 /// </summary>
 public interface ILocalCacheService : IStore
 {
@@ -44,8 +44,7 @@ public interface ILocalCacheService : IStore
     /// </summary>
     /// <param name="material"></param>
     void AddRange(Material[] material);
-
-
+    
     /// <summary>
     ///     Get the function from the local storage by id.
     /// </summary>

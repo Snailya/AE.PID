@@ -6,7 +6,7 @@ using Shape = Microsoft.Office.Interop.Visio.Shape;
 
 namespace AE.PID.Client.VisioAddIn;
 
-public abstract class ProxyHelper
+internal abstract class ProxyHelper
 {
     public static void Insert(Shape target, FunctionType type)
     {

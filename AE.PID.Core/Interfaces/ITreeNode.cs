@@ -1,4 +1,6 @@
-﻿namespace AE.PID.Core;
+﻿using System;
+
+namespace AE.PID.Core;
 
 public interface ITreeNode<T>
 {
@@ -10,7 +12,7 @@ public interface ITreeNode<T>
     /// <summary>
     ///     The id of the parent node.
     /// </summary>
-    public T ParentId { get; }
+    public T? ParentId { get; }
 
     /// <summary>
     ///     The default label used in the tree structure.

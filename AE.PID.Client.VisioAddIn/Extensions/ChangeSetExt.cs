@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using AE.PID.Client.Core;
 using AE.PID.Client.Core.VisioExt;
-using AE.PID.Client.Core.VisioExt.Models;
 using AE.PID.Client.Infrastructure;
 using AE.PID.Client.Infrastructure.VisioExt;
-using AE.PID.Core;
 using DynamicData;
 using Microsoft.Office.Interop.Visio;
 using Splat;
@@ -17,6 +16,8 @@ namespace AE.PID.Client.VisioAddIn;
 
 public static class ChangeSetExt
 {
+    private static readonly TimeSpan BufferTime = TimeSpan.FromMilliseconds(400);
+
     private static readonly string[] CellValuesToMonitor =
     {
         CellDict.FunctionZone, CellDict.FunctionZoneName, CellDict.FunctionZoneEnglishName,
@@ -26,21 +27,8 @@ public static class ChangeSetExt
         CellDict.Remarks,
         CellDict.SubClass, CellDict.KeyParameters, CellDict.UnitQuantity, CellDict.Quantity,
         CellDict.MaterialCode,
-        CellDict.Customer
-    };
-
-    private static readonly Dictionary<string, FunctionType> CategoryFunctionTypeMap = new()
-    {
-        { "Frame", FunctionType.ProcessZone },
-        { "FunctionalGroup", FunctionType.FunctionGroup },
-        { "Unit", FunctionType.FunctionUnit },
-        { "Exclude", FunctionType.External },
-        { "Equipment", FunctionType.Equipment },
-        { "Equipments", FunctionType.Equipment },
-        { "Instrument", FunctionType.Instrument },
-        { "Instruments", FunctionType.Instrument },
-        { "FunctionalElement", FunctionType.FunctionElement },
-        { "FunctionalElements", FunctionType.FunctionElement }
+        CellDict.Customer,
+        CellDict.RefEquipment
     };
 
     /// <summary>
@@ -60,9 +48,6 @@ public static class ChangeSetExt
                     handler => document.MasterAdded -= handler,
                     SchedulerManager.VisioScheduler)
                 .Select(master => new VisioMaster(master.BaseID, master.Name, master.UniqueID))
-#if DEBUG
-                .Do(x => DebugExt.Log("MasterAdded", x))
-#endif
                 .Do(cache.AddOrUpdate);
 
             var observeRemoved = Observable.FromEvent<EDocument_BeforeMasterDeleteEventHandler, Master>(
@@ -70,9 +55,6 @@ public static class ChangeSetExt
                     handler => document.BeforeMasterDelete -= handler,
                     SchedulerManager.VisioScheduler)
                 .Select(master => new VisioMaster(master.BaseID, master.Name, master.UniqueID))
-#if DEBUG
-                .Do(x => DebugExt.Log("BeforeMasterDelete", x))
-#endif
                 .Do(master => cache.RemoveKey(master.Id.BaseId));
 
             observeAdded.Merge(observeRemoved)
@@ -103,25 +85,17 @@ public static class ChangeSetExt
             {
                 var subscription = new CompositeDisposable();
 
-                // observe each page's change
                 document.Pages.OfType<Page>().ToObservable()
                     .Merge(Observable
                         .FromEvent<EDocument_PageAddedEventHandler, Page>(
                             handler => document.PageAdded += handler,
                             handler => document.PageAdded -= handler,
-                            SchedulerManager.VisioScheduler))
-#if DEBUG
-                    .Do(x => DebugExt.Log("PageAdded", x))
-#endif
+                            SchedulerManager.VisioScheduler)) // 2025.3.19 观察新增页面
                     .Subscribe(page =>
                     {
                         var observePageChange = page.ToChangeSet(predicate)
 #if DEBUG
-                            .OnItemAdded(x => DebugExt.Log("OnItemAdded", x))
-                            .OnItemRemoved(x => DebugExt.Log("OnItemRemoved", x))
-                            .OnItemRefreshed(x => DebugExt.Log("OnItemRefreshed", x))
-                            .OnItemUpdated((current, _) =>
-                                DebugExt.Log("OnItemUpdated", current))
+                            .DebugLog()
 #endif
                             .PopulateInto(cache)
                             .DisposeWith(subscription);
@@ -129,10 +103,7 @@ public static class ChangeSetExt
                         Observable.FromEvent<EPage_BeforePageDeleteEventHandler, Page>(
                                 handler => page.BeforePageDelete += handler,
                                 handler => page.BeforePageDelete -= handler,
-                                SchedulerManager.VisioScheduler)
-#if DEBUG
-                            .Do(x => DebugExt.Log("BeforePageDelete", x))
-#endif
+                                SchedulerManager.VisioScheduler) // 2025.3.19 观察删除页面
                             .Subscribe(x =>
                             {
                                 var items = cache.Items.Where(i => i.Id.PageId == x.ID).Select(i => i.Id).ToList();
@@ -151,113 +122,10 @@ public static class ChangeSetExt
     }
 
 
-    /// <summary>
-    ///     Convert a <see cref="IVShape" /> to <see cref="FunctionLocation" />.
-    /// </summary>
-    /// <param name="source"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public static FunctionLocation ToFunctionLocation(this IVShape source)
-    {
-        var id = new VisioShapeId(source.ContainingPageID, source.ID);
-
-        var type = GetFunctionType(source);
-
-        var functionIdStr = source.TryGetValue(CellDict.FunctionId);
-        var functionId = double.TryParse(functionIdStr, out var functionIdDouble) ? (int)functionIdDouble : 0;
-
-        // 2025.02.13：如果是一般对象，则用容器判断Parent，如果是FunctionElement，则用Callout判断
-        VisioShapeId? parentId;
-        if (type == FunctionType.FunctionElement && source.IsCallout)
-        {
-            parentId = new VisioShapeId(source.ContainingPageID, source.CalloutTarget.ID);
-        }
-        else
-        {
-            var parent = source.MemberOfContainers.OfType<int>().Select(x =>
-                    new
-                    {
-                        Id = x, ContainerCount = source.ContainingPage.Shapes.ItemFromID[x].MemberOfContainers.Length
-                    })
-                .OrderByDescending(x => x.ContainerCount)
-                .FirstOrDefault();
-            parentId = new VisioShapeId(source.ContainingPageID, parent?.Id ?? 0);
-        }
-
-        var zone = source.TryGetFormatValue(CellDict.FunctionZone) ?? string.Empty;
-        var zoneName = source.TryGetFormatValue(CellDict.FunctionZoneName) ?? string.Empty;
-        var zoneEnglishName = source.TryGetFormatValue(CellDict.FunctionZoneEnglishName) ?? string.Empty;
-
-        var group = source.TryGetFormatValue(CellDict.FunctionGroup) ?? string.Empty;
-        var groupName = source.TryGetFormatValue(CellDict.FunctionGroupName) ?? string.Empty;
-        var groupEnglishName = source.TryGetFormatValue(CellDict.FunctionGroupEnglishName) ?? string.Empty;
-
-        var element = type switch
-        {
-            FunctionType.ProcessZone => string.Empty,
-            FunctionType.FunctionGroup => string.Empty,
-            FunctionType.FunctionUnit => string.Empty,
-            FunctionType.Equipment => source.TryGetFormatValue(CellDict.FunctionElement),
-            FunctionType.Instrument => source.TryGetFormatValue(CellDict.FunctionElement),
-            FunctionType.FunctionElement => source.TryGetValue(CellDict.RefEquipment) + "-" +
-                                            source.TryGetFormatValue(CellDict.FunctionElement),
-            FunctionType.External => string.Empty,
-            _ => throw new ArgumentOutOfRangeException()
-        } ?? string.Empty;
-
-        var name = type switch
-        {
-            FunctionType.ProcessZone => zoneName,
-            FunctionType.FunctionGroup => groupName,
-            FunctionType.FunctionUnit => string.Empty,
-            FunctionType.Equipment => source.TryGetValue(CellDict.SubClass),
-            FunctionType.Instrument => source.TryGetValue(CellDict.SubClass),
-            FunctionType.FunctionElement => source.TryGetValue(CellDict.ElementName),
-            FunctionType.External => string.Empty,
-            _ => throw new ArgumentOutOfRangeException()
-        } ?? string.Empty;
-
-        var remarks = source.TryGetValue(CellDict.Remarks) ?? string.Empty;
-
-        var description = type switch
-        {
-            FunctionType.FunctionGroup => source.TryGetValue(CellDict.FunctionGroupDescription),
-            FunctionType.FunctionUnit => source.TryGetValue(CellDict.FunctionGroupDescription),
-            FunctionType.Equipment => source.TryGetValue(CellDict.Description),
-            FunctionType.Instrument => source.TryGetValue(CellDict.Description),
-            FunctionType.FunctionElement => source.TryGetValue(CellDict.Description),
-            _ => string.Empty
-        } ?? string.Empty;
-
-        var responsibility = type == FunctionType.External
-            ? source.TryGetValue(CellDict.Customer) ?? string.Empty
-            : string.Empty;
-
-        // 2025.02.13: add a is optional property to distinct standard function and optional function
-        var isOptional = source.TryGetValue<bool>(CellDict.IsOptional) ?? false;
-
-        return new FunctionLocation(id,
-            parentId,
-            name,
-            type,
-            functionId,
-            zone,
-            zoneName,
-            zoneEnglishName,
-            group,
-            groupName,
-            groupEnglishName,
-            element,
-            description,
-            remarks,
-            responsibility,
-            isOptional);
-    }
-
     private static IObservable<IChangeSet<VisioShape, VisioShapeId>> ToChangeSet(
         this Page page, Func<IVShape, bool>? predicate = null)
     {
-        predicate ??= x => true;
+        predicate ??= _ => true;
 
         return ObservableChangeSet.Create<VisioShape, VisioShapeId>(cache =>
         {
@@ -266,50 +134,90 @@ public static class ChangeSetExt
                     handler => page.ShapeAdded -= handler,
                     SchedulerManager.VisioScheduler)
                 .Where(predicate)
-                .Select(shape =>
-                    new VisioShape(new VisioShapeId(shape.ContainingPageID, shape.ID), GetShapeTypes(shape)))
-                .Do(x => DebugExt.Log("ShapeAdded", x))
-                .Do(cache.AddOrUpdate);
+                // 2025.03.28： 由于shape是COM对象，必须先提取其属性，否则在buffer后可能已经释放
+                .Select(shape => new VisioShape(new VisioShapeId(shape.ContainingPageID, shape.ID),
+                    GetShapeCategories(shape)))
+                .Buffer(BufferTime)
+                .Where(x => x.Count > 0)
+                .Select(shapes =>
+                {
+                    cache.Edit(updater => updater.AddOrUpdate(shapes));
+                    return Unit.Default;
+                });
 
             var observeRemoved = Observable.FromEvent<EPage_BeforeShapeDeleteEventHandler, IVShape>(
                     handler => page.BeforeShapeDelete += handler,
                     handler => page.BeforeShapeDelete -= handler,
                     SchedulerManager.VisioScheduler)
                 .Where(predicate)
-                .Select(shape =>
-                    new VisioShape(new VisioShapeId(shape.ContainingPageID, shape.ID), GetShapeTypes(shape)))
-                .Do(x => DebugExt.Log("BeforeShapeDelete", x))
-                .Do(visioShape => cache.RemoveKey(visioShape.Id));
+                .Select(x => new VisioShapeId(x.ContainingPageID, x.ID))
+                .Buffer(BufferTime)
+                .Where(x => x.Count > 0)
+                .Select(ids =>
+                {
+                    cache.Edit(updater =>
+                        updater.RemoveKeys(ids));
+                    return Unit.Default;
+                });
 
             var observeCellUpdated = Observable.FromEvent<EPage_CellChangedEventHandler, Cell>(
                     handler => page.CellChanged += handler,
                     handler => page.CellChanged -= handler,
                     SchedulerManager.VisioScheduler)
                 .Where(cell => CellValuesToMonitor.Contains(cell.Name));
-            var observeFormulaUpdated = Observable.FromEvent<EPage_FormulaChangedEventHandler, Cell>(
-                    handler => page.FormulaChanged += handler,
-                    handler => page.FormulaChanged -= handler,
+            var observeRelationshipChanged = Observable
+                .FromEvent<EPage_ContainerRelationshipAddedEventHandler, RelatedShapePairEvent>(
+                    handler => page.ContainerRelationshipAdded += handler,
+                    handler => page.ContainerRelationshipAdded -= handler,
                     SchedulerManager.VisioScheduler)
-                .Where(cell => cell.Name == CellDict.Relationships);
+                .Merge(Observable.FromEvent<EPage_ContainerRelationshipDeletedEventHandler, RelatedShapePairEvent>(
+                    handler => page.ContainerRelationshipDeleted += handler,
+                    handler => page.ContainerRelationshipDeleted -= handler,
+                    SchedulerManager.VisioScheduler))
+                .Select(relationshipPair =>
+                    {
+                        var fromShape = relationshipPair.ContainingPage.Shapes.ItemFromID[relationshipPair.FromShapeID];
+                        var toShape = relationshipPair.ContainingPage.Shapes.ItemFromID[relationshipPair.ToShapeID];
+
+                        if (fromShape.IsCallout)
+                            return new VisioShape(new VisioShapeId(relationshipPair.ContainingPageID,
+                                relationshipPair.FromShapeID), GetShapeCategories(fromShape));
+                        return new VisioShape(new VisioShapeId(relationshipPair.ContainingPageID,
+                            relationshipPair.ToShapeID), GetShapeCategories(toShape));
+                    }
+                )
+                .Buffer(BufferTime)
+                .Where(shapes => shapes.Count > 0)
+                .Select(shapes =>
+                {
+                    cache.Edit(updater => updater.AddOrUpdate(shapes));
+                    return Unit.Default;
+                });
+
+            // 仅观察relationship会导致容器内对象增加或减少时引发容器对象不必要的更新
             var observeUpdated = observeCellUpdated
-                .Merge(observeFormulaUpdated)
                 .Where(x => predicate(x.Shape))
                 .QuiescentBuffer(TimeSpan.FromMilliseconds(400), SchedulerManager.VisioScheduler)
-                .SelectMany(x => x.GroupBy(i => i.Shape.ID)
-                    .Select(i =>
-                        {
-                            var shape = i.First().Shape;
-                            return new VisioShape(new VisioShapeId(shape.ContainingPageID, shape.ID),
-                                GetShapeTypes(shape))
-                            {
-                                ChangedProperties = i.Select(t => t.LocalName).ToArray()
-                            };
-                        }
-                    ))
-                .Do(x => DebugExt.Log("CellChanged", x))
-                .Do(cache.AddOrUpdate);
+                .Select(x =>
+                {
+                    cache.Edit(updater =>
+                        updater.AddOrUpdate(x.GroupBy(i => i.Shape.ID)
+                            .Select(i =>
+                                {
+                                    var shape = i.First().Shape;
+                                    return new VisioShape(new VisioShapeId(shape.ContainingPageID, shape.ID),
+                                        GetShapeCategories(shape))
+                                    {
+                                        ChangedProperties = i.Select(t => t.LocalName).ToArray()
+                                    };
+                                }
+                            )));
 
-            var subscription = Observable.Merge(observeAdded, observeRemoved, observeUpdated)
+                    return Unit.Default;
+                });
+
+            var subscription = Observable
+                .Merge(observeAdded, observeRemoved, observeUpdated, observeRelationshipChanged)
                 .Subscribe();
 
             // load initial values
@@ -318,34 +226,12 @@ public static class ChangeSetExt
             var initials = page.Shapes.OfType<IVShape>()
                 .Where(predicate)
                 .Select(shape =>
-                    new VisioShape(new VisioShapeId(shape.ContainingPageID, shape.ID), GetShapeTypes(shape))).ToList();
+                    new VisioShape(new VisioShapeId(shape.ContainingPageID, shape.ID), GetShapeCategories(shape)))
+                .ToList();
             cache.AddOrUpdate(initials);
 
             return subscription;
         }, t => t.Id);
-    }
-
-    /// <summary>
-    ///     Convert a <see cref="IVShape" /> to <see cref="MaterialLocation" />.
-    /// </summary>
-    /// <param name="source"></param>
-    /// <returns></returns>
-    public static MaterialLocation ToMaterialLocation(this IVShape source)
-    {
-        var locationId = new VisioShapeId(source.ContainingPageID, source.ID);
-
-        var materialCode = source.TryGetValue(CellDict.MaterialCode) ?? string.Empty;
-        var unitQuantity = source.TryGetValue<double>(CellDict.UnitQuantity) ?? 0;
-        var quantity = source.TryGetValue<int>(CellDict.Quantity) ?? 0;
-
-        var keyParameters = string.Empty;
-        if (source.CellExistsN(CellDict.KeyParameters, VisExistsFlags.visExistsAnywhere))
-            keyParameters = source.TryGetValue(CellDict.KeyParameters) ?? string.Empty;
-
-        var type = source.TryGetValue(CellDict.SubClass) ?? string.Empty;
-
-        return new MaterialLocation(locationId, materialCode, unitQuantity, quantity, type,
-            keyParameters);
     }
 
     /// <summary>
@@ -367,37 +253,40 @@ public static class ChangeSetExt
         var type = source.TryGetValue(CellDict.SubClass) ?? string.Empty;
 
         return new Instrument(locationId, materialCode, unitQuantity, quantity,
-            type, high, low);
+            type, high, low, false);
     }
 
-    private static LocationType[] GetShapeTypes(this IVShape shape)
+    private static VisioShapeCategory[] GetShapeCategories(this IVShape shape)
     {
-        var shapeCategories = shape.TryGetValue(CellDict.ShapeCategories)?.Split(';');
-        if (shapeCategories == null || !shapeCategories.Any()) return [LocationType.None];
+        var shapeCategoryValues = shape.TryGetValue(CellDict.ShapeCategories)?.Split(';');
+        if (shapeCategoryValues == null || !shapeCategoryValues.Any()) return [VisioShapeCategory.None];
+
+        var shapeCategoryValueSet = new HashSet<string>(shapeCategoryValues);
 
         // 2025.02.13: use hashset to enhance comparison efficiency 
-        var shapeCategorySet = new HashSet<string>(shapeCategories);
+        // 2025.03.26: use shape category instead of only function location or material location
+        var shapeCategories = new List<VisioShapeCategory>();
 
-        if (shapeCategorySet.Overlaps(["Frame", "FunctionalGroup", "Unit", "Exclude"]))
-            return [LocationType.FunctionLocation];
+        if (shapeCategoryValueSet.Overlaps(["Frame", "ProcessZone"]))
+            shapeCategories.Add(VisioShapeCategory.ProcessZone);
+        else if (shapeCategoryValueSet.Overlaps([
+                     "FunctionalGroup", "FunctionalGroups", "FunctionGroup", "FunctionGroups"
+                 ]))
+            shapeCategories.Add(VisioShapeCategory.FunctionalGroup);
+        else if (shapeCategoryValueSet.Overlaps(["Unit", "Units"]))
+            shapeCategories.Add(VisioShapeCategory.Unit);
+        else if (shapeCategoryValueSet.Overlaps(["Equipment", "Equipments"]))
+            shapeCategories.Add(VisioShapeCategory.Equipment);
+        else if (shapeCategoryValueSet.Overlaps(["Instrument", "Instruments"]))
+            shapeCategories.Add(VisioShapeCategory.Instrument);
+        else if (shapeCategoryValueSet.Overlaps([
+                     "FunctionalElement", "FunctionalElements", "FunctionElement", "FunctionElements"
+                 ]))
+            shapeCategories.Add(VisioShapeCategory.FunctionalElement);
 
-        if (shapeCategorySet.Overlaps([
-                "Equipment", "Equipments", "Instrument", "Instruments", "FunctionalElement", "FunctionalElements"
-            ]))
-            return [LocationType.FunctionLocation, LocationType.MaterialLocation];
+        if (shapeCategoryValueSet.Overlaps(["Proxy"]))
+            shapeCategories.Add(VisioShapeCategory.Proxy);
 
-        return [LocationType.None];
-    }
-
-    private static FunctionType GetFunctionType(IVShape shape)
-    {
-        var shapeCategories = shape.TryGetValue(CellDict.ShapeCategories)?.Split(';');
-        if (shapeCategories == null || !shapeCategories.Any()) throw new ArgumentNullException();
-
-        foreach (var category in shapeCategories)
-            if (CategoryFunctionTypeMap.TryGetValue(category, out var functionType))
-                return functionType;
-
-        throw new ArgumentOutOfRangeException();
+        return shapeCategories.ToArray();
     }
 }

@@ -15,21 +15,26 @@ public class FunctionLocationTreeItemViewModel : ReactiveObject, IDisposable,
 {
     private readonly IDisposable _cleanUp;
     private readonly ReadOnlyObservableCollection<FunctionLocationTreeItemViewModel> _inferiors;
+
+    private readonly FunctionLocation _source;
     private bool _isExpanded;
     private bool _isSelected;
 
     public FunctionLocationTreeItemViewModel(Node<FunctionLocation, ICompoundKey> node,
         FunctionLocationTreeItemViewModel? parent = null)
     {
+        _source = node.Item;
+
         Id = node.Key;
-        NodeName = node.Item.NodeName;
 
         Depth = node.Depth;
         Parent = parent;
-        ParentId = node.Item.ParentId;
+        ParentId = node.Item.ParentId!;
 
         Type = node.Item.Type;
         IsOptional = node.Item.IsOptional;
+        IsProxy = node.Item.IsProxy;
+        IsVirtual = node.Item.IsVirtual;
 
         // Wrap loader for the nested view model inside a lazy so we can control when it is invoked
         var observeChildren = node.Children.Connect()
@@ -39,17 +44,20 @@ public class FunctionLocationTreeItemViewModel : ReactiveObject, IDisposable,
             .DisposeMany()
             .Subscribe();
 
-        _cleanUp = Disposable.Create(() => { observeChildren.Dispose(); });
+        _cleanUp = Disposable.Create(observeChildren.Dispose);
     }
 
     public int Depth { get; }
     public Optional<FunctionLocationTreeItemViewModel> Parent { get; }
     public ReadOnlyObservableCollection<FunctionLocationTreeItemViewModel> Inferiors => _inferiors;
+
     public ICompoundKey Id { get; }
     public ICompoundKey ParentId { get; set; }
     public FunctionType Type { get; set; }
     public bool IsOptional { get; set; }
-    public string NodeName { get; set; }
+    public bool IsVirtual { get; set; }
+    public bool IsProxy { get; set; }
+    public string NodeName => _source.NodeName;
 
     public bool IsSelected
     {
@@ -89,8 +97,7 @@ public class FunctionLocationTreeItemViewModel : ReactiveObject, IDisposable,
     {
         return Id.GetHashCode();
     }
-
-
+    
     public static bool operator ==(FunctionLocationTreeItemViewModel left, FunctionLocationTreeItemViewModel right)
     {
         return Equals(left, right);

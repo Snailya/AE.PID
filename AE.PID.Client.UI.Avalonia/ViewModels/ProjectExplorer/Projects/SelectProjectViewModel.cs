@@ -55,7 +55,7 @@ public class SelectProjectViewModel : WindowViewModelBase
     public ReadOnlyObservableCollection<ProjectViewModel> Data => _data;
 
     private async Task<IEnumerable<ProjectViewModel>> LoadAsync(string? searchText,
-        PageRequest pageRequest)
+        int page, int size)
     {
         IsBusy = true;
 
@@ -67,7 +67,7 @@ public class SelectProjectViewModel : WindowViewModelBase
 
         try
         {
-            var response = await _projectService.GetAllAsync(searchText!, pageRequest,
+            var response = await _projectService.GetAllAsync(searchText!, page, size,
                 cancellationToken);
             result.AddRange(response.Items.Select(project => new ProjectViewModel(project)));
 
@@ -112,7 +112,7 @@ public class SelectProjectViewModel : WindowViewModelBase
             .Select(x =>
                 ObservableChangeSet.Create<ProjectViewModel>(async list =>
                 {
-                    var items = await LoadAsync(x.Second, x.First);
+                    var items = await LoadAsync(x.Second, x.First.Page, x.First.Size);
                     list.AddRange(items);
                     return () => { };
                 }))

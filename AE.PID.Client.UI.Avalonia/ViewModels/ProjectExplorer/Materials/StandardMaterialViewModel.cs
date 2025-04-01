@@ -193,12 +193,5 @@ public class StandardMaterialViewModel : ViewModelBase
             return material => JsonSerializer.Serialize(material).Contains(searchText);
         }
     }
-
-
-    internal StandardMaterialViewModel()
-    {
-        // design
-    }
-
     #endregion
 }

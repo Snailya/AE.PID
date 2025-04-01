@@ -136,14 +136,15 @@ public class ConfirmSyncFunctionGroupsViewModel : ViewModelBase
 
         #endregion
 
-        // for a confirm page, the data should be immutable because if the data changed without user notified, the user would be confirmed with wrong data
+        // for a confirmation page, the data should be immutable because if the data changed without user notified, the user would be confirmed with wrong data
 
-        // firstly get the current local data
+        // firstly, get the current local data
         Data.AddRange(functionLocationStore.FunctionLocations.Items.Select(x => x.Location)
-            .Where(x => x.ParentId.Equals(locationId)).Select(x =>
+            .Where(x => x is { ParentId: not null })
+            .Where(x => x.ParentId!.Equals(locationId)).Select(x =>
                 new SyncFunctionGroupViewModel
                 {
-                    Local = new FunctionViewModel(x.FunctionId, x.Name, x.Group, x.GroupEnglishName, x.Description)
+                    Local = new FunctionViewModel(x.FunctionId, x.GroupName, x.Group, x.GroupEnglishName, x.Description)
                 }
             ));
         _ = LoadAsync(projectId, parentId);

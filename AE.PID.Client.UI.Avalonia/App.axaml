@@ -19,6 +19,7 @@
         <controls:ControlThemes />
         <StyleInclude Source="Icons.axaml" />
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+        <StyleInclude Source="avares://AE.PID.Client.UI.Avalonia.Shared/Styles/LoadingIndicator.axaml" />
         <StyleInclude Source="avares://AE.PID.Client.UI.Avalonia.Shared/Styles/Page.axaml" />
         <StyleInclude Source="avares://AE.PID.Client.UI.Avalonia.Shared/Styles/Tag.axaml" />
         <StyleInclude Source="avares://AE.PID.Client.UI.Avalonia.Shared/Styles/Styles.axaml" />

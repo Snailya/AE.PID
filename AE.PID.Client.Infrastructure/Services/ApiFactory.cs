@@ -47,6 +47,6 @@ public class ApiFactory<T> : DisposableBase, IApiFactory<T>
         CleanUp.Add(subscription);
     }
 
-    public HttpClient HttpClient { get; private set; }
+    public HttpClient HttpClient { get; private set; } = null!;
     public T Api { get; private set; }
 }

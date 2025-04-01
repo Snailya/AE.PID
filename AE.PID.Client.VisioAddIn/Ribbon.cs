@@ -191,10 +191,19 @@ public class Ribbon : Office.IRibbonExtensibility
 
     public void OpenProjectExplorer(Office.IRibbonControl control)
     {
-        var vm = ThisAddIn.Services.GetRequiredService<ProjectExplorerWindowViewModel>();
-        var ui = ThisAddIn.Services.GetRequiredService<IUserInteractionService>();
+        var document = Globals.ThisAddIn.Application.ActiveDocument;
+        var scope = ThisAddIn.ScopeManager.GetScope(document);
 
-        ui.Show(vm, new IntPtr(Globals.ThisAddIn.Application.WindowHandle32));
+        var vm = scope.ServiceProvider.GetRequiredService<ProjectExplorerWindowViewModel>();
+        var ui = scope.ServiceProvider.GetRequiredService<IUserInteractionService>();
+
+        ui.Show(vm, new IntPtr(Globals.ThisAddIn.Application.WindowHandle32),
+            () => { ThisAddIn.ScopeManager.ReleaseScope(document); });
+    }
+
+    public bool CanOpenProjectExplorer(Office.IRibbonControl control)
+    {
+        return Globals.ThisAddIn.Application.ActiveDocument != null;
     }
 
     public void ExportElectricalControlSpecification(Office.IRibbonControl control)
@@ -203,7 +212,6 @@ public class Ribbon : Office.IRibbonExtensibility
     }
 
     #endregion
-
 
     #region -- Ribbon Callbacks --
 
@@ -361,8 +369,9 @@ public class Ribbon : Office.IRibbonExtensibility
             new MasterSnapshotDto
             {
                 BaseId = x.BaseID,
-                UniqueId = x.UniqueID
-            }); // 这里不应该使用mastersnapshotdto，因为local根本谈不上snapshot
+                UniqueId = x.UniqueID,
+                Name = x.NameU,
+            }); 
 
         var documentUpdateService = ThisAddIn.Services.GetRequiredService<IDocumentUpdateService>();
 
@@ -376,10 +385,14 @@ public class Ribbon : Office.IRibbonExtensibility
 
     public void OpenTools(Office.IRibbonControl control)
     {
-        var vm = ThisAddIn.Services.GetRequiredService<ToolsWindowViewModel>();
-        var ui = ThisAddIn.Services.GetRequiredService<IUserInteractionService>();
+        var document = Globals.ThisAddIn.Application.ActiveDocument;
+        var scope = ThisAddIn.ScopeManager.GetScope(document);
 
-        ui.Show(vm, ThisAddIn.GetApplicationHandle());
+        var vm = scope.ServiceProvider.GetRequiredService<ToolsWindowViewModel>();
+        var ui = scope.ServiceProvider.GetRequiredService<IUserInteractionService>();
+
+        ui.Show(vm, ThisAddIn.GetApplicationHandle(),
+            () => { ThisAddIn.ScopeManager.ReleaseScope(document); });
     }
 
     #endregion
@@ -529,7 +542,7 @@ public class Ribbon : Office.IRibbonExtensibility
 
     #endregion
 
-    #region Shape Context Menu
+    #region -- Shape Context Menu --
 
     public string GetToggleTypeLabel(Office.IRibbonControl control)
     {

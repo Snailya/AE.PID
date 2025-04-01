@@ -89,11 +89,6 @@ public class SelectFunctionViewModel : ViewModelBase
             });
     }
 
-    internal SelectFunctionViewModel()
-    {
-        // Design
-    }
-
     #endregion
 
     #region -- Commands --

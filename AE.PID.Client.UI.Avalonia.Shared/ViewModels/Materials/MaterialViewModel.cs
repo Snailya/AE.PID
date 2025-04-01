@@ -12,7 +12,7 @@ public class MaterialViewModel : ReactiveObject
         Name = material.Name;
         Brand = material.Brand;
         Specifications = material.Specifications;
-        Type = material.Type;
+        Type = material.OrderType;
         Unit = material.Unit;
         Supplier = material.Supplier;
         ManufacturerMaterialNumber = material.ManufacturerMaterialNumber;
@@ -23,12 +23,6 @@ public class MaterialViewModel : ReactiveObject
                 .Select(x => new MaterialPropertyViewModel(x))
             : [];
     }
-
-    internal MaterialViewModel()
-    {
-        // Design
-    }
-
 
     public Material Source { get; set; }
 

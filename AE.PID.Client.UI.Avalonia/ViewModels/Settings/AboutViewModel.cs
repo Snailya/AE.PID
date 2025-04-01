@@ -10,8 +10,8 @@ namespace AE.PID.Client.UI.Avalonia;
 public class AboutViewModel : ViewModelBase
 {
     private bool? _hasUpdate;
-    public string Version { get; set; }
-    public string ProductName { get; set; }
+    public string Version { get; set; } = string.Empty;
+    public string ProductName { get; set; } = string.Empty;
     public ReactiveCommand<Unit, Unit> CheckUpdate { get; }
 
     public bool? HasUpdate

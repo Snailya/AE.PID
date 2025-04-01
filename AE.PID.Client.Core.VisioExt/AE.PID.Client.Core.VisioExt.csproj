@@ -8,8 +8,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DynamicData" Version="9.1.1"/>
-        <PackageReference Include="System.Text.Json" Version="9.0.0"/>
+        <PackageReference Include="DynamicData" Version="9.2.1" />
+        <PackageReference Include="System.Text.Json" Version="9.0.3" />
     </ItemGroup>
 
     <ItemGroup>

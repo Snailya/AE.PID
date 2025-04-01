@@ -18,10 +18,5 @@ public class SettingsWindowViewModel : ViewModelBase
         Account = new AccountSettingViewModel(configurationService);
     }
 
-    internal SettingsWindowViewModel()
-    {
-        // Design
-    }
-
     #endregion
 }

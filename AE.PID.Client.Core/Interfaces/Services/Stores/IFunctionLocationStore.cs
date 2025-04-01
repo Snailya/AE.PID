@@ -4,7 +4,7 @@ using DynamicData;
 
 namespace AE.PID.Client.Core;
 
-public interface IFunctionLocationStore : IStore, ILazyLoad
+public interface IFunctionLocationStore : IStore
 {
     /// <summary>
     ///     Get the dynamic material locations
@@ -18,11 +18,4 @@ public interface IFunctionLocationStore : IStore, ILazyLoad
     /// <param name="locations"></param>
     /// <returns></returns>
     void Update(FunctionLocation[] locations);
-
-    /// <summary>
-    ///     Get the function location by its id.
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    FunctionLocation? Find(ICompoundKey id);
 }

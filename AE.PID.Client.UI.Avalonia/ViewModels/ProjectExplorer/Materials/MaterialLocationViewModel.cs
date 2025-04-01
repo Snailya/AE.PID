@@ -62,6 +62,8 @@ public class MaterialLocationViewModel(MaterialLocation location, Lazy<Task<Reso
         set => this.RaiseAndSetIfChanged(ref _remarks, value);
     }
 
+    public bool IsVirtual { get; } = location.IsVirtual;
+
     public bool Equals(MaterialLocationViewModel? other)
     {
         if (other is null) return false;

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using AE.PID.Client.Core;
 using AE.PID.Client.UI.Avalonia.Shared;
 using ReactiveUI;
@@ -9,29 +7,12 @@ namespace AE.PID.Client.UI.Avalonia;
 
 public class ProjectExplorerWindowViewModel : WindowViewModelBase
 {
-    private readonly IFunctionLocationStore _functionLocationStore;
-    private readonly IMaterialLocationStore _materialLocationStore;
     private int _viewIndex;
 
     public int ViewIndex
     {
         get => _viewIndex;
         set => this.RaiseAndSetIfChanged(ref _viewIndex, value);
-    }
-
-    protected override void SetupSubscriptions(CompositeDisposable d)
-    {
-        base.SetupSubscriptions(d);
-
-        // load data if switch tab to function or material 
-        this.WhenAnyValue(x => x.ViewIndex)
-            .Where(x => x > 0)
-            .Take(1)
-            .Subscribe(_ =>
-            {
-                _functionLocationStore.Load();
-                _materialLocationStore.Load();
-            });
     }
 
     # region -- View Bounded --
@@ -44,11 +25,6 @@ public class ProjectExplorerWindowViewModel : WindowViewModelBase
 
     #region -- Constructors --
 
-    internal ProjectExplorerWindowViewModel()
-    {
-        // Design
-    }
-
     public ProjectExplorerWindowViewModel(NotificationHelper notificationHelper,
         IProjectService projectService,
         IFunctionService functionService, IMaterialService materialService,
@@ -56,9 +32,6 @@ public class ProjectExplorerWindowViewModel : WindowViewModelBase
         IMaterialLocationStore materialLocationStore) : base(notificationHelper,
         NotificationHelper.Routes.ProjectExplorer)
     {
-        _functionLocationStore = functionLocationStore;
-        _materialLocationStore = materialLocationStore;
-
         // initialize view bounded view models
         Projects = new ProjectsViewModel(notificationHelper, projectService, projectLocationStore);
         Materials = new MaterialsViewModel(notificationHelper, functionLocationStore, materialLocationStore,
@@ -66,12 +39,12 @@ public class ProjectExplorerWindowViewModel : WindowViewModelBase
         Functions = new FunctionsViewModel(notificationHelper, functionService, functionLocationStore,
             materialLocationStore);
 
-        // when project changes, propagate to functions because it uses project to decide whether selection function feature is available
+        // when project changes, propagate to functions because it uses a project to decide whether selection function feature is available
         this.WhenAnyValue(x => x.Projects.Project)
-            .Subscribe(x =>
+            .Subscribe(project =>
             {
-                Functions.Project = x;
-                Materials.Project = x;
+                Functions.Project = project;
+                Materials.Project = project;
             });
     }
 

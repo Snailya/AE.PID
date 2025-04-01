@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,8 +22,14 @@ namespace AE.PID.Client.Infrastructure.VisioExt;
 
 public class DocumentUpdateService : DisposableBase, IDocumentUpdateService
 {
-    private static IEnumerable<MasterSnapshotDto> _masters = [];
+    // 替换静态字典为线程安全结构
+    private static ConcurrentDictionary<string, MasterSnapshotDto> _masterDict = [];
     private readonly IApiFactory<IDocumentApi> _apiFactory;
+
+    // 添加 CancellationTokenSource 支持取消
+    private readonly CancellationTokenSource _cts = new();
+
+    private readonly SemaphoreSlim _dictLock = new(1, 1);
 
     private readonly BehaviorSubject<bool> _initialized = new(false);
     private readonly Timer _timer;
@@ -43,7 +50,7 @@ public class DocumentUpdateService : DisposableBase, IDocumentUpdateService
                 $"{filePath} is not a valid document for document update. Only visio drawing file is valid.");
         if (!File.Exists(filePath)) throw new FileNotFoundException($"{filePath} not exist on the local storage.");
 
-        // convert the file to byte-array content and sent as byte-array
+        // convert the file to byte-array content and sent as a byte-array
         // because there is an encrypted system on end user, so directly transfer the file to server will not be able to read in the server side
         var fileBytes = File.ReadAllBytes(filePath);
 
@@ -69,12 +76,12 @@ public class DocumentUpdateService : DisposableBase, IDocumentUpdateService
             }
 
             // create a copy of the source file
-            var backup = Path.ChangeExtension(filePath, ".bak");
-            if (File.Exists(backup))
-                backup = Path.Combine(Path.GetDirectoryName(backup) ?? string.Empty,
-                    Path.GetFileNameWithoutExtension(backup) + DateTime.Now.ToString("yyyyMMddhhmmss") + ".bak");
-            File.Copy(filePath, backup);
-            this.Log().Info($"Back file created at {backup}");
+            var backupPath = Path.ChangeExtension(filePath, ".bak");
+            if (File.Exists(backupPath))
+                backupPath = Path.Combine(Path.GetDirectoryName(backupPath) ?? string.Empty,
+                    Path.GetFileNameWithoutExtension(backupPath) + DateTime.Now.ToString("yyyyMMddhhmmss") + ".bak");
+            File.Copy(filePath, backupPath);
+            this.Log().Info("Backup created at {BackupPath}", backupPath);
 
             // overwrite the origin file after a successful update
             using (var fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write))
@@ -103,26 +110,49 @@ public class DocumentUpdateService : DisposableBase, IDocumentUpdateService
     // <inheritdoc />
     public bool HasUpdate(IEnumerable<MasterSnapshotDto> localMasters)
     {
-        foreach (var local in localMasters)
-            if (_masters.SingleOrDefault(x => x.BaseId == local.BaseId) is { } toCompare &&
-                toCompare.UniqueId != local.UniqueId)
-                return true;
-
-        return false;
+        return localMasters.Any(local =>
+            _masterDict.TryGetValue(local.BaseId, out var toCompare) &&
+            toCompare.UniqueId != local.UniqueId
+        );
     }
 
-
-    // <inheritdoc />
     public List<VisioMaster> GetOutdatedMasters(IVDocument document)
     {
-        if (!_masters.Any()) _masters = _apiFactory.Api.GetCurrentSnapshot().GetAwaiter().GetResult();
+        // 关键：在独立线程上下文中同步等待异步操作
+        return Task.Run(async () =>
+            {
+                try
+                {
+                    return await GetOutdatedMastersAsync(document).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    this.Log().Error("Failed to get outdated masters", ex);
+                    return [];
+                }
+            })
+            .GetAwaiter()
+            .GetResult(); // 阻塞当前线程直到任务完成
+    }
+
+    // <inheritdoc />
+    private async Task<List<VisioMaster>> GetOutdatedMastersAsync(IVDocument document)
+    {
+        if (_masterDict.IsEmpty)
+        {
+            await _dictLock.WaitAsync();
+
+            var result = await _apiFactory.Api.GetCurrentSnapshot().ConfigureAwait(false);
+            _masterDict = new ConcurrentDictionary<string, MasterSnapshotDto>(result.ToDictionary(t => t.BaseId));
+        }
 
         // get the masters of the document
         var needUpdate = new List<VisioMaster>();
         foreach (var master in document.Masters.OfType<IVMaster>())
         {
-            var snapshot = _masters.SingleOrDefault(x => x.BaseId == master.BaseID);
-            if (snapshot != null && master.UniqueID != snapshot.UniqueId)
+            if (!_masterDict.TryGetValue(master.BaseID, out var snapshot)) continue;
+
+            if (master.UniqueID != snapshot.UniqueId)
                 needUpdate.Add(new VisioMaster(master.BaseID, master.Name, master.UniqueID));
         }
 
@@ -136,30 +166,43 @@ public class DocumentUpdateService : DisposableBase, IDocumentUpdateService
         base.Dispose();
     }
 
-    // todo：这段写的不好
-    private void UpdateMasterCaches(object state)
+    private async void UpdateMasterCaches(object state)
     {
-        Task.Run(async () =>
+        try
         {
+            var snapshots = await _apiFactory.Api.GetCurrentSnapshot().ConfigureAwait(false);
+
+            await _dictLock.WaitAsync(_cts.Token);
             try
             {
-                _masters = await _apiFactory.Api.GetCurrentSnapshot();
+                // todo: handle this
+                var newDict = snapshots.ToDictionary(x => x.BaseId);
+                _masterDict = new ConcurrentDictionary<string, MasterSnapshotDto>(newDict);
                 _initialized.OnNext(true);
-
-                this.Log().Info($"{_masters.Count()} master snapshots cached.");
+                this.Log().Info($"{_masterDict.Count} master snapshots cached.");
             }
-            catch (ApiException e)
+            finally
             {
-                this.Log().Error(new NetworkNotValidException());
-
-                _masters = [];
+                _dictLock.Release();
             }
-            catch (HttpRequestException e)
-            {
-                this.Log().Error(new NetworkNotValidException());
-
-                _masters = [];
-            }
-        });
+        }
+        catch (OperationCanceledException)
+        {
+            // 忽略取消请求
+        }
+        catch (ApiException e)
+        {
+            this.Log().Error("API Error during cache update", e);
+            _masterDict.Clear();
+        }
+        catch (HttpRequestException e)
+        {
+            this.Log().Error("Network Error during cache update", e);
+            _masterDict.Clear();
+        }
+        catch (Exception ex)
+        {
+            this.Log().Error(ex);
+        }
     }
 }

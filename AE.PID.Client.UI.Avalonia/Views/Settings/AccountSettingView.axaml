@@ -24,6 +24,7 @@
 
     <StackPanel Grid.IsSharedSizeScope="True">
         <TextBlock shared:LabelBehav.Value="设备ID" Text="{Binding DeviceId}" />
-        <TextBox shared:LabelBehav.Value="工号" Text="{Binding UserId}" Watermark="e.g. 6470" />
+        <TextBox shared:LabelBehav.Value="工号" Text="{Binding UserId, UpdateSourceTrigger=LostFocus}"
+                 Watermark="e.g. 6470" />
     </StackPanel>
 </UserControl>

@@ -19,7 +19,7 @@ public class ProjectResolver(IProjectService projectService, ILocalCacheService 
         {
             return new ResolveResult<Project?>(null, DataSource.Api) { Message = e.Message };
         }
-        catch (NetworkNotValidException _)
+        catch (NetworkNotValidException)
         {
             // if the network is invalid now, try to resolve it from local cache.
             // however, the local cache can miss that data, so if there is no record in the local cache, simply return null

@@ -142,9 +142,9 @@ public class MaterialService(IApiFactory<IMaterialApi> apiFactory)
     }
 
     /// <inheritdoc />
-    public async Task<Material> GetByCodeAsync(string code, CancellationToken token = default)
+    public async Task<Material> GetByCodeAsync(string? code, CancellationToken token = default)
     {
-        if (string.IsNullOrEmpty(code)) throw new ArgumentNullException(nameof(code));
+        if (code == null || string.IsNullOrEmpty(code)) throw new ArgumentNullException(nameof(code));
 
         var cache = _caches.Lookup(code);
         if (cache.HasValue) return await ToMaterial(cache.Value);
@@ -236,7 +236,7 @@ public class MaterialService(IApiFactory<IMaterialApi> apiFactory)
             }).ToArray(),
             Brand = dto.Brand,
             Specifications = dto.Specifications,
-            Type = dto.Type,
+            OrderType = dto.Type,
             Unit = dto.Unit,
             Supplier = dto.Manufacturer,
             ManufacturerMaterialNumber = dto.ManufacturerMaterialNumber,

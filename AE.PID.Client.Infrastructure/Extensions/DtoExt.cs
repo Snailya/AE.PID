@@ -15,8 +15,9 @@ public static class DtoExt
                 Name = dto.Name,
                 Code = dto.Code,
                 FamilyName = dto.FamilyName,
-                Director = null,
-                ProjectManager = null
+                // todo: not initialized
+                Director = string.Empty,
+                ProjectManager = string.Empty
             };
     }
 

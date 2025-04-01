@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -55,18 +54,18 @@ public class ProjectService(IApiFactory<IProjectApi> apiFactory)
         }
         catch (Exception e)
         {
-            Debugger.Break();
+            this.Log().Error(e);
             throw;
         }
     }
 
     /// <inheritdoc />
-    public async Task<Paged<Project>> GetAllAsync(string searchTerm, PageRequest pageRequest,
+    public async Task<Paged<Project>> GetAllAsync(string searchTerm, int page, int size,
         CancellationToken token = default)
     {
         try
         {
-            var result = await apiFactory.Api.GetProjectsAsync(searchTerm, pageRequest.Page, pageRequest.Size);
+            var result = await apiFactory.Api.GetProjectsAsync(searchTerm, page, size);
 
             return new Paged<Project>
             {
@@ -79,13 +78,15 @@ public class ProjectService(IApiFactory<IProjectApi> apiFactory)
         }
         catch (ApiException e)
         {
-            this.Log().Error(e, $"Params: [{nameof(searchTerm)}: {searchTerm}, {nameof(pageRequest)}: {pageRequest}]");
+            this.Log().Error(e,
+                $"Params: [{nameof(searchTerm)}: {searchTerm}, {nameof(page)}: {page}, {nameof(size)}: {size}]");
 
             throw new NetworkNotValidException();
         }
         catch (HttpRequestException e)
         {
-            this.Log().Error(e, $"Params: [{nameof(searchTerm)}: {searchTerm}, {nameof(pageRequest)}: {pageRequest}]");
+            this.Log().Error(e,
+                $"Params: [{nameof(searchTerm)}: {searchTerm}, {nameof(page)}: {page}, {nameof(size)}: {size}]");
 
             throw new NetworkNotValidException();
         }

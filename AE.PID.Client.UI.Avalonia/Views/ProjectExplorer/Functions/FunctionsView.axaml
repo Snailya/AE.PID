@@ -2,16 +2,30 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:viewModels1="clr-namespace:AE.PID.Client.UI.Avalonia"
+             xmlns:vm="clr-namespace:AE.PID.Client.UI.Avalonia"
              xmlns:shared="clr-namespace:AE.PID.Client.UI.Avalonia.Shared;assembly=AE.PID.Client.UI.Avalonia.Shared"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="AE.PID.Client.UI.Avalonia.FunctionsView"
-             x:DataType="viewModels1:FunctionsViewModel">
+             x:DataType="vm:FunctionsViewModel">
+    <UserControl.Styles>
+        <Style Selector="Border.icon">
+            <Setter Property="Width" Value="20" />
+            <Setter Property="Height" Value="20" />
+            <Setter Property="Margin" Value="2 0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="CornerRadius" Value="2" />
+        </Style>
+        <Style Selector="Border.icon > TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+    </UserControl.Styles>
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <viewModels1:FunctionsViewModel />
+        <vm:FunctionsViewModel />
     </Design.DataContext>
 
     <DockPanel>
@@ -21,7 +35,7 @@
                       ItemsSource="{Binding Locations}"
                       SelectedItem="{Binding SelectedLocation}">
                 <TreeView.Styles>
-                    <Style Selector="TreeViewItem" x:DataType="viewModels1:FunctionLocationTreeItemViewModel">
+                    <Style Selector="TreeViewItem" x:DataType="vm:FunctionLocationTreeItemViewModel">
                         <Setter Property="IsSelected"
                                 Value="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         <Setter Property="IsExpanded"
@@ -30,15 +44,25 @@
                 </TreeView.Styles>
                 <TreeView.ItemTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Inferiors}">
-                        <StackPanel>
+                        <StackPanel Orientation="Horizontal">
                             <TextBlock Text="{Binding NodeName}"
-                                       Foreground="{Binding IsOptional, Converter={x:Static viewModels1:SimpleConverters.FunctionGroupOptionalToTextColor}}" />
+                                       Foreground="{Binding IsOptional, Converter={x:Static vm:SimpleConverters.FunctionGroupOptionalToTextColor}}"
+                                       VerticalAlignment="Center" />
+                            <Border Classes="icon"
+                                    IsVisible="{Binding IsProxy}" Background="LightSteelBlue">
+                                <TextBlock Text="代" />
+                            </Border>
+                            <Border Classes="icon"
+                                    IsVisible="{Binding IsVirtual}" Background="LightGoldenrodYellow">
+                                <TextBlock Text="虚" />
+                            </Border>
                         </StackPanel>
                     </TreeDataTemplate>
                 </TreeView.ItemTemplate>
             </TreeView>
         </Grid>
 
-        <viewModels1:FunctionKanbanView DataContext="{Binding Kanban}" />
+        <vm:FunctionKanbanView DataContext="{Binding Kanban}"
+                               IsVisible="{Binding Location, Converter={x:Static ObjectConverters.IsNotNull}}" />
     </DockPanel>
 </UserControl>

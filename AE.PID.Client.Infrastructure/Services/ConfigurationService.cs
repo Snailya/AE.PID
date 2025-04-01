@@ -17,16 +17,16 @@ public class ConfigurationService : DisposableBase, IConfigurationService
 {
     private readonly BehaviorSubject<Configuration> _configurationSubject;
     private readonly object _lock = new();
-    private readonly IStorageService _storageService;
+    private readonly IExportService _exportService;
 
     private readonly Subject<(Expression<Func<Configuration, object>> PropertyExpression, object NewValue)>
         _updateSubject = new();
 
-    public ConfigurationService(IStorageService storageService, string companyName, string productName, string version)
+    public ConfigurationService(IExportService exportService, string companyName, string productName, string version)
     {
         this.Log().Info("Initializing configuration service...");
 
-        _storageService = storageService;
+        _exportService = exportService;
 
         RuntimeConfiguration.CompanyName = companyName;
         RuntimeConfiguration.ProductName = productName;
@@ -205,7 +205,7 @@ public class ConfigurationService : DisposableBase, IConfigurationService
         {
             try
             {
-                _storageService.SaveAsJson(filePath, config);
+                _exportService.SaveAsJson(filePath, config);
                 this.Log().Info($"Configuration saved at path {filePath}.");
             }
             catch (Exception ex)

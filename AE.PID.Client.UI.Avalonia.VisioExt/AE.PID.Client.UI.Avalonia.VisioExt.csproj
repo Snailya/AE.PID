@@ -10,10 +10,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="11.2.0"/>
-    </ItemGroup>
-
-    <ItemGroup>
         <Compile Update="Views\DesignTools\SelectToolView.axaml.cs">
             <DependentUpon>SelectToolView.axaml</DependentUpon>
             <SubType>Code</SubType>

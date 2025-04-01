@@ -10,7 +10,7 @@ namespace AE.PID.Client.UI.Avalonia;
 public class AccountSettingViewModel : ViewModelBase
 {
     private readonly IConfigurationService _configurationService;
-    private string _userId;
+    private string _userId = string.Empty;
 
     [Required]
     public string UserId
@@ -36,7 +36,7 @@ public class AccountSettingViewModel : ViewModelBase
 
         configurationService.Configuration.Subscribe(v => { UserId = v.UserId; });
 
-        this.ObservableForProperty(x => x.UserId, skipInitial: true)
+        this.ObservableForProperty(x => x.UserId, false, true)
             .Throttle(TimeSpan.FromMilliseconds(450))
             .Select(x => x.Value)
             .Subscribe(DoUpdateUserId);

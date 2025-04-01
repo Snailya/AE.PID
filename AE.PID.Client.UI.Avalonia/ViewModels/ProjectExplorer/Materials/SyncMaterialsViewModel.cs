@@ -11,12 +11,7 @@ public class SyncMaterialsViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> Cancel { get; set; }
     
     #region Constructors
-
-    public SyncMaterialsViewModel()
-    {
-        // Design
-    }
-
+    
     public SyncMaterialsViewModel(ICollection collection)
     {
     }

@@ -97,6 +97,9 @@ public class SimpleConverters
 
     public static FuncValueConverter<bool?, string> HasUpdateToText { get; } =
         new(hasUpdate => hasUpdate == false ? "已经是最新版" : "检查更新");
+    
+    public static FuncValueConverter<FunctionType?, bool> IsGroupColumnVisible { get; } =
+        new(type => type is not FunctionType.FunctionGroup);
 
     #region -- Function Types --
 
@@ -109,15 +112,18 @@ public class SimpleConverters
     /// <summary>
     ///     Check if it is a function zone.
     /// </summary>
-    public static FuncValueConverter<FunctionLocationPropertiesViewModel?, bool> IsZone { get; } =
-        new(vm => vm?.FunctionType is FunctionType.ProcessZone);
+    public static FuncValueConverter<FunctionType?, bool> IsZone { get; } =
+        new(type => type is FunctionType.ProcessZone);
+
+    public static FuncValueConverter<FunctionType?, bool> IsNotZone { get; } =
+        new(type => type is not FunctionType.ProcessZone);
 
     /// <summary>
-    ///     Check if it is not a equipment or instrument.
+    ///     Check if it is not an equipment or instrument.
     /// </summary>
-    public static FuncValueConverter<FunctionLocationPropertiesViewModel?, bool>
-        IsNotEquipmentOrInstrumentOrFunctionElement { get; } =
-        new(vm => vm?.FunctionType is not (FunctionType.Instrument or FunctionType.Equipment
+    public static FuncValueConverter<FunctionType?, bool>
+        IsMaterialExpanderVisible { get; } =
+        new(type => type is not (FunctionType.Instrument or FunctionType.Equipment
             or FunctionType.FunctionElement));
 
     #endregion

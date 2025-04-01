@@ -19,13 +19,16 @@
                 <UniformGrid Columns="3">
                     <TextBox Margin="4 4 8 4"
                              shared:LabelBehav.Value="工艺区域"
-                             Text="{Binding Zone, UpdateSourceTrigger=LostFocus}" />
+                             Text="{Binding Zone, UpdateSourceTrigger=LostFocus}"
+                             IsEnabled="{Binding IsVirtual, Converter={x:Static BoolConverters.Not}}" />
                     <TextBox Margin="8 4 8 4"
                              shared:LabelBehav.Value="工艺区域名称"
-                             Text="{Binding ZoneName, UpdateSourceTrigger=LostFocus}" />
+                             Text="{Binding ZoneName, UpdateSourceTrigger=LostFocus}"
+                             IsEnabled="{Binding IsVirtual, Converter={x:Static BoolConverters.Not}}" />
                     <TextBox Margin="8 4 8 4"
                              shared:LabelBehav.Value="工艺区域英文名称"
-                             Text="{Binding ZoneEnglishName, UpdateSourceTrigger=LostFocus}" />
+                             Text="{Binding ZoneEnglishName, UpdateSourceTrigger=LostFocus}"
+                             IsEnabled="{Binding IsVirtual, Converter={x:Static BoolConverters.Not}}" />
                 </UniformGrid>
             </DataTemplate>
             <DataTemplate x:Key="FunctionGroup" x:DataType="local:FunctionLocationPropertiesViewModel">
@@ -39,13 +42,16 @@
                              IsEnabled="False" />
                     <TextBox Margin="4 4 8 4"
                              shared:LabelBehav.Value="功能组"
-                             Text="{Binding Group, UpdateSourceTrigger=LostFocus}" />
+                             Text="{Binding Group, UpdateSourceTrigger=LostFocus}"
+                             IsEnabled="{Binding IsVirtual, Converter={x:Static BoolConverters.Not}}" />
                     <TextBox Margin="8 4 8 4"
                              shared:LabelBehav.Value="功能组名称"
-                             Text="{Binding GroupName, UpdateSourceTrigger=LostFocus}" />
+                             Text="{Binding GroupName, UpdateSourceTrigger=LostFocus}"
+                             IsEnabled="{Binding IsVirtual, Converter={x:Static BoolConverters.Not}}" />
                     <TextBox Margin="8 4 8 4"
                              shared:LabelBehav.Value="功能组英文名称"
-                             Text="{Binding GroupEnglishName, UpdateSourceTrigger=LostFocus}" />
+                             Text="{Binding GroupEnglishName, UpdateSourceTrigger=LostFocus}"
+                             IsEnabled="{Binding IsVirtual, Converter={x:Static BoolConverters.Not}}" />
                 </UniformGrid>
             </DataTemplate>
             <DataTemplate x:Key="FunctionUnit" x:DataType="local:FunctionLocationPropertiesViewModel">
@@ -64,6 +70,9 @@
                     <TextBox Margin="8 4 8 4"
                              shared:LabelBehav.Value="功能组英文名称" Text="{Binding GroupEnglishName}"
                              IsEnabled="False" />
+                    <TextBox Margin="4 4 8 4"
+                             shared:LabelBehav.Value="数量"
+                             Text="{Binding UnitMultiplier, UpdateSourceTrigger=LostFocus}" />
                 </UniformGrid>
             </DataTemplate>
             <DataTemplate x:Key="Equipment" x:DataType="local:FunctionLocationPropertiesViewModel">
@@ -84,7 +93,8 @@
                              IsEnabled="False" />
                     <TextBox Margin="4 4 8 4"
                              shared:LabelBehav.Value="功能位"
-                             Text="{Binding Element, UpdateSourceTrigger=LostFocus}" />
+                             Text="{Binding Element, UpdateSourceTrigger=LostFocus}"
+                             IsEnabled="{Binding IsVirtual, Converter={x:Static BoolConverters.Not}}" />
                 </UniformGrid>
             </DataTemplate>
             <DataTemplate x:Key="Instrument" x:DataType="local:FunctionLocationPropertiesViewModel">
@@ -105,7 +115,8 @@
                              IsEnabled="False" />
                     <TextBox Margin="4 4 8 4"
                              shared:LabelBehav.Value="功能位"
-                             Text="{Binding Element, UpdateSourceTrigger=LostFocus}" />
+                             Text="{Binding Element, UpdateSourceTrigger=LostFocus}"
+                             IsEnabled="{Binding IsVirtual, Converter={x:Static BoolConverters.Not}}" />
                 </UniformGrid>
             </DataTemplate>
             <DataTemplate x:Key="FunctionElement" x:DataType="local:FunctionLocationPropertiesViewModel">
@@ -126,7 +137,8 @@
                              IsEnabled="False" />
                     <TextBox Margin="4 4 8 4"
                              shared:LabelBehav.Value="功能位"
-                             Text="{Binding Element, UpdateSourceTrigger=LostFocus}" />
+                             Text="{Binding Element, UpdateSourceTrigger=LostFocus}"
+                             IsEnabled="{Binding IsVirtual, Converter={x:Static BoolConverters.Not}}" />
                 </UniformGrid>
             </DataTemplate>
         </local:FunctionLocationPropertiesSelector>

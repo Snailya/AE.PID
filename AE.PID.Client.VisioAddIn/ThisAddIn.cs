@@ -34,6 +34,7 @@ public partial class ThisAddIn : IEnableLogger
     private Thread _uiThread;
     public static Subject<Unit> AvaloniaSetupUpDone { get; } = new();
     public static IServiceProvider Services { get; private set; }
+    public static ScopeManager ScopeManager { get; private set; }
 
     /// <summary>
     ///     Get the handle of the visio application
@@ -71,6 +72,9 @@ public partial class ThisAddIn : IEnableLogger
             .Build();
         Services = _host.Services;
 
+        // register scope manager
+        ScopeManager = new ScopeManager(_host.Services);
+
         _host.RunAsync(_cancellationTokenSource.Token);
 
         // declare a new UI thread for WPF. Notice the apartment state needs to be STA
@@ -86,10 +90,7 @@ public partial class ThisAddIn : IEnableLogger
                     .SetupWithLifetime(new ClassicDesktopStyleApplicationLifetime());
 
                 AvaloniaSetupUpDone.OnCompleted();
-
-#if DEBUG
-                DebugExt.Log("UI setup up done.");
-#endif
+                
                 // start and cache the dispatcher
                 _dispatcher = Dispatcher.CurrentDispatcher;
                 Dispatcher.Run();
@@ -160,13 +161,13 @@ public partial class ThisAddIn : IEnableLogger
         LogHost.Default.Debug("Configuring services...");
 
         // storage service
-        services.AddSingleton<IStorageService, StorageService>();
+        services.AddSingleton<IExportService, ExportService>();
 
         // register configurations
         var fvi = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
 
         services.AddSingleton<IConfigurationService, ConfigurationService>(provider =>
-            new ConfigurationService(provider.GetRequiredService<IStorageService>(), fvi.CompanyName, fvi.ProductName,
+            new ConfigurationService(provider.GetRequiredService<IExportService>(), fvi.CompanyName, fvi.ProductName,
                 fvi.FileVersion));
 
         // register apis

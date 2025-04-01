@@ -6,7 +6,6 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using AE.PID.Client.Core;
-using AE.PID.Client.Infrastructure;
 using AE.PID.Client.UI.Avalonia.Shared;
 using AE.PID.Core;
 using Avalonia.Collections;
@@ -116,23 +115,14 @@ public class MaterialsViewModel : ViewModelBase
 
     #region -- Constructors --
 
-    internal MaterialsViewModel()
-    {
-        // Design
-    }
-
     public MaterialsViewModel(NotificationHelper notificationHelper,
         IFunctionLocationStore functionLocationStore,
         IMaterialLocationStore materialLocationStore,
         IMaterialService materialService
     )
     {
-#if DEBUG
-        DebugExt.Log("Initializing MaterialsViewModel", null, nameof(MaterialsViewModel));
-#endif
-
         // 20250124: use the collection view to support group and sort feature in data grid.
-        // The source of the collection view must be a class implements  INotifyCollectionChanged and INotifyPropertyChanged, so that the change of the item can propogate to the collection view.
+        // The source of the collection view must be a class implements INotifyCollectionChanged and INotifyPropertyChanged, so that the change of the item can propogate to the collection view.
         // The default sort is provided by sort description, so the SortAndBind method of the DynamicData is no longer used here.
         Locations = new DataGridCollectionView(_locations);
         Locations.SortDescriptions.Add([
@@ -148,7 +138,7 @@ public class MaterialsViewModel : ViewModelBase
             switch (type)
             {
                 case OutputType.Page:
-                    await materialLocationStore.ExportAsEmbeddedObject();
+                    await materialLocationStore.ExportPartList();
                     break;
                 case OutputType.Excel:
                     using (var file = await SaveFilePicker.Handle(".xlsx"))
@@ -156,7 +146,7 @@ public class MaterialsViewModel : ViewModelBase
                         var filePath = file?.TryGetLocalPath();
                         if (filePath is null) return Unit.Default;
 
-                        await materialLocationStore.ExportAsWorkbook(filePath);
+                        await materialLocationStore.ExportPartList(filePath);
                         Process.Start(new ProcessStartInfo
                         {
                             FileName = "explorer.exe",
@@ -238,10 +228,10 @@ public class MaterialsViewModel : ViewModelBase
         LoadMaterial.ThrownExceptions
             .Subscribe(e => { notificationHelper.Error("加载物料信息失败", e!.Message); });
 
-        Locate = ReactiveCommand.Create<MaterialLocationViewModel>(location =>
-        {
-            materialLocationStore.Locate(location.Id);
-        });
+        var canLocate = this.WhenAnyValue(x => x.SelectedLocation)
+            .Select(x => x is { IsVirtual: false });
+        Locate = ReactiveCommand.Create<MaterialLocationViewModel>(
+            location => { materialLocationStore.Locate(location.Id); }, canLocate);
 
         var canCopy = this.WhenAnyValue(x => x.SelectedLocation)
             .Select(x => !string.IsNullOrEmpty(x?.MaterialCode));
@@ -271,29 +261,16 @@ public class MaterialsViewModel : ViewModelBase
 
         /* 注意这里必须首先把changeset存成本地变量，否则join之后当发生变化时，会莫名触发removed。*/
         var observeMaterial = materialLocations
-#if DEBUG
-            .OnItemAdded(x => DebugExt.Log("MaterialLocations.OnItemAdded", x.Location.Id, nameof(MaterialsViewModel)))
-            .OnItemUpdated((cur, _, _) =>
-                DebugExt.Log("MaterialLocations.OnItemUpdated", cur.Location.Id, nameof(MaterialsViewModel)))
-            .OnItemRefreshed(x =>
-                DebugExt.Log("MaterialLocations.OnItemRefreshed", x.Location.Id, nameof(MaterialsViewModel)))
-            .OnItemRemoved(x =>
-                DebugExt.Log("MaterialLocations.OnItemRemoved", x.Location.Id, nameof(MaterialsViewModel)))
-#endif
             .ObserveOn(RxApp.MainThreadScheduler)
             .Do(_ => { IsLoading = false; });
 
-
         var observeFunction = functionLocationStore.FunctionLocations.Connect()
             .Transform(x => x.Location)
-#if DEBUG
-            .OnItemAdded(x => DebugExt.Log("FunctionLocations.OnItemAdded", x.Id, nameof(MaterialsViewModel)))
-            .OnItemUpdated((cur, _, _) =>
-                DebugExt.Log("FunctionLocations.OnItemUpdated", cur.Id, nameof(MaterialsViewModel)))
-            .OnItemRefreshed(x => DebugExt.Log("FunctionLocations.OnItemRefreshed", x.Id, nameof(MaterialsViewModel)))
-            .OnItemRemoved(x => DebugExt.Log("FunctionLocations.OnItemRemoved", x.Id, nameof(MaterialsViewModel)))
-#endif
-            .ObserveOn(RxApp.MainThreadScheduler);
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Do(x =>
+            {
+                var tmp = x;
+            });
 
         var fullTextFilter = this.WhenValueChanged(t => t.SearchText)
             .Throttle(TimeSpan.FromMilliseconds(400))
@@ -307,7 +284,7 @@ public class MaterialsViewModel : ViewModelBase
                 right => right.Id,
                 (left, right) => new MaterialLocationViewModel(left.Location, right, left.Material)
             )
-            // 20250124: add a side effect to synchronize the IsSelected and IsDisabled property before bind to source
+            // 2025.01.24: add a side effect to synchronize the IsSelected and IsDisabled property before bind to source
             .Do(x =>
             {
                 foreach (var change in x)

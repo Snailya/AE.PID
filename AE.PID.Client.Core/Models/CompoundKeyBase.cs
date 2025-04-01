@@ -1,5 +1,8 @@
-﻿namespace AE.PID.Client.Core;
+﻿using System.Runtime.Serialization;
 
+namespace AE.PID.Client.Core;
+
+[DataContract]
 public abstract class CompoundKeyBase : ICompoundKey
 {
     public abstract int ComputedId { get; }

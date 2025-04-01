@@ -4,18 +4,16 @@ public record MaterialLocation(
     ICompoundKey Id,
     string Code,
     double Quantity,
-    double ComputedQuantity,
+    int UnitMultiplier,
     string Category,
-    string KeyParameters) : MaterialLocationBase(Id, Code, Quantity, ComputedQuantity, Category)
+    string KeyParameters,
+    bool IsVirtual,
+    ICompoundKey? ProxyGroupId = null,
+    ICompoundKey? TargetId = null
+) : MaterialLocationBase(Id, Code, Quantity, UnitMultiplier, Category, IsVirtual, ProxyGroupId, TargetId)
 {
     /// <summary>
     ///     The technical data that provides hints when processing material selection.
     /// </summary>
     public string KeyParameters { get; } = KeyParameters;
-
-
-    /// <summary>
-    ///     If this material location is in the internal scope.
-    /// </summary>
-    public bool IsExcluded { get; set; }
 }

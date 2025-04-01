@@ -9,7 +9,7 @@ using Shape = Microsoft.Office.Interop.Visio.Shape;
 
 namespace AE.PID.Client.VisioAddIn;
 
-public abstract class LegendHelper
+internal abstract class LegendHelper
 {
     private const int Columns = 4;
     private const int RowSpacing = 10;

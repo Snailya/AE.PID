@@ -18,29 +18,6 @@ public class RecommendMaterialViewModel : ViewModelBase
     private bool _isBusy;
     private MaterialRecommendationViewModel? _selected;
 
-    public bool IsBusy
-    {
-        get => _isBusy;
-        set => this.RaiseAndSetIfChanged(ref _isBusy, value);
-    }
-
-    public ReactiveCommand<Unit, MaterialViewModel> Confirm { get; private set; }
-    public ReactiveCommand<Unit, Unit> Cancel { get; }
-
-    /// <summary>
-    ///     The suggested materials.
-    /// </summary>
-    public IEnumerable<MaterialRecommendationViewModel> Data => _data.Value;
-
-    /// <summary>
-    ///     The material in the recommendation collection that the user has selected
-    /// </summary>
-    public MaterialRecommendationViewModel? Selected
-    {
-        get => _selected;
-        set => this.RaiseAndSetIfChanged(ref _selected, value);
-    }
-
     #region -- Constructors --
 
     public RecommendMaterialViewModel(NotificationHelper notificationHelper, IMaterialService materialService,
@@ -73,11 +50,28 @@ public class RecommendMaterialViewModel : ViewModelBase
             .ToProperty(this, x => x.Data, out _data);
     }
 
+    #endregion
 
-    internal RecommendMaterialViewModel()
+    public bool IsBusy
     {
-        // design
+        get => _isBusy;
+        set => this.RaiseAndSetIfChanged(ref _isBusy, value);
     }
 
-    #endregion
+    public ReactiveCommand<Unit, MaterialViewModel> Confirm { get; private set; }
+    public ReactiveCommand<Unit, Unit> Cancel { get; }
+
+    /// <summary>
+    ///     The suggested materials.
+    /// </summary>
+    public IEnumerable<MaterialRecommendationViewModel> Data => _data.Value;
+
+    /// <summary>
+    ///     The material in the recommendation collection that the user has selected
+    /// </summary>
+    public MaterialRecommendationViewModel? Selected
+    {
+        get => _selected;
+        set => this.RaiseAndSetIfChanged(ref _selected, value);
+    }
 }

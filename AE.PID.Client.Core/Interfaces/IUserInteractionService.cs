@@ -6,7 +6,7 @@ namespace AE.PID.Client.Core;
 
 public interface IUserInteractionService
 {
-    void Show<TViewModel>(TViewModel vm, IntPtr? parent = null)
+    void Show<TViewModel>(TViewModel vm, IntPtr? parent = null, Action? onClosed = null)
         where TViewModel : INotifyPropertyChanged;
 
     Task<TResult> ShowDialog<TViewModel, TResult>(TViewModel vm, IntPtr? parent = null)

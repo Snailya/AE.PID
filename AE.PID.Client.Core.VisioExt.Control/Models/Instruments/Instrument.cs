@@ -186,12 +186,6 @@ public class Instrument : ElectricalControlSpecificationItemBase
             "Z" => "开关（安全）",
             "A" => "报警",
             "V" => "可视化",
-            "H" => "高",
-            "HH" => "非常高",
-            "HHH" => "极高",
-            "L" => "低",
-            "LL" => "非常低",
-            "LLL" => "极低",
             _ => letter
         };
     }

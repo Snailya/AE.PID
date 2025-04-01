@@ -5,7 +5,7 @@ using Splat;
 
 namespace AE.PID.Client.Infrastructure;
 
-public static class SystemInfoHelper
+internal static class SystemInfoHelper
 {
     public static string GetMacAddresses()
     {

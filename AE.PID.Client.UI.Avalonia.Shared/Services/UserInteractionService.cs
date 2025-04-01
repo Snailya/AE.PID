@@ -18,7 +18,8 @@ public class UserInteractionService : IUserInteractionService, IEnableLogger
 {
     private static readonly ConcurrentDictionary<string, Window> Opened = new();
 
-    public void Show<TViewModel>(TViewModel vm, IntPtr? parent = null) where TViewModel : INotifyPropertyChanged
+    public void Show<TViewModel>(TViewModel vm, IntPtr? parent = null, Action? onClosed = null)
+        where TViewModel : INotifyPropertyChanged
     {
         RxApp.MainThreadScheduler.Schedule(() =>
         {
@@ -48,6 +49,7 @@ public class UserInteractionService : IUserInteractionService, IEnableLogger
                 }
 
             mainWindow.Show();
+            mainWindow.Closed += (_, _) => { onClosed?.Invoke(); };
 
             // // record as an opened window
             // Opened.Add(windowName, mainWindow);
