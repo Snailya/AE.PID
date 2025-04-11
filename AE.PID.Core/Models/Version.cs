@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AE.PID.Core.Models;
+namespace AE.PID.Core;
 
 public class Version
 {

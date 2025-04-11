@@ -1,81 +1,51 @@
 using System.Runtime.InteropServices;
-using System.Text.Json.Serialization;
 using AE.PID.Server;
+using AE.PID.Server.Apis;
 using AE.PID.Server.Data;
 using AE.PID.Server.PDMS.Extensions;
-using AE.PID.Server.Services;
 using Asp.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Scalar.AspNetCore;
 
 // initialize the environment
-
-// 创建数据库存储路径
-if (!Directory.Exists(Constants.DatabasePath)) Directory.CreateDirectory(Constants.DatabasePath);
-
-// 创建临时文件存储路径
-if (!Directory.Exists(Constants.TmpPath)) Directory.CreateDirectory(Constants.TmpPath);
-
-// 创建安装包存储路径
-if (!Directory.Exists(Constants.InstallerPath)) Directory.CreateDirectory(Constants.InstallerPath);
-
-// 创建StencilSnapshot存储路径
-if (!Directory.Exists(Constants.StencilPath)) Directory.CreateDirectory(Constants.StencilPath);
+EnsureEnvironmentPathsExist();
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddTransient<IDocumentService, DocumentService>();
-builder.Services.AddTransient<IRecommendService, RecommendService>();
-
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.ReferenceHandler =
-            ReferenceHandler
-                .IgnoreCycles; // to involve cycle reference, see https://learn.microsoft.com/zh-cn/ef/core/querying/related-data/serialization
-    });
-
-// enable api versioning 
-builder.Services.AddApiVersioning(options =>
-    {
-        options.DefaultApiVersion = new ApiVersion(1);
-        options.ReportApiVersions = true;
-        options.ApiVersionReader = new HeaderApiVersionReader();
-        options.AssumeDefaultVersionWhenUnspecified = true;
-    })
-    .AddMvc()
+// api versioning support
+builder.Services
+    .AddApiVersioning(options => { options.ApiVersionReader = new UrlSegmentApiVersionReader(); })
     .AddApiExplorer(options =>
-        {
-            options.GroupNameFormat = "'v'V";
-            options.SubstituteApiVersionInUrl = true;
-        }
-    );
+    {
+        options.GroupNameFormat = "'v'V";
+        options.SubstituteApiVersionInUrl = true;
+    });
+;
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// minimal api endpoints 识别
+builder.Services.AddEndpointsApiExplorer();
+
+// generate openapi document for each api version
 builder.Services.AddSwaggerGen(options =>
 {
-    // Define multiple Swagger documents for different API versions
-    var apiVersionDescriptions = new[] { "v3" }; // Replace with your actual API versions
-    foreach (var version in apiVersionDescriptions)
-        options.SwaggerDoc(version, new OpenApiInfo
-        {
-            Version = version,
-            Title = $"API {version}",
-            Description = $"API Documentation for version {version}",
-            Contact = new OpenApiContact
-            {
-                Name = "Li Jingya",
-                Email = "lijingya@chinaaie.com.cn"
-            }
-        });
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "My API V1", Version = "v1" });
+    options.SwaggerDoc("v2", new OpenApiInfo { Title = "My API V2", Version = "v2" });
+    options.SwaggerDoc("v3", new OpenApiInfo { Title = "My API V3", Version = "v2" });
 });
+
+
+// register service
+builder.Services.AddTransient<IVisioDocumentService, VisioDocumentService>();
+builder.Services.AddTransient<IRecommendService, RecommendService>();
 
 // register db context
 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
     builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite("Data Source=./PID_server.db;"));
 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
     builder.Services.AddDbContext<AppDbContext>(
-        options => options.UseSqlite($"Data Source={Constants.DatabasePath}/PID_server.db;"));
+        options => options.UseSqlite(
+            $"Data Source={PathConstants.DatabasePath}/PID_server.db;Cache=Shared;Mode=ReadWriteCreate;"));
 
 builder.Services.AddHttpContextAccessor();
 
@@ -92,33 +62,51 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddPDMS();
-
 builder.Services.AddSignalR();
 
 var app = builder.Build();
 
-// initialize the database
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-}
+// apply migration fix because I'm not that familiar with SQL.
+app.ApplyMigration();
 
-// Configure the HTTP request pipeline.
-app.UseSwagger();
-app.UseSwaggerUI(options =>
-{
-    var apiVersionDescriptions = new[] { "v3" };
-    foreach (var version in apiVersionDescriptions)
-        options.SwaggerEndpoint($"/swagger/{version}/swagger.json", $"API {version}");
-    options.RoutePrefix = string.Empty;
-});
+// setup scalar openapi document map
+app.UseSwagger(options => { options.RouteTemplate = "/openapi/{documentName}.json"; });
+app.MapScalarApiReference();
 
 // set up the cors to allow only the intranet user
 app.UseCors("AllowIntranetIPRange");
 
 app.UseAuthorization();
 
-app.MapControllers();
+var apiVersionSet = app.NewApiVersionSet()
+    .HasApiVersion(new ApiVersion(2.0))
+    .HasApiVersion(new ApiVersion(3.0))
+    .ReportApiVersions()
+    .Build();
+
+var groupBuilder = app.MapGroup("api/v{apiVersion:apiVersion}").WithApiVersionSet(apiVersionSet);
+groupBuilder.MapAppEndpoints();
+groupBuilder.MapVisioStencilEndpoints();
+groupBuilder.MapVisioDocumentEndpoints();
+groupBuilder.MapPDMSEndpoints();
+groupBuilder.MapDebugEndpoints();
 
 app.Run();
+
+return;
+
+
+void EnsureEnvironmentPathsExist()
+{
+    // 创建数据库存储路径
+    if (!Directory.Exists(PathConstants.DatabasePath)) Directory.CreateDirectory(PathConstants.DatabasePath);
+
+// 创建临时文件存储路径
+    if (!Directory.Exists(PathConstants.TmpPath)) Directory.CreateDirectory(PathConstants.TmpPath);
+
+// 创建安装包存储路径
+    if (!Directory.Exists(PathConstants.InstallerPath)) Directory.CreateDirectory(PathConstants.InstallerPath);
+
+// 创建StencilSnapshot存储路径
+    if (!Directory.Exists(PathConstants.StencilPath)) Directory.CreateDirectory(PathConstants.StencilPath);
+}

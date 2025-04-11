@@ -64,6 +64,7 @@
         <Compile Include="Api\IStencilApi.cs"/>
         <Compile Include="Extensions\DtoExt.cs"/>
         <Compile Include="Extensions\ObservableExt.cs"/>
+        <Compile Include="Extensions\PropertyExt.cs" />
         <Compile Include="Extensions\ServiceCollectionExt.cs"/>
         <Compile Include="Helpers\Internals\PartListItemConvertor.cs" />
         <Compile Include="Helpers\Internals\SystemInfoHelper.cs" />

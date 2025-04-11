@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AE.PID.Core;
 
 namespace AE.PID.Client.Core;
 
@@ -25,6 +26,11 @@ public class Configuration : ICloneable
     ///     The identifier hash for the current libraries.
     /// </summary>
     public IEnumerable<Stencil> Stencils { get; set; } = [];
+    
+    /// <summary>
+    /// The update channel.
+    /// </summary>
+    public VersionChannel Channel { get; set; } = VersionChannel.GeneralAvailability;
 
     public object Clone()
     {
@@ -33,6 +39,7 @@ public class Configuration : ICloneable
             Server = Server,
             UserId = UserId,
             SkippedVersions = SkippedVersions,
+            Channel = Channel,
             Stencils = Stencils.Select(x => (Stencil)x.Clone()).ToArray()
         };
     }

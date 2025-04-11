@@ -3,9 +3,9 @@ using AE.PID.Server.Data;
 using AE.PID.Server.Data.Recommendation;
 using MaterialRecommendation = AE.PID.Server.Data.Recommendation.MaterialRecommendation;
 
-namespace AE.PID.Server.Services;
+namespace AE.PID.Server;
 
-public class RecommendService(AppDbContext dbContext) : IRecommendService
+public class RecommendService(ILogger<RecommendService> logger, AppDbContext dbContext) : IRecommendService
 {
     public MaterialRecommendationCollection GetMaterialRecommendations(string userContext,
         MaterialLocationContext locationContext)
@@ -40,6 +40,51 @@ public class RecommendService(AppDbContext dbContext) : IRecommendService
         dbContext.SaveChanges();
 
         return result;
+    }
+
+    public int SaveFeedbackMaterialSelections(string userId, UserMaterialSelectionFeedbackDto[] feedbackDtos)
+    {
+        foreach (var feedbackDto in feedbackDtos)
+        {
+            // 首先处理用户记录
+            var userMaterialSelection = new UserMaterialSelection
+            {
+                CreatedAt = DateTime.Now,
+                Context = feedbackDto.MaterialLocationContext,
+                UserId = userId,
+                MaterialId = feedbackDto.MaterialId
+            };
+            dbContext.UserMaterialSelections.AddRange(userMaterialSelection);
+
+            // 如果有建议，处理建议
+            if (feedbackDto.RecommendationCollectionId != null)
+            {
+                var recommendationResult =
+                    dbContext.MaterialRecommendationCollections.Find(feedbackDto.RecommendationCollectionId.Value);
+                if (recommendationResult == null)
+                {
+                    logger.LogWarning("Unable to find the recommendation result with id: {Id}, skipped.",
+                        feedbackDto.RecommendationCollectionId.Value);
+                    continue;
+                }
+
+                dbContext.Entry(recommendationResult).Collection(x => x.Recommendations).Load();
+                var feedback = new MaterialRecommendationCollectionFeedback
+                {
+                    CreatedAt = DateTime.Now,
+                    UserId = userId,
+                    CollectionId = recommendationResult.Id,
+                    SelectedRecommendationId = feedbackDto.SelectedRecommendationId
+                };
+                dbContext.MaterialRecommendationCollectionFeedbacks.Add(feedback);
+            }
+        }
+
+        var count = dbContext.SaveChanges();
+
+        logger.LogInformation("{Count} selection records added.", count);
+
+        return count;
     }
 
     #region -- 多路召回 --

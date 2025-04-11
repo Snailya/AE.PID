@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq.Expressions;
 using System.Reactive.Concurrency;
@@ -16,8 +15,8 @@ namespace AE.PID.Client.Infrastructure;
 public class ConfigurationService : DisposableBase, IConfigurationService
 {
     private readonly BehaviorSubject<Configuration> _configurationSubject;
-    private readonly object _lock = new();
     private readonly IExportService _exportService;
+    private readonly object _lock = new();
 
     private readonly Subject<(Expression<Func<Configuration, object>> PropertyExpression, object NewValue)>
         _updateSubject = new();
@@ -54,7 +53,7 @@ public class ConfigurationService : DisposableBase, IConfigurationService
             {
                 var configuration = (Configuration)_configurationSubject.Value.Clone();
 
-                foreach (var update in updates) UpdateValue(configuration, update.PropertyExpression, update.NewValue);
+                foreach (var update in updates) configuration.UpdateValue( update.PropertyExpression, update.NewValue);
 
                 return configuration;
             })
@@ -93,64 +92,8 @@ public class ConfigurationService : DisposableBase, IConfigurationService
         _updateSubject.OnNext((propertyExpression, newValue));
     }
 
-    private static void UpdateValue<T, TValue>(T target, Expression<Func<T, TValue>> memberExpression, TValue newValue)
-    {
-        if (memberExpression.Body is MemberExpression memberExpr)
-        {
-            // Traverse to the final object and member
-            var (finalTarget, member) = GetFinalTargetAndMember(target, memberExpr);
 
-            switch (member)
-            {
-                // Update the property value
-                case PropertyInfo property:
-                    property.SetValue(finalTarget, newValue);
-                    break;
-                // Update the field value
-                case FieldInfo field:
-                    field.SetValue(finalTarget, newValue);
-                    break;
-                default:
-                    throw new InvalidOperationException("MemberExpression must target a property or field.");
-            }
-        }
-        else
-        {
-            throw new InvalidOperationException("Expression must be a MemberExpression.");
-        }
-    }
-
-    private static (object? FinalTarget, MemberInfo Member) GetFinalTargetAndMember(object? root,
-        MemberExpression memberExpr)
-    {
-        // Stack to keep track of the member chain
-        var members = new Stack<MemberExpression>();
-        while (memberExpr != null)
-        {
-            members.Push(memberExpr);
-            memberExpr = memberExpr.Expression as MemberExpression;
-        }
-
-        // Evaluate the intermediate objects
-        var currentTarget = root;
-        while (members.Count > 1) // Stop at the second-to-last member
-        {
-            var currentMember = members.Pop();
-            var member = currentMember.Member;
-
-            currentTarget = member switch
-            {
-                PropertyInfo property => property.GetValue(currentTarget),
-                FieldInfo field => field.GetValue(currentTarget),
-                _ => throw new InvalidOperationException("Unsupported member type.")
-            };
-
-            if (currentTarget == null) throw new NullReferenceException("Intermediate member is null.");
-        }
-
-        return (currentTarget, members.Pop().Member);
-    }
-
+    
     private Configuration Load(string filePath)
     {
         try

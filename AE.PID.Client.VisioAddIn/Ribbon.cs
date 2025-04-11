@@ -13,6 +13,7 @@ using AE.PID.Client.Core.VisioExt;
 using AE.PID.Client.UI.Avalonia;
 using AE.PID.Client.UI.Avalonia.VisioExt;
 using AE.PID.Core;
+using AE.PID.Core.DTOs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Office.Interop.Visio;
 using Splat;

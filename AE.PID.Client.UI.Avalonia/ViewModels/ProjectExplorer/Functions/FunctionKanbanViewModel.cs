@@ -117,13 +117,26 @@ public class FunctionKanbanViewModel : ViewModelBase
             .ToProperty(this, x => x.Properties, out _properties);
 
         var groupFilter = this.WhenAnyValue(x => x.Location.Id)
+            .WhereNotNull()
             .DistinctUntilChanged()
-            .Select<ICompoundKey, Func<FunctionLocation, bool>>(x => loc => loc.ParentId!.Equals(x));
+            .Select<ICompoundKey, Func<FunctionLocation, bool>>(x => loc => loc.ParentId!.Equals(x) && loc.Type == FunctionType.FunctionGroup);
         functionObservable
             .Filter(groupFilter)
             .Transform(x => new FunctionGroupViewModel(x))
             .Bind(out _groups)
             .Subscribe();
+
+        _groups.ToObservableChangeSet(t => t.Source.Id)
+            .WhenAnyPropertyChanged(nameof(FunctionGroupViewModel.Group),
+                nameof(FunctionGroupViewModel.GroupName), nameof(FunctionGroupViewModel.GroupEnglishName),
+                nameof(FunctionGroupViewModel.Description), nameof(FunctionGroupViewModel.Remarks))
+            .WhereNotNull()
+            .Select(x => x.Source with
+            {
+                Group = x.Group, GroupName = x.GroupName, GroupEnglishName = x.GroupEnglishName,
+                Description = x.Description, Remarks = x.Remarks
+            })
+            .Subscribe(x => fLocStore.Update([x]));
 
         var materialFilter = this.WhenAnyValue(x => x.Location)
             .WhereNotNull()

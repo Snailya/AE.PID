@@ -60,10 +60,18 @@
                           VerticalScrollBarVisibility="Auto">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="工艺区域" Binding="{Binding  Zone}" />
-                        <DataGridTextColumn Header="功能组" Binding="{Binding  Group}" />
-                        <DataGridTextColumn Header="功能组名称" Binding="{Binding  GroupName}" />
-                        <DataGridTextColumn Header="功能组英文名称" Binding="{Binding  GroupEnglishName}" />
-                        <DataGridTextColumn Header="功能组描述" Binding="{Binding Description}" />
+                        <DataGridTextColumn Header="功能组" Binding="{Binding  Group, UpdateSourceTrigger=LostFocus}" 
+                                            IsReadOnly="False"/>
+                        <DataGridTextColumn Header="功能组名称" Binding="{Binding  GroupName, UpdateSourceTrigger=LostFocus}" 
+                                            IsReadOnly="False"/>
+                        <DataGridTextColumn Header="功能组英文名称" Binding="{Binding  GroupEnglishName, UpdateSourceTrigger=LostFocus}" 
+                                            IsReadOnly="False"/>
+                        <DataGridTextColumn Header="功能组描述"
+                                            Binding="{Binding Description, UpdateSourceTrigger=LostFocus}"
+                                            IsReadOnly="False" />
+                        <DataGridTextColumn Header="备注"
+                                            Binding="{Binding Remarks, UpdateSourceTrigger=LostFocus}"
+                                            IsReadOnly="False" />
                     </DataGrid.Columns>
                 </DataGrid>
             </Expander>

@@ -102,7 +102,7 @@
             <DependentUpon>SettingsWindow.axaml</DependentUpon>
             <SubType>Code</SubType>
         </Compile>
-        <Compile Update="Views\Settings\AccountSettingView.axaml.cs">
+        <Compile Update="Views\Settings\GeneralSettingsView.axaml.cs">
             <DependentUpon>SelectToolView.axaml</DependentUpon>
             <SubType>Code</SubType>
         </Compile>

@@ -7,7 +7,7 @@ namespace AE.PID.Client.UI.Avalonia;
 public class SettingsWindowViewModel : ViewModelBase
 {
     public AboutViewModel About { get; }
-    public AccountSettingViewModel Account { get; }
+    public GeneralSettingsViewModel Account { get; }
 
     #region -- Constructors --
 
@@ -15,7 +15,7 @@ public class SettingsWindowViewModel : ViewModelBase
         UpdateChecker checker)
     {
         About = new AboutViewModel(notificationHelper, configurationService, checker);
-        Account = new AccountSettingViewModel(configurationService);
+        Account = new GeneralSettingsViewModel(configurationService);
     }
 
     #endregion

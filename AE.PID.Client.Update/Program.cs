@@ -36,9 +36,11 @@ if (new Version(serverVersionInfo.Version) <= new Version(currentVersion))
 
 // Download the packages if not exist
 var tmpDirectory = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "tmp");
+if (File.Exists(tmpDirectory))
+    File.Delete(tmpDirectory);
 if (!Directory.Exists(tmpDirectory))
     Directory.CreateDirectory(tmpDirectory);
-var localFilePath = Path.Combine(tmpDirectory, "tmp",
+var localFilePath = Path.Combine(tmpDirectory, 
     serverVersionInfo.FileName);
 if (!File.Exists(localFilePath) || !VerifyFileHash(localFilePath, serverVersionInfo.FileHash))
 {

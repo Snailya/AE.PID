@@ -26,4 +26,6 @@ public class AppVersionDto
     ///     The release note of the installer.
     /// </summary>
     public string ReleaseNotes { get; set; } = string.Empty;
+
+    public VersionChannel Channel { get; set; }
 }

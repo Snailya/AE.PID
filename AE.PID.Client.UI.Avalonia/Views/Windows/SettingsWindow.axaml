@@ -24,7 +24,7 @@
         <Panel Classes="content">
             <TabControl>
                 <TabItem Header="账号">
-                    <local:AccountSettingView DataContext="{Binding Account}" />
+                    <local:GeneralSettingsView DataContext="{Binding Account}" />
                 </TabItem>
                 <TabItem Header="关于">
                     <local:AboutView DataContext="{Binding About}" />

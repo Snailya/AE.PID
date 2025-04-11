@@ -32,7 +32,7 @@ public partial class ThisAddIn : IEnableLogger
     private Dispatcher? _dispatcher;
     private IHost _host;
     private Thread _uiThread;
-    public static Subject<Unit> AvaloniaSetupUpDone { get; } = new();
+    private static Subject<Unit> AvaloniaSetupUpDone { get; } = new();
     public static IServiceProvider Services { get; private set; }
     public static ScopeManager ScopeManager { get; private set; }
 
@@ -90,7 +90,7 @@ public partial class ThisAddIn : IEnableLogger
                     .SetupWithLifetime(new ClassicDesktopStyleApplicationLifetime());
 
                 AvaloniaSetupUpDone.OnCompleted();
-                
+
                 // start and cache the dispatcher
                 _dispatcher = Dispatcher.CurrentDispatcher;
                 Dispatcher.Run();
@@ -112,9 +112,11 @@ public partial class ThisAddIn : IEnableLogger
 
             // 检查更新
             var checker = Services.GetRequiredService<UpdateChecker>();
+            // 2025.04.11: 增加给更新通道选择
+            var currentConfiguration = configuration.GetCurrentConfiguration();
             _ = checker.CheckAsync(
                 configuration.RuntimeConfiguration.Version,
-                configuration.GetCurrentConfiguration().Server + "/api/v3/app");
+                currentConfiguration.Server + $"/api/v3/app?channel{currentConfiguration.Channel}");
         });
 
         _ = PrepareTasks();

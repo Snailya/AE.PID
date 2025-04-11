@@ -13,4 +13,6 @@ public interface IRecommendService
     /// <returns></returns>
     MaterialRecommendationCollection GetMaterialRecommendations(string userContext,
         MaterialLocationContext locationContext);
+
+    int SaveFeedbackMaterialSelections(string userId, UserMaterialSelectionFeedbackDto[] feedbackDtos);
 }

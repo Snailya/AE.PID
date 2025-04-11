@@ -16,12 +16,18 @@ namespace AE.PID.Server.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.3");
 
             modelBuilder.Entity("AE.PID.Server.Data.AppVersion", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Build")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Channel")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
@@ -31,6 +37,12 @@ namespace AE.PID.Server.Migrations
                         .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("Major")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Minor")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("TEXT");
@@ -44,6 +56,9 @@ namespace AE.PID.Server.Migrations
                         .IsRequired()
                         .HasMaxLength(8192)
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("Revision")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Version")
                         .IsRequired()

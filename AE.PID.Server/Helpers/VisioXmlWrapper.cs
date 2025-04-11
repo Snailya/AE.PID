@@ -4,7 +4,7 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using AE.PID.Server.Models;
 
-namespace AE.PID.Server.Services;
+namespace AE.PID.Server.Helpers;
 
 public abstract class VisioXmlWrapper
 {

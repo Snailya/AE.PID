@@ -1,0 +1,35 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:AE.PID.Client.UI.Avalonia"
+             xmlns:shared="clr-namespace:AE.PID.Client.UI.Avalonia.Shared;assembly=AE.PID.Client.UI.Avalonia.Shared"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="AE.PID.Client.UI.Avalonia.GeneralSettingsView"
+             x:DataType="local:GeneralSettingsViewModel">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <local:GeneralSettingsViewModel />
+    </Design.DataContext>
+    <UserControl.Styles>
+        <Style Selector="TextBlock">
+            <Setter Property="Margin" Value="4" />
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="Margin" Value="4" />
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="Margin" Value="4" />
+        </Style>
+    </UserControl.Styles>
+
+    <StackPanel Grid.IsSharedSizeScope="True">
+        <TextBlock shared:LabelBehav.Value="设备ID" Text="{Binding DeviceId}" />
+        <TextBox shared:LabelBehav.Value="工号" Text="{Binding UserId, UpdateSourceTrigger=LostFocus}"
+                 Watermark="e.g. 6470" />
+        <ComboBox shared:LabelBehav.Value="更新通道"
+                  SelectedItem="{Binding Channel}" ItemsSource="{Binding ChannelOptions}" />
+    </StackPanel>
+</UserControl>

@@ -13,6 +13,7 @@ using AE.PID.Client.Core;
 using AE.PID.Client.Core.Exceptions;
 using AE.PID.Client.Core.VisioExt;
 using AE.PID.Core;
+using AE.PID.Core.DTOs;
 using Microsoft.Office.Interop.Visio;
 using Refit;
 using Splat;

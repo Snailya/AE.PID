@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using AE.PID.Core;
+using AE.PID.Core.DTOs;
 using Refit;
 
 namespace AE.PID.Client.Infrastructure.VisioExt;
