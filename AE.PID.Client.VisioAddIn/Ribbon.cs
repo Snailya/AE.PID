@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.IO.Packaging;
 using System.Linq;
@@ -13,7 +14,6 @@ using AE.PID.Client.Core.VisioExt;
 using AE.PID.Client.UI.Avalonia;
 using AE.PID.Client.UI.Avalonia.VisioExt;
 using AE.PID.Core;
-using AE.PID.Core.DTOs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Office.Interop.Visio;
 using Splat;
@@ -227,31 +227,30 @@ public class Ribbon : Office.IRibbonExtensibility
     }
 
     // 2025.02.06: 增加一个上次刷新的时间，避免在空闲时频繁刷新。
-    private DateTime? _lastInvalidate;
+
+    private ConcurrentDictionary<string, DateTime> _lastInvalidates = new();
 
     /// <summary>
     ///     Because the state of the buttons on ribbon will not re-compute once loaded.
     ///     So the re-computation needs to be triggered manually by calling _ribbon.Invalidate().
-    ///     As the button state is related to if there is a document in open state, observe on these two events.
+    ///     As the button state is related to, if there is a document in open state, observe on these two events.
     /// </summary>
     private void RegisterUpdateForElements()
     {
-        Globals.ThisAddIn.Application.WindowOpened += _ =>
+        Globals.ThisAddIn.Application.VisioIsIdle += app =>
         {
-            _ribbon.Invalidate();
-            _lastInvalidate = DateTime.Now;
-        };
-        Globals.ThisAddIn.Application.WindowChanged += _ =>
-        {
-            _ribbon.Invalidate();
-            _lastInvalidate = DateTime.Now;
-        };
-        Globals.ThisAddIn.Application.VisioIsIdle += _ =>
-        {
-            if (_lastInvalidate != null && !(DateTime.Now - _lastInvalidate > TimeSpan.FromMinutes(5))) return;
+            var document = app.ActiveDocument?.FullName;
+            if (document == null) return;
 
+            if (_lastInvalidates.TryGetValue(document, out var lastInvalidate) &&
+                lastInvalidate + TimeSpan.FromMinutes(5) > DateTime.Now) return;
             _ribbon.Invalidate();
-            _lastInvalidate = DateTime.Now;
+            _lastInvalidates.TryAdd(document, DateTime.Now);
+        };
+
+        Globals.ThisAddIn.Application.BeforeDocumentClose += doc =>
+        {
+            _lastInvalidates.TryRemove(doc.FullName, out _);
         };
     }
 
@@ -371,8 +370,8 @@ public class Ribbon : Office.IRibbonExtensibility
             {
                 BaseId = x.BaseID,
                 UniqueId = x.UniqueID,
-                Name = x.NameU,
-            }); 
+                Name = x.NameU
+            });
 
         var documentUpdateService = ThisAddIn.Services.GetRequiredService<IDocumentUpdateService>();
 
