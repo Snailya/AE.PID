@@ -300,7 +300,7 @@ public class Ribbon : Office.IRibbonExtensibility
         var service = ThisAddIn.Services.GetRequiredService<IDocumentUpdateService>();
 
         // 2024.12.9更新：在更新时，一部分用户希望更新所有的模具，但一部分用户希望保留自己修改后的模具，此处弹框要求用户选择哪些模具需要被更新
-        var mastersNeedUpdate = service.GetOutdatedMasters(Globals.ThisAddIn.Application.ActiveDocument)
+        var mastersNeedUpdate = service.GetObsoleteMasters(Globals.ThisAddIn.Application.ActiveDocument)
             .Select(x =>
                 new DocumentMasterViewModel(x)
                 {
@@ -365,22 +365,14 @@ public class Ribbon : Office.IRibbonExtensibility
 
         // check if the version is out of date
 
-        var localMasters = Globals.ThisAddIn.Application.ActiveDocument.Masters.OfType<IVMaster>().Select(x =>
-            new MasterSnapshotDto
-            {
-                BaseId = x.BaseID,
-                UniqueId = x.UniqueID,
-                Name = x.NameU
-            });
-
         var documentUpdateService = ThisAddIn.Services.GetRequiredService<IDocumentUpdateService>();
 
-        var needUpdate = documentUpdateService.HasUpdate(localMasters);
-        LogHost.Default.Info(needUpdate
+        var isObsolete = documentUpdateService.IsObsolete(Globals.ThisAddIn.Application.ActiveDocument);
+        LogHost.Default.Info(isObsolete
             ? $"{Globals.ThisAddIn.Application.ActiveDocument.FullName} need update."
             : $"{Globals.ThisAddIn.Application.ActiveDocument.FullName} is up to date.");
 
-        return needUpdate;
+        return isObsolete;
     }
 
     public void OpenTools(Office.IRibbonControl control)

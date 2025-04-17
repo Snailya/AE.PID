@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Reactive.Subjects;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +12,6 @@ using AE.PID.Client.Core;
 using AE.PID.Client.Core.Exceptions;
 using AE.PID.Client.Core.VisioExt;
 using AE.PID.Core;
-using AE.PID.Core.DTOs;
 using Microsoft.Office.Interop.Visio;
 using Refit;
 using Splat;
@@ -23,25 +21,23 @@ namespace AE.PID.Client.Infrastructure.VisioExt;
 
 public class DocumentUpdateService : DisposableBase, IDocumentUpdateService
 {
-    // 替换静态字典为线程安全结构
-    private static ConcurrentDictionary<string, MasterSnapshotDto> _masterDict = [];
     private readonly IApiFactory<IDocumentApi> _apiFactory;
+    private readonly object _cacheLock = new();
 
-    // 添加 CancellationTokenSource 支持取消
-    private readonly CancellationTokenSource _cts = new();
 
-    private readonly SemaphoreSlim _dictLock = new(1, 1);
+    private readonly Task _initializeTask;
+    private ConcurrentDictionary<string, MasterSnapshotDto> _cache;
 
-    private readonly BehaviorSubject<bool> _initialized = new(false);
-    private readonly Timer _timer;
+    private bool _isDisposed;
+
+    private Timer _timer;
 
     public DocumentUpdateService(IApiFactory<IDocumentApi> apiFactory)
     {
         _apiFactory = apiFactory;
-        _timer = new Timer(UpdateMasterCaches, null, TimeSpan.Zero, TimeSpan.FromHours(1));
-    }
 
-    public IObservable<bool> Initialized => _initialized;
+        _initializeTask = InitializeCacheAsync();
+    }
 
     public async Task UpdateAsync(string filePath, VisioMaster[]? mastersToUpdate = null)
     {
@@ -108,102 +104,93 @@ public class DocumentUpdateService : DisposableBase, IDocumentUpdateService
         }
     }
 
-    // <inheritdoc />
-    public bool HasUpdate(IEnumerable<MasterSnapshotDto> localMasters)
+    public bool IsObsolete(IVDocument document)
     {
-        return localMasters.Any(local =>
-            _masterDict.TryGetValue(local.BaseId, out var toCompare) &&
-            toCompare.UniqueId != local.UniqueId
-        );
+        // 确保初始化完成（同步阻塞）
+        _initializeTask.GetAwaiter().GetResult();
+
+        lock (_cacheLock)
+        {
+            return document.Masters.OfType<IVMaster>()
+                .Select(x =>
+                    new
+                    {
+                        BaseId = x.BaseID,
+                        UniqueId = x.UniqueID,
+                        Name = x.NameU
+                    })
+                .Any(
+                    local =>
+                        _cache.TryGetValue(local.BaseId, out var toCompare) &&
+                        toCompare.UniqueId != local.UniqueId
+                );
+        }
     }
 
-    public List<VisioMaster> GetOutdatedMasters(IVDocument document)
+    public List<VisioMaster> GetObsoleteMasters(IVDocument document)
     {
-        // 关键：在独立线程上下文中同步等待异步操作
-        return Task.Run(async () =>
+        // 确保初始化完成（同步阻塞）
+        _initializeTask.GetAwaiter().GetResult();
+
+        lock (_cacheLock)
+        {
+            // get the masters of the document
+            var needUpdate = new List<VisioMaster>();
+            foreach (var master in document.Masters.OfType<IVMaster>())
             {
-                try
-                {
-                    return await GetOutdatedMastersAsync(document).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    this.Log().Error("Failed to get outdated masters", ex);
-                    return [];
-                }
-            })
-            .GetAwaiter()
-            .GetResult(); // 阻塞当前线程直到任务完成
+                if (!_cache.TryGetValue(master.BaseID, out var snapshot)) continue;
+
+                if (master.UniqueID != snapshot.UniqueId)
+                    needUpdate.Add(new VisioMaster(master.BaseID, master.Name, master.UniqueID));
+            }
+
+            return needUpdate;
+        }
     }
 
-    // <inheritdoc />
-    private async Task<List<VisioMaster>> GetOutdatedMastersAsync(IVDocument document)
+    private async Task InitializeCacheAsync()
     {
-        if (_masterDict.IsEmpty)
+        // 首次加载缓存数据
+        _cache = new ConcurrentDictionary<string, MasterSnapshotDto>(
+            (await FetchDataFromApiAsync().ConfigureAwait(false)).ToDictionary(x => x.BaseId));
+
+        // 启动定时更新任务（5分钟间隔）
+        _timer = new Timer(
+            _ => UpdateCacheAsync().ConfigureAwait(false).GetAwaiter().GetResult(),
+            null,
+            TimeSpan.FromMinutes(5), // 首次延迟
+            TimeSpan.FromMinutes(5)); // 后续间隔
+    }
+
+    private async Task UpdateCacheAsync()
+    {
+        if (_isDisposed) return;
+
+        try
         {
-            await _dictLock.WaitAsync();
-
-            var result = await _apiFactory.Api.GetCurrentSnapshot().ConfigureAwait(false);
-            _masterDict = new ConcurrentDictionary<string, MasterSnapshotDto>(result.ToDictionary(t => t.BaseId));
+            var newData = await FetchDataFromApiAsync().ConfigureAwait(false);
+            lock (_cacheLock)
+            {
+                _cache = new ConcurrentDictionary<string, MasterSnapshotDto>(
+                    newData.ToDictionary(x => x.BaseId));
+            }
         }
-
-        // get the masters of the document
-        var needUpdate = new List<VisioMaster>();
-        foreach (var master in document.Masters.OfType<IVMaster>())
+        catch
         {
-            if (!_masterDict.TryGetValue(master.BaseID, out var snapshot)) continue;
-
-            if (master.UniqueID != snapshot.UniqueId)
-                needUpdate.Add(new VisioMaster(master.BaseID, master.Name, master.UniqueID));
+            // 处理异常，可加入重试逻辑
         }
+    }
 
-        return needUpdate;
+    private async Task<IEnumerable<MasterSnapshotDto>> FetchDataFromApiAsync()
+    {
+        return await _apiFactory.Api.GetCurrentSnapshot();
     }
 
     public override void Dispose()
     {
-        _timer.Dispose();
-
         base.Dispose();
-    }
 
-    private async void UpdateMasterCaches(object state)
-    {
-        try
-        {
-            var snapshots = await _apiFactory.Api.GetCurrentSnapshot().ConfigureAwait(false);
-
-            await _dictLock.WaitAsync(_cts.Token);
-            try
-            {
-                // todo: handle this
-                var newDict = snapshots.ToDictionary(x => x.BaseId);
-                _masterDict = new ConcurrentDictionary<string, MasterSnapshotDto>(newDict);
-                _initialized.OnNext(true);
-                this.Log().Info($"{_masterDict.Count} master snapshots cached.");
-            }
-            finally
-            {
-                _dictLock.Release();
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            // 忽略取消请求
-        }
-        catch (ApiException e)
-        {
-            this.Log().Error("API Error during cache update", e);
-            _masterDict.Clear();
-        }
-        catch (HttpRequestException e)
-        {
-            this.Log().Error("Network Error during cache update", e);
-            _masterDict.Clear();
-        }
-        catch (Exception ex)
-        {
-            this.Log().Error(ex);
-        }
+        _isDisposed = true;
+        _timer.Dispose();
     }
 }
