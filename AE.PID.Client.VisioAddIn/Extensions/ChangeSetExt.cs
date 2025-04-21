@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
@@ -136,7 +135,7 @@ public static class ChangeSetExt
                 .Where(predicate)
                 // 2025.03.28： 由于shape是COM对象，必须先提取其属性，否则在buffer后可能已经释放
                 .Select(shape => new VisioShape(new VisioShapeId(shape.ContainingPageID, shape.ID),
-                    GetShapeCategories(shape)))
+                    shape.GetCategories()))
                 .Buffer(BufferTime)
                 .Where(x => x.Count > 0)
                 .Select(shapes =>
@@ -181,9 +180,9 @@ public static class ChangeSetExt
 
                         if (fromShape.IsCallout)
                             return new VisioShape(new VisioShapeId(relationshipPair.ContainingPageID,
-                                relationshipPair.FromShapeID), GetShapeCategories(fromShape));
+                                relationshipPair.FromShapeID), fromShape.GetCategories());
                         return new VisioShape(new VisioShapeId(relationshipPair.ContainingPageID,
-                            relationshipPair.ToShapeID), GetShapeCategories(toShape));
+                            relationshipPair.ToShapeID), toShape.GetCategories());
                     }
                 )
                 .Buffer(BufferTime)
@@ -206,7 +205,7 @@ public static class ChangeSetExt
                                 {
                                     var shape = i.First().Shape;
                                     return new VisioShape(new VisioShapeId(shape.ContainingPageID, shape.ID),
-                                        GetShapeCategories(shape))
+                                        shape.GetCategories())
                                     {
                                         ChangedProperties = i.Select(t => t.LocalName).ToArray()
                                     };
@@ -226,7 +225,7 @@ public static class ChangeSetExt
             var initials = page.Shapes.OfType<IVShape>()
                 .Where(predicate)
                 .Select(shape =>
-                    new VisioShape(new VisioShapeId(shape.ContainingPageID, shape.ID), GetShapeCategories(shape)))
+                    new VisioShape(new VisioShapeId(shape.ContainingPageID, shape.ID), shape.GetCategories()))
                 .ToList();
             cache.AddOrUpdate(initials);
 
@@ -254,39 +253,5 @@ public static class ChangeSetExt
 
         return new Instrument(locationId, materialCode, unitQuantity, quantity,
             type, high, low, false);
-    }
-
-    private static VisioShapeCategory[] GetShapeCategories(this IVShape shape)
-    {
-        var shapeCategoryValues = shape.TryGetValue(CellDict.ShapeCategories)?.Split(';');
-        if (shapeCategoryValues == null || !shapeCategoryValues.Any()) return [VisioShapeCategory.None];
-
-        var shapeCategoryValueSet = new HashSet<string>(shapeCategoryValues);
-
-        // 2025.02.13: use hashset to enhance comparison efficiency 
-        // 2025.03.26: use shape category instead of only function location or material location
-        var shapeCategories = new List<VisioShapeCategory>();
-
-        if (shapeCategoryValueSet.Overlaps(["Frame", "ProcessZone"]))
-            shapeCategories.Add(VisioShapeCategory.ProcessZone);
-        else if (shapeCategoryValueSet.Overlaps([
-                     "FunctionalGroup", "FunctionalGroups", "FunctionGroup", "FunctionGroups"
-                 ]))
-            shapeCategories.Add(VisioShapeCategory.FunctionalGroup);
-        else if (shapeCategoryValueSet.Overlaps(["Unit", "Units"]))
-            shapeCategories.Add(VisioShapeCategory.Unit);
-        else if (shapeCategoryValueSet.Overlaps(["Equipment", "Equipments"]))
-            shapeCategories.Add(VisioShapeCategory.Equipment);
-        else if (shapeCategoryValueSet.Overlaps(["Instrument", "Instruments"]))
-            shapeCategories.Add(VisioShapeCategory.Instrument);
-        else if (shapeCategoryValueSet.Overlaps([
-                     "FunctionalElement", "FunctionalElements", "FunctionElement", "FunctionElements"
-                 ]))
-            shapeCategories.Add(VisioShapeCategory.FunctionalElement);
-
-        if (shapeCategoryValueSet.Overlaps(["Proxy"]))
-            shapeCategories.Add(VisioShapeCategory.Proxy);
-
-        return shapeCategories.ToArray();
     }
 }

@@ -260,8 +260,9 @@ internal class FunctionLocationProcessor : IDisposable
             ? source.TryGetValue<int>(CellDict.UnitQuantity) ?? 1
             : 1;
 
-        // 2025.02.13: add an is optional property to distinct standard function and optional function
-        var isOptional = source.TryGetValue<bool>(CellDict.IsOptional) ?? false;
+        // 2025.04.21: a location can be confiugred as included in a project already or not yet to reveal the client to consider including it.
+        // if a location is configured as already included, it should be displayed in the project explorer.
+        var isIncludeInProject = source.TryGetValue<bool>(CellDict.IsSelectedInProject) ?? true;
 
         return new FunctionLocation(id,
             parentId,
@@ -278,7 +279,7 @@ internal class FunctionLocationProcessor : IDisposable
             remarks,
             string.Empty,
             unitMultiplier,
-            isOptional,
+            isIncludeInProject,
             isProxy,
             target,
             false

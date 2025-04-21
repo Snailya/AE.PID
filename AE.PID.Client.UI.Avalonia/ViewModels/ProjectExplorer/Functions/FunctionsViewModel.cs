@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using AE.PID.Client.Core;
@@ -18,6 +17,7 @@ public class FunctionsViewModel : ViewModelBase
     private bool _isLoading = true;
     private ProjectViewModel? _project;
     private FunctionLocationTreeItemViewModel? _selectedLocation;
+    private bool _showNotSelectedItems;
 
     public ReadOnlyObservableCollection<FunctionLocationTreeItemViewModel> Locations => _locations;
 
@@ -48,6 +48,12 @@ public class FunctionsViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _project, value);
     }
 
+    public bool ShowNotSelectedItems
+    {
+        get => _showNotSelectedItems;
+        set => this.RaiseAndSetIfChanged(ref _showNotSelectedItems, value);
+    }
+
     #region -- Constructors --
 
     internal FunctionsViewModel()
@@ -66,6 +72,9 @@ public class FunctionsViewModel : ViewModelBase
 
         #region -- Subscriptions --
 
+        var includeFilter = this.WhenAnyValue(x => x.ShowNotSelectedItems)
+            .Select<bool, Func<FunctionLocation, bool>>(x => loc => x || loc.IsIncludeInProject == true);
+
         functionLocationStore.FunctionLocations.Connect()
             .Transform(x => x.Location)
             // switch to the UI thread to handle view models
@@ -76,6 +85,7 @@ public class FunctionsViewModel : ViewModelBase
                     this.Log().Debug(
                         "The parent id is null for some of the function location item, please check from IDE. The exceptional data will no be fitlered to ensure the TransformToTree method works normally.");
             })
+            .Filter(includeFilter)
             .Filter(x => x.ParentId != null)
             .TransformToTree<FunctionLocation, ICompoundKey>(x => x.ParentId!, Observable.Return(DefaultPredicate))
             .Transform(node => new FunctionLocationTreeItemViewModel(node))

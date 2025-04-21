@@ -30,6 +30,7 @@ public static class CellDict
 
     public const string FunctionId = "User.FunctionId";
     public const string IsOptional = "User.IsOptional";
+    public const string IsSelectedInProject = "User.IsSelectedInProject";
 
     public const string FunctionZone = "Prop.ProcessZone";
     public const string FunctionZoneName = "Prop.ProcessZoneName";

@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using AE.PID.Client.Core;
-using AE.PID.Client.Core.Exceptions;
 using AE.PID.Client.Core.VisioExt;
 using AE.PID.Client.UI.Avalonia;
 using AE.PID.Client.UI.Avalonia.VisioExt;
@@ -46,6 +45,9 @@ namespace AE.PID.Client.VisioAddIn;
 public class Ribbon : Office.IRibbonExtensibility
 {
     private Office.IRibbonUI _ribbon;
+
+    private IRibbonCommand _toggleIsOptionalCommand = new ToggleIsOptionalCommand();
+    private IRibbonCommand _togglesSelectedInProjectCommand = new TogglesSelectedInProjectCommand();
 
     #region IRibbonExtensibility Members
 
@@ -187,6 +189,45 @@ public class Ribbon : Office.IRibbonExtensibility
     }
 
     #endregion
+
+    public bool GetVisible(Office.IRibbonControl control)
+    {
+        switch (control.Id)
+        {
+            case nameof(ToggleIsOptionalCommand):
+                return _toggleIsOptionalCommand.CanExecute(control);
+            case nameof(TogglesSelectedInProjectCommand):
+                return _togglesSelectedInProjectCommand.CanExecute(control);
+        }
+
+        return false;
+    }
+
+    public void OnAction(Office.IRibbonControl control)
+    {
+        switch (control.Id)
+        {
+            case nameof(ToggleIsOptionalCommand):
+                _toggleIsOptionalCommand.Execute(control);
+                break;
+            case nameof(TogglesSelectedInProjectCommand):
+                _togglesSelectedInProjectCommand.Execute(control);
+                break;
+        }
+    }
+
+    public string GetLabel(Office.IRibbonControl control)
+    {
+        switch (control.Id)
+        {
+            case nameof(ToggleIsOptionalCommand):
+                return _toggleIsOptionalCommand.GetLabel(control);
+            case nameof(TogglesSelectedInProjectCommand):
+                return _togglesSelectedInProjectCommand.GetLabel(control);
+        }
+
+        return control.Id;
+    }
 
     #region -- Project Group --
 
@@ -535,27 +576,5 @@ public class Ribbon : Office.IRibbonExtensibility
     }
 
     #endregion
-
-    #region -- Shape Context Menu --
-
-    public string GetToggleTypeLabel(Office.IRibbonControl control)
-    {
-        var target = Globals.ThisAddIn.Application.ActiveWindow.Selection[1];
-
-        for (short i = 1; i <= target.LayerCount; i++)
-        {
-            var layer = target.Layer[i];
-            if (layer.NameU == LayerDict.Optional) return "设为标准";
-        }
-
-        return "设为选配";
-    }
-
-    public void ToggleType(Office.IRibbonControl control)
-    {
-        var target = Globals.ThisAddIn.Application.ActiveWindow.Selection[1];
-        FormatHelper.ToggleOptional(target);
-    }
-
-    #endregion
+    
 }

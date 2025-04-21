@@ -95,9 +95,15 @@
                     getVisible="CanPasteShapeData"
                     insertAfterMso="Paste"
             />
-            <button id="ToggleType"
-                    getLabel="GetToggleTypeLabel"
-                    onAction="ToggleType"
+            <button id="ToggleIsOptionalCommand"
+                    getLabel="GetLabel"
+                    getVisible="GetVisible"
+                    onAction="OnAction"
+            />
+            <button id="TogglesSelectedInProjectCommand"
+                    getLabel="GetLabel"
+                    getVisible="GetVisible"
+                    onAction="OnAction"
             />
             <!--            <dynamicMenu id="Suggestion" label="建议" getContent="GetSuggestionContent"/>-->
         </contextMenu>

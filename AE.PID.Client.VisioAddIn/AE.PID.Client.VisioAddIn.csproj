@@ -238,6 +238,10 @@
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Ribbon\IRibbonCommand.cs" />
+    <Compile Include="Ribbon\ToggleIsOptionalCommand.cs" />
+    <Compile Include="Ribbon\ToggleIsStandardEquipment.cs" />
+    <Compile Include="Ribbon\TogglesSelectedInProjectCommand.cs" />
     <Compile Include="Services\DataProvider\FunctionLocationProcessor.cs" />
     <Compile Include="Services\DataProvider\MaterialLocationProcessor.cs" />
     <Compile Include="Services\DataProvider\ProjectLocationProcessor.cs" />

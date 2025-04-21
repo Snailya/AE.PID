@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using AE.PID.Client.Core;
+using AE.PID.Client.Core.VisioExt;
 using Microsoft.Office.Interop.Visio;
 
 namespace AE.PID.Client.VisioAddIn;
@@ -83,7 +86,7 @@ public static class ShapeExt
     }
 
     /// <summary>
-    ///     Get the master object from document stencil or fallback document
+    ///     Get the primary object from document stencil or fallback document
     /// </summary>
     /// <param name="document"></param>
     /// <param name="baseId"></param>
@@ -97,10 +100,10 @@ public static class ShapeExt
                 .FirstOrDefault(x => x.BaseID == baseId) is { } master)
             return master;
 
-        // if can't find the master in any opened documents, see if it is in fallback document.
+        // if it can't find the master in any opened documents, see if it is in a fallback document.
         if (fallbackDocumentPath == null) throw new MasterNotValidException();
 
-        // if none of above is the situation, open the library and copy to the document stencil
+        // if none of the above is the situation, open the library and copy to the document stencil
         try
         {
             var opened =
@@ -116,5 +119,56 @@ public static class ShapeExt
         {
             throw new MasterNotValidException();
         }
+    }
+
+    /// <summary>
+    /// Gets the shape categories.
+    /// </summary>
+    /// <param name="shape"></param>
+    /// <returns></returns>
+    public static VisioShapeCategory[] GetCategories(this IVShape shape)
+    {
+        var shapeCategoryValues = shape.TryGetValue(CellDict.ShapeCategories)?.Split(';');
+        if (shapeCategoryValues == null || !shapeCategoryValues.Any()) return [VisioShapeCategory.None];
+
+        var shapeCategoryValueSet = new HashSet<string>(shapeCategoryValues);
+
+        // 2025.02.13: use hashset to enhance comparison efficiency 
+        // 2025.03.26: use shape category instead of only function location or material location
+        var shapeCategories = new List<VisioShapeCategory>();
+
+        if (shapeCategoryValueSet.Overlaps(["Frame", "ProcessZone"]))
+            shapeCategories.Add(VisioShapeCategory.ProcessZone);
+        else if (shapeCategoryValueSet.Overlaps([
+                     "FunctionalGroup", "FunctionalGroups", "FunctionGroup", "FunctionGroups"
+                 ]))
+            shapeCategories.Add(VisioShapeCategory.FunctionalGroup);
+        else if (shapeCategoryValueSet.Overlaps(["Unit", "Units"]))
+            shapeCategories.Add(VisioShapeCategory.Unit);
+        else if (shapeCategoryValueSet.Overlaps(["Equipment", "Equipments"]))
+            shapeCategories.Add(VisioShapeCategory.Equipment);
+        else if (shapeCategoryValueSet.Overlaps(["Instrument", "Instruments"]))
+            shapeCategories.Add(VisioShapeCategory.Instrument);
+        else if (shapeCategoryValueSet.Overlaps([
+                     "FunctionalElement", "FunctionalElements", "FunctionElement", "FunctionElements"
+                 ]))
+            shapeCategories.Add(VisioShapeCategory.FunctionalElement);
+
+        if (shapeCategoryValueSet.Overlaps(["Proxy"]))
+            shapeCategories.Add(VisioShapeCategory.Proxy);
+
+        return shapeCategories.ToArray();
+    }
+    
+    
+    /// <summary>
+    /// Check whether a shape is a valid location in the code project scope.
+    /// </summary>
+    /// <param name="shape"></param>
+    /// <returns></returns>
+    public static bool IsValidLocation(this IVShape shape)
+    {
+        var category = GetCategories(shape);
+        return category.Length >= 1 && category[0] != VisioShapeCategory.None;
     }
 }

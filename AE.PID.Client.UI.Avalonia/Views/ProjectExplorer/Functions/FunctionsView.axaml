@@ -29,9 +29,11 @@
     </Design.DataContext>
 
     <DockPanel>
-        <Grid DockPanel.Dock="Left">
+        <Grid DockPanel.Dock="Left" RowDefinitions="Auto,*">
             <shared:LoadingIndicator IsLoading="{Binding IsLoading}" />
-            <TreeView MinWidth="240"
+            <CheckBox Grid.Row="0" Content="包含未配置项" IsChecked="{Binding ShowNotSelectedItems}" />
+            <TreeView Grid.Row="1"
+                MinWidth="240"
                       ItemsSource="{Binding Locations}"
                       SelectedItem="{Binding SelectedLocation}">
                 <TreeView.Styles>
@@ -46,7 +48,6 @@
                     <TreeDataTemplate ItemsSource="{Binding Inferiors}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="{Binding NodeName}"
-                                       Foreground="{Binding IsOptional, Converter={x:Static vm:SimpleConverters.FunctionGroupOptionalToTextColor}}"
                                        VerticalAlignment="Center" />
                             <Border Classes="icon"
                                     IsVisible="{Binding IsProxy}" Background="LightSteelBlue">
