@@ -54,4 +54,28 @@ public static class PackageExt
 
         return XDocument.Parse(stringWriter.ToString());
     }
+
+    public static string GetKeyXPath(this XElement source)
+    {
+        return string.Join("/", source.Ancestors().Select(GetXPath).Where(x => x != null));
+    }
+
+    public static string? GetXPath(this XElement x)
+    {
+
+        // 如果是Shapes节点, 因为不包含任何属性，直接返回Shapes
+        if (x.Name == "Shapes") return x.Name.ToString();
+
+        // 如果是Shape节点，通过MasterShape属性作为定位
+        if (x.Name == "Shape") return $"{x.Name}[@MasterShape='{x.Attribute("MasterShape")!.Value}']";
+
+        // 如果是Section、Row节点，则通过N属性作为定位
+        if (x.Name == "Section" || x.Name == "Row")
+            return x.Attribute("N") != null ? $"{x.Name}[@N='{x.Attribute("N")!.Value}']" : $"{x.Name}";
+
+        if (x.Name == "PageContents")
+            return null;
+
+        throw new ArgumentOutOfRangeException("无法识别的节点");
+    }
 }

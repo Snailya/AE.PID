@@ -233,7 +233,7 @@ public class Ribbon : Office.IRibbonExtensibility
     /// <summary>
     ///     Because the state of the buttons on ribbon will not re-compute once loaded.
     ///     So the re-computation needs to be triggered manually by calling _ribbon.Invalidate().
-    ///     As the button state is related to, if there is a document in open state, observe on these two events.
+    ///     As the button state is related to if there is a document in open state, observe on these two events.
     /// </summary>
     private void RegisterUpdateForElements()
     {
@@ -244,8 +244,10 @@ public class Ribbon : Office.IRibbonExtensibility
 
             if (_lastInvalidates.TryGetValue(document, out var lastInvalidate) &&
                 lastInvalidate + TimeSpan.FromMinutes(5) > DateTime.Now) return;
+
             _ribbon.Invalidate();
             _lastInvalidates.TryAdd(document, DateTime.Now);
+            LogHost.Default.Info($"Invalidate ribbon for {document}");
         };
 
         Globals.ThisAddIn.Application.BeforeDocumentClose += doc =>

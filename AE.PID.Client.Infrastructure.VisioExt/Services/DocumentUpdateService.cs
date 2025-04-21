@@ -24,7 +24,6 @@ public class DocumentUpdateService : DisposableBase, IDocumentUpdateService
     private readonly IApiFactory<IDocumentApi> _apiFactory;
     private readonly object _cacheLock = new();
 
-
     private readonly Task _initializeTask;
     private ConcurrentDictionary<string, MasterSnapshotDto> _cache;
 

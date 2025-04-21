@@ -1,4 +1,4 @@
-﻿namespace AE.PID.Server.Extensions;
+﻿namespace AE.PID.Server;
 
 public static class HttpContextExt
 {

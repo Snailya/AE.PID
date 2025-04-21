@@ -4,9 +4,9 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using AE.PID.Server.Models;
 
-namespace AE.PID.Server.Helpers;
+namespace AE.PID.Server;
 
-public abstract class VisioXmlWrapper
+internal abstract class VisioXmlWrapper
 {
     public const string DocumentRel = @"http://schemas.microsoft.com/visio/2010/relationships/document";
     public const string MastersRel = @"http://schemas.microsoft.com/visio/2010/relationships/masters";

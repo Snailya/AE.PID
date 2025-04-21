@@ -5,7 +5,7 @@ using System.Xml.Linq;
 
 namespace AE.PID.Server;
 
-public abstract class XmlHelper
+internal abstract class XmlHelper
 {
     public static XDocument GetDocumentFromPart(PackagePart packagePart)
     {

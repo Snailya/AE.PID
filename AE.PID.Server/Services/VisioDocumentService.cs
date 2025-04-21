@@ -1,7 +1,6 @@
 ﻿using System.IO.Packaging;
 using AE.PID.Core;
 using AE.PID.Server.Data;
-using AE.PID.Server.Helpers;
 
 namespace AE.PID.Server;
 
@@ -29,7 +28,7 @@ public class VisioDocumentService(ILogger<VisioDocumentService> logger, AppDbCon
         _processor.UpdateStyles(visioPackage);
 
         // do update
-        var documentMasters = _processor.GetDocumentMasters(visioPackage);
+        var documentMasters = VisioDocumentProcessor.GetDocumentMasters(visioPackage);
 
         var index = 0;
         var total = items?.Length ?? documentMasters.Length;
@@ -45,7 +44,7 @@ public class VisioDocumentService(ILogger<VisioDocumentService> logger, AppDbCon
             var target = await GetLatestMaster(source.BaseId, status);
 
             if (target is not null)
-                _processor.UpdateMaster(visioPackage, source.UniqueId, target);
+                VisioDocumentProcessor.UpdateMaster(visioPackage, source.UniqueId, target);
         }
 
         // 添加一个重新计算公式的事件，如果没有的话

@@ -1,4 +1,4 @@
-﻿namespace AE.PID.Server.Helpers;
+﻿namespace AE.PID.Server;
 
 internal static class FileHelper
 {

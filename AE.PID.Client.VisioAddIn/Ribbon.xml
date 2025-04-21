@@ -46,6 +46,7 @@
                 <!--                </group>-->
                 <group id="About" label="关于">
                     <button id="Settings" onAction="OpenSettings" label="设置"/>
+                    <button id="Debug" onAction="Debug" label="调试"/>
                 </group>
             </tab>
         </tabs>
