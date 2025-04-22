@@ -5,13 +5,23 @@ using Shape = Microsoft.Office.Interop.Visio.Shape;
 
 namespace AE.PID.Client.VisioAddIn;
 
-public abstract class RibbonCommandBase : IRibbonCommand
+internal abstract class RibbonCommandBase : IRibbonCommand
 {
+    public abstract string Id { get; }
+
     public abstract void Execute(IRibbonControl control);
 
-    public abstract bool CanExecute(IRibbonControl control);
+    public virtual bool CanExecute(IRibbonControl control)
+    {
+        return true;
+    }
 
     public abstract string GetLabel(IRibbonControl control);
+
+    public virtual bool GetVisible(IRibbonControl control)
+    {
+        return true;
+    }
 
     protected static bool IsSingleSelection()
     {
@@ -20,11 +30,18 @@ public abstract class RibbonCommandBase : IRibbonCommand
 
     protected static bool IsPageWindow()
     {
-        return Globals.ThisAddIn.Application.ActiveWindow.SubType == (short)VisWinTypes.visPageWin;
+        return Globals.ThisAddIn.Application.ActiveWindow?.SubType == (short)VisWinTypes.visPageWin;
     }
 
     protected static bool AreLocations()
     {
         return Globals.ThisAddIn.Application.ActiveWindow.Selection.OfType<Shape>().All(x => x.IsValidLocation());
+    }
+
+    protected static bool LayerExists(string layerName)
+    {
+        var selection = Globals.ThisAddIn.Application.ActivePage.CreateSelection(VisSelectionTypes.visSelTypeByLayer,
+            VisSelectMode.visSelModeSkipSuper, layerName);
+        return selection.Count > 0;
     }
 }

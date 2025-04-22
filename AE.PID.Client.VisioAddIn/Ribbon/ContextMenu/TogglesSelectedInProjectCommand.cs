@@ -3,8 +3,10 @@ using Microsoft.Office.Core;
 
 namespace AE.PID.Client.VisioAddIn;
 
-public class TogglesSelectedInProjectCommand : RibbonCommandBase
+internal sealed class TogglesSelectedInProjectCommand : RibbonCommandBase
 {
+    public override string Id { get; } = nameof(TogglesSelectedInProjectCommand);
+
     public override void Execute(IRibbonControl control)
     {
         var target = Globals.ThisAddIn.Application.ActiveWindow.Selection[1];
@@ -27,5 +29,11 @@ public class TogglesSelectedInProjectCommand : RibbonCommandBase
 
         var currentValue = target.TryGetValue<bool>(CellDict.IsSelectedInProject);
         return currentValue is null or true ? "不配置" : "配置";
+    }
+
+
+    public override bool GetVisible(IRibbonControl control)
+    {
+        return CanExecute(control);
     }
 }

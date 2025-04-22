@@ -3,49 +3,91 @@
     <ribbon>
         <tabs>
             <tab idMso="TabAddIns">
-                <group id="Design" label="设计">
-                    <button id="Libraries" onAction="LoadLibraries" label="库" screentip="加载库" size="large"
-                            getEnabled="IsLoadLibrariesValid"
+                <group id="DesignGroup" label="设计">
+                    <button id="LoadLibrariesCommand"
+                            size="large"
+                            screentip="加载库"
+                            getLabel="GetLabel"
+                            getEnabled="GetEnabled"
+                            onAction="OnAction"
                     />
-                    <button id="FormatPage" onAction="FormatPage" label="初始化" screentip="设置文档的样式和网格"
-                            getEnabled="IsFormatPageValid"
+                    <button id="FormatPageCommand" 
+                            screentip="设置文档的样式和网格" 
+                            getLabel="GetLabel"
+                            getEnabled="GetEnabled"
+                            onAction="OnAction"
                     />
-                    <button id="InsertLegend" onAction="InsertLegend" label="图例" screentip="在当前绘图页中插入图例"
-                            getEnabled="IsInsertLegendValid"
+                    <button id="InsertLegendCommand" 
+                            screentip="在当前绘图页中插入图例"
+                            getLabel="GetLabel"
+                            getEnabled="GetEnabled"
+                            onAction="OnAction"
                     />
-                    <button id="UpdateDocument" onAction="UpdateDocument" label="更新" screentip="更新文档模具"
-                            getEnabled="IsUpdateDocumentValid"
+                    <button id="UpdateDocumentCommand" 
+                            screentip="更新文档模具" 
+                            getLabel="GetLabel"
+                            getEnabled="GetEnabled"
+                            onAction="OnAction"
                     />
-                    <button id="Tools" onAction="OpenTools" label="工具" screentip="打开工具箱"/>
+                    <button id="OpenToolsCommand"
+                            screentip="打开工具箱"
+                            getLabel="GetLabel"
+                            getEnabled="GetEnabled"
+                            onAction="OnAction"
+                    />
                 </group>
-                <group id="Check" label="检查">
-                    <button id="ValidateDesignationUnique" label="位号重复" onAction="ValidateDesignationUnique"
-                            screentip="检查位号唯一性" size="large" getEnabled="IsCheckValid"
+                <group id="CheckGroup" label="检查">
+                    <button id="ValidateDesignationUniqueCommand"
+                            screentip="检查功能组内的元件位号是否重复"
+                            getLabel="GetLabel"
+                            getEnabled="GetEnabled"
+                            onAction="OnAction"
                     />
-                    <button id="ValidateMasterExist" label="主控形状缺失" onAction="ValidateMasterExist"
-                            screentip="检查主控形状没有缺失" size="large" getEnabled="IsCheckValid"
+                    <button id="ValidateMasterExistCommand"
+                            screentip="检查主控形状是否丢失，主控形状丢失的形状对象在更新时将无法被更新，可以使用替换方法重新关联形状对象的主控形状"
+                            getLabel="GetLabel"
+                            getEnabled="GetEnabled"
+                            onAction="OnAction"
                     />
-                    <button id="ValidatePipeline" label="异常管线" onAction="ValidatePipeline"
-                            screentip="检查管线的数据是否异常，异常管路会导致文档更新后飞线" size="large"
-                            getEnabled="IsCheckValid"
+                    <button id="ValidatePipelineCommand"
+                            screentip="检查管线的数据是否异常，异常管路会导致文档更新后飞线"
+                            getLabel="GetLabel"
+                            getEnabled="GetEnabled"
+                            onAction="OnAction"
                     />
-                    <button id="ClearValidationMarks" label="清除" onAction="ClearValidationMarks"
-                            screentip="清除检查标记" size="large" getEnabled="IsClearValidationMarksValid"
+                    <button id="ClearValidationMarksCommand"
+                            size="large"
+                            screentip="清除检查标记"
+                            getLabel="GetLabel"
+                            getEnabled="GetEnabled"
+                            onAction="OnAction"
                     />
                 </group>
-                <group id="Project" label="项目">
-                    <button id="ProjectExplorer" onAction="OpenProjectExplorer" getEnabled="CanOpenProjectExplorer" label="项目浏览器"/>
-                    <button id="ElectricalControlSpecification" onAction="ExportElectricalControlSpecification"
-                            label="电控任务书"/>
+                <group id="ProjectGroup" label="项目">
+                    <button id="OpenProjectExplorerCommand"
+                            getLabel="GetLabel"
+                            getEnabled="GetEnabled"
+                            onAction="OnAction"
+                    />
+                    <button id="ExportElectricalControlSpecificationCommand"
+                            getLabel="GetLabel"
+                            getEnabled="GetEnabled"
+                            onAction="OnAction"
+                    />
                 </group>
-                <group id="Fix" label="修复">
-                    <button id="EndOfFile" onAction="FixEndOfFile" label="意外的文件尾"/>
+                <group id="FixGroup" label="修复">
+                    <button id="FixEndOfFileCommand"
+                            getLabel="GetLabel"
+                            getEnabled="GetEnabled"
+                            onAction="OnAction"
+                    />
                 </group>
-                <!--                <group id="Administrator" label="管理员">-->
-                <!--                    <button id="AddResponsibleProperty" onAction="AddResponsibleProperty" label="增加采购方"/>-->
-                <!--                </group>-->
-                <group id="About" label="关于">
-                    <button id="Settings" onAction="OpenSettings" label="设置"/>
+                <group id="AboutGroup" label="关于">
+                    <button id="OpenSettingsCommand"
+                            getLabel="GetLabel"
+                            getEnabled="GetEnabled"
+                            onAction="OnAction"
+                    />
                     <button id="Debug" onAction="Debug" label="调试"/>
                 </group>
             </tab>
@@ -55,46 +97,55 @@
     <!--This section defines custom context menu controls.-->
     <contextMenus>
         <contextMenu idMso="ContextMenuShape">
-            <menu id="Proxy" label="插入代理">
-                <button id="InsertFunctionGroup"
-                        label="代理功能组"
-                        onAction="InsertFunctionGroup"
-                        getEnabled="IsInsertFunctionGroupValid"
+            <menu id="ProxyGroup"
+                  getLabel="GetLabel"
+                  getVisible="GetVisible"
+            >
+                <button id="InsertFunctionGroupCommand"
+                        getLabel="GetLabel"
+                        getEnabled="GetEnabled"
+                        onAction="OnAction"
                 />
-                <button id="InsertEquipment"
-                        label="代理设备"
-                        onAction="InsertEquipment"
-                        getEnabled="IsInsertEquipmentValid"
+                <button id="InsertEquipmentCommand"
+                        getLabel="GetLabel"
+                        getEnabled="GetEnabled"
+                        onAction="OnAction"
                 />
-                <button id="InsertFunctionElement"
-                        label="代理功能元件"
-                        onAction="InsertFunctionElement"
-                        getEnabled="IsInsertFunctionElementValid"
-                />
-            </menu>
-            <menu id="Material" label="物料" getVisible="AreMaterialLocations">
-                <button id="MaterialData"
-                        label="详情"
-                        onAction="ShowMaterialDataPane"
-                        getEnabled="HasMaterial"
-                />
-                <button id="DeleteMaterial"
-                        label="删除"
-                        onAction="DeleteMaterial"
-                        getEnabled="HasMaterial"
+                <button id="InsertFunctionElementCommand"
+                        getLabel="GetLabel"
+                        getEnabled="GetEnabled"
+                        onAction="OnAction"
                 />
             </menu>
-            <button id="InsertPCIDescription"
-                    label="插入PCI说明"
-                    onAction="InsertPCIDescription"
-                    getVisible="IsFrame"
+            <menu id="MaterialGroup" 
+                  getLabel="GetLabel"
+                  getVisible="GetVisible"
+            >
+                <button id="OpenMaterialDataPaneCommand"
+                        getLabel="GetLabel"
+                        getEnabled="GetEnabled"
+                        onAction="OnAction"
+                />
+                <button id="DeleteMaterialCommand"
+                        getLabel="GetLabel"
+                        getEnabled="GetEnabled"
+                        onAction="OnAction"
+                />
+            </menu>
+
+            <button id="InsertDescriptionCommand"
+                    getLabel="GetLabel"
+                    getVisible="GetVisible"
+                    onAction="OnAction"
             />
-            <button id="PasteShapeData"
-                    label="粘贴属性"
-                    onAction="PasteShapeData"
-                    getVisible="CanPasteShapeData"
+
+            <button id="PasteShapeDataCommand"
                     insertAfterMso="Paste"
+                    getLabel="GetLabel"
+                    getVisible="GetVisible"
+                    onAction="OnAction"
             />
+
             <button id="ToggleIsOptionalCommand"
                     getLabel="GetLabel"
                     getVisible="GetVisible"

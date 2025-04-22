@@ -1,6 +1,6 @@
 ﻿using System.Xml.Linq;
 
-namespace AE.PID.Server;
+namespace AE.PID.Core;
 
 public abstract class XNames
 {

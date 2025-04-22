@@ -3,8 +3,10 @@ using Microsoft.Office.Core;
 
 namespace AE.PID.Client.VisioAddIn;
 
-public class ToggleIsOptionalCommand : RibbonCommandBase
+internal sealed class ToggleIsOptionalCommand : RibbonCommandBase
 {
+    public override string Id { get; } = nameof(ToggleIsOptionalCommand);
+
     public override void Execute(IRibbonControl control)
     {
         var target = Globals.ThisAddIn.Application.ActiveWindow.Selection[1];
@@ -28,5 +30,11 @@ public class ToggleIsOptionalCommand : RibbonCommandBase
 
         var currentValue = target.TryGetValue<bool>(CellDict.IsOptional);
         return currentValue is null or false ? "选配" : "标配";
+    }
+
+
+    public override bool GetVisible(IRibbonControl control)
+    {
+        return CanExecute(control);
     }
 }

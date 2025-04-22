@@ -221,6 +221,7 @@
                   can be found.
                 -->
   <ItemGroup>
+    <Compile Include="Attributes\RibbonContextMenu.cs" />
     <Compile Include="Exceptions\MasterNotValidException.cs" />
     <Compile Include="Extensions\ChangeSetExt.cs" />
     <Compile Include="Extensions\ControlExt.cs" />
@@ -235,13 +236,36 @@
     <Compile Include="Helpers\SolutionXmlHelper.cs" />
     <Compile Include="Helpers\WindowHelper.cs" />
     <Compile Include="Interfaces\IBackgroundTask.cs" />
+    <Compile Include="Interfaces\IRibbonCommand.cs" />
+    <Compile Include="Interfaces\IRibbonItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Ribbon\IRibbonCommand.cs" />
-    <Compile Include="Ribbon\ToggleIsOptionalCommand.cs" />
-    <Compile Include="Ribbon\ToggleIsStandardEquipment.cs" />
-    <Compile Include="Ribbon\TogglesSelectedInProjectCommand.cs" />
+    <Compile Include="Ribbon\Check\ClearValidationMarksCommand.cs" />
+    <Compile Include="Ribbon\Check\ValidateDesignationUniqueCommand.cs" />
+    <Compile Include="Ribbon\Check\ValidateMasterExistCommand.cs" />
+    <Compile Include="Ribbon\Check\ValidatePipelineCommand.cs" />
+    <Compile Include="Ribbon\ContextMenu\MaterialGroup\DeleteMaterialCommand.cs" />
+    <Compile Include="Ribbon\ContextMenu\MaterialGroup\OpenMaterialDataPaneCommand.cs" />
+    <Compile Include="Ribbon\ContextMenu\ProxyGroup\InsertEquipmentCommand.cs" />
+    <Compile Include="Ribbon\ContextMenu\ProxyGroup\InsertFunctionElementCommand.cs" />
+    <Compile Include="Ribbon\ContextMenu\ProxyGroup\InsertFunctionGroupCommand.cs" />
+    <Compile Include="Ribbon\RibbonContextMenuGroup.cs" />
+    <Compile Include="Ribbon\ContextMenu\InsertDescriptionCommand.cs" />
+    <Compile Include="Ribbon\ContextMenu\PasteShapeDataCommand.cs" />
+    <Compile Include="Ribbon\ContextMenu\ToggleIsOptionalCommand.cs" />
+    <Compile Include="Ribbon\ContextMenu\TogglesSelectedInProjectCommand.cs" />
+    <Compile Include="Ribbon\Design\FormatPageCommand.cs" />
+    <Compile Include="Ribbon\Design\InsertLegendCommand.cs" />
+    <Compile Include="Ribbon\Design\LoadLibrariesCommand.cs" />
+    <Compile Include="Ribbon\Design\OpenToolsCommand.cs" />
+    <Compile Include="Ribbon\Design\UpdateDocumentCommand.cs" />
+    <Compile Include="Ribbon\Fix\FixEndOfFileCommand.cs" />
+    <Compile Include="Ribbon\Project\ExportElectricalControlSpecificationCommand.cs" />
+    <Compile Include="Ribbon\Project\OpenProjectExplorerCommand.cs" />
+    <Compile Include="Ribbon\RibbonCommandBase.cs" />
+    <Compile Include="Ribbon\RibbonCommandManager.cs" />
+    <Compile Include="Ribbon\Setting\OpenSettingsCommand.cs" />
     <Compile Include="Services\DataProvider\FunctionLocationProcessor.cs" />
     <Compile Include="Services\DataProvider\MaterialLocationProcessor.cs" />
     <Compile Include="Services\DataProvider\ProjectLocationProcessor.cs" />
