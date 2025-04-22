@@ -1,5 +1,6 @@
 ﻿using System.IO.Packaging;
 using System.Xml.Linq;
+using AE.PID.Core;
 using AE.PID.Server.Data;
 using AE.PID.Server.Extensions;
 using AE.PID.Server.Models;
@@ -165,23 +166,35 @@ internal class VisioDocumentProcessor
                     .SingleOrDefault(x => x.Attribute(XNames.NAttribute)?.Value == "SubClass")?
                     .Element(XNames.CellElement)?.Attribute(XNames.FAttribute);
                 subClassFormulaAttribute?.Remove();
-
+                
+                // 删除所有公式值为Themeval的Cell
+                overlay.Elements(XNames.CellElement)
+                    .Where(x=>x.Attribute(XNames.FAttribute)?.Value == "THEMEVAL()").Remove();
+                
                 // 删除主形状上的Geometry
                 var geometries = overlay.Elements(XNames.SectionElement)
                     .Where(x => x.Attribute(XNames.NAttribute)?.Value == "Geometry").ToList();
                 foreach (var geometry in geometries)
                     geometry.Remove();
 
+                // 删除Character
+                overlay.Elements(XNames.SectionElement).Where(x => x.Attribute(XNames.NAttribute)?.Value == "Character")
+                    .Remove();
+
                 // 由于调整了子形状的ID，所以现阶段先忽略所有的overlay中的子形状，
                 overlay.Elements(XNames.ShapesElement).Elements().Remove();
 #endif
                 var merged = StructuredXElementMerger.StructuredMerge(template, overlay);
                 UpdateId(merged, ref maxShapeId);
-
                 shapeElementInPagePart.ReplaceWith(merged);
             }
 
             RemoveNamespace(pageDocument);
+            
+            if (pageDocument.Descendants(XNames.ShapeElement).Any(x => x.Attribute(XNames.IdAttribute)?.Value == "-1"))
+                throw new DocumentUpdateFailedException(
+                    "Failed to update shape ID after recreate the sub-shapes. If this exception throws, means the UpdateId() not work as expected. Obviously this it a bug.");
+            
             XmlHelper.SaveXDocumentToPart(pagePart, pageDocument);
         }
 
@@ -195,7 +208,7 @@ internal class VisioDocumentProcessor
 
     private static void UpdateId(XElement merged, ref int maxShapeId)
     {
-        foreach (var shapeElement in merged.Descendants(XNames.ShapesElement))
+        foreach (var shapeElement in merged.Descendants(XNames.ShapeElement))
             if (shapeElement.Attribute(XNames.IdAttribute) is { Value: "-1" })
                 shapeElement.SetAttributeValue(XNames.IdAttribute, (++maxShapeId).ToString());
     }

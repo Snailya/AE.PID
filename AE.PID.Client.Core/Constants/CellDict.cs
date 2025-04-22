@@ -7,7 +7,10 @@ public static class CellDict
     public const string Relationships = "Relationships";
 
     public const string Tag = "Prop.DeviceTag";
-
+    public const string IsOptional = "User.IsOptional";
+    public const string IsSelectedInProject = "User.IsSelectedInProject";
+    public const string LineColor = "LineColor";
+    public const string TextColor = "Charactor.Color";
     #region -- Projects --
 
     public const string ProjectId = "User.ProjectId";
@@ -27,10 +30,9 @@ public static class CellDict
     #endregion
 
     #region -- Function Locations --
-
+    
     public const string FunctionId = "User.FunctionId";
-    public const string IsOptional = "User.IsOptional";
-    public const string IsSelectedInProject = "User.IsSelectedInProject";
+
 
     public const string FunctionZone = "Prop.ProcessZone";
     public const string FunctionZoneName = "Prop.ProcessZoneName";
