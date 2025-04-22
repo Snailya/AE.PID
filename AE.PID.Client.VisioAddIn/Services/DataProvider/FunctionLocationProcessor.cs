@@ -184,7 +184,7 @@ internal class FunctionLocationProcessor : IDisposable
         // 2025.03.24: 现在对于代理功能组，它的Parent不再是它实际的节点
         var isProxy = source.IsCallout;
 
-        VisioShapeId? parentId;
+        VisioShapeId? parentId = null;
         VisioShapeId? target = null;
 
         // 分成以下集中情况：
@@ -218,7 +218,8 @@ internal class FunctionLocationProcessor : IDisposable
                 parentId = GetContainerId(source);
                 break;
             case FunctionType.FunctionElement:
-                parentId = new VisioShapeId(source.ContainingPageID, source.CalloutTarget.ID);
+                if (source.CalloutTarget != null)
+                    parentId = new VisioShapeId(source.ContainingPageID, source.CalloutTarget.ID);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
