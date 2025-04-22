@@ -90,7 +90,7 @@ public class SimpleConverters
     /// <summary>
     ///     Highlight the optional function group with color #800000 (red)
     /// </summary>
-    public static FuncValueConverter<bool, object?> FunctionGroupOptionalToTextColor { get; } =
+    public static FuncValueConverter<bool, object?> IsIncludedInProjectToTextColor { get; } =
         new(isOptional => isOptional
             ? new SolidColorBrush(Color.Parse("#800000"))
             : AvaloniaProperty.UnsetValue);

@@ -41,11 +41,12 @@ internal class FunctionLocationProcessor : IDisposable
             .Transform(ToFunctionLocation)
             // after the shape is transformed into the model, switch the forward working into background scheduler
             .ChangeKey(x => x.Id)
+            // 2025.4.22: filter out only selected item.
+            .Filter(x=>x.IsSelectedInProject)
             .ObserveOn(TaskPoolScheduler.Default)
             .PopulateInto(_realFunctionLocation)
             .DisposeWith(_cleanUp);
-
-
+        
         var observeOverlay = _overlayProcessor.Cache.Connect();
         Locations = _realFunctionLocation.Connect()
             .Merge(_virtualLocationGenerator.VirtualLocations.Connect()

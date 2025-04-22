@@ -43,7 +43,7 @@ internal sealed class ToggleIsOptionalCommand : RibbonCommandBase
     private static void ClearColorFormulas(IVShape shape)
     {
         // 2025.04.22: remove line settings.
-        shape.Cells[CellDict.LineColor].FormulaU = "";
-        shape.Cells[CellDict.TextColor].FormulaU = "";
+        shape.Cells[CellDict.LineColor].FormulaForceU = "";
+        shape.Cells[CellDict.TextColor].FormulaForceU = "";
     }
 }

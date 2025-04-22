@@ -31,7 +31,6 @@
     <DockPanel>
         <Grid DockPanel.Dock="Left" RowDefinitions="Auto,*">
             <shared:LoadingIndicator IsLoading="{Binding IsLoading}" />
-            <CheckBox Grid.Row="0" Content="包含未配置项" IsChecked="{Binding ShowNotSelectedItems}" />
             <TreeView Grid.Row="1"
                 MinWidth="240"
                       ItemsSource="{Binding Locations}"

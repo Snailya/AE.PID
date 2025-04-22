@@ -36,7 +36,7 @@ public class FunctionLocationTreeItemViewModel : ReactiveObject, IDisposable,
         IsProxy = node.Item.IsProxy;
         IsVirtual = node.Item.IsVirtual;
         
-        IsIncludedInProject = node.Item.IsIncludeInProject;
+        IsIncludedInProject = node.Item.IsSelectedInProject;
         
         // Wrap loader for the nested view model inside a lazy so we can control when it is invoked
         var observeChildren = node.Children.Connect()

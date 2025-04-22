@@ -10,7 +10,7 @@ public static class CellDict
     public const string IsOptional = "User.IsOptional";
     public const string IsSelectedInProject = "User.IsSelectedInProject";
     public const string LineColor = "LineColor";
-    public const string TextColor = "Charactor.Color";
+    public const string TextColor = "Char.Color";
     #region -- Projects --
 
     public const string ProjectId = "User.ProjectId";

@@ -27,7 +27,8 @@ public static class ChangeSetExt
         CellDict.SubClass, CellDict.KeyParameters, CellDict.UnitQuantity, CellDict.Quantity,
         CellDict.MaterialCode,
         CellDict.Customer,
-        CellDict.RefEquipment
+        CellDict.RefEquipment,
+        CellDict.IsSelectedInProject
     };
 
     /// <summary>

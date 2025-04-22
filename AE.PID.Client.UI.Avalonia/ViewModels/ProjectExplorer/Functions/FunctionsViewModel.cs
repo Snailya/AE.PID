@@ -71,10 +71,7 @@ public class FunctionsViewModel : ViewModelBase
             materialLocationStore);
 
         #region -- Subscriptions --
-
-        var includeFilter = this.WhenAnyValue(x => x.ShowNotSelectedItems)
-            .Select<bool, Func<FunctionLocation, bool>>(x => loc => x || loc.IsIncludeInProject == true);
-
+        
         functionLocationStore.FunctionLocations.Connect()
             .Transform(x => x.Location)
             // switch to the UI thread to handle view models
@@ -85,7 +82,6 @@ public class FunctionsViewModel : ViewModelBase
                     this.Log().Debug(
                         "The parent id is null for some of the function location item, please check from IDE. The exceptional data will no be fitlered to ensure the TransformToTree method works normally.");
             })
-            .Filter(includeFilter)
             .Filter(x => x.ParentId != null)
             .TransformToTree<FunctionLocation, ICompoundKey>(x => x.ParentId!, Observable.Return(DefaultPredicate))
             .Transform(node => new FunctionLocationTreeItemViewModel(node))
