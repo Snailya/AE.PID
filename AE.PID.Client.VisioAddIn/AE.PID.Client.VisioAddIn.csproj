@@ -250,6 +250,7 @@
     <Compile Include="Ribbon\ContextMenu\ProxyGroup\InsertEquipmentCommand.cs" />
     <Compile Include="Ribbon\ContextMenu\ProxyGroup\InsertFunctionElementCommand.cs" />
     <Compile Include="Ribbon\ContextMenu\ProxyGroup\InsertFunctionGroupCommand.cs" />
+    <Compile Include="Ribbon\Fix\FixMasterNotFoundCommand.cs" />
     <Compile Include="Ribbon\RibbonContextMenuGroup.cs" />
     <Compile Include="Ribbon\ContextMenu\InsertDescriptionCommand.cs" />
     <Compile Include="Ribbon\ContextMenu\PasteShapeDataCommand.cs" />

@@ -81,6 +81,11 @@
                             getEnabled="GetEnabled"
                             onAction="OnAction"
                     />
+                    <button id="FixMasterNotFoundCommand"
+                            getLabel="GetLabel"
+                            getEnabled="GetEnabled"
+                            onAction="OnAction"
+                    />
                 </group>
                 <group id="AboutGroup" label="关于">
                     <button id="OpenSettingsCommand"

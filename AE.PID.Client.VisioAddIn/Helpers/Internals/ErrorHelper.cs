@@ -54,8 +54,8 @@ public abstract class ErrorHelper
                 .Select(x => new
                 {
                     x.ID,
-                    FunctionalElement = x.CellsU[CellDict.FunctionElement].TryGetFormatValue(),
-                    FunctionalGroup = x.CellsU[CellDict.FunctionGroup].ResultStr[VisUnitCodes.visUnitsString]
+                    FunctionalElement = x.TryGetFormatValue(CellDict.FunctionElement),
+                    FunctionalGroup = x.TryGetValue(CellDict.FunctionGroup)
                 })
                 .GroupBy(x => new { x.FunctionalGroup, x.FunctionalElement })
                 .Where(x => x.Count() != 1)
@@ -153,24 +153,37 @@ public abstract class ErrorHelper
     /// <param name="page"></param>
     public static void HighlightShapeLostMaster(Page page)
     {
-        var undoScope = page.Application.BeginUndoScope(HighlightShapeLostMasterScope);
+        var undoScope = page.Application.BeginUndoScope("高亮主控形状缺失");
 
         try
         {
             var noMasters = page.Shapes.OfType<Shape>()
-                .Where(x => x.CellExistsN("User.msvShapeCategories", VisExistsFlags.visExistsAnywhere))
-                .Where(x => x.Master == null)
+                .Where(x => x.Master == null && x.CellExistsN(CellDict.Class, VisExistsFlags.visExistsAnywhere))
                 .ToList();
 
-            if (noMasters.Any())
+            var issueCount = noMasters.Count;
+
+            if (issueCount > 0)
             {
                 var validationLayer = EnsureValidationLayerExist(page);
                 foreach (var item in noMasters)
                     HighlightShapeById(page, item.ID, validationLayer);
+
+                var message = $"发现 {issueCount} 个形状缺失主控形状。\n\n" +
+                              "这些形状已高亮显示。\n" +
+                              "请使用\"开始\"-\"更改形状\"手动替换或使用\"加载项\"-\"修复\"-\"主控形状缺失\"功能尝试修复这个问题。";
+
+                MessageBox.Show(message,
+                    "检查结果 - 发现问题",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
             }
             else
             {
-                MessageBox.Show("未发现异常。", "检查", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("检查完成，未发现缺失主控形状的形状。",
+                    "检查结果 - 正常",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
             }
 
             page.Application.EndUndoScope(undoScope, true);
@@ -179,11 +192,16 @@ public abstract class ErrorHelper
         {
             page.Application.EndUndoScope(undoScope, false);
 
-            // log
-            LogHost.Default.Error(ex, "Failed to scan master lost.");
+            LogHost.Default.Error(ex, "扫描缺失主控形状失败");
 
-            // display error message
-            MessageBox.Show(ex.Message, "检查失败：无法完成扫描丢失主控形状的操作。", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            var errorMessage = $"扫描过程中发生错误:\n\n{ex.Message}\n\n" +
+                               "已撤销所有更改。\n" +
+                               "如果问题持续存在，请联系技术支持并提供日志文件。";
+
+            MessageBox.Show(errorMessage,
+                "检查失败",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
         }
     }
 
@@ -194,41 +212,59 @@ public abstract class ErrorHelper
     public static void HighlightPipelineWithFormulaError(Page page)
     {
         var undoScope = Globals.ThisAddIn.Application.BeginUndoScope(HighlightPipelineWithFormulaErrorScope);
+        var errorPipelinesFound = 0;
+        var errorDetails = new List<string>();
 
         try
         {
+            // 获取所有管路和信号线形状
             var pipelines = page.Shapes.OfType<Shape>()
                 .Where(x => x.Master != null &&
                             (x.Master.BaseID == BaseIdDict.Pipe || x.Master.BaseID == BaseIdDict.Signal))
                 .ToList();
 
+            var totalPipelinesChecked = pipelines.Count;
             var validationLayer = EnsureValidationLayerExist(page);
-            var hasError = false;
 
-            foreach (var pipeline in pipelines.Where(pipeline => pipeline.OneD == (short)VBABool.True))
+            foreach (var pipeline in pipelines.Where(p => p.OneD == (short)VBABool.True))
             {
-                var id = pipeline.ID;
-                var beginX = pipeline.CellsSRCN(VisSectionIndices.visSectionObject, VisRowIndices.visRowXForm1D,
-                    VisCellIndices.vis1DBeginX).ResultIU;
-                var beginY = pipeline.CellsSRCN(VisSectionIndices.visSectionObject, VisRowIndices.visRowXForm1D,
-                    VisCellIndices.vis1DBeginY).ResultIU;
-
-                // Use FormulaU to get the formula to avoid regional issues
-                var formulaBeginX = pipeline.CellsSRCN(VisSectionIndices.visSectionObject, VisRowIndices.visRowXForm1D,
-                    VisCellIndices.vis1DBeginX).FormulaU;
-                var formulaBeginY = pipeline.CellsSRCN(VisSectionIndices.visSectionObject, VisRowIndices.visRowXForm1D,
-                    VisCellIndices.vis1DBeginY).FormulaU;
+                // 检查起点坐标公式是否为"0 mm"
+                var formulaBeginX = pipeline.CellsSRCN(VisSectionIndices.visSectionObject,
+                    VisRowIndices.visRowXForm1D, VisCellIndices.vis1DBeginX).FormulaU;
+                var formulaBeginY = pipeline.CellsSRCN(VisSectionIndices.visSectionObject,
+                    VisRowIndices.visRowXForm1D, VisCellIndices.vis1DBeginY).FormulaU;
 
                 if (formulaBeginX == "0 mm" && formulaBeginY == "0 mm")
                 {
-                    hasError = true;
+                    errorPipelinesFound++;
+                    errorDetails.Add($"ID {pipeline.ID}: {pipeline.Name ?? "未命名管路"}");
                     HighlightShapeById(page, pipeline.ID, validationLayer);
                 }
             }
 
-            // Inform the user if no errors are found
-            if (!hasError)
-                MessageBox.Show("未发现异常。", "检查", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            // 构建用户反馈信息
+            string message;
+            if (totalPipelinesChecked == 0)
+            {
+                message = "当前页面未找到任何管路或信号线。";
+            }
+            else if (errorPipelinesFound == 0)
+            {
+                message = $"检查完成，已扫描 {totalPipelinesChecked} 条管路/信号线，未发现公式错误。";
+                MessageBox.Show(message, "检查结果 - 正常", MessageBoxButtons.OK);
+            }
+            else
+            {
+                var errorList = string.Join("\n", errorDetails.Take(10)); // 最多显示10条错误
+                if (errorDetails.Count > 10) errorList += $"\n...以及另外 {errorDetails.Count - 10} 条";
+
+                message = $"发现 {errorPipelinesFound}/{totalPipelinesChecked} 条管路/信号线存在公式错误:\n\n" +
+                          $"{errorList}\n\n" +
+                          "这些有问题的形状已在验证层中高亮显示。\n" +
+                          "请检查这些形状的起点坐标公式设置。";
+            }
+
+            MessageBox.Show(message, "检查结果 - 发现问题", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
             page.Application.EndUndoScope(undoScope, true);
         }
