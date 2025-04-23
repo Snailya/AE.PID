@@ -41,7 +41,7 @@ public abstract class ElectricalControlSpecificationItemBase : IDataRow
     ///     所处功能段描述
     /// </summary>
     [property: XLColumn(Order = 5)]
-    [ShapeSheetCell(CellDict.FunctionGroupDescription)]
+    [ShapeSheetCell(CellDict.FunctionGroupName)]
     public string GroupDescription { get; set; } = string.Empty;
 
     /// <summary>
