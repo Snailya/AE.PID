@@ -171,12 +171,15 @@ internal class VisioDocumentProcessor
                 overlay.Elements(XNames.CellElement)
                     .Where(x=>x.Attribute(XNames.FAttribute)?.Value == "THEMEVAL()").Remove();
                 
-                // 删除主形状上的Geometry
-                var geometries = overlay.Elements(XNames.SectionElement)
-                    .Where(x => x.Attribute(XNames.NAttribute)?.Value == "Geometry").ToList();
-                foreach (var geometry in geometries)
-                    geometry.Remove();
-
+                // 2025.04.23：如果不是管线，删除主形状上的Geometry
+                if (baseId is not ("{C53C83CB-E71A-43EC-9D65-72CFAA3E02E8}" or "{AA964FAF-E393-47F1-AFC9-AD74613F595E}"))
+                {
+                    var geometries = overlay.Elements(XNames.SectionElement)
+                        .Where(x => x.Attribute(XNames.NAttribute)?.Value == "Geometry").ToList();
+                    foreach (var geometry in geometries)
+                        geometry.Remove();
+                }
+                
                 // 删除Character
                 overlay.Elements(XNames.SectionElement).Where(x => x.Attribute(XNames.NAttribute)?.Value == "Character")
                     .Remove();
