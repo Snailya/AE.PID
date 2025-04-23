@@ -71,11 +71,18 @@ internal abstract class StructuredXElementMerger
                     toAdd.RemoveAttributes();
 
                     toAdd.Add(new XAttribute(XNames.IdAttribute, "-1"),
-                        new XAttribute(XNames.NameUAttribute, templateChild.Attribute(XNames.NameUAttribute)!.Value),
-                        new XAttribute(XNames.NameAttribute, templateChild.Attribute(XNames.NameAttribute)!.Value),
-                        new XAttribute(XNames.TypeAttribute, templateChild.Attribute(XNames.TypeAttribute)!.Value),
                         new XAttribute(XNames.MasterShapeAttribute, templateChild.Attribute(XNames.IdAttribute)!.Value)
                     );
+                    
+                    if (templateChild.Attribute(XNames.NameUAttribute) != null)
+                        toAdd.Add(new XAttribute(XNames.NameUAttribute,
+                            templateChild.Attribute(XNames.NameUAttribute)!.Value));
+                    if (templateChild.Attribute(XNames.NameAttribute) != null)
+                        toAdd.Add(new XAttribute(XNames.NameAttribute,
+                            templateChild.Attribute(XNames.NameAttribute)!.Value));
+                    if (templateChild.Attribute(XNames.TypeAttribute) != null)
+                        toAdd.Add(new XAttribute(XNames.TypeAttribute,
+                            templateChild.Attribute(XNames.TypeAttribute)!.Value));
                 }
 
                 merged.Add(toAdd);
