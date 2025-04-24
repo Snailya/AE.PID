@@ -37,8 +37,10 @@ public class AboutViewModel : ViewModelBase
 
         CheckUpdate = ReactiveCommand.CreateFromTask(async () =>
             {
-                if (!await checker.CheckAsync(Version, configuration.GetCurrentConfiguration().Server + "/api/v3/app"))
-                    HasUpdate = false;
+                var currentConfiguration = configuration.GetCurrentConfiguration();
+                if (await checker.CheckAsync(Version,
+                        currentConfiguration.Server + $"/api/v3/app?channel{currentConfiguration.Channel}"))
+                HasUpdate = false;
             }
         );
 
