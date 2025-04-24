@@ -85,7 +85,7 @@ public class DocumentUpdateService : DisposableBase, IDocumentUpdateService
                 fileStream.Close();
             }
         }
-        catch (ApiException e) when (e.StatusCode == HttpStatusCode.BadRequest)
+        catch (ApiException e) when (e.StatusCode == HttpStatusCode.InternalServerError)
         {
             this.Log().Error(e);
             throw new DocumentFailedToUpdateException(e.Message);

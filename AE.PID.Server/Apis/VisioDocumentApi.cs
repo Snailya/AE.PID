@@ -1,7 +1,6 @@
 ﻿using System.Text.Json;
 using AE.PID.Core;
 using AE.PID.Server.Data;
-using AE.PID.Server.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,10 +16,10 @@ public static class VisioDocumentApi
             .WithTags("Visio文档");
 
         groupBuilder.MapPost("documents/update", UpdateDocumentStencil)
-            .DisableAntiforgery() 
+            .DisableAntiforgery()
+            .WithDescription("更新文档模具。")
             .WithTags("Visio文档");
-        ;
-
+        
         return groupBuilder;
     }
 
@@ -125,7 +124,11 @@ public static class VisioDocumentApi
         }
         catch (Exception e)
         {
-            return TypedResults.Problem(e.Message);
+            return TypedResults.Problem(
+                e.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                title: "Internal Algorithm Error"
+            );
         }
     }
 }
