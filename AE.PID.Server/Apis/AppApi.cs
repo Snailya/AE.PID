@@ -25,6 +25,8 @@ public static partial class AppApi
             .WithTags("客户端");
         groupBuilder.MapPost("app/{id:int}/promote", PromoteVersion)
             .WithTags("客户端");
+        groupBuilder.MapPost("app/{id:int}/demote", DemoteVersion)
+            .WithTags("客户端");
         groupBuilder.MapPost("app/{id:int}/update-release-notes", UpdateReleaseNotes)
             .WithTags("客户端");
         groupBuilder.MapPost("app/{id:int}/update-file-hash", UpdateFileHash)
@@ -39,6 +41,8 @@ public static partial class AppApi
         
         return groupBuilder;
     }
+
+
 
     private static Results<Ok<AppVersionDto>, NoContent, ProblemHttpResult> GetLatestVersionInfo(HttpContext context,
         LinkGenerator linkGenerator,
@@ -152,6 +156,49 @@ public static partial class AppApi
                     version.Channel = VersionChannel.GeneralAvailability;
                     break;
                 case VersionChannel.GeneralAvailability:
+                    break;
+                default:
+                    return TypedResults.Problem();
+            }
+
+            version.ModifiedAt = DateTime.UtcNow;
+
+            await dbContext.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            var url = linkGenerator.GetUriByName(context, nameof(DownloadInstaller),
+                          new { id = version.Id }) ??
+                      string.Empty;
+            return TypedResults.Ok(MapToDto(version, url));
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            return TypedResults.Problem();
+        }
+    }
+
+    private static async Task<Results<Ok<AppVersionDto>, NotFound, ProblemHttpResult>> DemoteVersion(
+        HttpContext context, LinkGenerator linkGenerator,
+        AppDbContext dbContext, [FromRoute] int id)
+    {
+        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+
+        try
+        {
+            var version = await dbContext.AppVersions.FindAsync(id);
+            if (version == null) return TypedResults.NotFound();
+
+            // 更新channel
+            switch (version.Channel)
+            {
+                case VersionChannel.InternalTesting:
+                    break;
+                case VersionChannel.LimitedBeta:
+                    version.Channel = VersionChannel.InternalTesting;
+                    break;
+                case VersionChannel.GeneralAvailability:
+                    version.Channel = VersionChannel.LimitedBeta;
                     break;
                 default:
                     return TypedResults.Problem();

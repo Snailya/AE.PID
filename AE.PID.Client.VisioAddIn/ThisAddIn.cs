@@ -116,7 +116,7 @@ public partial class ThisAddIn : IEnableLogger
             var currentConfiguration = configuration.GetCurrentConfiguration();
             _ = checker.CheckAsync(
                 configuration.RuntimeConfiguration.Version,
-                currentConfiguration.Server + $"/api/v3/app?channel{currentConfiguration.Channel}");
+                currentConfiguration.Server + $"/api/v3/app?channel={(int)currentConfiguration.Channel}");
         });
 
         _ = PrepareTasks();

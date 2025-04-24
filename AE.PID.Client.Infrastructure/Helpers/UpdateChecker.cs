@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Reactive.Joins;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AE.PID.Client.Core;
@@ -12,12 +10,16 @@ namespace AE.PID.Client.Infrastructure;
 
 public class UpdateChecker(IUserInteractionService ui) : IEnableLogger
 {
-    private static string GetUpdater()
+    private string GetUpdater()
     {
         var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Updater.exe");
-        if (!File.Exists(path)) throw new FileNotFoundException();
+        if (!File.Exists(path))
+        {
+            this.Log().Error("Updater not found at {Path}", path);
+            throw new FileNotFoundException($"Updater not found at {path}");
+        }
 
-        LogHost.Default.Info($"Updater found at {path}.");
+        this.Log().Info($"Updater found at {path}");
         return path;
     }
 
@@ -45,85 +47,106 @@ public class UpdateChecker(IUserInteractionService ui) : IEnableLogger
                     ErrorDialog = true // 当进程启动失败时，是否显示错误对话框。
                 };
 
+                var commandLine = $"\"{startInfo.FileName}\" {startInfo.Arguments}";
+                this.Log().Info("[Updater] Starting process: {CommandLine}", commandLine);
+                this.Log().Debug("Working directory: {WorkingDir}", startInfo.WorkingDirectory);
+
                 var version = string.Empty;
                 string[]? releaseNotes = null;
 
                 using (var process = new Process())
                 {
                     process.StartInfo = startInfo;
-                    process.Start();
+
+                    // 添加进程退出事件处理
+                    process.EnableRaisingEvents = true;
+                    process.Exited += (_, _) =>
+                        this.Log().Info("[Updater] Process exited with code: {ExitCode}", process.ExitCode);
+
+                    // 启动进程
+                    if (!process.Start())
+                    {
+                        this.Log().Error("[Updater] Failed to start process");
+                        throw new InvalidOperationException("Failed to start updater process");
+                    }
+
+                    this.Log().Info("[Updater] Process started with PID: {PID}", process.Id);
+
+                    // 异步读取标准错误
+                    var errorTask = process.StandardError.ReadToEndAsync()
+                        .ContinueWith(t =>
+                        {
+                            if (!string.IsNullOrEmpty(t.Result))
+                                this.Log().Error("[Updater] stderr: {Error}", t.Result);
+                        });
 
                     // 读取标准输出
                     while (!process.StandardOutput.EndOfStream)
                     {
-                        var outputLine = await process.StandardOutput.ReadLineAsync();
+                        var outputLine = (await process.StandardOutput.ReadLineAsync())?.Trim();
+                        if (outputLine == null || string.IsNullOrEmpty(outputLine)) continue;
 
-                        if (string.IsNullOrEmpty(outputLine)) continue;
+                        this.Log().Info("[Updater] stdout: {Output}", outputLine);
 
-                        Console.WriteLine(outputLine); // 打印输出到主程序控制台（可选）
-
-                        // 捕获结构化更新信息
-                        if (outputLine.StartsWith("STATUS"))
+                        switch (outputLine)
                         {
-                            if (!outputLine.Contains("NO_UPDATE_AVAILABLE")) continue;
+                            case { } s when s.StartsWith("STATUS"):
+                                if (s.Contains("NO_UPDATE_AVAILABLE"))
+                                {
+                                    this.Log().Info("[Updater] No updates available");
+                                    tcs.SetResult(false);
+                                }
 
-                            tcs.SetResult(false);
-                            break;
-                        }
+                                break;
+                            case { } s when s.StartsWith("UPDATE_INFO:"):
+                                version = (await process.StandardOutput.ReadLineAsync())?.Split(':')[1].Trim()!;
+                                await process.StandardOutput.ReadLineAsync(); // 跳过分隔线
+                                releaseNotes = Regex.Replace(
+                                        await process.StandardOutput.ReadLineAsync() ?? "",
+                                        @"(\d+)\.\s*", "$1. ")
+                                    ?.Split(':')[1]
+                                    .Trim()
+                                    .Replace("；", ";")
+                                    .Split(';');
+                                await process.StandardOutput.ReadLineAsync(); // 跳过分隔线
 
-                        if (outputLine.StartsWith("UPDATE_INFO:"))
-                        {
-                            // ReSharper disable once MethodHasAsyncOverload
-                            version = process.StandardOutput.ReadLine()?.Split(':')[1].Trim();
-                            // ReSharper disable once MethodHasAsyncOverload
-                            process.StandardOutput.ReadLine();
-                            // ReSharper disable once MethodHasAsyncOverload
-                            releaseNotes = Regex.Replace(process.StandardOutput.ReadLine(), @"(\d+)\.\s*", "$1. ")?.Split(':')[1].Trim().Replace("；", ";")
-                                .Split(';');
-                            // ReSharper disable once MethodHasAsyncOverload
-                            process.StandardOutput.ReadLine();
+                                this.Log().Info("[Updater] Found new version: {Version}", version);
+                                this.Log().Debug("[Updater] Release notes: {Notes}",
+                                    string.Join("\n- ", releaseNotes ?? []));
+                                tcs.SetResult(true);
+                                break;
+                            case { } s when s.StartsWith("PROMPT:"):
+                                var message = $"""
+                                               版本：{currentVersion} → {version}
 
-                            this.Log().Info($"Update available: {version}");
+                                               更新内容：
+                                               {string.Join("；\n", releaseNotes ?? [])}
 
-                            tcs.SetResult(true);
-                        }
-                        else if (outputLine.StartsWith("PROMPT:"))
-                        {
-                            var formattedReleaseNotes = releaseNotes == null
-                                ? string.Empty
-                            : string.Join("\n",
-                                    releaseNotes);
+                                               现在安装？
+                                               """;
 
-                            var message = $"""
-                                           版本：{currentVersion} -> {version}
+                                this.Log().Info("[Updater] Showing update dialog to user");
+                                var result = await ui.SimpleDialog(message, "更新");
 
-                                           更新内容：
-
-                                           {formattedReleaseNotes}
-
-                                           现在安装？
-
-                                           """;
-                            if (await ui.SimpleDialog(message, "更新"))
-                                await process.StandardInput.WriteLineAsync("Y"); // 自动输入 Y
-                            else
-                                await process.StandardInput.WriteLineAsync("n"); // 自动输入 n
-
-                            await process.StandardInput.FlushAsync();
+                                this.Log().Info("[Updater] User selected: {Selection}", result ? "Install" : "Skip");
+                                await process.StandardInput.WriteLineAsync(result ? "Y" : "n");
+                                await process.StandardInput.FlushAsync();
+                                break;
                         }
                     }
 
-                    // 读取标准错误
-                    var errorOutput = await process.StandardError.ReadToEndAsync();
-                    if (!string.IsNullOrEmpty(errorOutput)) throw new Exception(errorOutput);
+                    await Task.WhenAll(errorTask);
 
-                    process.WaitForExit(); // 等待进程退出
+                    // 等待进程完全退出
+                    process.WaitForExit();
+                    this.Log().Info("[Updater] Process completed");
                 }
             }
             catch (Exception e)
             {
-                this.Log().Error(e, "Failed to run updater.");
-                throw new ApplicationUpdateFailedException(e.Message);
+                this.Log().Error(e, "[Updater] Update check failed: {ErrorMessage}", e.Message);
+                tcs.TrySetException(new ApplicationUpdateFailedException(e.Message));
+                throw;
             }
 
             return await tcs.Task;
