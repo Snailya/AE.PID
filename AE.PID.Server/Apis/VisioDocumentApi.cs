@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.ComponentModel;
+using System.Text.Json;
 using AE.PID.Core;
 using AE.PID.Server.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -19,16 +20,16 @@ public static class VisioDocumentApi
             .DisableAntiforgery()
             .WithDescription("更新文档模具。")
             .WithTags("Visio文档");
-        
+
         return groupBuilder;
     }
 
-    private static async Task<Results<Ok<IEnumerable<MasterSnapshotDto>>, Ok<IEnumerable<MasterSnapshotExtDto>>,
+    private static async Task<Results<Ok<IEnumerable<MasterSnapshotDto>>,
             ProblemHttpResult>>
         GetLatestMasters(
             HttpContext context,
             LinkGenerator linkGenerator, AppDbContext dbContext,
-            [FromQuery] SnapshotStatus status = SnapshotStatus.Published,
+            [FromQuery] [Description("快照状态")] SnapshotStatus status = SnapshotStatus.Published,
             [FromQuery] int? mode = 0)
     {
         // 第一阶段：获取每个 Master 最新的有效 Snapshot
@@ -83,22 +84,6 @@ public static class VisioDocumentApi
                     ? history
                     : []
             })),
-            // 详细模式，显示具体的Snapshot信息
-            1 => TypedResults.Ok(results.Select(x => new MasterSnapshotExtDto
-            {
-                Name = x.Master.Name,
-                BaseId = x.Master.BaseId,
-                UniqueId = x.LatestSnapshot?.UniqueId ?? string.Empty,
-                UniqueIdHistory = historyDict.TryGetValue(x.Master.Id,
-                    out var history)
-                    ? history
-                    : [],
-                LineStyle = x.LatestSnapshot?.LineStyleName ?? string.Empty,
-                FillStyle = x.LatestSnapshot?.FillStyleName ?? string.Empty,
-                TextStyle = x.LatestSnapshot?.TextStyleName ?? string.Empty,
-                MasterElement = x.LatestSnapshot?.MasterElement ?? string.Empty,
-                MasterDocument = x.LatestSnapshot?.MasterDocument ?? string.Empty
-            })),
             _ => TypedResults.Problem()
         };
     }
@@ -108,7 +93,7 @@ public static class VisioDocumentApi
         LinkGenerator linkGenerator, AppDbContext dbContext,
         IVisioDocumentService visioDocumentService,
         IFormFile file, [FromForm] string? data = null,
-        [FromQuery] SnapshotStatus status = SnapshotStatus.Published)
+        [FromQuery] [Description("快照状态")] SnapshotStatus status = SnapshotStatus.Published)
     {
         //  2025.02.06: 由于Refit不支持不咋结构数组作为Form的一部分，此处将原来的MasterDto[]? 修改为string?，然后再反序列化。
         var items = data != null ? JsonSerializer.Deserialize<MasterDto[]>(data) : null;

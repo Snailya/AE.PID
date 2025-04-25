@@ -10,7 +10,7 @@ public class ProjectService(IHttpClientFactory httpClientFactory) : IProjectServ
 {
     private readonly HttpClient _client = httpClientFactory.CreateClient("PDMS");
 
-    public async Task<Paged<ProjectDto>> GetPagedProjects(string query, int pageNumber, int pageSize, string userId)
+    public async Task<Paged<ProjectDto>?> GetPagedProjects(string query, int pageNumber, int pageSize, string userId)
     {
         var count = await GetProjectsCount(userId, query);
 
@@ -34,7 +34,10 @@ public class ProjectService(IHttpClientFactory httpClientFactory) : IProjectServ
 
         var projects = JsonSerializer
             .Deserialize<IEnumerable<SelectNewProjectInfoResponseItemDto>>(responseData.Result)
-            ?.Select(x => x.FromPDMS());
+            ?.Select(x => x.FromPDMS())
+            .ToArray();
+
+        if (projects == null || !projects.Any()) return null;
 
         return new Paged<ProjectDto>
         {

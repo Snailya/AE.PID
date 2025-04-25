@@ -1,4 +1,6 @@
-﻿namespace AE.PID.Core;
+﻿using System.Collections.Generic;
+
+namespace AE.PID.Core;
 
 public class MasterDto
 {
@@ -16,4 +18,9 @@ public class MasterDto
     ///     模具的UniqueID，用来定位文档模具。
     /// </summary>
     public string UniqueId { get; set; } = string.Empty;
+}
+
+public class MasterWithLatestSnapshotsDto : MasterDto
+{
+    public List<MasterSnapshotDto> Snapshots { get; set; } = new();
 }

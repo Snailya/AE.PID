@@ -1,4 +1,4 @@
-﻿namespace AE.PID.Server.DTOs;
+﻿namespace AE.PID.Server;
 
 /// <summary>
 ///     The request dto used for upload installer.
@@ -12,7 +12,7 @@ public class UploadInstallerDto
 
 
     /// <summary>
-    ///     The description for the current version, might be something added, or updated.
+    ///     The description for the current version might be something added, or updated.
     /// </summary>
     public string ReleaseNotes { get; set; } = string.Empty;
 }

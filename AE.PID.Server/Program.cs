@@ -5,6 +5,8 @@ using AE.PID.Server.Data;
 using AE.PID.Server.PDMS.Extensions;
 using Asp.Versioning;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 
@@ -31,9 +33,24 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "My API V1", Version = "v1" });
     options.SwaggerDoc("v2", new OpenApiInfo { Title = "My API V2", Version = "v2" });
-    options.SwaggerDoc("v3", new OpenApiInfo { Title = "My API V3", Version = "v2" });
+    options.SwaggerDoc("v3", new OpenApiInfo
+    {
+        Title = "AE PID API V3",
+        Description = "AE PID 后端文档",
+        Version = "v3",
+        Contact = new OpenApiContact
+        {
+            Name = "Li Jingya",
+            Email = "lijingya@chianaie.com.cn",
+            Extensions = new Dictionary<string, IOpenApiExtension>
+            {
+                { "Mobile", new OpenApiString("13001129011") },
+                { "Tel.", new OpenApiString("022-27888633") },
+                { "Dept.", new OpenApiString("涂装工程院/装备事业部/产品开发室") }
+            }
+        }
+    });
 });
-
 
 // register service
 builder.Services.AddTransient<IVisioDocumentService, VisioDocumentService>();
@@ -43,9 +60,8 @@ builder.Services.AddTransient<IRecommendService, RecommendService>();
 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
     builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite("Data Source=./PID_server.db;"));
 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-    builder.Services.AddDbContext<AppDbContext>(
-        options => options.UseSqlite(
-            $"Data Source={PathConstants.DatabasePath}/PID_server.db;Cache=Shared;Mode=ReadWriteCreate;"));
+    builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(
+        $"Data Source={PathConstants.DatabasePath}/PID_server.db;Cache=Shared;Mode=ReadWriteCreate;"));
 
 builder.Services.AddHttpContextAccessor();
 
@@ -101,12 +117,12 @@ void EnsureEnvironmentPathsExist()
     // 创建数据库存储路径
     if (!Directory.Exists(PathConstants.DatabasePath)) Directory.CreateDirectory(PathConstants.DatabasePath);
 
-// 创建临时文件存储路径
+    // 创建临时文件存储路径
     if (!Directory.Exists(PathConstants.TmpPath)) Directory.CreateDirectory(PathConstants.TmpPath);
 
-// 创建安装包存储路径
+    // 创建安装包存储路径
     if (!Directory.Exists(PathConstants.InstallerPath)) Directory.CreateDirectory(PathConstants.InstallerPath);
 
-// 创建StencilSnapshot存储路径
+    // 创建StencilSnapshot存储路径
     if (!Directory.Exists(PathConstants.StencilPath)) Directory.CreateDirectory(PathConstants.StencilPath);
 }

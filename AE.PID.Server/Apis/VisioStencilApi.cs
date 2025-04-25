@@ -1,10 +1,10 @@
-﻿using System.IO.Packaging;
+﻿using System.ComponentModel;
+using System.IO.Packaging;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using AE.PID.Core;
 using AE.PID.Server.Data;
-using AE.PID.Server.DTOs;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,32 +16,27 @@ public static class VisioStencilApi
     public static RouteGroupBuilder MapVisioStencilEndpoints(this RouteGroupBuilder groupBuilder)
     {
         groupBuilder.MapGet("stencils/snapshots", GetLatestSnapshots)
-            .WithDescription("获取模具的最新版本。在客户端中，比较本地模具与服务器的版本以判断是否需要更新本地文件。")
-            .WithTags("Visio模具");
-        groupBuilder.MapGet("stencils/snapshots/{id:int}/file", DownloadStencil)
-            .WithDescription("下载模具的物理文件。")
             .WithTags("Visio模具")
-            .WithName(nameof(DownloadStencil));
+            .WithDescription("获取所有模具的最新可用版本快照。");
+        groupBuilder.MapGet("stencils/snapshots/{id:int}/file", DownloadStencil)
+            .WithTags("Visio模具")
+            .WithName(nameof(DownloadStencil))
+            .WithDescription("下载指定版本快照的Visio模具文件（.vssx）。");
 
         groupBuilder.MapPost("stencils", UploadStencil)
             .DisableAntiforgery()
-            .WithDescription("上传新版本的模具")
-            .WithTags("Visio模具");
+            .WithTags("Visio模具")
+            .WithDescription("上传新版本的模具");
         groupBuilder.MapPost("stencils/snapshots/{id:int}/update-status", UpdateStatus)
-            .WithDescription("当新版本的模具被上传后，其默认状态为草稿版本，通过变更其状态为发布，是模具可以被普通通道的用户发现。")
-            .WithTags("Visio模具");
-        // groupBuilder.MapPost("masters/snapshots/update-status-by-stencil-snapshot-id",
-        //         UpdateMasterStatusByStencilSnapshotId)
-        //     .WithTags("Visio模具");
-        // groupBuilder.MapPost("masters/snapshots/{id:int}/update-status", UpdateMasterStatus)
-        //     .WithTags("Visio模具");
+            .WithTags("Visio模具")
+            .WithDescription("当新版本的模具被上传后，其默认状态为草稿版本，通过变更其状态为发布，是模具可以被普通通道的用户发现。");
 
         return groupBuilder;
     }
 
-    private static Results<Ok<IEnumerable<StencilSnapshotDto>>, NotFound> GetLatestSnapshots(HttpContext context,
+    private static Results<Ok<IEnumerable<StencilSnapshotSyncDto>>, NotFound> GetLatestSnapshots(HttpContext context,
         LinkGenerator linkGenerator, AppDbContext dbContext,
-        [FromQuery] SnapshotStatus status = SnapshotStatus.Published)
+        [FromQuery] [Description("快照状态")] SnapshotStatus status = SnapshotStatus.Published)
     {
         var snapshots = dbContext.Stencils.Include(x => x.StencilSnapshots)
             .Select(x =>
@@ -64,7 +59,7 @@ public static class VisioStencilApi
     }
 
     private static Results<PhysicalFileHttpResult, NotFound, ProblemHttpResult> DownloadStencil(HttpContext context,
-        LinkGenerator linkGenerator, AppDbContext dbContext, [FromRoute] int? id = null)
+        LinkGenerator linkGenerator, AppDbContext dbContext, [FromRoute] [Description("快照ID")] int? id = null)
     {
         var snapshot = dbContext.StencilSnapshots
             .Include(s => s.Stencil)
@@ -77,7 +72,7 @@ public static class VisioStencilApi
             "application/octet-stream", Path.ChangeExtension(snapshot.Stencil.Name, "vssx"));
     }
 
-    private static Results<Ok<StencilSnapshotDto>, ProblemHttpResult> UploadStencil(HttpContext context,
+    private static Results<Ok<StencilSnapshotSyncDto>, ProblemHttpResult> UploadStencil(HttpContext context,
         LinkGenerator linkGenerator, AppDbContext dbContext, [FromForm] UploadStencilDto dto)
     {
         // Validate the model and handle the file upload
@@ -111,9 +106,9 @@ public static class VisioStencilApi
         return TypedResults.Ok(MapToDto(snapshot, url));
     }
 
-    private static Results<Ok<StencilSnapshotDto>, NotFound, ProblemHttpResult> UpdateStatus(HttpContext context,
+    private static Results<Ok<StencilSnapshotSyncDto>, NotFound, ProblemHttpResult> UpdateStatus(HttpContext context,
         LinkGenerator linkGenerator, AppDbContext dbContext, [FromRoute] int id,
-        [FromBody] SnapshotStatus status = SnapshotStatus.Published)
+        [FromBody] [Description("快照状态")] SnapshotStatus status = SnapshotStatus.Published)
     {
         var snapshot = dbContext.StencilSnapshots.Include(x => x.MasterContentSnapshots).Include(x => x.Stencil)
             .SingleOrDefault(x => x.Id == id);
@@ -137,60 +132,6 @@ public static class VisioStencilApi
         dbContext.SaveChanges();
 
         return TypedResults.Ok(MapToDto(snapshot, ""));
-    }
-
-    private static Results<Ok, Ok<ICollection<MasterContentSnapshot>>, ProblemHttpResult>
-        UpdateMasterStatusByStencilSnapshotId(HttpContext context,
-            LinkGenerator linkGenerator, AppDbContext dbContext, [FromQuery] int stencilSnapshotId,
-            [FromBody] SnapshotStatus status = SnapshotStatus.Published)
-    {
-        var stencilSnapshot = dbContext.StencilSnapshots.Find(stencilSnapshotId);
-        if (stencilSnapshot == null) return TypedResults.Problem();
-
-        dbContext.Entry(stencilSnapshot).Collection(x => x.MasterContentSnapshots).Load();
-        var count = stencilSnapshot.MasterContentSnapshots.Count(x => x.Status != status);
-        if (count == 0) return TypedResults.Ok();
-
-        foreach (var snapshot in stencilSnapshot.MasterContentSnapshots)
-        {
-            snapshot.Status = status;
-            snapshot.ModifiedAt = DateTime.Now;
-        }
-
-        dbContext.Update(stencilSnapshot);
-        dbContext.SaveChanges();
-
-        dbContext.Entry(stencilSnapshot).Reference(x => x.Stencil).Load();
-        // logger.LogInformation(
-        //     "Status updated. Target: {StencilName}.{SnapshotId}, Count: {Count}, Current: {CurrentValue}",
-        //     stencilSnapshot.Stencil.Name, stencilSnapshotId, count, status);
-
-        return TypedResults.Ok(stencilSnapshot.MasterContentSnapshots);
-    }
-
-    private static Results<Ok<MasterContentSnapshot>, ProblemHttpResult> UpdateMasterStatus(HttpContext context,
-        LinkGenerator linkGenerator, AppDbContext dbContext,
-        [FromRoute] int id,
-        [FromBody] SnapshotStatus status = SnapshotStatus.Published)
-    {
-        var snapshot = dbContext.MasterContentSnapshots.Find(id);
-        if (snapshot == null) return TypedResults.Problem();
-
-        if (snapshot.Status == status) return TypedResults.Ok(snapshot);
-
-        var previousStatus = snapshot.Status;
-        snapshot.Status = status;
-        snapshot.ModifiedAt = DateTime.Now;
-        dbContext.Update(snapshot);
-        dbContext.SaveChanges();
-
-        dbContext.Entry(snapshot).Reference(x => x.Master).Load();
-        // logger.LogInformation(
-        //     "Status updated. Target: {MasterName}.{MasterSnapshotId}, Previous: {PreviousValue}, Current: {CurrentValue}",
-        //     snapshot.Master.Name, id, previousStatus,
-        //     snapshot.Status);
-
-        return TypedResults.Ok(snapshot);
     }
 
 
@@ -279,9 +220,9 @@ public static class VisioStencilApi
         return snapshots;
     }
 
-    private static StencilSnapshotDto MapToDto(StencilSnapshot snapshot, string downloadUrl)
+    private static StencilSnapshotSyncDto MapToDto(StencilSnapshot snapshot, string downloadUrl)
     {
-        return new StencilSnapshotDto
+        return new StencilSnapshotSyncDto
         {
             StencilId = snapshot.StencilId,
             StencilName = snapshot.Stencil.Name,

@@ -1,4 +1,4 @@
-﻿namespace AE.PID.Server.DTOs;
+﻿namespace AE.PID.Server;
 
 public class UploadStencilDto
 {

@@ -1,7 +1,7 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.ComponentModel;
+using System.Text.RegularExpressions;
 using AE.PID.Core;
 using AE.PID.Server.Data;
-using AE.PID.Server.DTOs;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,39 +15,43 @@ public static partial class AppApi
     public static RouteGroupBuilder MapAppEndpoints(this RouteGroupBuilder groupBuilder)
     {
         groupBuilder.MapGet("app", GetLatestVersionInfo)
-            .WithTags("客户端");
+            .WithTags("客户端")
+            .WithDescription("根据更新通道获取客户端最新版本信息。");
         groupBuilder.MapGet("app/download/{id:int}", DownloadInstaller)
             .WithName(nameof(DownloadInstaller))
-            .WithTags("客户端");
+            .WithTags("客户端")
+            .WithDescription("下载指定版本的安装包。");
 
         groupBuilder.MapPost("app/", UploadInstaller)
             .DisableAntiforgery()
-            .WithTags("客户端");
+            .WithTags("客户端")
+            .WithDescription("上传新版本安装包并创建版本记录，上传的安装包将被分配在InternalTesting通道。");
         groupBuilder.MapPost("app/{id:int}/promote", PromoteVersion)
-            .WithTags("客户端");
+            .WithTags("客户端")
+            .WithDescription("将版本升级到更高可见性的通道。每次应用只提升一级通道。");
         groupBuilder.MapPost("app/{id:int}/demote", DemoteVersion)
-            .WithTags("客户端");
+            .WithTags("客户端")
+            .WithDescription("将版本降级到更低可见性的通道。每次应用只降低一级通道。");
         groupBuilder.MapPost("app/{id:int}/update-release-notes", UpdateReleaseNotes)
-            .WithTags("客户端");
+            .WithTags("客户端")
+            .WithDescription("修改指定版本的发布说明。");
         groupBuilder.MapPost("app/{id:int}/update-file-hash", UpdateFileHash)
             .WithTags("客户端");
 
-        groupBuilder.MapGet("help/file/{versionId:int}", (int versionId) =>
+        groupBuilder.MapGet("help/file/{id:int}", ([Description("版本ID")] int id) =>
             {
-                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "file", versionId.ToString());
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "file", id.ToString());
                 return TypedResults.PhysicalFile(filePath, "application/octet-stream");
             })
             .WithTags("客户端");
-        
+
         return groupBuilder;
     }
-
-
 
     private static Results<Ok<AppVersionDto>, NoContent, ProblemHttpResult> GetLatestVersionInfo(HttpContext context,
         LinkGenerator linkGenerator,
         AppDbContext dbContext,
-        [FromQuery] VersionChannel? channel = null)
+        [FromQuery] [Description("更新通道")] VersionChannel? channel = null)
     {
         var query = dbContext.AppVersions.AsQueryable();
         switch (channel)
@@ -82,7 +86,7 @@ public static partial class AppApi
     }
 
     private static Results<NotFound, PhysicalFileHttpResult> DownloadInstaller(AppDbContext dbContext,
-        [FromRoute] int id = 0)
+        [FromRoute] [Description("版本ID")] int id = 0)
     {
         var version = id == 0
             ? dbContext.AppVersions.Where(x => x.Channel == VersionChannel.GeneralAvailability)
@@ -137,7 +141,7 @@ public static partial class AppApi
 
     private static async Task<Results<Ok<AppVersionDto>, NotFound, ProblemHttpResult>> PromoteVersion(
         HttpContext context, LinkGenerator linkGenerator,
-        AppDbContext dbContext, [FromRoute] int id)
+        AppDbContext dbContext, [FromRoute] [Description("版本ID")] int id)
     {
         await using var transaction = await dbContext.Database.BeginTransactionAsync();
 
@@ -180,7 +184,7 @@ public static partial class AppApi
 
     private static async Task<Results<Ok<AppVersionDto>, NotFound, ProblemHttpResult>> DemoteVersion(
         HttpContext context, LinkGenerator linkGenerator,
-        AppDbContext dbContext, [FromRoute] int id)
+        AppDbContext dbContext, [FromRoute] [Description("版本ID")] int id)
     {
         await using var transaction = await dbContext.Database.BeginTransactionAsync();
 
@@ -223,7 +227,7 @@ public static partial class AppApi
 
     private static Results<Ok<AppVersionDto>, NotFound> UpdateReleaseNotes(HttpContext context,
         LinkGenerator linkGenerator, AppDbContext dbContext,
-        [FromRoute] int id, [FromBody] string releaseNotes)
+        [FromRoute] [Description("版本ID")] int id, [FromBody] [Description("发布说明")] string releaseNotes)
     {
         var version = dbContext.AppVersions.Find(id);
 
@@ -242,7 +246,7 @@ public static partial class AppApi
     }
 
     private static Results<Ok<AppVersionDto>, NotFound> UpdateFileHash(HttpContext context,
-        LinkGenerator linkGenerator, AppDbContext dbContext, [FromRoute] int id)
+        LinkGenerator linkGenerator, AppDbContext dbContext, [FromRoute] [Description("版本ID")] int id)
     {
         var version = dbContext.AppVersions.Find(id);
 
