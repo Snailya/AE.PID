@@ -3,6 +3,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using AE.PID.Client.Core;
+using AE.PID.Core;
 using Microsoft.Office.Interop.Excel;
 using Microsoft.Office.Interop.Visio;
 using Splat;

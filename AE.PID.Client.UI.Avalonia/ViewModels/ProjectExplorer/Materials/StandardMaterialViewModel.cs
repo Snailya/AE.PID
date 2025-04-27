@@ -134,7 +134,8 @@ public class StandardMaterialViewModel : ViewModelBase
 
         #region Subscriptions
 
-        var categoryPredicate = Observable.StartAsync(async () => await materialService.GetCategoryMapAsync())
+        // todo: 太慢了，考虑把dictionary当成一个sourcecache
+        var categoryPredicate = Observable.StartAsync(materialService.GetCategoryMapAsync)
             .Select<Dictionary<string, string[]>, Func<Node<MaterialCategory, int>, bool>>(v =>
             {
                 return node => v!.ContainsKey(Type) ? v[Type]!.Contains(node.Item.Code) : node.IsRoot;

@@ -68,7 +68,7 @@ internal sealed class UpdateDocumentCommand : RibbonCommandBase
         }
 
         // reopen after updated
-        Globals.ThisAddIn.Application.Documents.Open(filePath);
+        var document = Globals.ThisAddIn.Application.Documents.Open(filePath);
     }
 
     public override bool CanExecute(IRibbonControl control)

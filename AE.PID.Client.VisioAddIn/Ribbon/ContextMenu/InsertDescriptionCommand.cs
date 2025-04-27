@@ -1,4 +1,4 @@
-﻿using AE.PID.Client.Core;
+﻿using AE.PID.Core;
 using Microsoft.Office.Core;
 
 namespace AE.PID.Client.VisioAddIn;

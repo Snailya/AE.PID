@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using AE.PID.Client.Core;
+using AE.PID.Core;
 using Microsoft.Office.Interop.Visio;
 using Splat;
 using Shape = Microsoft.Office.Interop.Visio.Shape;
