@@ -12,7 +12,7 @@ public class MaterialViewModel : ReactiveObject
         Name = material.Name;
         Brand = material.Brand;
         Specifications = material.Specifications;
-        Type = material.OrderType;
+        Model = material.Model;
         Unit = material.Unit;
         Supplier = material.Supplier;
         ManufacturerMaterialNumber = material.ManufacturerMaterialNumber;
@@ -34,7 +34,7 @@ public class MaterialViewModel : ReactiveObject
 
     public string Specifications { get; set; }
 
-    public string Type { get; set; }
+    public string Model { get; set; }
 
     public string Unit { get; set; }
 

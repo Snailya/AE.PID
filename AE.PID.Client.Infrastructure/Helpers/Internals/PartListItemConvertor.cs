@@ -78,7 +78,7 @@ internal class PartListItemConvertor(
             Count = materialLocation.ComputedQuantity,
 
             Specification = material?.Specifications ?? string.Empty,
-            OrderType = material?.OrderType ?? string.Empty,
+            OrderType = material?.Model ?? string.Empty,
             TechnicalDataChinese = material?.TechnicalData ?? materialLocation.KeyParameters,
             TechnicalDataEnglish = material?.TechnicalDataEnglish ?? string.Empty,
             Unit = material?.Unit ?? string.Empty,

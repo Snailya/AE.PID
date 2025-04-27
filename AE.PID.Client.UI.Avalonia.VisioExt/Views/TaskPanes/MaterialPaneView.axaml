@@ -27,7 +27,7 @@
                             IsVisible="{Binding  Converter={x:Static ObjectConverters.IsNotNull}}">
                     <TextBlock shared:LabelBehav.Value="名称" Text="{Binding Name}" />
                     <TextBlock shared:LabelBehav.Value="品牌" Text="{Binding Brand}" />
-                    <TextBlock shared:LabelBehav.Value="型号" Text="{Binding Type}" />
+                    <TextBlock shared:LabelBehav.Value="型号" Text="{Binding Model}" />
                     <TextBlock shared:LabelBehav.Value="规格" Text="{Binding  Specifications}" />
                     <TextBlock shared:LabelBehav.Value="技术参数" Text="{Binding TechnicalData}" />
                     <TextBlock shared:LabelBehav.Value="物料号" Text="{Binding Code}" />

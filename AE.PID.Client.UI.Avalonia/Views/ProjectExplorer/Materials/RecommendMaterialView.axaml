@@ -31,7 +31,7 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="名称" Binding="{Binding Value.Name}" />
                     <DataGridTextColumn Header="品牌" Binding="{Binding Value.Brand}" />
-                    <DataGridTextColumn Header="型号" Binding="{Binding Value.Type}" />
+                    <DataGridTextColumn Header="型号" Binding="{Binding Value.Model}" />
                     <DataGridTextColumn Header="规格" Binding="{Binding  Value.Specifications}" />
                     <DataGridTextColumn Header="技术参数" Binding="{Binding Value.TechnicalData}" />
                     <DataGridTextColumn Header="物料号" Binding="{Binding Value.Code}" />

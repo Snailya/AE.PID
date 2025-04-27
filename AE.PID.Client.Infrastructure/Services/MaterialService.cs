@@ -57,7 +57,9 @@ public class MaterialService(IApiFactory<IMaterialApi> apiFactory)
     {
         try
         {
-            _categories = (await apiFactory.Api!.GetCategoriesAsync()).Select(x => new MaterialCategory
+            // todo: 太慢了需要缓存
+            _categories = (await apiFactory.Api!.GetCategoriesAsync())
+                .Select(x => new MaterialCategory
             {
                 Id = x.Id,
                 ParentId = x.ParentId,
@@ -233,10 +235,11 @@ public class MaterialService(IApiFactory<IMaterialApi> apiFactory)
             {
                 Name = i.Name,
                 Value = i.Value
-            }).ToArray(),
+            })
+                .ToArray(),
             Brand = dto.Brand,
             Specifications = dto.Specifications,
-            OrderType = dto.Type,
+            Model = dto.Model,
             Unit = dto.Unit,
             Supplier = dto.Manufacturer,
             ManufacturerMaterialNumber = dto.ManufacturerMaterialNumber,

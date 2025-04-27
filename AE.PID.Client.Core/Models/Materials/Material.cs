@@ -9,7 +9,7 @@ public class Material
     public MaterialProperty[] Properties { get; set; } = [];
     public string Brand { get; set; } = string.Empty;
     public string Specifications { get; set; } = string.Empty;
-    public string OrderType { get; set; } = string.Empty;
+    public string Model { get; set; } = string.Empty;
     public string Unit { get; set; } = string.Empty;
     public string Supplier { get; set; } = string.Empty;
     public string ManufacturerMaterialNumber { get; set; } = string.Empty;
