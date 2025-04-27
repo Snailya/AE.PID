@@ -34,6 +34,7 @@ public abstract class XNames
         XName.Get("{http://schemas.microsoft.com/office/visio/2012/main}MasterContents");
 
     public static readonly XName RelElement = XName.Get("{http://schemas.microsoft.com/office/visio/2012/main}Rel");
+    public static readonly XName FieldElement = XName.Get("{http://schemas.microsoft.com/office/visio/2012/main}fld");
 
     #endregion
 

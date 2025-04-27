@@ -1,4 +1,4 @@
-﻿namespace AE.PID.Client.Core;
+﻿namespace AE.PID.Core;
 
 public static class BaseIdDict
 {

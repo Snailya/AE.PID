@@ -1,4 +1,5 @@
-﻿using ClosedXML.Attributes;
+﻿using AE.PID.Core;
+using ClosedXML.Attributes;
 
 namespace AE.PID.Client.Core.VisioExt.Control.SocketsAndLightings;
 
