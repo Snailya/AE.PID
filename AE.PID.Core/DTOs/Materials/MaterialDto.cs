@@ -10,8 +10,8 @@ public class MaterialDto
     [Description("编码")] public string Code { get; set; } = string.Empty;
     [Description("分类")] public int[] Categories { get; set; } = [];
     [Description("品牌")] public string Brand { get; set; } = string.Empty;
-    public string Specifications { get; set; } = string.Empty;
-    public string Model { get; set; } = string.Empty;
+    [Description("规格")]public string Specifications { get; set; } = string.Empty;
+    [Description("型号")]public string Model { get; set; } = string.Empty;
     [Description("单位")] public string Unit { get; set; } = string.Empty;
     [Description("制造商")] public string Manufacturer { get; set; } = string.Empty;
     [Description("制造商物料编码")] public string ManufacturerMaterialNumber { get; set; } = string.Empty;
@@ -21,7 +21,7 @@ public class MaterialDto
 
     public string TechnicalDataEnglish { get; set; } = string.Empty;
     public string TechnicalData { get; set; } = string.Empty;
-    public string Classification { get; set; } = string.Empty;
+    [Description("分类")] public string Classification { get; set; } = string.Empty;
     public string Attachment { get; set; } = string.Empty;
 }
 

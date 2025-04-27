@@ -23,7 +23,7 @@ public static class DtoExtension
             Id = Convert.ToInt32(dto.MainTable.Id),
             Brand = dto.MainTable.Brand,
             // todo: get parent categories
-            Categories = [int.TryParse(dto.MainTable.MaterialCategory, out var categoryId) ? categoryId : default],
+            Categories = [int.TryParse(dto.MainTable.MaterialCategory, out var categoryId) ? categoryId : 0],
             Code = dto.MainTable.MaterialCode,
             Description = dto.MainTable.Description,
             Manufacturer = dto.MainTable.Manufacturer,
@@ -32,7 +32,7 @@ public static class DtoExtension
             Name = dto.MainTable.MaterialName,
             Properties = dto.Detail1.Select(x => new MaterialPropertyDto { Id = x.Id, Name = x.Name, Value = x.Value }),
             Specifications = dto.MainTable.Specifications,
-            Type = dto.MainTable.MaterialType,
+            Classification = dto.MainTable.MaterialType,
             Unit = dto.MainTable.Unit
         };
     }
