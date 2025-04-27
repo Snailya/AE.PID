@@ -12,7 +12,9 @@ internal abstract class StructuredXElementMerger
         [XNames.ShapeElement] = [XNames.SectionElement, XNames.CellElement, XNames.ShapesElement, XNames.TextElement],
         [XNames.SectionElement] = [XNames.RowElement, XNames.CellElement],
         [XNames.RowElement] = [XNames.CellElement],
-        [XNames.CellElement] = []
+        [XNames.CellElement] = [],
+        [XNames.TextElement] = [XNames.FieldElement],
+        [XNames.FieldElement] = []
     };
 
     // 主合并入口
@@ -73,7 +75,7 @@ internal abstract class StructuredXElementMerger
                     toAdd.Add(new XAttribute(XNames.IdAttribute, "-1"),
                         new XAttribute(XNames.MasterShapeAttribute, templateChild.Attribute(XNames.IdAttribute)!.Value)
                     );
-                    
+
                     if (templateChild.Attribute(XNames.NameUAttribute) != null)
                         toAdd.Add(new XAttribute(XNames.NameUAttribute,
                             templateChild.Attribute(XNames.NameUAttribute)!.Value));

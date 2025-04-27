@@ -88,7 +88,8 @@ public class DocumentUpdateService : DisposableBase, IDocumentUpdateService
         catch (ApiException e) when (e.StatusCode == HttpStatusCode.InternalServerError)
         {
             this.Log().Error(e);
-            throw new DocumentFailedToUpdateException(e.Message);
+            if (await e.GetContentAsAsync<ProblemDetails>() is { Detail: not null } problemDetails)
+                throw new DocumentFailedToUpdateException(problemDetails.Detail);
         }
         catch (ApiException e)
         {
@@ -117,10 +118,9 @@ public class DocumentUpdateService : DisposableBase, IDocumentUpdateService
                         UniqueId = x.UniqueID,
                         Name = x.NameU
                     })
-                .Any(
-                    local =>
-                        _cache.TryGetValue(local.BaseId, out var toCompare) &&
-                        toCompare.UniqueId != local.UniqueId
+                .Any(local =>
+                    _cache.TryGetValue(local.BaseId, out var toCompare) &&
+                    toCompare.UniqueId != local.UniqueId
                 );
         }
     }

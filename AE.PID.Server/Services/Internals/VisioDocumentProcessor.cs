@@ -79,10 +79,9 @@ internal class VisioDocumentProcessor
                 snapshot.FillStyleName, snapshot.LineStyleName,
                 snapshot.TextStyleName
             }
-            .Select(
-                name => documentDocument.Descendants(XNames.StyleSheetElement)
-                    .SingleOrDefault(i => i.Attribute(XNames.NameAttribute)?.Value == name)
-                    ?.Attribute(XNames.IdAttribute)?.Value)
+            .Select(name => documentDocument.Descendants(XNames.StyleSheetElement)
+                .SingleOrDefault(i => i.Attribute(XNames.NameAttribute)?.Value == name)
+                ?.Attribute(XNames.IdAttribute)?.Value)
             .ToArray();
         var fillStyleId = styles[0];
         var lineStyleId = styles[1];
@@ -166,20 +165,50 @@ internal class VisioDocumentProcessor
                     .SingleOrDefault(x => x.Attribute(XNames.NAttribute)?.Value == "SubClass")?
                     .Element(XNames.CellElement)?.Attribute(XNames.FAttribute);
                 subClassFormulaAttribute?.Remove();
-                
+
                 // 删除所有公式值为Themeval的Cell
                 overlay.Elements(XNames.CellElement)
-                    .Where(x=>x.Attribute(XNames.FAttribute)?.Value == "THEMEVAL()").Remove();
-                
-                // 2025.04.23：如果不是管线，删除主形状上的Geometry
-                if (baseId is not ("{C53C83CB-E71A-43EC-9D65-72CFAA3E02E8}" or "{AA964FAF-E393-47F1-AFC9-AD74613F595E}"))
+                    .Where(x => x.Attribute(XNames.FAttribute)?.Value == "THEMEVAL()").Remove();
+
+                // 2025.4.25：由于管线的形状在主控形状上，所以当对象是管线时，不应该删除主控形状上的Geometry。
+                // 但是，因为之前的更新代码可能导致Width和Height公式异常，所以需要强制重写其Width、Height公式
+                // 另外，BeginX、BeginY、EndX、EndY的公式可能也存在异常，现在没有找到在服务端修复的方法，只能要求用户在更新前现在客户端对这类错误进行修复。
+                if (baseId is BaseIdDict.Pipe or BaseIdDict.Signal)
+                {
+                    if (overlay.Elements(XNames.CellElement)
+                            .SingleOrDefault(x => x.Attribute(XNames.NAttribute)?.Value == "Width") is { } widthCell)
+                        widthCell.ReplaceWith(new XElement(XNames.CellElement,
+                            new XAttribute(XNames.NAttribute, "Width"),
+                            new XAttribute(XNames.FAttribute, "GUARD(EndX-BeginX)")));
+                    if (overlay.Elements(XNames.CellElement)
+                            .SingleOrDefault(x => x.Attribute(XNames.NAttribute)?.Value == "Height") is { } heightCell)
+                        heightCell.ReplaceWith(new XElement(XNames.CellElement,
+                            new XAttribute(XNames.NAttribute, "Height"),
+                            new XAttribute(XNames.FAttribute, "GUARD(EndY-BeginY)")));
+
+                    // if (overlay.Elements(XNames.CellElement)
+                    //         .SingleOrDefault(x => x.Attribute(XNames.NAttribute)?.Value == "BeginX") is { } beginXCell)
+                    //     beginXCell.Attribute(XNames.FAttribute)?.Remove();
+                    // if (overlay.Elements(XNames.CellElement)
+                    //         .SingleOrDefault(x => x.Attribute(XNames.NAttribute)?.Value == "BeginY") is { } beginYCell)
+                    //     beginYCell.Attribute(XNames.FAttribute)?.Remove();
+                    //
+                    // if (overlay.Elements(XNames.CellElement)
+                    //         .SingleOrDefault(x => x.Attribute(XNames.NAttribute)?.Value == "EndX") is { } endXCell)
+                    //     endXCell.Attribute(XNames.FAttribute)?.Remove();
+                    // if (overlay.Elements(XNames.CellElement)
+                    //         .SingleOrDefault(x => x.Attribute(XNames.NAttribute)?.Value == "EndY") is { } endYCell)
+                    //     endYCell.Attribute(XNames.FAttribute)?.Remove();
+                }
+                // 2025.04.23：如果不是管线，删除主形状上的Geometry，这么做的原因是设备的几何形状变化较大，可能之前有的形状，现在有需要删除了，并且考虑到我们是不允许用户自定义表达，所以把所有的形状都放在子形状里，这样每次更新的时候都重新构建子形状，保证用户图纸上的形状是我们要求的。
+                else
                 {
                     var geometries = overlay.Elements(XNames.SectionElement)
                         .Where(x => x.Attribute(XNames.NAttribute)?.Value == "Geometry").ToList();
                     foreach (var geometry in geometries)
                         geometry.Remove();
                 }
-                
+
                 // 删除Character
                 overlay.Elements(XNames.SectionElement).Where(x => x.Attribute(XNames.NAttribute)?.Value == "Character")
                     .Remove();
@@ -193,11 +222,11 @@ internal class VisioDocumentProcessor
             }
 
             RemoveNamespace(pageDocument);
-            
+
             if (pageDocument.Descendants(XNames.ShapeElement).Any(x => x.Attribute(XNames.IdAttribute)?.Value == "-1"))
                 throw new DocumentUpdateFailedException(
                     "Failed to update shape ID after recreate the sub-shapes. If this exception throws, means the UpdateId() not work as expected. Obviously this it a bug.");
-            
+
             XmlHelper.SaveXDocumentToPart(pagePart, pageDocument);
         }
 
