@@ -9,7 +9,7 @@ public interface IStencilApi
 {
 #if DEBUG
     [Get("/api/v3/stencils/snapshots?status=0")]
-    Task<IEnumerable<StencilSnapshotSyncDto>> GetCurrentSnapshot();
+    Task<IEnumerable<StencilSnapshotDto>> GetCurrentSnapshot();
 #else
         [Get("/api/v3/stencils/snapshots?status=1")]
     Task<IEnumerable<StencilSnapshotDto>> GetCurrentSnapshot();

@@ -34,7 +34,7 @@ public static class VisioStencilApi
         return groupBuilder;
     }
 
-    private static Results<Ok<IEnumerable<StencilSnapshotSyncDto>>, NotFound> GetLatestSnapshots(HttpContext context,
+    private static Results<Ok<IEnumerable<StencilSnapshotDto>>, NotFound> GetLatestSnapshots(HttpContext context,
         LinkGenerator linkGenerator, AppDbContext dbContext,
         [FromQuery] [Description("快照状态")] SnapshotStatus status = SnapshotStatus.Published)
     {
@@ -72,7 +72,7 @@ public static class VisioStencilApi
             "application/octet-stream", Path.ChangeExtension(snapshot.Stencil.Name, "vssx"));
     }
 
-    private static Results<Ok<StencilSnapshotSyncDto>, ProblemHttpResult> UploadStencil(HttpContext context,
+    private static Results<Ok<StencilSnapshotDto>, ProblemHttpResult> UploadStencil(HttpContext context,
         LinkGenerator linkGenerator, AppDbContext dbContext, [FromForm] UploadStencilDto dto)
     {
         // Validate the model and handle the file upload
@@ -106,7 +106,7 @@ public static class VisioStencilApi
         return TypedResults.Ok(MapToDto(snapshot, url));
     }
 
-    private static Results<Ok<StencilSnapshotSyncDto>, NotFound, ProblemHttpResult> UpdateStatus(HttpContext context,
+    private static Results<Ok<StencilSnapshotDto>, NotFound, ProblemHttpResult> UpdateStatus(HttpContext context,
         LinkGenerator linkGenerator, AppDbContext dbContext, [FromRoute] int id,
         [FromBody] [Description("快照状态")] SnapshotStatus status = SnapshotStatus.Published)
     {
@@ -220,9 +220,9 @@ public static class VisioStencilApi
         return snapshots;
     }
 
-    private static StencilSnapshotSyncDto MapToDto(StencilSnapshot snapshot, string downloadUrl)
+    private static StencilSnapshotDto MapToDto(StencilSnapshot snapshot, string downloadUrl)
     {
-        return new StencilSnapshotSyncDto
+        return new StencilSnapshotDto
         {
             StencilId = snapshot.StencilId,
             StencilName = snapshot.Stencil.Name,

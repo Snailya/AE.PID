@@ -5,7 +5,7 @@ namespace AE.PID.Core;
 /// <summary>
 ///     客户端同步使用的模具快照DTO。
 /// </summary>
-public class StencilSnapshotSyncDto
+public class StencilSnapshotDto
 {
     [Description("模具ID")] public int StencilId { get; set; }
     [Description("快照ID")] public int Id { get; set; }
