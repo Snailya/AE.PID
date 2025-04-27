@@ -114,7 +114,7 @@ public class VirtualLocationGenerator : IDisposable
 
                             if (previous.HasValue)
                             {
-                                // 比较source是否发生变化, 如果proxy funciton group 发生变化，会影响子节点的属性
+                                // 比较source是否发生变化, 如果proxy function group 发生变化，会影响子节点的属性
                                 if (previous.Value.Source != item.Source ||
                                     changes.Any(x => Equals(x.Current.Id, item.ProxyFunctionGroup.Id)))
                                     _virtualLocations.AddOrUpdate(item);

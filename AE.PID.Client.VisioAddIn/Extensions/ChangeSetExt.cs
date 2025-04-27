@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
@@ -16,20 +17,28 @@ namespace AE.PID.Client.VisioAddIn;
 public static class ChangeSetExt
 {
     private static readonly TimeSpan BufferTime = TimeSpan.FromMilliseconds(400);
-
-    private static readonly string[] CellValuesToMonitor =
+    
+    public static readonly string[] FunctionLocationCellValuesToMonitor =
     {
         CellDict.FunctionZone, CellDict.FunctionZoneName, CellDict.FunctionZoneEnglishName,
         CellDict.FunctionGroup, CellDict.FunctionGroupName, CellDict.FunctionZoneEnglishName,
         CellDict.FunctionGroupDescription,
-        CellDict.FunctionElement, CellDict.ElementName, CellDict.Description,
+        CellDict.FunctionElement, CellDict.ElementName,
+        CellDict.Description,
         CellDict.Remarks,
-        CellDict.SubClass, CellDict.KeyParameters, CellDict.UnitQuantity, CellDict.Quantity,
-        CellDict.MaterialCode,
-        CellDict.Customer,
         CellDict.RefEquipment,
         CellDict.IsSelectedInProject
     };
+
+    public static readonly string[] MaterialCellsToMonitor =
+    {
+        CellDict.SubClass, CellDict.KeyParameters, CellDict.UnitQuantity, CellDict.Quantity,
+        CellDict.MaterialCode,
+        CellDict.Customer
+    };
+
+    private static readonly IEnumerable<string> CellValuesToMonitor =
+        FunctionLocationCellValuesToMonitor.Concat(MaterialCellsToMonitor);
 
     /// <summary>
     ///     Create a change set that monitors maters add and removed event of the document.

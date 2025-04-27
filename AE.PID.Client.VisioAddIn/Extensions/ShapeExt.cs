@@ -7,7 +7,7 @@ using Microsoft.Office.Interop.Visio;
 
 namespace AE.PID.Client.VisioAddIn;
 
-public static class ShapeExt
+internal static class ShapeExt
 {
     /// <summary>
     ///     Get the point of the pin for the shape
@@ -122,7 +122,7 @@ public static class ShapeExt
     }
 
     /// <summary>
-    /// Gets the shape categories.
+    ///     Gets the shape categories.
     /// </summary>
     /// <param name="shape"></param>
     /// <returns></returns>
@@ -159,10 +159,10 @@ public static class ShapeExt
 
         return shapeCategories.ToArray();
     }
-    
-    
+
+
     /// <summary>
-    /// Check whether a shape is a valid location in the code project scope.
+    ///     Check whether a shape is a valid location in the code project scope.
     /// </summary>
     /// <param name="shape"></param>
     /// <returns></returns>
@@ -170,5 +170,48 @@ public static class ShapeExt
     {
         var category = GetCategories(shape);
         return category.Length >= 1 && category[0] != VisioShapeCategory.None;
+    }
+
+    public static Array? GetResultArray(this IVPage page, VisSectionIndices section, VisRowIndices row,
+        VisCellIndices cell, Func<IVShape, bool>? predict = null)
+    {
+        predict ??= x => true;
+
+        var ids = page.Shapes.OfType<IVShape>().Where(predict.Invoke).Select(x => x.ID).ToArray();
+        var idSrcStream = CreateIdSrcStream(ids, section, row, cell);
+
+        // var unitArray = CreateArray(ids.Length, VisUnitCodes.visMillimeters);
+        page.GetResults(ref idSrcStream, (short)VisGetSetArgs.visGetFloats, null, out var resultArray);
+
+        return resultArray;
+    }
+
+    public static Array? GetResultArray(this IVPage page, VisSectionIndices section, VisRowIndices row,
+        VisCellIndices cell, int[]? ids = null)
+    {
+        ids ??= page.Shapes.OfType<IVShape>().Select(x => x.ID).ToArray();
+
+        var idSrcStream = CreateIdSrcStream(ids, section, row, cell);
+
+        // var unitArray = CreateArray(ids.Length, VisUnitCodes.visMillimeters);
+        page.GetResults(ref idSrcStream, (short)VisGetSetArgs.visGetFloats, null, out var resultArray);
+
+        return resultArray;
+    }
+
+    private static Array CreateIdSrcStream(IEnumerable<int> ids, VisSectionIndices section, VisRowIndices row,
+        VisCellIndices cell)
+    {
+        var sourceArray = ids.SelectMany(x => new[] { (short)x, (short)section, (short)row, (short)cell }).ToArray();
+
+        // ReSharper disable once UseArrayCreationExpression.1
+        var targetArray = Array.CreateInstance(typeof(short), sourceArray.Length);
+
+        Array.Copy(
+            sourceArray, // 源数组
+            targetArray, // 目标数组
+            targetArray.Length // 复制元素数量
+        );
+        return targetArray;
     }
 }

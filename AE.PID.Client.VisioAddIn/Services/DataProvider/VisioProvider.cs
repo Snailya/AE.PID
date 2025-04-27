@@ -37,7 +37,7 @@ public class VisioProvider : DisposableBase, IVisioDataProvider
         _functionLocationProcessor =
             new FunctionLocationProcessor(_docService, overlayProcessor, _visioDocumentMonitor.Shapes);
         _materialLocationProcessor =
-            new MaterialLocationProcessor(_docService, overlayProcessor, _functionLocationProcessor.Locations);
+            new MaterialLocationProcessor(_docService, overlayProcessor, _visioDocumentMonitor.Shapes,_functionLocationProcessor.Locations);
 
         // 2025.04.08：当更新虚拟单元的UnitMultiplier时，需要同步子物料的UnitMultiplier Overlay。这个逻辑暂时不知道该放在那里，但是直觉上放在ViewModel中是不合适的。
         _functionLocationProcessor.Locations.Connect()

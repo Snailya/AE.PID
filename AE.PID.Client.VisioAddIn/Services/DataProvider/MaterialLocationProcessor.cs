@@ -20,23 +20,53 @@ internal class MaterialLocationProcessor : IDisposable
     private readonly CompositeDisposable _cleanUp = new();
 
     private readonly VisioDocumentService _docService;
+
+    private readonly SourceCache<MaterialData, VisioShapeId> _materialData = new(t => t.TargetId);
     private readonly OverlayProcessor _overlayProcessor;
     private readonly Subject<MaterialLocation[]> _updater = new();
 
     public MaterialLocationProcessor(VisioDocumentService docService,
         OverlayProcessor overlayProcessor,
+        IObservableCache<VisioShape, VisioShapeId> shapes,
         IObservableCache<FunctionLocation, ICompoundKey> functionLocations)
     {
         _docService = docService;
         _overlayProcessor = overlayProcessor;
 
+        // // initialize material data
+        // _materialData.Edit(updater =>
+        // {
+        //     updater.AddOrUpdate(shapes.Items.Where(x => x.IsMaterialLocation).Select(ToMaterialData));
+        // });
+
+        shapes.Connect()
+            .Filter(x =>
+                x.IsMaterialLocation)
+            .Transform(ToMaterialData)
+            .PopulateInto(_materialData);
+
+        var materialData = _materialData.Connect();
+
         var materialLocations = functionLocations.Connect()
             // 先过滤出需要处理的FunctionLocation类型
-            .Filter(x => x.Type is FunctionType.Equipment or FunctionType.Instrument or FunctionType.FunctionElement)
-            .Transform(ToMaterialLocation);
+            .Filter(x => x.Type is FunctionType.Equipment or FunctionType.Instrument or FunctionType.FunctionElement);
+
+        var realLocations = materialLocations
+            .Filter(x => !x.IsVirtual)
+            .LeftJoin(materialData, x => x.TargetId, (functionLocation, material) => new MaterialLocation(
+                functionLocation.Id, material.Value.MaterialCode, material.Value.UnitQuantity,
+                material.Value.UnitMultiplier, material.Value.Type,
+                material.Value.KeyParameters, functionLocation.IsVirtual, functionLocation.ProxyGroupId,
+                functionLocation.TargetId));
 
         var virtualLocations = materialLocations
-            .Filter(x => x.IsVirtual)
+            .Filter(x => x.IsVirtual && x.TargetId != null)
+            .ChangeKey(x => x.TargetId!)
+            .LeftJoin(materialData, x => x.TargetId, (functionLocation, material) => new MaterialLocation(
+                functionLocation.Id, material.Value.MaterialCode, material.Value.UnitQuantity,
+                material.Value.UnitMultiplier, material.Value.Type,
+                material.Value.KeyParameters, functionLocation.IsVirtual, functionLocation.ProxyGroupId,
+                functionLocation.TargetId))
             .ChangeKey(x => new VirtualLocationKey((VisioShapeId)x.ProxyGroupId!, (VisioShapeId)x.TargetId!))
             .LeftJoin(
                 overlayProcessor.Cache.Connect(),
@@ -46,10 +76,6 @@ internal class MaterialLocationProcessor : IDisposable
                     : materialLocation
             )
             .ChangeKey(x => x.Id);
-
-        // 处理非虚拟Location（直接转换）
-        var realLocations = materialLocations
-            .Filter(x => !x.IsVirtual);
 
         Locations = realLocations.Merge(virtualLocations)
             .ObserveOn(TaskPoolScheduler.Default)
@@ -75,6 +101,34 @@ internal class MaterialLocationProcessor : IDisposable
         _cleanUp.Dispose();
     }
 
+    private MaterialData ToMaterialData(VisioShape shape)
+    {
+        var shapeId = shape.Id;
+        var source = _docService.GetShape(shapeId);
+
+
+        var materialCode = source.TryGetValue(CellDict.MaterialCode) ?? string.Empty;
+        var unitQuantity = source.TryGetValue<int>(CellDict.UnitQuantity) ?? 0;
+        var quantity = source.TryGetValue<int>(CellDict.Quantity) ?? 0;
+        var unitMultiplier = unitQuantity == 0 ? 1 : quantity / unitQuantity;
+
+        var keyParameters = string.Empty;
+        if (source.CellExistsN(CellDict.KeyParameters, VisExistsFlags.visExistsAnywhere))
+            keyParameters = source.TryGetValue(CellDict.KeyParameters) ?? string.Empty;
+
+        var type = source.TryGetValue(CellDict.SubClass) ?? string.Empty;
+
+        return new MaterialData
+        {
+            TargetId = shapeId,
+            MaterialCode = materialCode,
+            UnitQuantity = unitQuantity,
+            UnitMultiplier = unitMultiplier,
+            Type = type,
+            KeyParameters = keyParameters
+        };
+    }
+
     /// <summary>
     ///     Convert a <see cref="FunctionLocation" /> to <see cref="MaterialLocation" />.
     /// </summary>
@@ -91,7 +145,7 @@ internal class MaterialLocationProcessor : IDisposable
         var materialCode = source.TryGetValue(CellDict.MaterialCode) ?? string.Empty;
         var unitQuantity = source.TryGetValue<int>(CellDict.UnitQuantity) ?? 0;
         var quantity = source.TryGetValue<int>(CellDict.Quantity) ?? 0;
-        var unitMultiplier = unitQuantity==0? 1:quantity / unitQuantity;
+        var unitMultiplier = unitQuantity == 0 ? 1 : quantity / unitQuantity;
 
         var keyParameters = string.Empty;
         if (source.CellExistsN(CellDict.KeyParameters, VisExistsFlags.visExistsAnywhere))
@@ -167,5 +221,20 @@ internal class MaterialLocationProcessor : IDisposable
                 .Cast<LocationOverlay>()
                 .ToArray()
         );
+    }
+
+    private class MaterialData
+    {
+        public VisioShapeId TargetId { get; set; } = VisioShapeId.Default;
+
+        public string MaterialCode { get; set; } = string.Empty;
+
+        public double UnitQuantity { get; set; }
+
+        public int UnitMultiplier { get; set; }
+
+        public string Type { get; set; } = string.Empty;
+
+        public string KeyParameters { get; set; } = string.Empty;
     }
 }
