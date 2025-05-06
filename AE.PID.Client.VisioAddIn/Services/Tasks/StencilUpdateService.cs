@@ -12,7 +12,7 @@ using Splat;
 
 namespace AE.PID.Client.VisioAddIn;
 
-public class StencilUpdateService : ApiFactory<IStencilApi>, IEnableLogger
+internal class StencilUpdateService : ApiFactory<IStencilApi>, IEnableLogger
 {
     private readonly IConfigurationService _configurationService;
     private readonly string _folder;

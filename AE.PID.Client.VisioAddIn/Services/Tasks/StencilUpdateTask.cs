@@ -8,7 +8,7 @@ using Splat;
 
 namespace AE.PID.Client.VisioAddIn;
 
-public class StencilUpdateTask(
+internal class StencilUpdateTask(
     IConfigurationService configurationService,
     StencilUpdateService stencilUpdateService,
     Application application) : BackgroundTaskBase, IEnableLogger
@@ -19,36 +19,46 @@ public class StencilUpdateTask(
     {
         await base.ExecuteAsync(cts);
 
-        var stencilsInConfiguration =
+        var configurationStencils =
             configurationService.GetCurrentConfiguration().Stencils.ToList();
-        var openedDocuments = application.Documents.OfType<Document>()
-            .Where(x => stencilsInConfiguration.Any(i => i.Name == x.Name))
+
+        var openedStencils = application.Documents
+            .OfType<Document>()
+            .Select(x => new Stencil(x.Name, x.FullName))
+            .Where(x => configurationStencils.Any(i => i.Name == x.Name))
             .ToList();
-        var openedDocumentNames = openedDocuments.Select(x => x.Name).ToList();
 
         // close the opened stencils
         this.Log().Info("Close the opened documents before doing stencil update.");
 
-        foreach (var document in openedDocuments) document.Close();
+        foreach (var stencil in openedStencils) application.Documents[stencil.Name].Close();
 
         try
         {
-            var updated = (await stencilUpdateService.UpdateAsync()).ToList();
+            _ = (await stencilUpdateService.UpdateAsync()).ToList();
 
             this.Log().Info("Update stencils successfully.");
-
-            // restore with updated files
-            foreach (var toOpen in updated.Where(x => openedDocuments.Any(i => i.Name == x.Name)))
-                application.Documents.AddEx(toOpen.FilePath);
         }
         catch (Exception e)
         {
             this.Log().Error(e, "Update stencils failed, restore from previous configuration");
 
+            throw new StencilFailedToUpdateException("Update stencils failed, restore from previous configuration");
+        }
+        finally
+        {
             // restore from the opened
-            foreach (var toOpen in openedDocumentNames)
-                if (stencilsInConfiguration.SingleOrDefault(x => x.Name == toOpen) is { } config)
+            foreach (var toOpen in openedStencils)
+                if (configurationStencils.SingleOrDefault(x => x.Name == toOpen.Name) is { } config)
                     application.Documents.AddEx(config.FilePath);
         }
     }
+
+    private class Stencil(string name, string filePath)
+    {
+        public string Name { get; } = name;
+        public string FilePath { get; set; } = filePath;
+    }
 }
+
+public class StencilFailedToUpdateException(string message) : Exception(message);

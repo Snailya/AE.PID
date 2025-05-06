@@ -1,6 +1,6 @@
 ﻿namespace AE.PID.Server;
 
-public abstract class PathConstants
+internal abstract class PathConstants
 {
     public const string DatabasePath = "/var/lib/aepid/database";
     public const string TmpPath = "/tmp";

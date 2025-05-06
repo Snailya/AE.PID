@@ -77,7 +77,8 @@ public partial class ThisAddIn : IEnableLogger
 
         _host.RunAsync(_cancellationTokenSource.Token);
 
-        // declare a new UI thread for WPF. Notice the apartment state needs to be STA
+        // declare a new UI thread for WPF.
+        // notice the apartment state needs to be STA
         this.Log().Debug("Starting a new thread as UI main thread.");
 
         _uiThread = new Thread(() =>

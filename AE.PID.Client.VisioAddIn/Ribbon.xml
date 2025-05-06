@@ -103,7 +103,7 @@
                             getEnabled="GetEnabled"
                             onAction="OnAction"
                     />
-                    <button id="Debug" onAction="Debug" label="调试"/>
+                    <!--<button id="Debug" onAction="Debug" label="调试"/>-->
                 </group>
             </tab>
         </tabs>

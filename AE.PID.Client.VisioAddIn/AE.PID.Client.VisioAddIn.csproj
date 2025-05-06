@@ -222,6 +222,7 @@
                 -->
   <ItemGroup>
     <Compile Include="Attributes\RibbonContextMenu.cs" />
+    <Compile Include="Contants\VBABool.cs" />
     <Compile Include="Exceptions\MasterNotValidException.cs" />
     <Compile Include="Extensions\ChangeSetExt.cs" />
     <Compile Include="Extensions\ControlExt.cs" />
@@ -278,7 +279,9 @@
     <Compile Include="Services\DataProvider\VisioDocumentService.cs" />
     <Compile Include="Services\DataProvider\VisioProvider.cs" />
     <Compile Include="Services\ScopeManager.cs" />
-    <Compile Include="VBABool.cs" />
+    <Compile Include="Services\Tasks\BackgroundTaskExecuter.cs" />
+    <Compile Include="Services\Tasks\BackgroundTaskQueue.cs" />
+    <Compile Include="Services\Tasks\StencilUpdateService.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -307,10 +310,7 @@
     <Compile Include="Ribbon.cs">
       <XmlRibbon>true</XmlRibbon>
     </Compile>
-    <Compile Include="Services\BackgroundTaskExecuter.cs" />
-    <Compile Include="Services\BackgroundTaskQueue.cs" />
     <Compile Include="Services\VisioSolutionXMLCacheService.cs" />
-    <Compile Include="Services\StencilUpdateService.cs" />
     <Compile Include="Services\ExportService.cs" />
     <Compile Include="Services\Tasks\StencilUpdateTask.cs" />
     <Compile Include="Services\Tasks\BackgroundTaskBase.cs" />
@@ -402,9 +402,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Ribbon.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

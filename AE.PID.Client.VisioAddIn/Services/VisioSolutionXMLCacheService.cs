@@ -38,9 +38,9 @@ public class VisioSolutionXmlCacheService : ILocalCacheService, IEnableLogger
             PersistAsSolutionXml<Material, string>("materials", _materialCache.Items.ToArray(), x => x.Code);
     }
 
-    public Material? GetMaterialByCode(string code)
+    public Material? GetMaterialByCode(string? code)
     {
-        if (string.IsNullOrEmpty(code)) throw new ArgumentNullException(nameof(code));
+        if (code == null || string.IsNullOrEmpty(code)) throw new ArgumentNullException(nameof(code));
 
         var material = _materialCache.Lookup(code);
         return material.HasValue ? material.Value : null;
