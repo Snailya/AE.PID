@@ -12,7 +12,7 @@ internal sealed class LoadLibrariesCommand : RibbonCommandBase
     public override void Execute(IRibbonControl control)
     {
         // 2025.02.07: 使用RuntimePath
-        var service = ThisAddIn.Services.GetRequiredService<IConfigurationService>();
+        var service = ThisAddIn.ServiceBridge.GetRequiredService<IConfigurationService>();
         LibraryHelper.OpenLibraries(Path.Combine(service.RuntimeConfiguration.DataPath, "libraries"));
     }
 

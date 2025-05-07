@@ -23,7 +23,7 @@ internal sealed class UpdateDocumentCommand : RibbonCommandBase
         //remove hidden information to reduce size
         doc.RemoveHiddenInformation((int)VisRemoveHiddenInfoItems.visRHIMasters);
 
-        var service = ThisAddIn.Services.GetRequiredService<IDocumentUpdateService>();
+        var service = ThisAddIn.ServiceBridge.GetRequiredService<IDocumentUpdateService>();
 
         // 2024.12.9更新：在更新时，一部分用户希望更新所有的模具，但一部分用户希望保留自己修改后的模具，此处弹框要求用户选择哪些模具需要被更新
         var mastersNeedUpdate = service.GetObsoleteMasters(Globals.ThisAddIn.Application.ActiveDocument)
@@ -34,7 +34,7 @@ internal sealed class UpdateDocumentCommand : RibbonCommandBase
                 })
             .ToArray();
         // 2025.02.05： 用户如果点击了取消按钮，则返回null，用户如果点击了确定按钮，则获得待更新的清单
-        var ui = ThisAddIn.Services.GetRequiredService<IUserInteractionService>();
+        var ui = ThisAddIn.ServiceBridge.GetRequiredService<IUserInteractionService>();
         var mastersToUpdate = await ui
             .ShowDialog<ConfirmUpdateDocumentWindowViewModel, VisioMaster[]?>(
                 new ConfirmUpdateDocumentWindowViewModel(mastersNeedUpdate), ThisAddIn.GetApplicationHandle());
@@ -91,7 +91,7 @@ internal sealed class UpdateDocumentCommand : RibbonCommandBase
 
         // check if the version is out of date
 
-        var documentUpdateService = ThisAddIn.Services.GetRequiredService<IDocumentUpdateService>();
+        var documentUpdateService = ThisAddIn.ServiceBridge.GetRequiredService<IDocumentUpdateService>();
 
         var isObsolete = documentUpdateService.IsObsolete(Globals.ThisAddIn.Application.ActiveDocument);
         LogHost.Default.Info(isObsolete

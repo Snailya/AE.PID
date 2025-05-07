@@ -12,17 +12,24 @@ public class BackgroundTaskExecutor(BackgroundTaskQueue taskQueue) : BackgroundS
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var task =
-                await taskQueue.DequeueAsync(stoppingToken);
+            IBackgroundTask? task = null;
             try
             {
-                this.Log().Info($"Executing {task.TaskName}...");
+                task =
+                    await taskQueue.DequeueAsync(stoppingToken);
+
+                this.Log().Debug($"Executing {task.TaskName}...");
                 await task.ExecuteAsync(stoppingToken);
                 this.Log().Info($"{task.TaskName} completed successfully.");
             }
+            catch (OperationCanceledException ex)
+            {
+                if (task != null)
+                    this.Log().Warn($"Task {task.TaskName} cancelled.", ex);
+            }
             catch (Exception e)
             {
-                this.Log().Error(e, $"{task.TaskName} failed.");
+                this.Log().Error(e, $"{task!.TaskName} failed.");
 
                 if (task.ShouldRetry)
                 {

@@ -13,13 +13,13 @@ internal sealed class OpenProjectExplorerCommand : RibbonCommandBase
     public override void Execute(IRibbonControl control)
     {
         var document = Globals.ThisAddIn.Application.ActiveDocument;
-        var scope = ThisAddIn.ScopeManager.GetScope(document);
+        var scope = ThisAddIn.ServiceBridge.GetScope(document);
 
         var vm = scope.ServiceProvider.GetRequiredService<ProjectExplorerWindowViewModel>();
         var ui = scope.ServiceProvider.GetRequiredService<IUserInteractionService>();
 
         ui.Show(vm, new IntPtr(Globals.ThisAddIn.Application.WindowHandle32),
-            () => { ThisAddIn.ScopeManager.ReleaseScope(document); });
+            () => { ThisAddIn.ServiceBridge.ReleaseScope(document); });
     }
 
     public override bool CanExecute(IRibbonControl control)

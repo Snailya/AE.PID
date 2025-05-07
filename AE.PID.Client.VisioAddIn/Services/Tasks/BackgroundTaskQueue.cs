@@ -32,7 +32,6 @@ public sealed class BackgroundTaskQueue
     {
         var task =
             await _queue.Reader.ReadAsync(cts);
-
         return task;
     }
 }

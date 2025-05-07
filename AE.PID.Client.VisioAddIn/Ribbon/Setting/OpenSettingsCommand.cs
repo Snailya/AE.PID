@@ -1,6 +1,5 @@
 ﻿using AE.PID.Client.Core;
 using AE.PID.Client.UI.Avalonia;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Office.Core;
 
 namespace AE.PID.Client.VisioAddIn.Setting;
@@ -11,8 +10,8 @@ internal class OpenSettingsCommand : RibbonCommandBase
 
     public override void Execute(IRibbonControl control)
     {
-        var vm = ThisAddIn.Services.GetRequiredService<SettingsWindowViewModel>();
-        var ui = ThisAddIn.Services.GetRequiredService<IUserInteractionService>();
+        var vm = ThisAddIn.ServiceBridge.GetRequiredService<SettingsWindowViewModel>();
+        var ui = ThisAddIn.ServiceBridge.GetRequiredService<IUserInteractionService>();
 
         ui.Show(vm, ThisAddIn.GetApplicationHandle());
     }

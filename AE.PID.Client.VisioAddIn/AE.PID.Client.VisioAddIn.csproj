@@ -222,6 +222,7 @@
                 -->
   <ItemGroup>
     <Compile Include="Attributes\RibbonContextMenu.cs" />
+    <Compile Include="Bootstrapper.cs" />
     <Compile Include="Contants\VBABool.cs" />
     <Compile Include="Exceptions\MasterNotValidException.cs" />
     <Compile Include="Extensions\ChangeSetExt.cs" />
@@ -239,6 +240,7 @@
     <Compile Include="Interfaces\IBackgroundTask.cs" />
     <Compile Include="Interfaces\IRibbonCommand.cs" />
     <Compile Include="Interfaces\IRibbonItem.cs" />
+    <Compile Include="Interfaces\IServiceBridge.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

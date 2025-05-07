@@ -29,7 +29,7 @@ public static class WindowHelper
         }
         else
         {
-            var scope = ThisAddIn.Services.CreateScope();
+            var scope = ThisAddIn.ServiceBridge.CreateScope();
 
             Observable.Start(() =>
                 {
