@@ -29,13 +29,12 @@ public static class ShapeSheetExt
     /// <param name="rowIndices"></param>
     /// <param name="cellIndices"></param>
     /// <returns></returns>
-    public static Cell CellsSRCN(this IVShape shape, VisSectionIndices sectionIndices, VisRowIndices rowIndices,
+    public static Cell CellsN(this IVShape shape, VisSectionIndices sectionIndices, VisRowIndices rowIndices,
         VisCellIndices cellIndices)
     {
         return shape.CellsSRC[(short)sectionIndices, (short)rowIndices, (short)cellIndices];
     }
-
-
+    
     /// <summary>
     ///     Try to get the format value of the cell.
     /// </summary>

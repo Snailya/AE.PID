@@ -230,9 +230,9 @@ public abstract class ErrorHelper
             foreach (var pipeline in pipelines.Where(p => p.OneD == (short)VBABool.True))
             {
                 // 检查起点坐标公式是否为"0 mm"
-                var formulaBeginX = pipeline.CellsSRCN(VisSectionIndices.visSectionObject,
+                var formulaBeginX = pipeline.CellsN(VisSectionIndices.visSectionObject,
                     VisRowIndices.visRowXForm1D, VisCellIndices.vis1DBeginX).FormulaU;
-                var formulaBeginY = pipeline.CellsSRCN(VisSectionIndices.visSectionObject,
+                var formulaBeginY = pipeline.CellsN(VisSectionIndices.visSectionObject,
                     VisRowIndices.visRowXForm1D, VisCellIndices.vis1DBeginY).FormulaU;
 
                 if (formulaBeginX == "0 mm" && formulaBeginY == "0 mm")
@@ -299,11 +299,11 @@ public abstract class ErrorHelper
                 (short)VisBoundingBoxArgs.visBBoxDrawingCoords + (short)VisBoundingBoxArgs.visBBoxExtents);
         var rect = page.DrawRectangleMetric(left - 1, bottom - 1, right + 1, top + 1);
         // set as transparent fill
-        rect.CellsSRCN(VisSectionIndices.visSectionObject, VisRowIndices.visRowFill, VisCellIndices.visFillPattern)
+        rect.CellsN(VisSectionIndices.visSectionObject, VisRowIndices.visRowFill, VisCellIndices.visFillPattern)
             .FormulaU = "9";
 
         // set layer
-        rect.CellsSRCN(VisSectionIndices.visSectionObject, VisRowIndices.visRowLayerMem, VisCellIndices.visLayerMember)
+        rect.CellsN(VisSectionIndices.visSectionObject, VisRowIndices.visRowLayerMem, VisCellIndices.visLayerMember)
                 .FormulaU = $"\"{validationLayer.Index - 1}\"";
     }
 }

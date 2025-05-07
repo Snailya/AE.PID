@@ -263,11 +263,11 @@ internal abstract class FormatHelper
                 foreach (var subShape in shape.Shapes.OfType<Shape>())
                 {
                     // set the line color
-                    subShape.CellsSRCN(VisSectionIndices.visSectionObject, VisRowIndices.visRowLine,
+                    subShape.CellsN(VisSectionIndices.visSectionObject, VisRowIndices.visRowLine,
                         VisCellIndices.visLineColor).FormulaU = "8";
 
                     // set the text color
-                    subShape.CellsSRCN(VisSectionIndices.visSectionCharacter, 0, VisCellIndices.visCharacterColor)
+                    subShape.CellsN(VisSectionIndices.visSectionCharacter, 0, VisCellIndices.visCharacterColor)
                         .FormulaU = "8";
                 }
 
@@ -283,15 +283,15 @@ internal abstract class FormatHelper
                 foreach (var subShape in shape.Shapes.OfType<Shape>())
                 {
                     // clear the line color
-                    if (subShape.CellsSRCN(VisSectionIndices.visSectionObject, VisRowIndices.visRowLine,
+                    if (subShape.CellsN(VisSectionIndices.visSectionObject, VisRowIndices.visRowLine,
                             VisCellIndices.visLineColor).ResultStr[VisUnitCodes.visUnitsString] == "8")
-                        subShape.CellsSRCN(VisSectionIndices.visSectionObject, VisRowIndices.visRowLine,
+                        subShape.CellsN(VisSectionIndices.visSectionObject, VisRowIndices.visRowLine,
                             VisCellIndices.visLineColor).FormulaU = "";
 
                     // clear the text color
-                    if (subShape.CellsSRCN(VisSectionIndices.visSectionCharacter, 0, VisCellIndices.visCharacterColor)
+                    if (subShape.CellsN(VisSectionIndices.visSectionCharacter, 0, VisCellIndices.visCharacterColor)
                             .ResultStr[VisUnitCodes.visUnitsString] == "8")
-                        subShape.CellsSRCN(VisSectionIndices.visSectionCharacter, 0, VisCellIndices.visCharacterColor)
+                        subShape.CellsN(VisSectionIndices.visSectionCharacter, 0, VisCellIndices.visCharacterColor)
                             .FormulaU = "";
 
                     shape.TrySetValue("User.IsOptional", false, true);

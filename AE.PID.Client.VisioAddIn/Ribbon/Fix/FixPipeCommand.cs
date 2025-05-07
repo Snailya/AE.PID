@@ -33,9 +33,9 @@ internal sealed class FixPipeCommand : RibbonCommandBase, IEnableLogger
                 var isAbnormal = false;
                 var shapeId = shape.ID;
 
-                var beginXCell = shape.CellsSRCN(VisSectionIndices.visSectionObject,
+                var beginXCell = shape.CellsN(VisSectionIndices.visSectionObject,
                     VisRowIndices.visRowXForm1D, VisCellIndices.vis1DBeginX);
-                var beginYCell = shape.CellsSRCN(VisSectionIndices.visSectionObject,
+                var beginYCell = shape.CellsN(VisSectionIndices.visSectionObject,
                     VisRowIndices.visRowXForm1D, VisCellIndices.vis1DBeginY);
                 
                 if (beginXCell.IsInherited == (short)VBABool.True)
